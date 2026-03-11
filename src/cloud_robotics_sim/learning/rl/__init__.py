@@ -1,2 +1,1 @@
-"""Reinforcement Learning algorithms.
-"""
+"""Reinforcement Learning algorithms."""

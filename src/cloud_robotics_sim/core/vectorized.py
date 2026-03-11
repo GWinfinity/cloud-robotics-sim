@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 
@@ -164,6 +164,3 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
 # Type alias for backward compatibility
 VectorizedEnv = VectorizedEnvironment
 GenesisVecEnv = GenesisVectorizedEnv
-
-
-from typing import Callable

@@ -130,7 +130,11 @@ select = [
     "N",  # pep8-naming
     "D",  # pydocstyle
 ]
-ignore = ["D100", "D104"]  # Missing docstrings in public modules/packages
+ignore = [
+    "D100", "D104",  # Missing docstrings in public modules/packages
+    "D102", "D107",  # Missing docstrings in methods/__init__
+    "E501",           # Line too long
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

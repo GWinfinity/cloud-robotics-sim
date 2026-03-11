@@ -1,2 +1,1 @@
-"""Imitation Learning algorithms.
-"""
+"""Imitation Learning algorithms."""
