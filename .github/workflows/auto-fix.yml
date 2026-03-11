@@ -6,6 +6,10 @@ on:
     types:
       - completed
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   auto-fix:
     runs-on: ubuntu-latest
@@ -14,6 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Set up Python
@@ -25,6 +30,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install black ruff
+    
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
     
     - name: Fix trailing whitespace
       run: |
@@ -43,13 +53,54 @@ jobs:
       run: |
         if [ -n "$(git status --porcelain)" ]; then
           echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "Changes detected:"
+          git status --short
         else
           echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "No changes to commit"
         fi
     
-    - name: Create Pull Request
+    - name: Create branch and commit
       if: steps.check-changes.outputs.has_changes == 'true'
-      uses: peter-evans/create-pull-request@v6
+      id: create-commit
+      run: |
+        BRANCH_NAME="auto-fix/ci-$(date +%Y%m%d-%H%M%S)"
+        git checkout -b "$BRANCH_NAME"
+        git add -A
+        git commit -m "style: Auto-fix lint and formatting issues
+
+        - Fix trailing whitespace
+        - Apply ruff auto-fixes  
+        - Format with black"
+        git push origin "$BRANCH_NAME"
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+    
+    - name: Create Pull Request via API
+      if: steps.check-changes.outputs.has_changes == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh pr create \
+          --title "🤖 Auto-fix: Lint and formatting issues" \
+          --body "This PR was automatically created to fix CI failures.
+
+        ## Changes Made
+        - Fixed trailing whitespace
+        - Applied ruff auto-fixes
+        - Formatted with black
+
+        Please review and merge if the changes look correct.
+
+        ---
+        *This PR was created automatically by the Auto Fix workflow.*" \
+          --base main \
+          --head ${{ steps.create-commit.outputs.branch_name }} \
+          --label "automated,style" || echo "PR may already exist"
+    
+    - name: PR Create Fallback
+      if: failure() && steps.check-changes.outputs.has_changes == 'true'
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "style: Auto-fix lint and formatting issues"
@@ -57,11 +108,12 @@ jobs:
         body: |
           This PR was automatically created to fix CI failures.
           
-          Changes made:
+          ## Changes Made
           - Fixed trailing whitespace
           - Applied ruff auto-fixes
           - Formatted with black
           
           Please review and merge if the changes look correct.
-        branch: auto-fix/ci-issues
+        branch: auto-fix/ci-issues-fallback
         delete-branch: true
+        labels: automated,style
