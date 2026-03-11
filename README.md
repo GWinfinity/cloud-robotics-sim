@@ -3,6 +3,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://gwinfinity.github.io/cloud-robotics-sim/)
 
 A cloud-native robotics simulation platform built on [Genesis](https://genesis-world.readthedocs.io/) physics engine, designed for scalable reinforcement learning and imitation learning research.
 
@@ -132,9 +133,13 @@ cloud-robotics-sim/
 
 ## Documentation
 
+📖 **Full Documentation**: [https://gwinfinity.github.io/cloud-robotics-sim/](https://gwinfinity.github.io/cloud-robotics-sim/)
+
 - [Architecture Overview](docs/architecture/overview.md)
 - [Getting Started Guide](docs/guides/quickstart.md)
-- [API Reference](docs/reference/api.md)
+- [Installation Guide](docs/guides/installation.md)
+- [Configuration Guide](docs/guides/configuration.md)
+- [API Reference](docs/api/core.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 
 ## Requirements
