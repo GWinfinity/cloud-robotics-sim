@@ -1,10 +1,9 @@
 name: Auto Fix (Simple)
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types:
-      - completed
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,12 +11,12 @@ permissions:
 jobs:
   auto-fix:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'failure'
     
     steps:
     - uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -34,6 +33,12 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
     
+    - name: Debug Git Status
+      run: |
+        echo "Git status before fixes:"
+        git status
+        echo "---"
+    
     - name: Fix trailing whitespace
       run: |
         find src -name "*.py" -exec sed -i 's/[[:space:]]*$//' {} +
@@ -49,15 +54,31 @@ jobs:
     - name: Check for changes
       id: check-changes
       run: |
+        echo "Git status after fixes:"
+        git status --short
         if [ -n "$(git status --porcelain)" ]; then
           echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "Changes detected"
         else
           echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "No changes detected"
         fi
+    
+    - name: Debug before push
+      if: steps.check-changes.outputs.has_changes == 'true'
+      run: |
+        echo "Git config:"
+        git config user.name
+        git config user.email
+        echo "Current branch:"
+        git branch --show-current
+        echo "Remote info:"
+        git remote -v
     
     - name: Commit and push directly
       if: steps.check-changes.outputs.has_changes == 'true'
       run: |
         git add -A
         git commit -m "style: Auto-fix lint and formatting issues [skip ci]"
-        git push
+        git push origin HEAD:main
+        echo "✅ Changes pushed successfully"
