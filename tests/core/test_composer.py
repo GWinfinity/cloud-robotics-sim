@@ -1,6 +1,5 @@
 """Tests for environment composer."""
 
-
 from cloud_robotics_sim import (
     ComposerConfig,
     EnvironmentComposer,
@@ -74,7 +73,7 @@ class TestEnvironmentVariantGenerator:
         ]
 
         for variant in variants:
-            assert variant['name'] in expected_names
+            assert variant["name"] in expected_names
 
     def test_generate_variants_with_filter(self):
         """Test variant generation with filter."""
@@ -92,7 +91,7 @@ class TestEnvironmentVariantGenerator:
         )
 
         assert len(variants) == 1
-        assert variants[0]['scene'] == "scene1"
+        assert variants[0]["scene"] == "scene1"
 
 
 class TestComposedEnvironment:

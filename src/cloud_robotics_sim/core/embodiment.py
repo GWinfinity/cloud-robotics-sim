@@ -28,6 +28,7 @@ class SensorConfig:
         use_proprioception: Whether to include joint state observations.
         use_imu: Whether to include IMU data.
     """
+
     camera_names: list[str] = field(default_factory=lambda: ["head_cam"])
     camera_positions: dict[str, tuple[float, float, float]] = field(
         default_factory=lambda: {"head_cam": (0.1, 0.0, 0.05)}
@@ -53,6 +54,7 @@ class EmbodimentConfig:
         action_scale: Scaling factor for actions.
         sensor_config: Sensor configuration.
     """
+
     name: str = "unnamed_robot"
     urdf_path: str | None = None
     base_position: tuple[float, float, float] = (0.0, 0.0, 0.0)
@@ -101,10 +103,10 @@ class RobotEmbodiment(ABC):
     def action_space(self) -> dict:
         """Action space specification."""
         return {
-            'low': -1.0,
-            'high': 1.0,
-            'shape': (self._action_dim,),
-            'dtype': 'float32',
+            "low": -1.0,
+            "high": 1.0,
+            "shape": (self._action_dim,),
+            "dtype": "float32",
         }
 
     @abstractmethod
@@ -202,7 +204,7 @@ class FrankaPanda(RobotEmbodiment):
 
     def reset(self) -> None:
         """Reset joint positions and velocities."""
-        if self.entity and hasattr(self.entity, 'set_qpos'):
+        if self.entity and hasattr(self.entity, "set_qpos"):
             # Reset to home configuration
             home_qpos = np.zeros(self._action_dim - 1)  # Exclude gripper
             self.entity.set_qpos(home_qpos)
@@ -213,7 +215,7 @@ class FrankaPanda(RobotEmbodiment):
         Args:
             action: 8-dimensional vector [7 joints, gripper].
         """
-        if self.entity and hasattr(self.entity, 'control_dofs_position'):
+        if self.entity and hasattr(self.entity, "control_dofs_position"):
             scaled_action = action * self.config.action_scale
             self.entity.control_dofs_position(scaled_action[:-1])
             # Gripper control would go here
@@ -221,17 +223,17 @@ class FrankaPanda(RobotEmbodiment):
     def get_observation(self) -> dict:
         """Get current robot state."""
         obs = {
-            'joint_position': np.zeros(7),
-            'joint_velocity': np.zeros(7),
-            'gripper_width': np.array([0.04]),
-            'target_joint_position': np.zeros(7),
+            "joint_position": np.zeros(7),
+            "joint_velocity": np.zeros(7),
+            "gripper_width": np.array([0.04]),
+            "target_joint_position": np.zeros(7),
         }
 
         if self.entity:
-            if hasattr(self.entity, 'get_qpos'):
-                obs['joint_position'] = self.entity.get_qpos()[:7]
-            if hasattr(self.entity, 'get_qvel'):
-                obs['joint_velocity'] = self.entity.get_qvel()[:7]
+            if hasattr(self.entity, "get_qpos"):
+                obs["joint_position"] = self.entity.get_qpos()[:7]
+            if hasattr(self.entity, "get_qvel"):
+                obs["joint_velocity"] = self.entity.get_qvel()[:7]
 
         return obs
 
@@ -284,28 +286,28 @@ class UniversalRobotUR5(RobotEmbodiment):
 
     def reset(self) -> None:
         """Reset to home position."""
-        if self.entity and hasattr(self.entity, 'set_qpos'):
+        if self.entity and hasattr(self.entity, "set_qpos"):
             self.entity.set_qpos(np.zeros(6))
 
     def apply_action(self, action: np.ndarray) -> None:
         """Apply joint position targets."""
-        if self.entity and hasattr(self.entity, 'control_dofs_position'):
+        if self.entity and hasattr(self.entity, "control_dofs_position"):
             scaled_action = action * self.config.action_scale
             self.entity.control_dofs_position(scaled_action)
 
     def get_observation(self) -> dict:
         """Get current robot state."""
         obs = {
-            'joint_position': np.zeros(6),
-            'joint_velocity': np.zeros(6),
-            'target_joint_position': np.zeros(6),
+            "joint_position": np.zeros(6),
+            "joint_velocity": np.zeros(6),
+            "target_joint_position": np.zeros(6),
         }
 
         if self.entity:
-            if hasattr(self.entity, 'get_qpos'):
-                obs['joint_position'] = self.entity.get_qpos()[:6]
-            if hasattr(self.entity, 'get_qvel'):
-                obs['joint_velocity'] = self.entity.get_qvel()[:6]
+            if hasattr(self.entity, "get_qpos"):
+                obs["joint_position"] = self.entity.get_qpos()[:6]
+            if hasattr(self.entity, "get_qvel"):
+                obs["joint_velocity"] = self.entity.get_qvel()[:6]
 
         return obs
 
@@ -366,7 +368,7 @@ class MobileManipulator(RobotEmbodiment):
     def get_observation(self) -> dict:
         """Get combined base and arm observations."""
         return {
-            'base_position': np.zeros(3),
-            'base_orientation': np.zeros(4),
-            'joint_position': np.zeros(7),
+            "base_position": np.zeros(3),
+            "base_orientation": np.zeros(4),
+            "joint_position": np.zeros(7),
         }

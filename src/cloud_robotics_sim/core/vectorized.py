@@ -25,6 +25,7 @@ class VecEnvConfig:
         max_parallel: Maximum parallel workers.
         use_cuda: Whether to use CUDA acceleration.
     """
+
     num_envs: int = 128
     num_scenes_per_env: int = 1
     max_parallel: int = 32
@@ -111,7 +112,9 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
         import genesis as gs
 
         try:
-            gs.init(backend=gs.backends.CUDA if self.config.use_cuda else gs.backends.CPU)
+            gs.init(
+                backend=gs.backends.CUDA if self.config.use_cuda else gs.backends.CPU
+            )
         except RuntimeError:
             logger.debug("Genesis already initialized")
 
@@ -134,7 +137,7 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
 
         # Placeholder: actual implementation would batch reset
         obs = np.zeros((self.num_envs, 23))  # Example observation shape
-        infos = [{'seed': s} for s in seeds]
+        infos = [{"seed": s} for s in seeds]
 
         return obs, infos
 

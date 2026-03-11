@@ -48,6 +48,7 @@ class ObjectSpawn:
         ...     tags=["furniture", "table"]
         ... )
     """
+
     name: str
     shape_type: str = "box"
     size: tuple[float, ...] = (1.0, 1.0, 1.0)
@@ -135,17 +136,20 @@ class SceneConfig:
         default_camera_pos: Default camera position.
         default_camera_lookat: Default camera look-at point.
     """
+
     name: str = "unnamed_scene"
     size: tuple[float, float, float] = (10.0, 10.0, 3.0)
     wall_thickness: float = 0.2
     floor_material: str = "wood"
     wall_material: str = "paint_white"
     ambient_light: tuple[float, float, float] = (0.3, 0.3, 0.3)
-    main_light: dict = field(default_factory=lambda: {
-        'pos': (5.0, -5.0, 8.0),
-        'color': (1.0, 0.95, 0.9),
-        'intensity': 1.0,
-    })
+    main_light: dict = field(
+        default_factory=lambda: {
+            "pos": (5.0, -5.0, 8.0),
+            "color": (1.0, 0.95, 0.9),
+            "intensity": 1.0,
+        }
+    )
     default_camera_pos: tuple[float, float, float] = (5.0, 5.0, 5.0)
     default_camera_lookat: tuple[float, float, float] = (0.0, 0.0, 0.0)
 
@@ -249,14 +253,30 @@ class Scene(ABC):
             ),
             surface=gs.surfaces.Default(color=(0.9, 0.9, 0.9, 1.0)),
         )
-        self.room_entities['floor'] = floor
+        self.room_entities["floor"] = floor
 
         # Walls
         wall_configs = [
-            ('north', (0.0, depth/2 + thickness/2, height/2), (width, thickness, height)),
-            ('south', (0.0, -depth/2 - thickness/2, height/2), (width, thickness, height)),
-            ('east', (width/2 + thickness/2, 0.0, height/2), (thickness, depth, height)),
-            ('west', (-width/2 - thickness/2, 0.0, height/2), (thickness, depth, height)),
+            (
+                "north",
+                (0.0, depth / 2 + thickness / 2, height / 2),
+                (width, thickness, height),
+            ),
+            (
+                "south",
+                (0.0, -depth / 2 - thickness / 2, height / 2),
+                (width, thickness, height),
+            ),
+            (
+                "east",
+                (width / 2 + thickness / 2, 0.0, height / 2),
+                (thickness, depth, height),
+            ),
+            (
+                "west",
+                (-width / 2 - thickness / 2, 0.0, height / 2),
+                (thickness, depth, height),
+            ),
         ]
 
         for name, pos, size in wall_configs:
@@ -264,7 +284,7 @@ class Scene(ABC):
                 morph=gs.morphs.Box(size=size, pos=pos),
                 surface=gs.surfaces.Default(color=(0.95, 0.95, 0.95, 1.0)),
             )
-            self.room_entities[f'wall_{name}'] = wall
+            self.room_entities[f"wall_{name}"] = wall
 
     def _setup_lighting(self) -> None:
         """Configure scene lighting."""
@@ -280,10 +300,10 @@ class Scene(ABC):
         main = self.config.main_light
         self.scene.add_light(
             gs.lights.Directional(
-                pos=main['pos'],
+                pos=main["pos"],
                 direction=(0.0, 0.3, -1.0),
-                color=main['color'],
-                intensity=main['intensity'],
+                color=main["color"],
+                intensity=main["intensity"],
                 cast_shadow=True,
             )
         )
@@ -323,7 +343,7 @@ class Scene(ABC):
             (min_x, min_y, min_z, max_x, max_y, max_z)
         """
         w, d, h = self.config.size
-        return (-w/2, -d/2, 0.0, w/2, d/2, h)
+        return (-w / 2, -d / 2, 0.0, w / 2, d / 2, h)
 
     def reset(self) -> None:
         """Reset the scene state (e.g., dynamic object positions)."""
