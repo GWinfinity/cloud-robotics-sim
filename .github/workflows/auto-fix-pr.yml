@@ -1,4 +1,4 @@
-name: Auto Fix
+name: Auto Fix with PR
 
 on:
   workflow_run:
@@ -9,10 +9,9 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
 
 jobs:
-  auto-fix:
+  auto-fix-pr:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'failure'
     
@@ -54,17 +53,37 @@ jobs:
       run: |
         if [ -n "$(git status --porcelain)" ]; then
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
-          echo "changes<<EOF" >> "$GITHUB_OUTPUT"
-          git status --short >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
         else
           echo "has_changes=false" >> "$GITHUB_OUTPUT"
         fi
     
-    - name: Direct commit fixes
+    - name: Create branch and push
       if: steps.check-changes.outputs.has_changes == 'true'
+      id: branch
       run: |
+        BRANCH="auto-fix/ci-$(date +%Y%m%d-%H%M%S)"
+        git checkout -b "$BRANCH"
         git add -A
-        git commit -m "style: Auto-fix lint and formatting issues [skip ci]"
-        git push origin HEAD:main
-        echo "✅ Changes committed directly to main"
+        git commit -m "style: Auto-fix lint and formatting issues"
+        git push origin "$BRANCH"
+        echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+    
+    - name: Create PR via GitHub CLI
+      if: steps.check-changes.outputs.has_changes == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh pr create \
+          --repo ${{ github.repository }} \
+          --title "🤖 Auto-fix: Lint and formatting issues" \
+          --body "This PR was automatically created to fix CI failures.
+
+        ## Changes Made
+        - Fixed trailing whitespace
+        - Applied ruff auto-fixes
+        - Formatted with black
+
+        Please review and merge if the changes look correct." \
+          --base main \
+          --head ${{ steps.branch.outputs.branch }} \
+          --label "automated,style" || echo "PR creation failed"
