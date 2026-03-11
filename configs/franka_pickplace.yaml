@@ -1,0 +1,53 @@
+# Franka Pick and Place Training Configuration
+
+experiment:
+  name: franka_pickplace
+  seed: 42
+  output_dir: ./outputs/franka_pickplace
+
+environment:
+  scene:
+    type: empty_room
+    size: [5.0, 5.0, 3.0]
+  
+  robot:
+    type: franka_panda
+    base_position: [0.0, 0.0, 0.0]
+  
+  task:
+    type: pick_place
+    object_name: red_cube
+    target_position: [0.5, 0.0, 0.05]
+    success_threshold: 0.05
+  
+  simulation:
+    dt: 0.01
+    substeps: 10
+    headless: false
+    resolution: [640, 480]
+
+training:
+  algorithm: PPO
+  total_timesteps: 1_000_000
+  
+  ppo:
+    learning_rate: 3.0e-4
+    n_steps: 2048
+    batch_size: 64
+    n_epochs: 10
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_range: 0.2
+    ent_coef: 0.01
+    vf_coef: 0.5
+    max_grad_norm: 0.5
+
+evaluation:
+  num_episodes: 100
+  render: true
+  save_video: true
+
+logging:
+  use_wandb: false
+  log_interval: 10
+  save_interval: 100_000

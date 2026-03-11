@@ -1,0 +1,173 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cloud-robotics-sim"
+version = "2.0.0"
+description = "Cloud-native robotics simulation platform for RL/IL research"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Cloud Robotics Team", email = "contact@cloudrobotics.dev"},
+]
+keywords = [
+    "robotics",
+    "simulation",
+    "reinforcement-learning",
+    "imitation-learning",
+    "genesis",
+    "physics-engine",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    # Core physics
+    "genesis-world>=0.4.0",
+    "taichi>=1.7.0",
+    
+    # Geometry & mesh processing
+    "trimesh>=4.0.0",
+    "pyglet<2",
+    "networkx>=3.0",
+    "scipy>=1.10",
+    "shapely>=2.0",
+    
+    # 3D & visualization
+    "pygltflib>=1.16.0",
+    "pillow>=10.0",
+    "opencv-python>=4.8.0",
+    "matplotlib>=3.8.0",
+    
+    # Deep learning
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "numpy>=2.0.0",
+    
+    # RL environment interface
+    "gymnasium>=1.0.0",
+    
+    # Data & configuration
+    "pyyaml>=6.0.1",
+    "pydantic>=2.5.0",
+    "tqdm>=4.66.0",
+    "python-dotenv>=1.0.0",
+    
+    # Web & API
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    
+    # Utilities
+    "requests>=2.31.0",
+    "packaging>=24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=5.0.0",
+    "black>=24.0.0",
+    "ruff>=0.4.0",
+    "mypy>=1.9.0",
+    "pre-commit>=3.7.0",
+]
+
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=2.0.0",
+    "myst-parser>=2.0.0",
+]
+
+all = [
+    "cloud-robotics-sim[dev,docs]",
+]
+
+[project.scripts]
+cloud-robotics-sim = "cloud_robotics_sim.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/your-org/cloud-robotics-sim"
+Documentation = "https://cloud-robotics-sim.readthedocs.io"
+Repository = "https://github.com/your-org/cloud-robotics-sim"
+Issues = "https://github.com/your-org/cloud-robotics-sim/issues"
+Changelog = "https://github.com/your-org/cloud-robotics-sim/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+cloud_robotics_sim = ["py.typed"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # Pyflakes
+    "I",  # isort
+    "N",  # pep8-naming
+    "D",  # pydocstyle
+]
+ignore = ["D100", "D104"]  # Missing docstrings in public modules/packages
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "gpu: marks tests that require GPU",
+]
+
+[tool.coverage.run]
+source = ["src/cloud_robotics_sim"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
