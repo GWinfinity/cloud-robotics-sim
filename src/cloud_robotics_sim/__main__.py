@@ -13,7 +13,7 @@ from pathlib import Path
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -93,63 +93,68 @@ Examples:
         """,
     )
 
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Train command
     train_parser = subparsers.add_parser(
-        'train',
-        help='Train a policy using RL or IL',
+        "train",
+        help="Train a policy using RL or IL",
     )
     train_parser.add_argument(
-        '--config', '-c',
+        "--config",
+        "-c",
         required=True,
-        help='Path to training configuration file',
+        help="Path to training configuration file",
     )
     train_parser.add_argument(
-        '--output', '-o',
-        default='./outputs',
-        help='Output directory for checkpoints and logs',
+        "--output",
+        "-o",
+        default="./outputs",
+        help="Output directory for checkpoints and logs",
     )
     train_parser.set_defaults(func=train_command)
 
     # Eval command
     eval_parser = subparsers.add_parser(
-        'eval',
-        help='Evaluate a trained policy',
+        "eval",
+        help="Evaluate a trained policy",
     )
     eval_parser.add_argument(
-        '--checkpoint', '-ckpt',
+        "--checkpoint",
+        "-ckpt",
         required=True,
-        help='Path to model checkpoint',
+        help="Path to model checkpoint",
     )
     eval_parser.add_argument(
-        '--num-episodes', '-n',
+        "--num-episodes",
+        "-n",
         type=int,
         default=100,
-        help='Number of evaluation episodes',
+        help="Number of evaluation episodes",
     )
     eval_parser.set_defaults(func=eval_command)
 
     # Agent command
     agent_parser = subparsers.add_parser(
-        'agent',
-        help='Run agent in interactive mode',
+        "agent",
+        help="Run agent in interactive mode",
     )
     agent_parser.add_argument(
-        '--goal', '-g',
+        "--goal",
+        "-g",
         required=True,
-        help='Natural language goal for the agent',
+        help="Natural language goal for the agent",
     )
     agent_parser.add_argument(
-        '--config',
-        help='Optional agent configuration',
+        "--config",
+        help="Optional agent configuration",
     )
     agent_parser.set_defaults(func=agent_command)
 
     # Test command
     test_parser = subparsers.add_parser(
-        'test',
-        help='Run the test suite',
+        "test",
+        help="Run the test suite",
     )
     test_parser.set_defaults(func=test_command)
 
@@ -162,5 +167,5 @@ Examples:
     return args.func(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

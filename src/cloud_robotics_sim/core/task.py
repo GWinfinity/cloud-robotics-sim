@@ -29,6 +29,7 @@ class TaskConfig:
         timeout_penalty: Penalty for episode timeout.
         step_penalty: Small penalty per step to encourage efficiency.
     """
+
     name: str = "unnamed_task"
     max_episode_steps: int = 500
     success_reward: float = 1.0
@@ -128,12 +129,12 @@ class PickPlaceTask(Task):
         # Store initial object position
         if self.object_name in scene.entities:
             entity = scene.entities[self.object_name]
-            if hasattr(entity, 'get_pos'):
+            if hasattr(entity, "get_pos"):
                 self._object_initial_pos = entity.get_pos()
 
         return {
-            'object_name': self.object_name,
-            'target_position': self.target_position.tolist(),
+            "object_name": self.object_name,
+            "target_position": self.target_position.tolist(),
         }
 
     def step(
@@ -153,7 +154,7 @@ class PickPlaceTask(Task):
         object_pos = None
         if self.object_name in scene.entities:
             entity = scene.entities[self.object_name]
-            if hasattr(entity, 'get_pos'):
+            if hasattr(entity, "get_pos"):
                 object_pos = entity.get_pos()
 
         if object_pos is not None:
@@ -176,9 +177,9 @@ class PickPlaceTask(Task):
                 reward += self.config.timeout_penalty
 
         info = {
-            'step': self.step_count,
-            'success': self.succeeded,
-            'dist_to_target': dist_to_target if object_pos is not None else None,
+            "step": self.step_count,
+            "success": self.succeeded,
+            "dist_to_target": dist_to_target if object_pos is not None else None,
         }
 
         return reward, terminated, truncated, info
@@ -216,15 +217,13 @@ class NavigationTask(Task):
         self._prev_distance = None
 
         # Compute initial distance
-        if robot.entity and hasattr(robot.entity, 'get_pos'):
+        if robot.entity and hasattr(robot.entity, "get_pos"):
             robot_pos = robot.entity.get_pos()
-            self._prev_distance = np.linalg.norm(
-                robot_pos - self.target_position
-            )
+            self._prev_distance = np.linalg.norm(robot_pos - self.target_position)
 
         return {
-            'target_position': self.target_position.tolist(),
-            'initial_distance': self._prev_distance,
+            "target_position": self.target_position.tolist(),
+            "initial_distance": self._prev_distance,
         }
 
     def step(
@@ -240,7 +239,7 @@ class NavigationTask(Task):
         terminated = False
         truncated = False
 
-        if robot.entity and hasattr(robot.entity, 'get_pos'):
+        if robot.entity and hasattr(robot.entity, "get_pos"):
             robot_pos = robot.entity.get_pos()
             distance = np.linalg.norm(robot_pos - self.target_position)
 
@@ -264,9 +263,9 @@ class NavigationTask(Task):
                 reward += self.config.timeout_penalty
 
         info = {
-            'step': self.step_count,
-            'success': self.succeeded,
-            'distance_to_goal': self._prev_distance,
+            "step": self.step_count,
+            "success": self.succeeded,
+            "distance_to_goal": self._prev_distance,
         }
 
         return reward, terminated, truncated, info
@@ -296,13 +295,15 @@ class ReachTask(Task):
         # Sample random target if needed
         if seed > 0:
             np.random.seed(seed)
-            self.target_position = np.array([
-                np.random.uniform(0.3, 0.7),
-                np.random.uniform(-0.3, 0.3),
-                np.random.uniform(0.2, 0.6),
-            ])
+            self.target_position = np.array(
+                [
+                    np.random.uniform(0.3, 0.7),
+                    np.random.uniform(-0.3, 0.3),
+                    np.random.uniform(0.2, 0.6),
+                ]
+            )
 
-        return {'target': self.target_position.tolist()}
+        return {"target": self.target_position.tolist()}
 
     def step(
         self,
@@ -335,17 +336,22 @@ class ReachTask(Task):
             if not self.succeeded:
                 reward += self.config.timeout_penalty
 
-        return reward, terminated, truncated, {
-            'success': self.succeeded,
-            'distance': distance if ee_pos is not None else None,
-        }
+        return (
+            reward,
+            terminated,
+            truncated,
+            {
+                "success": self.succeeded,
+                "distance": distance if ee_pos is not None else None,
+            },
+        )
 
     def _get_end_effector_position(
         self,
         robot: RobotEmbodiment,
     ) -> np.ndarray | None:
         """Approximate end-effector position."""
-        if robot.entity and hasattr(robot.entity, 'get_pos'):
+        if robot.entity and hasattr(robot.entity, "get_pos"):
             # Simplified: use robot base position
             return robot.entity.get_pos() + np.array([0.5, 0.0, 0.5])
         return None

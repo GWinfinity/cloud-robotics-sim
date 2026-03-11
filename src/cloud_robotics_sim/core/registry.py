@@ -11,7 +11,7 @@ from typing import Any, Callable, Generic, TypeVar
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class Registry(Generic[T]):
@@ -47,6 +47,7 @@ class Registry(Generic[T]):
         Returns:
             Decorator function.
         """
+
         def decorator(factory: Callable[..., T]) -> Callable[..., T]:
             if name in self._factories:
                 logger.warning(f"Overwriting existing {self.name}: {name}")

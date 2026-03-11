@@ -32,6 +32,7 @@ class ComposerConfig:
         num_envs: Number of parallel environments (currently single env only).
         domain_randomization: Configuration for domain randomization.
     """
+
     dt: float = 0.01
     substeps: int = 10
     headless: bool = False
@@ -97,7 +98,7 @@ class ComposedEnvironment:
         # Reset robot position
         spawn_pos = self._select_spawn_position()
         self.robot.reset()
-        if hasattr(self.robot.entity, 'set_pos'):
+        if hasattr(self.robot.entity, "set_pos"):
             self.robot.entity.set_pos(spawn_pos)
 
         # Reset task state
@@ -108,7 +109,7 @@ class ComposedEnvironment:
             self.gs_scene.step()
 
         obs = self._get_observation()
-        info = {'seed': seed, **task_info}
+        info = {"seed": seed, **task_info}
 
         if self.on_reset:
             self.on_reset(seed, info)
@@ -137,8 +138,8 @@ class ComposedEnvironment:
         obs = self._get_observation()
 
         info = {
-            'step': self.step_count,
-            'episode_reward': self.episode_reward,
+            "step": self.step_count,
+            "episode_reward": self.episode_reward,
             **task_info,
         }
 
@@ -160,7 +161,7 @@ class ComposedEnvironment:
             return spawn_points[idx]
         return (0.0, 0.0, 0.1)
 
-    def render(self, mode: str = 'rgb_array') -> np.ndarray | None:
+    def render(self, mode: str = "rgb_array") -> np.ndarray | None:
         """Render the environment.
 
         Args:
@@ -169,8 +170,8 @@ class ComposedEnvironment:
         Returns:
             Rendered frame as numpy array, or None if unavailable.
         """
-        if mode == 'rgb_array' and 'head_cam' in self.robot.cameras:
-            return self.robot.cameras['head_cam'].render(rgb=True)[0]
+        if mode == "rgb_array" and "head_cam" in self.robot.cameras:
+            return self.robot.cameras["head_cam"].render(rgb=True)[0]
         return None
 
     def close(self) -> None:
@@ -181,8 +182,8 @@ class ComposedEnvironment:
     def observation_space(self) -> dict:
         """Get observation space specification."""
         return {
-            'proprioception_dim': self.robot.obs_dim,
-            'has_camera': len(self.robot.cameras) > 0,
+            "proprioception_dim": self.robot.obs_dim,
+            "has_camera": len(self.robot.cameras) > 0,
         }
 
     @property
@@ -193,11 +194,11 @@ class ComposedEnvironment:
     def get_info(self) -> dict:
         """Get comprehensive environment information."""
         return {
-            'scene': self.scene.config.name,
-            'robot': self.robot.config.name,
-            'task': self.task.config.name,
-            'step_count': self.step_count,
-            'episode_reward': self.episode_reward,
+            "scene": self.scene.config.name,
+            "robot": self.robot.config.name,
+            "task": self.task.config.name,
+            "step_count": self.step_count,
+            "episode_reward": self.episode_reward,
         }
 
 
@@ -379,10 +380,10 @@ class EnvironmentVariantGenerator:
                         continue
 
                     variant = {
-                        'name': f"{scene}_{robot}_{task}",
-                        'scene': scene,
-                        'robot': robot,
-                        'task': task,
+                        "name": f"{scene}_{robot}_{task}",
+                        "scene": scene,
+                        "robot": robot,
+                        "task": task,
                     }
                     variants.append(variant)
 
@@ -396,9 +397,9 @@ class EnvironmentVariantGenerator:
     ) -> ComposedEnvironment:
         """Create an environment from a variant configuration."""
         return self.composer.compose_from_registry(
-            scene_name=variant_config['scene'],
-            robot_name=variant_config['robot'],
-            task_name=variant_config['task'],
+            scene_name=variant_config["scene"],
+            robot_name=variant_config["robot"],
+            task_name=variant_config["task"],
             registry=registry,
         )
 
@@ -410,7 +411,7 @@ try:
     class GenesisGymEnv(gym.Env):
         """Gymnasium-compatible wrapper for Genesis environments."""
 
-        metadata = {'render_modes': ['rgb_array', 'human']}
+        metadata = {"render_modes": ["rgb_array", "human"]}
 
         def __init__(self, composed_env: ComposedEnvironment) -> None:
             super().__init__()
@@ -421,22 +422,24 @@ try:
         def _create_action_space(self):
             """Define the action space."""
             from gymnasium import spaces
+
             dim = self.env.robot.action_dim
-            return spaces.Box(
-                low=-1.0, high=1.0,
-                shape=(dim,), dtype=np.float32
-            )
+            return spaces.Box(low=-1.0, high=1.0, shape=(dim,), dtype=np.float32)
 
         def _create_obs_space(self):
             """Define the observation space."""
             from gymnasium import spaces
-            return spaces.Dict({
-                'proprioception': spaces.Box(
-                    low=-np.inf, high=np.inf,
-                    shape=(self.env.robot.obs_dim,),
-                    dtype=np.float32,
-                )
-            })
+
+            return spaces.Dict(
+                {
+                    "proprioception": spaces.Box(
+                        low=-np.inf,
+                        high=np.inf,
+                        shape=(self.env.robot.obs_dim,),
+                        dtype=np.float32,
+                    )
+                }
+            )
 
         def reset(self, seed: int | None = None, options: dict | None = None):
             return self.env.reset(seed=seed or 0, options=options)
