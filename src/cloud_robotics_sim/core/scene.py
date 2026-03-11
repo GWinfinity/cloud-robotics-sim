@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import genesis as gs
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -20,10 +19,10 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ObjectSpawn:
     """Configuration for spawning an object in the scene.
-    
+
     ObjectSpawn provides a reusable, data-driven way to define objects
     that can be instantiated across different scenes.
-    
+
     Attributes:
         name: Unique identifier for the object.
         shape_type: Geometry type ('box', 'sphere', 'cylinder', 'mesh').
@@ -38,7 +37,7 @@ class ObjectSpawn:
         color: RGBA color tuple.
         tags: Categorical tags for querying.
         properties: Additional custom properties.
-        
+
     Example:
         >>> table = ObjectSpawn(
         ...     name="coffee_table",
@@ -65,19 +64,19 @@ class ObjectSpawn:
 
     def spawn(self, scene: Any, prefix: str = "") -> Any:
         """Instantiate this object in the given scene.
-        
+
         Args:
             scene: The Genesis scene to spawn into.
             prefix: Optional prefix for entity naming.
-            
+
         Returns:
             The created Genesis entity.
-            
+
         Raises:
             ValueError: If shape_type is not supported.
         """
         entity_name = f"{prefix}_{self.name}" if prefix else self.name
-        
+
         # Create appropriate morph based on shape type
         match self.shape_type:
             case "box":
@@ -107,24 +106,24 @@ class ObjectSpawn:
                 )
             case _:
                 raise ValueError(f"Unsupported shape type: {self.shape_type}")
-        
+
         # Create surface material
         surface = gs.surfaces.Default(
             color=self.color,
             roughness=0.8,
         )
-        
+
         # Spawn entity
         entity = scene.add_entity(morph=morph, surface=surface)
         logger.debug(f"Spawned '{entity_name}' at {self.position}")
-        
+
         return entity
 
 
 @dataclass
 class SceneConfig:
     """Configuration for scene geometry and appearance.
-    
+
     Attributes:
         name: Scene identifier.
         size: Room dimensions (width, depth, height) in meters.
@@ -153,16 +152,16 @@ class SceneConfig:
 
 class Scene(ABC):
     """Abstract base class for simulation scenes.
-    
+
     Scenes define the environment structure (room geometry, lighting)
     and contain dynamically spawned objects. They do not embed specific
     furniture, allowing for flexible object configuration.
-    
+
     To create a custom scene:
         1. Subclass Scene
         2. Implement _build_custom() for scene-specific setup
         3. Optionally override get_spawn_positions()
-    
+
     Attributes:
         config: Scene configuration.
         object_spawns: List of objects to spawn.
@@ -173,30 +172,30 @@ class Scene(ABC):
     def __init__(self, config: SceneConfig | None = None) -> None:
         self.config = config or SceneConfig()
         self.scene: Any = None
-        
+
         self.object_spawns: list[ObjectSpawn] = []
         self.entities: dict[str, Any] = {}
         self.room_entities: dict[str, gs.Entity] = {}
-        
+
         # Tag-based object indexing
         self._tag_index: dict[str, list[str]] = {}
 
     def add_object(self, spawn: ObjectSpawn) -> Scene:
         """Add an object to the scene configuration.
-        
+
         Args:
             spawn: ObjectSpawn configuration.
-            
+
         Returns:
             Self for method chaining.
         """
         self.object_spawns.append(spawn)
-        
+
         for tag in spawn.tags:
             if tag not in self._tag_index:
                 self._tag_index[tag] = []
             self._tag_index[tag].append(spawn.name)
-        
+
         return self
 
     def add_objects(self, spawns: list[ObjectSpawn]) -> Scene:
@@ -207,10 +206,10 @@ class Scene(ABC):
 
     def get_objects_by_tag(self, tag: str) -> list[ObjectSpawn]:
         """Retrieve objects by their tag.
-        
+
         Args:
             tag: The tag to search for.
-            
+
         Returns:
             List of matching ObjectSpawn configurations.
         """
@@ -219,21 +218,21 @@ class Scene(ABC):
 
     def build(self, gs_scene: gs.Scene) -> Scene:
         """Build the scene in Genesis.
-        
+
         Args:
             gs_scene: The Genesis scene to build into.
-            
+
         Returns:
             Self for method chaining.
         """
         self.scene = gs_scene
         logger.info(f"Building scene: {self.config.name}")
-        
+
         self._build_room_structure()
         self._setup_lighting()
         self._spawn_objects()
         self._build_custom()
-        
+
         logger.info(f"Scene built with {len(self.entities)} objects")
         return self
 
@@ -241,7 +240,7 @@ class Scene(ABC):
         """Create the room shell (floor and walls)."""
         width, depth, height = self.config.size
         thickness = self.config.wall_thickness
-        
+
         # Floor
         floor = self.scene.add_entity(
             morph=gs.morphs.Box(
@@ -251,7 +250,7 @@ class Scene(ABC):
             surface=gs.surfaces.Default(color=(0.9, 0.9, 0.9, 1.0)),
         )
         self.room_entities['floor'] = floor
-        
+
         # Walls
         wall_configs = [
             ('north', (0.0, depth/2 + thickness/2, height/2), (width, thickness, height)),
@@ -259,7 +258,7 @@ class Scene(ABC):
             ('east', (width/2 + thickness/2, 0.0, height/2), (thickness, depth, height)),
             ('west', (-width/2 - thickness/2, 0.0, height/2), (thickness, depth, height)),
         ]
-        
+
         for name, pos, size in wall_configs:
             wall = self.scene.add_entity(
                 morph=gs.morphs.Box(size=size, pos=pos),
@@ -276,7 +275,7 @@ class Scene(ABC):
                 intensity=self.config.ambient_light[0],
             )
         )
-        
+
         # Main directional light
         main = self.config.main_light
         self.scene.add_light(
@@ -305,7 +304,7 @@ class Scene(ABC):
 
     def get_spawn_positions(self) -> list[tuple[float, float, float]]:
         """Get valid robot spawn positions.
-        
+
         Returns:
             List of (x, y, z) positions near the scene center.
         """
@@ -319,7 +318,7 @@ class Scene(ABC):
 
     def get_bounds(self) -> tuple[float, float, float, float, float, float]:
         """Get scene bounding box.
-        
+
         Returns:
             (min_x, min_y, min_z, max_x, max_y, max_z)
         """
@@ -336,10 +335,10 @@ class Scene(ABC):
 
 class ObjectLibrary:
     """Library of pre-defined, reusable objects.
-    
+
     This class provides factory methods for common furniture and
     interactive objects used in robotics simulation.
-    
+
     Example:
         >>> scene.add_object(ObjectLibrary.coffee_table(position=(2, 1, 0)))
         >>> scene.add_object(ObjectLibrary.graspable_cube(
@@ -390,7 +389,7 @@ class ObjectLibrary:
         mass: float = 0.1,
     ) -> ObjectSpawn:
         """A graspable cube (dynamic object).
-        
+
         Args:
             name: Object identifier.
             position: Initial position.

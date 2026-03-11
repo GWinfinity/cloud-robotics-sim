@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class VecEnvConfig:
     """Configuration for vectorized environments.
-    
+
     Attributes:
         num_envs: Number of parallel environments.
         num_scenes_per_env: Number of scenes per environment.
@@ -33,10 +33,10 @@ class VecEnvConfig:
 
 class VectorizedEnvironment:
     """Base class for vectorized environments.
-    
+
     Manages multiple simulation instances running in parallel,
     providing a unified interface for batched step and reset.
-    
+
     Attributes:
         config: Vectorized environment configuration.
         num_envs: Number of parallel environments.
@@ -51,10 +51,10 @@ class VectorizedEnvironment:
 
     def reset(self, seeds: list[int] | None = None) -> tuple[np.ndarray, list[dict]]:
         """Reset all environments.
-        
+
         Args:
             seeds: Optional seeds for each environment.
-            
+
         Returns:
             Tuple of (observations, infos).
         """
@@ -65,10 +65,10 @@ class VectorizedEnvironment:
         actions: np.ndarray,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[dict]]:
         """Step all environments with batched actions.
-        
+
         Args:
             actions: Batched actions of shape (num_envs, action_dim).
-            
+
         Returns:
             Tuple of (obs, reward, terminated, truncated, infos).
         """
@@ -81,10 +81,10 @@ class VectorizedEnvironment:
 
 class GenesisVectorizedEnv(VectorizedEnvironment):
     """Genesis-based vectorized environment.
-    
+
     Uses Genesis physics engine for GPU-accelerated parallel simulation.
     Supports up to 4096 parallel environments on high-end GPUs.
-    
+
     Example:
         >>> config = VecEnvConfig(num_envs=1024, use_cuda=True)
         >>> vec_env = GenesisVectorizedEnv(config)
@@ -109,14 +109,14 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
     def initialize(self) -> None:
         """Initialize Genesis and create parallel environments."""
         import genesis as gs
-        
+
         try:
             gs.init(backend=gs.backends.CUDA if self.config.use_cuda else gs.backends.CPU)
         except RuntimeError:
             logger.debug("Genesis already initialized")
-        
+
         logger.info(f"Creating {self.num_envs} parallel environments")
-        
+
         # Note: Actual Genesis vectorization implementation would depend on
         # the specific Genesis API for parallel scene management
         self._initialized = True
@@ -128,14 +128,14 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
         """Reset all parallel environments."""
         if not self._initialized:
             self.initialize()
-        
+
         if seeds is None:
             seeds = list(range(self.num_envs))
-        
+
         # Placeholder: actual implementation would batch reset
         obs = np.zeros((self.num_envs, 23))  # Example observation shape
         infos = [{'seed': s} for s in seeds]
-        
+
         return obs, infos
 
     def step(
@@ -145,14 +145,14 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
         """Execute batched step across all environments."""
         if not self._initialized:
             self.initialize()
-        
+
         # Placeholder: actual implementation would use Genesis batch API
         obs = np.zeros((self.num_envs, 23))
         rewards = np.zeros(self.num_envs)
         terminated = np.zeros(self.num_envs, dtype=bool)
         truncated = np.zeros(self.num_envs, dtype=bool)
         infos = [{} for _ in range(self.num_envs)]
-        
+
         return obs, rewards, terminated, truncated, infos
 
     def close(self) -> None:

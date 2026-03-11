@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
 
 import numpy as np
 
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TaskConfig:
     """Configuration for a task.
-    
+
     Attributes:
         name: Task identifier.
         max_episode_steps: Maximum steps per episode.
@@ -39,10 +38,10 @@ class TaskConfig:
 
 class Task(ABC):
     """Abstract base class for robotic tasks.
-    
+
     Tasks define the learning objective through the reward function
     and termination conditions.
-    
+
     Attributes:
         config: Task configuration.
         step_count: Current step in episode.
@@ -62,12 +61,12 @@ class Task(ABC):
         seed: int,
     ) -> dict:
         """Reset the task for a new episode.
-        
+
         Args:
             scene: The simulation scene.
             robot: The robot embodiment.
             seed: Random seed for reproducibility.
-            
+
         Returns:
             Dictionary with task-specific information.
         """
@@ -81,12 +80,12 @@ class Task(ABC):
         action: np.ndarray,
     ) -> tuple[float, bool, bool, dict]:
         """Execute one task step.
-        
+
         Args:
             scene: The simulation scene.
             robot: The robot embodiment.
             action: The action taken.
-            
+
         Returns:
             Tuple of (reward, terminated, truncated, info).
         """
@@ -95,9 +94,9 @@ class Task(ABC):
 
 class PickPlaceTask(Task):
     """Pick and place task.
-    
+
     The robot must pick up an object and place it at a target location.
-    
+
     Attributes:
         object_name: Name of the object to manipulate.
         target_position: Target placement position.
@@ -116,7 +115,7 @@ class PickPlaceTask(Task):
         self.object_name = object_name
         self.target_position = np.array(target_position)
         self.success_threshold = success_threshold
-        
+
         self._object_initial_pos: np.ndarray | None = None
         self._is_grasped: bool = False
 
@@ -125,13 +124,13 @@ class PickPlaceTask(Task):
         self.step_count = 0
         self.succeeded = False
         self._is_grasped = False
-        
+
         # Store initial object position
         if self.object_name in scene.entities:
             entity = scene.entities[self.object_name]
             if hasattr(entity, 'get_pos'):
                 self._object_initial_pos = entity.get_pos()
-        
+
         return {
             'object_name': self.object_name,
             'target_position': self.target_position.tolist(),
@@ -145,51 +144,51 @@ class PickPlaceTask(Task):
     ) -> tuple[float, bool, bool, dict]:
         """Compute reward and check termination."""
         self.step_count += 1
-        
+
         reward = self.config.step_penalty
         terminated = False
         truncated = False
-        
+
         # Get object position
         object_pos = None
         if self.object_name in scene.entities:
             entity = scene.entities[self.object_name]
             if hasattr(entity, 'get_pos'):
                 object_pos = entity.get_pos()
-        
+
         if object_pos is not None:
             # Distance to target
             dist_to_target = np.linalg.norm(object_pos - self.target_position)
-            
+
             # Check success
             if dist_to_target < self.success_threshold:
                 reward += self.config.success_reward
                 terminated = True
                 self.succeeded = True
-            
+
             # Shaping reward: closer is better
             reward += 0.1 * np.exp(-dist_to_target)
-        
+
         # Check timeout
         if self.step_count >= self.config.max_episode_steps:
             truncated = True
             if not self.succeeded:
                 reward += self.config.timeout_penalty
-        
+
         info = {
             'step': self.step_count,
             'success': self.succeeded,
             'dist_to_target': dist_to_target if object_pos is not None else None,
         }
-        
+
         return reward, terminated, truncated, info
 
 
 class NavigationTask(Task):
     """Navigation task.
-    
+
     The robot must navigate to a target position.
-    
+
     Attributes:
         target_position: Goal position.
         success_threshold: Distance threshold for success.
@@ -207,7 +206,7 @@ class NavigationTask(Task):
         self.target_position = np.array(target_position)
         self.success_threshold = success_threshold
         self.collision_penalty = collision_penalty
-        
+
         self._prev_distance: float | None = None
 
     def reset(self, scene: Scene, robot: RobotEmbodiment, seed: int) -> dict:
@@ -215,14 +214,14 @@ class NavigationTask(Task):
         self.step_count = 0
         self.succeeded = False
         self._prev_distance = None
-        
+
         # Compute initial distance
         if robot.entity and hasattr(robot.entity, 'get_pos'):
             robot_pos = robot.entity.get_pos()
             self._prev_distance = np.linalg.norm(
                 robot_pos - self.target_position
             )
-        
+
         return {
             'target_position': self.target_position.tolist(),
             'initial_distance': self._prev_distance,
@@ -236,46 +235,46 @@ class NavigationTask(Task):
     ) -> tuple[float, bool, bool, dict]:
         """Compute navigation reward."""
         self.step_count += 1
-        
+
         reward = self.config.step_penalty
         terminated = False
         truncated = False
-        
+
         if robot.entity and hasattr(robot.entity, 'get_pos'):
             robot_pos = robot.entity.get_pos()
             distance = np.linalg.norm(robot_pos - self.target_position)
-            
+
             # Progress reward
             if self._prev_distance is not None:
                 progress = self._prev_distance - distance
                 reward += progress
-            
+
             self._prev_distance = distance
-            
+
             # Success check
             if distance < self.success_threshold:
                 reward += self.config.success_reward
                 terminated = True
                 self.succeeded = True
-        
+
         # Timeout
         if self.step_count >= self.config.max_episode_steps:
             truncated = True
             if not self.succeeded:
                 reward += self.config.timeout_penalty
-        
+
         info = {
             'step': self.step_count,
             'success': self.succeeded,
             'distance_to_goal': self._prev_distance,
         }
-        
+
         return reward, terminated, truncated, info
 
 
 class ReachTask(Task):
     """End-effector reaching task.
-    
+
     The robot must move its end-effector to a target position.
     """
 
@@ -293,7 +292,7 @@ class ReachTask(Task):
         """Reset reach task."""
         self.step_count = 0
         self.succeeded = False
-        
+
         # Sample random target if needed
         if seed > 0:
             np.random.seed(seed)
@@ -302,7 +301,7 @@ class ReachTask(Task):
                 np.random.uniform(-0.3, 0.3),
                 np.random.uniform(0.2, 0.6),
             ])
-        
+
         return {'target': self.target_position.tolist()}
 
     def step(
@@ -313,29 +312,29 @@ class ReachTask(Task):
     ) -> tuple[float, bool, bool, dict]:
         """Compute reach reward."""
         self.step_count += 1
-        
+
         reward = self.config.step_penalty
         terminated = False
         truncated = False
-        
+
         # Get end-effector position (approximated from robot state)
         # In practice, you'd use forward kinematics
         ee_pos = self._get_end_effector_position(robot)
-        
+
         if ee_pos is not None:
             distance = np.linalg.norm(ee_pos - self.target_position)
             reward += 0.5 * np.exp(-5.0 * distance)
-            
+
             if distance < self.success_threshold:
                 reward += self.config.success_reward
                 terminated = True
                 self.succeeded = True
-        
+
         if self.step_count >= self.config.max_episode_steps:
             truncated = True
             if not self.succeeded:
                 reward += self.config.timeout_penalty
-        
+
         return reward, terminated, truncated, {
             'success': self.succeeded,
             'distance': distance if ee_pos is not None else None,

@@ -20,16 +20,16 @@ logger = logging.getLogger(__name__)
 
 def train_command(args: argparse.Namespace) -> int:
     """Run training with specified configuration.
-    
+
     Supports both reinforcement learning (RL) and imitation learning (IL).
     """
     logger.info(f"Starting training with config: {args.config}")
-    
+
     config_path = Path(args.config)
     if not config_path.exists():
         logger.error(f"Config file not found: {config_path}")
         return 1
-    
+
     # Training implementation would go here
     logger.info("Training completed")
     return 0
@@ -38,21 +38,21 @@ def train_command(args: argparse.Namespace) -> int:
 def eval_command(args: argparse.Namespace) -> int:
     """Evaluate a trained policy."""
     logger.info(f"Evaluating checkpoint: {args.checkpoint}")
-    
+
     checkpoint_path = Path(args.checkpoint)
     if not checkpoint_path.exists():
         logger.error(f"Checkpoint not found: {checkpoint_path}")
         return 1
-    
+
     # Evaluation implementation would go here
-    logger.info(f"Evaluation complete. Success rate: 0.0")
+    logger.info("Evaluation complete. Success rate: 0.0")
     return 0
 
 
 def agent_command(args: argparse.Namespace) -> int:
     """Run agent in interactive mode."""
     logger.info(f"Starting agent with goal: {args.goal}")
-    
+
     # Agent runtime implementation would go here
     logger.info("Agent execution completed")
     return 0
@@ -61,20 +61,20 @@ def agent_command(args: argparse.Namespace) -> int:
 def test_command(args: argparse.Namespace) -> int:
     """Run test suite."""
     import subprocess
-    
+
     logger.info("Running test suite")
-    
+
     test_path = Path(__file__).parent.parent.parent / "tests"
     result = subprocess.run(
         [sys.executable, "-m", "pytest", str(test_path), "-v"],
         capture_output=True,
         text=True,
     )
-    
+
     print(result.stdout)
     if result.stderr:
         print(result.stderr, file=sys.stderr)
-    
+
     return result.returncode
 
 
@@ -92,9 +92,9 @@ Examples:
   %(prog)s test
         """,
     )
-    
+
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
-    
+
     # Train command
     train_parser = subparsers.add_parser(
         'train',
@@ -111,7 +111,7 @@ Examples:
         help='Output directory for checkpoints and logs',
     )
     train_parser.set_defaults(func=train_command)
-    
+
     # Eval command
     eval_parser = subparsers.add_parser(
         'eval',
@@ -129,7 +129,7 @@ Examples:
         help='Number of evaluation episodes',
     )
     eval_parser.set_defaults(func=eval_command)
-    
+
     # Agent command
     agent_parser = subparsers.add_parser(
         'agent',
@@ -145,20 +145,20 @@ Examples:
         help='Optional agent configuration',
     )
     agent_parser.set_defaults(func=agent_command)
-    
+
     # Test command
     test_parser = subparsers.add_parser(
         'test',
         help='Run the test suite',
     )
     test_parser.set_defaults(func=test_command)
-    
+
     args = parser.parse_args(argv)
-    
+
     if not args.command:
         parser.print_help()
         return 1
-    
+
     return args.func(args)
 
 

@@ -2,8 +2,8 @@
 
 from cloud_robotics_sim.core.scenes.predefined import (
     EmptyRoom,
-    LivingRoom,
     Kitchen,
+    LivingRoom,
     Office,
 )
 

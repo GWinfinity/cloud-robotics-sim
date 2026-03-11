@@ -14,7 +14,7 @@ import genesis as gs
 import numpy as np
 
 from cloud_robotics_sim.core.embodiment import RobotEmbodiment
-from cloud_robotics_sim.core.scene import ObjectSpawn, Scene, SceneConfig
+from cloud_robotics_sim.core.scene import Scene
 from cloud_robotics_sim.core.task import Task
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ComposerConfig:
     """Configuration for environment composition.
-    
+
     Attributes:
         dt: Simulation timestep in seconds.
         substeps: Physics substeps per simulation step.
@@ -42,10 +42,10 @@ class ComposerConfig:
 
 class ComposedEnvironment:
     """A fully composed robotic simulation environment.
-    
+
     This class wraps Scene, Robot, and Task components into a unified
     Gymnasium-compatible interface for reinforcement learning.
-    
+
     Attributes:
         scene: The scene component defining the environment layout.
         robot: The robot embodiment with sensors and actuators.
@@ -66,10 +66,10 @@ class ComposedEnvironment:
         self.robot = robot
         self.task = task
         self.gs_scene = gs_scene
-        
+
         self.step_count: int = 0
         self.episode_reward: float = 0.0
-        
+
         # Callbacks for extensibility
         self.on_reset: Callable | None = None
         self.on_step: Callable | None = None
@@ -80,71 +80,71 @@ class ComposedEnvironment:
         options: dict | None = None,
     ) -> tuple[dict, dict]:
         """Reset the environment to initial state.
-        
+
         Args:
             seed: Random seed for reproducibility.
             options: Additional reset options.
-            
+
         Returns:
             A tuple of (observation, info).
         """
         self.step_count = 0
         self.episode_reward = 0.0
-        
+
         np.random.seed(seed)
         self.scene.reset()
-        
+
         # Reset robot position
         spawn_pos = self._select_spawn_position()
         self.robot.reset()
         if hasattr(self.robot.entity, 'set_pos'):
             self.robot.entity.set_pos(spawn_pos)
-        
+
         # Reset task state
         task_info = self.task.reset(self.scene, self.robot, seed)
-        
+
         # Stabilize simulation
         for _ in range(10):
             self.gs_scene.step()
-        
+
         obs = self._get_observation()
         info = {'seed': seed, **task_info}
-        
+
         if self.on_reset:
             self.on_reset(seed, info)
-        
+
         logger.info(f"Environment reset with seed={seed}")
         return obs, info
 
     def step(self, action: np.ndarray) -> tuple[dict, float, bool, bool, dict]:
         """Execute one simulation step.
-        
+
         Args:
             action: The action to apply to the robot.
-            
+
         Returns:
             A tuple of (observation, reward, terminated, truncated, info).
         """
         self.robot.apply_action(action)
         self.gs_scene.step()
         self.step_count += 1
-        
+
         reward, terminated, truncated, task_info = self.task.step(
             self.scene, self.robot, action
         )
-        
+
         self.episode_reward += reward
         obs = self._get_observation()
-        
+
         info = {
             'step': self.step_count,
             'episode_reward': self.episode_reward,
             **task_info,
         }
-        
+
         if self.on_step:
             self.on_step(self.step_count, obs, reward, terminated, info)
-        
+
         return obs, reward, terminated, truncated, info
 
     def _get_observation(self) -> dict:
@@ -162,10 +162,10 @@ class ComposedEnvironment:
 
     def render(self, mode: str = 'rgb_array') -> np.ndarray | None:
         """Render the environment.
-        
+
         Args:
             mode: Rendering mode ('rgb_array' or 'human').
-            
+
         Returns:
             Rendered frame as numpy array, or None if unavailable.
         """
@@ -203,11 +203,11 @@ class ComposedEnvironment:
 
 class EnvironmentComposer:
     """Composes robotic environments from modular components.
-    
+
     This is the main entry point for creating simulation environments.
     It combines Scene, Robot, and Task components into a runnable
     ComposedEnvironment.
-    
+
     Example:
         >>> composer = EnvironmentComposer(ComposerConfig(headless=True))
         >>> env = composer.compose(living_room_scene, franka_robot, pick_task)
@@ -227,13 +227,13 @@ class EnvironmentComposer:
         spawn_position: tuple[float, float, float] | None = None,
     ) -> ComposedEnvironment:
         """Compose a complete environment from components.
-        
+
         Args:
             scene: The scene component defining the environment.
             robot: The robot embodiment.
             task: The task specification.
             spawn_position: Optional override for robot spawn position.
-            
+
         Returns:
             A fully configured ComposedEnvironment.
         """
@@ -243,13 +243,13 @@ class EnvironmentComposer:
         logger.info(f"  Robot: {robot.config.name}")
         logger.info(f"  Task:  {task.config.name}")
         logger.info("=" * 60)
-        
+
         # Initialize Genesis physics engine
         try:
             gs.init(backend=gs.backends.CUDA)
         except RuntimeError:
             logger.debug("Genesis already initialized")
-        
+
         # Create viewer if not headless
         viewer_options = None
         if not self.config.headless:
@@ -259,7 +259,7 @@ class EnvironmentComposer:
                 res=self.config.resolution,
                 max_FPS=60,
             )
-        
+
         # Create Genesis scene
         gs_scene = gs.Scene(
             viewer_options=viewer_options,
@@ -269,20 +269,20 @@ class EnvironmentComposer:
             ),
             show_viewer=not self.config.headless,
         )
-        
+
         # Build scene and spawn robot
         scene.build(gs_scene)
         spawn_pos = spawn_position or self._select_spawn_position(scene)
         robot.spawn(gs_scene, position=spawn_pos)
         gs_scene.build()
-        
+
         env = ComposedEnvironment(
             scene=scene,
             robot=robot,
             task=task,
             gs_scene=gs_scene,
         )
-        
+
         logger.info("Environment composition complete")
         return env
 
@@ -297,7 +297,7 @@ class EnvironmentComposer:
         registry: Any = None,
     ) -> ComposedEnvironment:
         """Compose environment using registered components.
-        
+
         Args:
             scene_name: Registered name of the scene.
             robot_name: Registered name of the robot.
@@ -306,10 +306,10 @@ class EnvironmentComposer:
             robot_kwargs: Optional kwargs for robot creation.
             task_kwargs: Optional kwargs for task creation.
             registry: Optional custom registry (uses default if None).
-            
+
         Returns:
             A composed environment.
-            
+
         Example:
             >>> composer = EnvironmentComposer()
             >>> env = composer.compose_from_registry(
@@ -317,12 +317,12 @@ class EnvironmentComposer:
             ... )
         """
         from cloud_robotics_sim.core.registry import default_registry
-        
+
         reg = registry or default_registry
         scene = reg.create_scene(scene_name, **(scene_kwargs or {}))
         robot = reg.create_robot(robot_name, **(robot_kwargs or {}))
         task = reg.create_task(task_name, **(task_kwargs or {}))
-        
+
         return self.compose(scene, robot, task)
 
     def _select_spawn_position(self, scene: Scene) -> tuple[float, float, float]:
@@ -336,10 +336,10 @@ class EnvironmentComposer:
 
 class EnvironmentVariantGenerator:
     """Generates multiple environment configurations for evaluation.
-    
+
     Useful for creating diverse training/evaluation scenarios by
     combining different scenes, robots, and tasks.
-    
+
     Example:
         >>> generator = EnvironmentVariantGenerator(composer)
         >>> variants = generator.generate_variants(
@@ -360,24 +360,24 @@ class EnvironmentVariantGenerator:
         filter_fn: Callable | None = None,
     ) -> list[dict]:
         """Generate all possible environment variants.
-        
+
         Args:
             scene_names: List of scene identifiers.
             robot_names: List of robot identifiers.
             task_names: List of task identifiers.
             filter_fn: Optional filter function (scene, robot, task) -> bool.
-            
+
         Returns:
             List of variant configuration dictionaries.
         """
         variants = []
-        
+
         for scene in scene_names:
             for robot in robot_names:
                 for task in task_names:
                     if filter_fn and not filter_fn(scene, robot, task):
                         continue
-                    
+
                     variant = {
                         'name': f"{scene}_{robot}_{task}",
                         'scene': scene,
@@ -385,7 +385,7 @@ class EnvironmentVariantGenerator:
                         'task': task,
                     }
                     variants.append(variant)
-        
+
         logger.info(f"Generated {len(variants)} environment variants")
         return variants
 
@@ -409,7 +409,7 @@ try:
 
     class GenesisGymEnv(gym.Env):
         """Gymnasium-compatible wrapper for Genesis environments."""
-        
+
         metadata = {'render_modes': ['rgb_array', 'human']}
 
         def __init__(self, composed_env: ComposedEnvironment) -> None:

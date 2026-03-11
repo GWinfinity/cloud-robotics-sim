@@ -3,12 +3,12 @@
 Ready-to-use scene configurations for common environments.
 """
 
-from cloud_robotics_sim.core.scene import Scene, SceneConfig, ObjectLibrary
+from cloud_robotics_sim.core.scene import ObjectLibrary, Scene, SceneConfig
 
 
 class EmptyRoom(Scene):
     """An empty room with no furniture.
-    
+
     Useful for testing robot behaviors without obstacles.
     """
 
@@ -27,7 +27,7 @@ class EmptyRoom(Scene):
 
 class LivingRoom(Scene):
     """A furnished living room.
-    
+
     Contains typical living room furniture: sofa, coffee table, etc.
     """
 
@@ -47,7 +47,7 @@ class LivingRoom(Scene):
 
 class Kitchen(Scene):
     """A kitchen environment.
-    
+
     Contains kitchen appliances and counter space.
     """
 
@@ -66,7 +66,7 @@ class Kitchen(Scene):
 
 class Office(Scene):
     """An office environment.
-    
+
     Contains desk and office furniture.
     """
 

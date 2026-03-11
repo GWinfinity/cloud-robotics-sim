@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SensorConfig:
     """Configuration for robot sensors.
-    
+
     Attributes:
         camera_names: List of camera identifiers.
         camera_positions: Relative camera positions.
@@ -42,7 +42,7 @@ class SensorConfig:
 @dataclass
 class EmbodimentConfig:
     """Configuration for robot embodiment.
-    
+
     Attributes:
         name: Robot identifier.
         urdf_path: Path to URDF file (optional for procedural robots).
@@ -65,10 +65,10 @@ class EmbodimentConfig:
 
 class RobotEmbodiment(ABC):
     """Abstract base class for robot embodiments.
-    
+
     A RobotEmbodiment encapsulates a robot's physical representation,
     sensors, and control interface within the simulation.
-    
+
     Attributes:
         config: Embodiment configuration.
         entity: The Genesis entity (set after spawn).
@@ -83,7 +83,7 @@ class RobotEmbodiment(ABC):
         self.entity: Any = None
         self.scene: Any = None
         self.cameras: dict[str, Any] = {}
-        
+
         self._obs_dim: int = 0
         self._action_dim: int = 0
 
@@ -110,11 +110,11 @@ class RobotEmbodiment(ABC):
     @abstractmethod
     def spawn(self, scene: gs.Scene, position: tuple | None = None) -> RobotEmbodiment:
         """Spawn the robot in the scene.
-        
+
         Args:
             scene: The Genesis scene.
             position: Optional override for spawn position.
-            
+
         Returns:
             Self for method chaining.
         """
@@ -128,7 +128,7 @@ class RobotEmbodiment(ABC):
     @abstractmethod
     def apply_action(self, action: np.ndarray) -> None:
         """Apply an action to the robot.
-        
+
         Args:
             action: Normalized action vector [-1, 1].
         """
@@ -137,7 +137,7 @@ class RobotEmbodiment(ABC):
     @abstractmethod
     def get_observation(self) -> dict:
         """Collect observations from all sensors.
-        
+
         Returns:
             Dictionary containing sensor observations.
         """
@@ -152,9 +152,9 @@ class RobotEmbodiment(ABC):
 
 class FrankaPanda(RobotEmbodiment):
     """Franka Emika Panda robot.
-    
+
     A 7-DOF collaborative robot arm with a parallel-jaw gripper.
-    
+
     Example:
         >>> robot = FrankaPanda(EmbodimentConfig(
         ...     name="franka_01",
@@ -176,7 +176,7 @@ class FrankaPanda(RobotEmbodiment):
         """Spawn Franka Panda in the scene."""
         self.scene = scene
         pos = position or self.config.base_position
-        
+
         try:
             # Use Genesis built-in Franka if available
             self.entity = scene.add_entity(
@@ -187,7 +187,7 @@ class FrankaPanda(RobotEmbodiment):
             logger.warning(f"Failed to load MJCF Franka: {e}")
             # Fallback to procedural creation
             self._create_procedural_franka(pos)
-        
+
         self._initialize_cameras()
         logger.info(f"Franka Panda spawned at {pos}")
         return self
@@ -209,7 +209,7 @@ class FrankaPanda(RobotEmbodiment):
 
     def apply_action(self, action: np.ndarray) -> None:
         """Apply joint position targets.
-        
+
         Args:
             action: 8-dimensional vector [7 joints, gripper].
         """
@@ -226,21 +226,21 @@ class FrankaPanda(RobotEmbodiment):
             'gripper_width': np.array([0.04]),
             'target_joint_position': np.zeros(7),
         }
-        
+
         if self.entity:
             if hasattr(self.entity, 'get_qpos'):
                 obs['joint_position'] = self.entity.get_qpos()[:7]
             if hasattr(self.entity, 'get_qvel'):
                 obs['joint_velocity'] = self.entity.get_qvel()[:7]
-        
+
         return obs
 
 
 class UniversalRobotUR5(RobotEmbodiment):
     """Universal Robots UR5 industrial arm.
-    
+
     A 6-DOF industrial robot arm suitable for manufacturing tasks.
-    
+
     Example:
         >>> robot = UniversalRobotUR5(EmbodimentConfig(
         ...     name="ur5_01",
@@ -261,7 +261,7 @@ class UniversalRobotUR5(RobotEmbodiment):
         """Spawn UR5 in the scene."""
         self.scene = scene
         pos = position or self.config.base_position
-        
+
         try:
             self.entity = scene.add_entity(
                 morph=gs.morphs.URDF(file="ur5/ur5.urdf"),
@@ -270,7 +270,7 @@ class UniversalRobotUR5(RobotEmbodiment):
         except Exception as e:
             logger.warning(f"Failed to load URDF UR5: {e}")
             self._create_procedural_ur5(pos)
-        
+
         self._initialize_cameras()
         logger.info(f"UR5 spawned at {pos}")
         return self
@@ -300,22 +300,22 @@ class UniversalRobotUR5(RobotEmbodiment):
             'joint_velocity': np.zeros(6),
             'target_joint_position': np.zeros(6),
         }
-        
+
         if self.entity:
             if hasattr(self.entity, 'get_qpos'):
                 obs['joint_position'] = self.entity.get_qpos()[:6]
             if hasattr(self.entity, 'get_qvel'):
                 obs['joint_velocity'] = self.entity.get_qvel()[:6]
-        
+
         return obs
 
 
 class MobileManipulator(RobotEmbodiment):
     """Mobile base with manipulator arm.
-    
+
     A differential-drive mobile base with a mounted robotic arm,
     suitable for mobile manipulation tasks.
-    
+
     Attributes:
         base_type: Type of mobile base ('diff_drive', 'omni', 'ackermann').
         arm_type: Type of manipulator ('panda', 'ur5', 'custom').
@@ -341,13 +341,13 @@ class MobileManipulator(RobotEmbodiment):
         """Spawn mobile manipulator."""
         self.scene = scene
         pos = position or self.config.base_position
-        
+
         # Create mobile base
         self.entity = scene.add_entity(
             morph=gs.morphs.Box(size=(0.6, 0.4, 0.2)),
             pos=pos,
         )
-        
+
         logger.info(f"Mobile manipulator spawned at {pos}")
         return self
 
@@ -357,7 +357,7 @@ class MobileManipulator(RobotEmbodiment):
 
     def apply_action(self, action: np.ndarray) -> None:
         """Apply base and arm actions.
-        
+
         Args:
             action: [linear_vel, angular_vel, arm_joints..., gripper]
         """
