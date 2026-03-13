@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Runtime Architecture &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/architecture/runtime.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Learning Framework" href="learning.html" />
+    <link rel="prev" title="Core Components" href="core.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Core Components</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Runtime Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#skill-registry">Skill Registry</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#skill-definition">Skill Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#task-executor">Task Executor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#task-state-machine">Task State Machine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#event-bus">Event Bus</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#publishing-events">Publishing Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#subscribing-to-events">Subscribing to Events</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#replay-engine">Replay Engine</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#recording">Recording</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#replay">Replay</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#integration-with-environment">Integration with Environment</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Runtime Architecture</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/architecture/runtime.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="runtime-architecture">
+<h1>Runtime Architecture<a class="headerlink" href="#runtime-architecture" title="Link to this heading"></a></h1>
+<p>The Runtime Layer provides agent execution capabilities, skill management, and task orchestration.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────┐
+│                    Agent Runtime                     │
+├─────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐ │
+│  │Skill Registry│  │Task Executor│  │Event Bus    │ │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘ │
+│         │                │                │        │
+│         └────────────────┴────────────────┘        │
+│                          │                         │
+│                   ┌──────▼──────┐                  │
+│                   │Replay Engine│                  │
+│                   └─────────────┘                  │
+└─────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="skill-registry">
+<h2>Skill Registry<a class="headerlink" href="#skill-registry" title="Link to this heading"></a></h2>
+<p>The Skill Registry manages reusable robot skills that can be composed into complex behaviors.</p>
+<section id="skill-definition">
+<h3>Skill Definition<a class="headerlink" href="#skill-definition" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Skill</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">policy</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Observation</span><span class="p">],</span> <span class="n">Action</span><span class="p">]</span>
+    <span class="n">preconditions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">State</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]]</span>
+    <span class="n">postconditions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">State</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]]</span>
+</pre></div>
+</div>
+</section>
+<section id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.runtime</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkillRegistry</span>
+
+<span class="n">registry</span> <span class="o">=</span> <span class="n">SkillRegistry</span><span class="p">()</span>
+
+<span class="c1"># Register a skill</span>
+<span class="nd">@registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;pick_object&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pick_object</span><span class="p">(</span><span class="n">observation</span><span class="p">):</span>
+    <span class="c1"># Skill implementation</span>
+    <span class="k">return</span> <span class="n">action</span>
+
+<span class="c1"># Execute skill</span>
+<span class="n">action</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;pick_object&quot;</span><span class="p">,</span> <span class="n">observation</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="task-executor">
+<h2>Task Executor<a class="headerlink" href="#task-executor" title="Link to this heading"></a></h2>
+<p>The Task Executor manages high-level task execution and state machines.</p>
+<section id="task-state-machine">
+<h3>Task State Machine<a class="headerlink" href="#task-state-machine" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────┐    start     ┌─────────┐
+│  IDLE   │ ───────────&gt; │ RUNNING │
+└─────────┘              └────┬────┘
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+              ▼               ▼               ▼
+        ┌─────────┐     ┌─────────┐    ┌─────────┐
+        │SUCCESS  │     │ FAILURE │    │ TIMEOUT │
+        └─────────┘     └─────────┘    └─────────┘
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h3>Usage<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.runtime</span><span class="w"> </span><span class="kn">import</span> <span class="n">TaskExecutor</span>
+
+<span class="n">executor</span> <span class="o">=</span> <span class="n">TaskExecutor</span><span class="p">()</span>
+
+<span class="c1"># Execute task with monitoring</span>
+<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">max_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">TaskStatus</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Task completed!&quot;</span><span class="p">)</span>
+        <span class="k">break</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="event-bus">
+<h2>Event Bus<a class="headerlink" href="#event-bus" title="Link to this heading"></a></h2>
+<p>The Event Bus enables decoupled communication between components.</p>
+<section id="publishing-events">
+<h3>Publishing Events<a class="headerlink" href="#publishing-events" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.runtime</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventBus</span>
+
+<span class="n">event_bus</span> <span class="o">=</span> <span class="n">EventBus</span><span class="p">()</span>
+
+<span class="n">event_bus</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s2">&quot;robot.action&quot;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="n">action</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="subscribing-to-events">
+<h3>Subscribing to Events<a class="headerlink" href="#subscribing-to-events" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@event_bus</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">&quot;robot.collision&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_collision</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Collision detected: </span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="replay-engine">
+<h2>Replay Engine<a class="headerlink" href="#replay-engine" title="Link to this heading"></a></h2>
+<p>The Replay Engine records and replays episodes for debugging and imitation learning.</p>
+<section id="recording">
+<h3>Recording<a class="headerlink" href="#recording" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.runtime</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReplayEngine</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">ReplayEngine</span><span class="p">()</span>
+<span class="n">engine</span><span class="o">.</span><span class="n">start_recording</span><span class="p">()</span>
+
+<span class="c1"># Run episode</span>
+<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">episode</span><span class="p">:</span>
+    <span class="n">engine</span><span class="o">.</span><span class="n">record_step</span><span class="p">(</span><span class="n">observation</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">)</span>
+
+<span class="n">engine</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;episode_001.pkl&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="replay">
+<h3>Replay<a class="headerlink" href="#replay" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load and replay</span>
+<span class="n">episode</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;episode_001.pkl&quot;</span><span class="p">)</span>
+<span class="n">engine</span><span class="o">.</span><span class="n">replay</span><span class="p">(</span><span class="n">episode</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="integration-with-environment">
+<h2>Integration with Environment<a class="headerlink" href="#integration-with-environment" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnvironmentComposer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.runtime</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentRuntime</span>
+
+<span class="c1"># Create environment</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">composer</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+
+<span class="c1"># Create runtime with skills</span>
+<span class="n">runtime</span> <span class="o">=</span> <span class="n">AgentRuntime</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">skill_registry</span><span class="p">)</span>
+
+<span class="c1"># Execute goal</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">execute_goal</span><span class="p">(</span><span class="s2">&quot;pick up the red cube and place it on the table&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="core.html" class="btn btn-neutral float-left" title="Core Components" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="learning.html" class="btn btn-neutral float-right" title="Learning Framework" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

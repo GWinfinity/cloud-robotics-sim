@@ -1,0 +1,947 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>残差强化学习 (Residual RL) &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/knowledge_base/02_residual_rl.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">残差强化学习 (Residual RL)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/knowledge_base/02_residual_rl.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="residual-rl">
+<h1>残差强化学习 (Residual RL)<a class="headerlink" href="#residual-rl" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>1. 算法原理<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3>1.1 论文引用<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p><strong>核心论文</strong>: “Residual Reinforcement Learning for Robot Control” (Johannink et al., 2019 ICRA)</p>
+<p><strong>相关论文</strong>:</p>
+<ul class="simple">
+<li><p>“Residual Policy Learning” (Silver et al., 2018)</p></li>
+<li><p>“Leaving RL Track: Residual RL for Fine-tuning” (Zhu et al., 2024)</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>1.2 核心思想<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<section id="id4">
+<h4>问题背景<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<p>传统行为克隆 (BC) 存在以下问题：</p>
+<ul class="simple">
+<li><p><strong>分布偏移</strong>: 训练数据之外表现差</p></li>
+<li><p><strong>复合误差</strong>: 小误差累积导致失败</p></li>
+<li><p><strong>无法改进</strong>: 静态策略不能自我优化</p></li>
+</ul>
+<p>纯 RL 又存在：</p>
+<ul class="simple">
+<li><p><strong>样本效率低</strong>: 需要大量交互</p></li>
+<li><p><strong>探索危险</strong>: 随机动作可能损坏机器人</p></li>
+<li><p><strong>收敛慢</strong>: 从零开始学习困难</p></li>
+</ul>
+</section>
+<section id="id5">
+<h4>残差学习框架<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>最终动作 = BC策略(观测) + α × 残差网络(观测)
+
+           ┌─────────────────┐
+观测 ─────→│   BC 策略        │──→ BC动作 (冻结)
+           │   (预训练)       │
+           └─────────────────┘
+                    │
+           ┌────────▼─────────┐
+           │   残差网络        │──→ 残差动作 (可训练)
+           │   (轻量级)       │     范围受限: [-ε, ε]
+           └─────────────────┘
+                    │
+                    ▼
+              最终动作 = BC动作 + 残差动作
+</pre></div>
+</div>
+<p><strong>关键优势</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>安全性</strong>: BC 提供基础安全动作，残差只做小修正</p></li>
+<li><p><strong>样本效率</strong>: 残差网络小，学习快</p></li>
+<li><p><strong>稳定性</strong>: 残差范围受限，避免危险动作</p></li>
+</ol>
+</section>
+<section id="id6">
+<h4>数学公式<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>策略表示:
+π_θ(a|s) = π_BC(a|s) + π_residual(s; φ)
+
+其中:
+- π_BC: 预训练 BC 策略 (冻结参数)
+- π_residual: 残差网络 (可训练参数 φ)
+- ||π_residual(s; φ)|| ≤ ε (输出约束)
+
+优化目标 (SAC风格):
+J(φ) = E[min(Q1(s, a), Q2(s, a)) - α log π_θ(a|s)]
+其中 a = π_BC(s) + π_residual(s; φ)
+
+只更新 φ (残差参数)，BC 参数冻结
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id7">
+<h3>1.3 架构设计<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌────────────────────────────────────────────────────────────┐
+│                      组合策略                               │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  BC 策略 (冻结)                                      │   │
+│  │  - 可以是任何预训练策略                                │   │
+│  │  - 行为克隆、专家演示、甚至硬编码规则                    │   │
+│  │  - 提供合理的基准动作                                 │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           ↓                                │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  残差网络 (可训练)                                    │   │
+│  │  - 小型 MLP (如: obs→256→128→64→action)               │   │
+│  │  - 输出限制: tanh * ε (ε通常 0.1-0.3)                 │   │
+│  │  - LayerNorm 提高稳定性                              │   │
+│  │  - Xavier 初始化 (小增益 0.01)                        │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           ↓                                │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  最终动作 = BC动作 + 残差动作                          │   │
+│  └─────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────┘
+                              ↓
+┌────────────────────────────────────────────────────────────┐
+│                     残差 SAC 训练                           │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  双 Q 网络 (Critic)                                  │   │
+│  │  - 评估最终动作的价值                                │   │
+│  │  - 只更新 Q 网络参数 (非残差)                         │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           ↓                                │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  策略更新                                            │   │
+│  │  - 只更新残差网络参数 φ                              │   │
+│  │  - BC 策略保持冻结                                   │   │
+│  │  - 最大化 Q 值 + 熵奖励                              │   │
+│  └─────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id8">
+<h2>2. 使用场景<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<section id="id9">
+<h3>2.1 适用任务<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>任务类型</p></th>
+<th class="head"><p>适用性</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>操作微调</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>在 BC 基础上微调抓取、放置</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>行走优化</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>优化 BC 步态的能效和稳定性</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>接触-rich任务</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>插销、装配等需要精细接触的任务</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>视觉伺服</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>BC 开环控制 + RL 视觉反馈</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>多任务迁移</strong></p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>同一 BC 策略 + 不同残差适应不同任务</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id10">
+<h3>2.2 典型应用模式<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<section id="id11">
+<h4>模式 1: 模拟器 → 真实世界<a class="headerlink" href="#id11" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Sim 训练 BC → Real 收集数据 → Residual RL 微调
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h4>模式 2: 人类演示 → 自动改进<a class="headerlink" href="#id12" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Human demo → BC 克隆 → Residual RL 超人类表现
+</pre></div>
+</div>
+</section>
+<section id="id13">
+<h4>模式 3: 硬编码 → 学习型<a class="headerlink" href="#id13" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Hard-coded baseline → Residual RL 自适应优化
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id14">
+<h3>2.3 限制与注意事项<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<section id="bc">
+<h4>BC 质量要求<a class="headerlink" href="#bc" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>BC 策略不能太烂，至少能完成 30-50% 的任务</p></li>
+<li><p>残差只能做小修正，不能纠正重大错误</p></li>
+<li><p>如果 BC 完全错误方向，残差难以挽救</p></li>
+</ul>
+</section>
+<section id="id15">
+<h4>残差范围限制<a class="headerlink" href="#id15" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>ε 太小: 改进空间有限</p></li>
+<li><p>ε 太大: 可能产生危险动作，失去安全性</p></li>
+<li><p>建议从 ε=0.1 开始，逐步增大</p></li>
+</ul>
+</section>
+<section id="id16">
+<h4>探索挑战<a class="headerlink" href="#id16" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>残差受限意味着探索空间小</p></li>
+<li><p>对于需要大改变的场景不适用</p></li>
+<li><p>可以结合课程学习逐步增大 ε</p></li>
+</ul>
+</section>
+</section>
+<section id="id17">
+<h3>2.4 与其他方法对比<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>方法</p></th>
+<th class="head"><p>样本效率</p></th>
+<th class="head"><p>安全性</p></th>
+<th class="head"><p>最终性能</p></th>
+<th class="head"><p>适用场景</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Residual RL</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>有合理BC基线</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>纯 BC</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>⭐⭐</p></td>
+<td><p>数据充足无分布偏移</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>纯 RL</strong></p></td>
+<td><p>⭐</p></td>
+<td><p>⭐</p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>数据充足无安全约束</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>BC + RL</strong></p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>BC预初始化RL</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id18">
+<h2>3. 代码示例<a class="headerlink" href="#id18" title="Link to this heading"></a></h2>
+<section id="id19">
+<h3>3.1 最小可运行示例<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">genesis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gs</span>
+
+<span class="c1"># ==================== 残差网络定义 ====================</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ResidualNetwork</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    轻量级残差网络</span>
+<span class="sd">    学习对 BC 策略的小幅修正</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">obs_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
+        <span class="n">action_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+        <span class="n">hidden_dims</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span>
+        <span class="n">residual_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>  <span class="c1"># ε: 残差输出范围限制</span>
+        <span class="n">use_layer_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_dim</span> <span class="o">=</span> <span class="n">obs_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_dim</span> <span class="o">=</span> <span class="n">action_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual_scale</span> <span class="o">=</span> <span class="n">residual_scale</span>
+        
+        <span class="c1"># 特征提取网络</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">prev_dim</span> <span class="o">=</span> <span class="n">obs_dim</span>
+        <span class="k">for</span> <span class="n">hidden_dim</span> <span class="ow">in</span> <span class="n">hidden_dims</span><span class="p">:</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">prev_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">use_layer_norm</span><span class="p">:</span>
+                <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">))</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">())</span>
+            <span class="n">prev_dim</span> <span class="o">=</span> <span class="n">hidden_dim</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+        
+        <span class="c1"># 残差输出头</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual_head</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">prev_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">)</span>
+        
+        <span class="c1"># 小权重初始化确保初始残差接近0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_weights</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;初始化权重为小值，确保初始残差接近0&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">):</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        前向传播</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with keys:</span>
+<span class="sd">                - &#39;residual&#39;: 残差动作 (范围受限)</span>
+<span class="sd">                - &#39;mean&#39;: 用于 SAC 的对数概率计算</span>
+<span class="sd">                - &#39;log_std&#39;: 动作标准差</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_net</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+        
+        <span class="c1"># 输出残差 (限制范围)</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_head</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_scale</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;residual&#39;</span><span class="p">:</span> <span class="n">residual</span><span class="p">,</span>
+            <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="n">residual</span><span class="p">,</span>  <span class="c1"># SAC 兼容性</span>
+            <span class="s1">&#39;log_std&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mf">2.0</span>  <span class="c1"># 小的探索噪声</span>
+        <span class="p">}</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CombinedPolicy</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    组合策略 = BC策略 + 残差网络</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bc_policy</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">residual_net</span><span class="p">:</span> <span class="n">ResidualNetwork</span><span class="p">,</span>
+        <span class="n">freeze_bc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bc_policy</span> <span class="o">=</span> <span class="n">bc_policy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual_net</span> <span class="o">=</span> <span class="n">residual_net</span>
+        
+        <span class="c1"># 冻结 BC 策略</span>
+        <span class="k">if</span> <span class="n">freeze_bc</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc_policy</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+                <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># BC 策略输出 (无梯度)</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">bc_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc_policy</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+            <span class="n">bc_action</span> <span class="o">=</span> <span class="n">bc_output</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># 残差网络输出</span>
+        <span class="n">residual_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_net</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">residual_output</span><span class="p">[</span><span class="s1">&#39;residual&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># 最终动作</span>
+        <span class="n">final_action</span> <span class="o">=</span> <span class="n">bc_action</span> <span class="o">+</span> <span class="n">residual</span>
+        <span class="n">final_action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">final_action</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;bc_action&#39;</span><span class="p">:</span> <span class="n">bc_action</span><span class="p">,</span>
+            <span class="s1">&#39;residual&#39;</span><span class="p">:</span> <span class="n">residual</span><span class="p">,</span>
+            <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">final_action</span><span class="p">,</span>  <span class="c1"># 兼容 RL 接口</span>
+            <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="n">final_action</span><span class="p">,</span>
+            <span class="s1">&#39;log_std&#39;</span><span class="p">:</span> <span class="n">residual_output</span><span class="p">[</span><span class="s1">&#39;log_std&#39;</span><span class="p">]</span>
+        <span class="p">}</span>
+
+
+<span class="c1"># ==================== 残差 SAC 训练器 ====================</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ResidualSAC</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    残差 SAC 训练器</span>
+<span class="sd">    只更新残差网络，BC 策略保持冻结</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">combined_policy</span><span class="p">:</span> <span class="n">CombinedPolicy</span><span class="p">,</span>
+        <span class="n">q_network1</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">q_network2</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">lr_residual</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3e-4</span><span class="p">,</span>
+        <span class="n">lr_q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3e-4</span><span class="p">,</span>
+        <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.99</span><span class="p">,</span>
+        <span class="n">tau</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.005</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span>
+        
+        <span class="c1"># 组合策略 (只训练残差部分)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy</span> <span class="o">=</span> <span class="n">combined_policy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        
+        <span class="c1"># Q 网络 (双 Q)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q1</span> <span class="o">=</span> <span class="n">q_network1</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q2</span> <span class="o">=</span> <span class="n">q_network2</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        
+        <span class="c1"># 目标 Q 网络</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q1_target</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">q_network1</span><span class="p">)(</span>
+            <span class="n">q_network1</span><span class="o">.</span><span class="n">obs_dim</span><span class="p">,</span> <span class="n">q_network1</span><span class="o">.</span><span class="n">action_dim</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q2_target</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">q_network2</span><span class="p">)(</span>
+            <span class="n">q_network2</span><span class="o">.</span><span class="n">obs_dim</span><span class="p">,</span> <span class="n">q_network2</span><span class="o">.</span><span class="n">action_dim</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q1_target</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q1</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q2_target</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q2</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+        
+        <span class="c1"># 优化器 (关键: 只优化残差网络参数!)</span>
+        <span class="n">residual_params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">combined_policy</span><span class="o">.</span><span class="n">residual_net</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy_optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span>
+            <span class="n">residual_params</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr_residual</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q1_optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q1</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr_q</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q2_optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q2</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr_q</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">select_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;选择动作&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">obs_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="p">(</span><span class="n">obs_t</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        更新网络</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            batch: 包含 &#39;obs&#39;, &#39;action&#39;, &#39;reward&#39;, &#39;next_obs&#39;, &#39;done&#39;</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            损失字典</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;obs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;reward&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">next_obs</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;next_obs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;done&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        
+        <span class="c1"># ===== 更新 Q 网络 =====</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="c1"># 下一个观测的策略输出</span>
+            <span class="n">next_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="p">(</span><span class="n">next_obs</span><span class="p">)</span>
+            <span class="n">next_action</span> <span class="o">=</span> <span class="n">next_output</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span>
+            
+            <span class="c1"># 目标 Q 值</span>
+            <span class="n">next_q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q1_target</span><span class="p">(</span><span class="n">next_obs</span><span class="p">,</span> <span class="n">next_action</span><span class="p">)</span>
+            <span class="n">next_q2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q2_target</span><span class="p">(</span><span class="n">next_obs</span><span class="p">,</span> <span class="n">next_action</span><span class="p">)</span>
+            <span class="n">next_q</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">next_q1</span><span class="p">,</span> <span class="n">next_q2</span><span class="p">)</span>
+            <span class="n">target_q</span> <span class="o">=</span> <span class="n">reward</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">done</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">*</span> <span class="n">next_q</span>
+        
+        <span class="c1"># 当前 Q 值</span>
+        <span class="n">current_q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q1</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+        <span class="n">current_q2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q2</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+        
+        <span class="c1"># Q 损失</span>
+        <span class="n">q1_loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()(</span><span class="n">current_q1</span><span class="p">,</span> <span class="n">target_q</span><span class="p">)</span>
+        <span class="n">q2_loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()(</span><span class="n">current_q2</span><span class="p">,</span> <span class="n">target_q</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">q1_optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">q1_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q1_optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">q2_optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">q2_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q2_optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        
+        <span class="c1"># ===== 更新残差网络 (关键!) =====</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+        <span class="n">new_action</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span>
+        
+        <span class="n">new_q1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q1</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">new_action</span><span class="p">)</span>
+        <span class="n">new_q2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q2</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">new_action</span><span class="p">)</span>
+        <span class="n">new_q</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">new_q1</span><span class="p">,</span> <span class="n">new_q2</span><span class="p">)</span>
+        
+        <span class="c1"># 策略损失: 最大化 Q 值</span>
+        <span class="n">policy_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">new_q</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy_optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">policy_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        
+        <span class="c1"># 梯度裁剪 (稳定性)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">residual_net</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">max_norm</span><span class="o">=</span><span class="mf">1.0</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy_optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        
+        <span class="c1"># 软更新目标网络</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_soft_update_target</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;q1_loss&#39;</span><span class="p">:</span> <span class="n">q1_loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="s1">&#39;q2_loss&#39;</span><span class="p">:</span> <span class="n">q2_loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="s1">&#39;policy_loss&#39;</span><span class="p">:</span> <span class="n">policy_loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="s1">&#39;residual_norm&#39;</span><span class="p">:</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;residual&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="p">}</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_soft_update_target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;软更新目标 Q 网络&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">target_param</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">q1</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">q1_target</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="n">target_param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">*</span> <span class="n">param</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="n">target_param</span><span class="o">.</span><span class="n">data</span>
+            <span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">target_param</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">q2</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">q2_target</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="n">target_param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">*</span> <span class="n">param</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="n">target_param</span><span class="o">.</span><span class="n">data</span>
+            <span class="p">)</span>
+
+
+<span class="c1"># ==================== Genesis 环境集成示例 ====================</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ResidualRLAgent</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    在 Genesis 环境中使用残差 RL 的完整示例</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bc_checkpoint_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">obs_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">action_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+        
+        <span class="c1"># 加载 BC 策略</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bc_policy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_bc_policy</span><span class="p">(</span><span class="n">bc_checkpoint_path</span><span class="p">)</span>
+        
+        <span class="c1"># 创建残差网络</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual_net</span> <span class="o">=</span> <span class="n">ResidualNetwork</span><span class="p">(</span>
+            <span class="n">obs_dim</span><span class="o">=</span><span class="n">obs_dim</span><span class="p">,</span>
+            <span class="n">action_dim</span><span class="o">=</span><span class="n">action_dim</span><span class="p">,</span>
+            <span class="n">residual_scale</span><span class="o">=</span><span class="mf">0.2</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># 组合策略</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combined_policy</span> <span class="o">=</span> <span class="n">CombinedPolicy</span><span class="p">(</span>
+            <span class="n">bc_policy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bc_policy</span><span class="p">,</span>
+            <span class="n">residual_net</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">residual_net</span><span class="p">,</span>
+            <span class="n">freeze_bc</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># 创建 Q 网络</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q1</span> <span class="o">=</span> <span class="n">QNetwork</span><span class="p">(</span><span class="n">obs_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q2</span> <span class="o">=</span> <span class="n">QNetwork</span><span class="p">(</span><span class="n">obs_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">)</span>
+        
+        <span class="c1"># 训练器</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">ResidualSAC</span><span class="p">(</span>
+            <span class="n">combined_policy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">combined_policy</span><span class="p">,</span>
+            <span class="n">q_network1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">q1</span><span class="p">,</span>
+            <span class="n">q_network2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">q2</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span> <span class="o">=</span> <span class="n">ReplayBuffer</span><span class="p">(</span><span class="n">capacity</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">use_residual</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        执行动作</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            obs: 当前观测</span>
+<span class="sd">            use_residual: 是否使用残差 (训练时用，评估时可只用BC)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">obs_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combined_policy</span><span class="p">(</span><span class="n">obs_t</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">use_residual</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;bc_action&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">train_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;执行一步训练&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">batch_size</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        
+        <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train_residual_rl</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;完整的训练流程&quot;&quot;&quot;</span>
+    <span class="c1"># 创建环境</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">create_genesis_env</span><span class="p">()</span>
+    
+    <span class="c1"># 创建智能体</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">ResidualRLAgent</span><span class="p">(</span>
+        <span class="n">bc_checkpoint_path</span><span class="o">=</span><span class="s1">&#39;bc_policy.pt&#39;</span><span class="p">,</span>
+        <span class="n">obs_dim</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">obs_dim</span><span class="p">,</span>
+        <span class="n">action_dim</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_dim</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 训练循环</span>
+    <span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">episode_reward</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+            <span class="c1"># 选择动作</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">use_residual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            
+            <span class="c1"># 执行动作</span>
+            <span class="n">next_obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            
+            <span class="c1"># 存储经验</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">replay_buffer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">next_obs</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
+            
+            <span class="c1"># 训练</span>
+            <span class="k">if</span> <span class="n">step</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># 每4步更新一次</span>
+                <span class="n">losses</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">train_step</span><span class="p">()</span>
+            
+            <span class="n">episode_reward</span> <span class="o">+=</span> <span class="n">reward</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="n">next_obs</span>
+            
+            <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+                <span class="k">break</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Episode </span><span class="si">{</span><span class="n">episode</span><span class="si">}</span><span class="s2">, Reward: </span><span class="si">{</span><span class="n">episode_reward</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id20">
+<h2>4. 超参数指南<a class="headerlink" href="#id20" title="Link to this heading"></a></h2>
+<section id="id21">
+<h3>4.1 网络架构参数<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数</p></th>
+<th class="head"><p>推荐值</p></th>
+<th class="head"><p>调优建议</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">hidden_dims</span></code></p></td>
+<td><p>[256, 128, 64]</p></td>
+<td><p>任务复杂↑则网络↑，但训练慢</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">residual_scale</span></code> (ε)</p></td>
+<td><p>0.1-0.3</p></td>
+<td><p>安全优先用 0.1，需要大改进用 0.3</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">use_layer_norm</span></code></p></td>
+<td><p>True</p></td>
+<td><p>强烈推荐，提高稳定性</p></td>
+</tr>
+</tbody>
+</table>
+<section id="residual-scale">
+<h4>ε (residual_scale) 调优<a class="headerlink" href="#residual-scale" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 训练阶段逐步增大 ε (课程学习)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_residual_scale</span><span class="p">(</span><span class="n">episode</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">episode</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.1</span>   <span class="c1"># 初始: 小范围探索</span>
+    <span class="k">elif</span> <span class="n">episode</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.2</span>   <span class="c1"># 中期: 增大改进空间</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.3</span>   <span class="c1"># 后期: 允许更大调整</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id22">
+<h3>4.2 训练参数<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数</p></th>
+<th class="head"><p>推荐值</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lr_residual</span></code></p></td>
+<td><p>3e-4</p></td>
+<td><p>残差网络学习率</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">lr_q</span></code></p></td>
+<td><p>3e-4</p></td>
+<td><p>Q 网络学习率</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gamma</span></code></p></td>
+<td><p>0.99</p></td>
+<td><p>折扣因子</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tau</span></code></p></td>
+<td><p>0.005</p></td>
+<td><p>软更新系数</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code></p></td>
+<td><p>256</p></td>
+<td><p>批次大小</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">update_freq</span></code></p></td>
+<td><p>4</p></td>
+<td><p>每4个环境步更新一次</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id23">
+<h3>4.3 关键设计选择<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<section id="bc-vs">
+<h4>1. BC 策略冻结 vs 微调<a class="headerlink" href="#bc-vs" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 推荐: 完全冻结 (安全性)</span>
+<span class="n">freeze_bc</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># 进阶: 后期微调 (性能优先)</span>
+<span class="k">if</span> <span class="n">episode</span> <span class="o">&gt;</span> <span class="mi">800</span><span class="p">:</span>
+    <span class="c1"># 解冻 BC 最后几层</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">bc_policy</span><span class="o">.</span><span class="n">tail_layers</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</section>
+<section id="id24">
+<h4>2. 残差网络初始化<a class="headerlink" href="#id24" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 关键: 小增益确保初始残差≈0</span>
+<span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+
+<span class="c1"># 对比: 正常初始化 (不推荐用于残差)</span>
+<span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># 残差可能太大</span>
+</pre></div>
+</div>
+</section>
+<section id="id25">
+<h4>3. 梯度裁剪<a class="headerlink" href="#id25" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 必须添加，防止残差过大</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span>
+    <span class="n">residual_net</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">max_norm</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id26">
+<h3>4.4 故障排查<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>现象</p></th>
+<th class="head"><p>可能原因</p></th>
+<th class="head"><p>解决方案</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>残差始终接近0</strong></p></td>
+<td><p>初始化太小或BC太好/太坏</p></td>
+<td><p>检查BC性能，增大ε，调整初始化增益</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>训练不稳定</strong></p></td>
+<td><p>学习率太高或残差太大</p></td>
+<td><p>降低lr，减小ε，增加梯度裁剪</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>性能不如纯BC</strong></p></td>
+<td><p>探索不足或奖励设计问题</p></td>
+<td><p>增大ε，检查奖励函数，增加探索噪声</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Q值爆炸</strong></p></td>
+<td><p>目标网络更新太慢</p></td>
+<td><p>增大tau，或检查reward缩放</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>BC动作被完全覆盖</strong></p></td>
+<td><p>ε太大或残差网络太深</p></td>
+<td><p>减小ε，使用更小的残差网络</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id27">
+<h3>4.5 性能监控指标<a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 训练中应监控的关键指标</span>
+<span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;residual_norm&#39;</span><span class="p">:</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;residual&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+    <span class="s1">&#39;residual_ratio&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">residual_norm</span> <span class="o">/</span> <span class="n">bc_action_norm</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+    <span class="s1">&#39;bc_action_norm&#39;</span><span class="p">:</span> <span class="n">bc_action</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+    <span class="s1">&#39;final_action_norm&#39;</span><span class="p">:</span> <span class="n">final_action</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+    <span class="s1">&#39;q1_loss&#39;</span><span class="p">:</span> <span class="n">q1_loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+    <span class="s1">&#39;policy_loss&#39;</span><span class="p">:</span> <span class="n">policy_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="c1"># 理想情况:</span>
+<span class="c1"># - residual_norm: 0.1-0.5 (与ε相关)</span>
+<span class="c1"># - residual_ratio: 0.05-0.2 (残差是BC的5-20%)</span>
+<span class="c1"># - q1_loss: 稳定下降</span>
+<span class="c1"># - policy_loss: 缓慢下降 (不能为负太多)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id28">
+<h2>5. 进阶技巧<a class="headerlink" href="#id28" title="Link to this heading"></a></h2>
+<section id="id29">
+<h3>5.1 自适应残差范围<a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">AdaptiveResidualNetwork</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;根据不确定性自适应调整残差范围&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">):</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_net</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_head</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+        
+        <span class="c1"># 预测不确定性</span>
+        <span class="n">uncertainty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uncertainty_head</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+        
+        <span class="c1"># 不确定性高时减小残差</span>
+        <span class="n">adaptive_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_scale</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="o">-</span><span class="n">uncertainty</span><span class="p">)</span>
+        
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span> <span class="o">*</span> <span class="n">adaptive_scale</span>
+        <span class="k">return</span> <span class="n">residual</span>
+</pre></div>
+</div>
+</section>
+<section id="id30">
+<h3>5.2 多模态残差<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 不同任务使用不同残差头</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MultiModalResidual</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual_heads</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">ResidualHead</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_modes</span><span class="p">)</span>
+        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode_selector</span> <span class="o">=</span> <span class="n">ModeSelector</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">):</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode_selector</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">head</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">head</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_heads</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">residual</span>
+</pre></div>
+</div>
+</section>
+<section id="id31">
+<h3>5.3 残差正则化<a class="headerlink" href="#id31" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 添加 L2 正则鼓励小残差</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">policy_loss</span> <span class="o">+</span> <span class="n">lambda_residual</span> <span class="o">*</span> <span class="p">(</span><span class="n">residual</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

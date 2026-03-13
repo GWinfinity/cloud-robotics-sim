@@ -1,0 +1,659 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MPC + WBC 全身控制器 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/knowledge_base/01_mpc_wbc_controller.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">MPC + WBC 全身控制器</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/knowledge_base/01_mpc_wbc_controller.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="mpc-wbc">
+<h1>MPC + WBC 全身控制器<a class="headerlink" href="#mpc-wbc" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>1. 算法原理<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3>1.1 论文引用<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p><strong>MPC (Model Predictive Control)</strong></p>
+<ul class="simple">
+<li><p>基于人形机器人动力学模型预测未来状态</p></li>
+<li><p>参考论文: “Dynamic Walking on Compliant and Uneven Terrain using DCM and MPC” (ETH Zurich)</p></li>
+<li><p>开源实现: OpenLoong Dynamics Control (上海青龙机器人)</p></li>
+</ul>
+<p><strong>WBC (Whole-Body Control)</strong></p>
+<ul class="simple">
+<li><p>全身优先级控制框架</p></li>
+<li><p>参考论文: “A Whole-Body Control Framework for Humanoid Robots” (Stanford)</p></li>
+<li><p>零空间投影实现多任务优先级</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>1.2 核心思想<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<section id="mpc">
+<h4>MPC 核心思想<a class="headerlink" href="#mpc" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>状态: X = [roll, pitch, yaw, x, y, z, ωx, ωy, ωz, vx, vy, vz] (12维)
+输入: U = [FL_x, FL_y, FL_z, τL_x, τL_y, τL_z, FR_x, FR_y, FR_z, τR_x, τR_y, τR_z] (12维)
+
+优化目标:
+min Σ||X_t - Xd_t||²_Q + Σ||U_t||²_R
+
+约束:
+- 动力学约束: X_{t+1} = A*X_t + B*U_t
+- 接触力约束: Fz &gt;= 0 (单侧约束)
+- 摩擦锥约束: ||F_xy|| &lt;= μ*Fz
+</pre></div>
+</div>
+</section>
+<section id="wbc">
+<h4>WBC 核心思想<a class="headerlink" href="#wbc" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">任务栈</span> <span class="p">(</span><span class="n">优先级从高到低</span><span class="p">):</span>
+<span class="mf">1.</span> <span class="n">质心动量跟踪</span> <span class="p">(</span><span class="n">最高优先级</span><span class="p">)</span>
+<span class="mf">2.</span> <span class="n">摆动脚轨迹跟踪</span>
+<span class="mf">3.</span> <span class="n">上身姿态保持</span>
+<span class="mf">4.</span> <span class="n">关节极限避免</span> <span class="p">(</span><span class="n">最低优先级</span><span class="p">)</span>
+
+<span class="n">零空间投影</span><span class="p">:</span>
+<span class="n">τ</span> <span class="o">=</span> <span class="n">J1</span><span class="o">^</span><span class="n">T</span> <span class="o">*</span> <span class="n">F1</span> <span class="o">+</span> <span class="n">N1</span> <span class="o">*</span> <span class="n">J2</span><span class="o">^</span><span class="n">T</span> <span class="o">*</span> <span class="n">F2</span> <span class="o">+</span> <span class="n">N1</span><span class="o">*</span><span class="n">N2</span> <span class="o">*</span> <span class="n">J3</span><span class="o">^</span><span class="n">T</span> <span class="o">*</span> <span class="n">F3</span> <span class="o">+</span> <span class="o">...</span>
+
+<span class="n">其中</span> <span class="n">N</span> <span class="o">=</span> <span class="n">I</span> <span class="o">-</span> <span class="n">J</span><span class="o">^</span><span class="n">T</span> <span class="o">*</span> <span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">M</span><span class="o">^</span><span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span> <span class="o">*</span> <span class="n">J</span><span class="o">^</span><span class="n">T</span><span class="p">)</span><span class="o">^</span><span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span> <span class="o">*</span> <span class="n">J</span> <span class="o">*</span> <span class="n">M</span><span class="o">^</span><span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span> <span class="n">是零空间投影矩阵</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id4">
+<h3>1.3 系统架构<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────┐
+│                   高层规划器                          │
+│         (生成期望质心轨迹 Xd, 落脚点)                  │
+└──────────────────┬──────────────────────────────────┘
+                   ↓
+┌─────────────────────────────────────────────────────┐
+│                   MPC 控制器                          │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  预测模型: 线性化单刚体模型                      │  │
+│  │  优化问题: QP (二次规划)                        │  │
+│  │  输出: 期望接触力/力矩 [FL, FR]                  │  │
+│  └───────────────────────────────────────────────┘  │
+└──────────────────┬──────────────────────────────────┘
+                   ↓
+┌─────────────────────────────────────────────────────┐
+│                   WBC 控制器                          │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  任务1: 质心加速度 (来自MPC力/力矩)              │  │
+│  │  任务2: 摆动脚位置和速度                        │  │
+│  │  任务3: 上身姿态                                │  │
+│  │  输出: 关节力矩 τ                               │  │
+│  └───────────────────────────────────────────────┘  │
+└──────────────────┬──────────────────────────────────┘
+                   ↓
+┌─────────────────────────────────────────────────────┐
+│                   机器人动力学                         │
+└─────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id5">
+<h2>2. 使用场景<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<section id="id6">
+<h3>2.1 适用任务<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>任务类型</p></th>
+<th class="head"><p>适用性</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>平地行走</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>最成熟应用，稳定可靠</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>上下楼梯</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>需要准确落脚点规划</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>崎岖地形</strong></p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>需要地形感知和自适应</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>跳跃</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>MPC预测助力起跳和落地</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>搬运物体</strong></p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>需要调整质心模型参数</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>被推动恢复</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>扰动抑制能力强</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id7">
+<h3>2.2 限制与注意事项<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<section id="id8">
+<h4>计算限制<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>MPC 频率</strong>: 50-100 Hz (QP求解需要时间)</p></li>
+<li><p><strong>WBC 频率</strong>: 200-1000 Hz</p></li>
+<li><p><strong>预测步数 N</strong>: 10-20 步 (更多步数计算量指数增长)</p></li>
+</ul>
+</section>
+<section id="id9">
+<h4>模型限制<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>使用<strong>单刚体模型</strong>简化，忽略腿的质量</p></li>
+<li><p>假设接触点已知且固定</p></li>
+<li><p>对非常规接触 (滑倒、碰撞) 处理能力有限</p></li>
+</ul>
+</section>
+<section id="id10">
+<h4>调参复杂度<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>需要调整 MPC 权重矩阵 Q, R</p></li>
+<li><p>需要调整 WBC 任务权重</p></li>
+<li><p>步态参数 (步频、步长) 需要精心调优</p></li>
+</ul>
+</section>
+</section>
+<section id="id11">
+<h3>2.3 与其他控制器对比<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>控制器</p></th>
+<th class="head"><p>优势</p></th>
+<th class="head"><p>劣势</p></th>
+<th class="head"><p>适用场景</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>MPC+WBC</strong></p></td>
+<td><p>物理约束处理、预测能力</p></td>
+<td><p>计算量大、调参复杂</p></td>
+<td><p>复杂地形、高性能要求</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>RL策略</strong></p></td>
+<td><p>端到端、适应性强</p></td>
+<td><p>样本效率低、难解释</p></td>
+<td><p>未知地形、数据充足</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>PD控制</strong></p></td>
+<td><p>简单、稳定</p></td>
+<td><p>无预测能力</p></td>
+<td><p>简单任务、快速部署</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id12">
+<h2>3. 代码示例<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<section id="id13">
+<h3>3.1 最小可运行示例<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">genesis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.controllers</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPCController</span><span class="p">,</span> <span class="n">WBCController</span>
+
+<span class="c1"># ==================== 初始化 ====================</span>
+<span class="n">gs</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">cuda</span><span class="p">)</span>
+
+<span class="c1"># 创建场景</span>
+<span class="n">scene</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">Scene</span><span class="p">(</span>
+    <span class="n">sim_options</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">SimOptions</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">substeps</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">show_viewer</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="c1"># 添加地面</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">add_entity</span><span class="p">(</span><span class="n">gs</span><span class="o">.</span><span class="n">morphs</span><span class="o">.</span><span class="n">Plane</span><span class="p">())</span>
+
+<span class="c1"># 添加人形机器人 (以 Unitree H1 为例)</span>
+<span class="n">robot</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add_entity</span><span class="p">(</span>
+    <span class="n">gs</span><span class="o">.</span><span class="n">morphs</span><span class="o">.</span><span class="n">MJCF</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;xml/humanoid/h1.xml&#39;</span><span class="p">),</span>
+    <span class="n">surface</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">surfaces</span><span class="o">.</span><span class="n">Default</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+<span class="p">)</span>
+
+<span class="n">scene</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="c1"># ==================== 控制器初始化 ====================</span>
+<span class="c1"># MPC 控制器</span>
+<span class="n">mpc</span> <span class="o">=</span> <span class="n">MPCController</span><span class="p">(</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>      <span class="c1"># 预测步数</span>
+    <span class="n">mass</span><span class="o">=</span><span class="mf">77.35</span><span class="p">,</span>      <span class="c1"># 机器人质量</span>
+    <span class="n">inertia</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">12.61</span><span class="p">,</span> <span class="mf">11.15</span><span class="p">,</span> <span class="mf">2.15</span><span class="p">])</span>  <span class="c1"># 惯性张量</span>
+<span class="p">)</span>
+
+<span class="c1"># WBC 控制器</span>
+<span class="n">wbc</span> <span class="o">=</span> <span class="n">WBCController</span><span class="p">(</span>
+    <span class="n">robot</span><span class="o">=</span><span class="n">robot</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+    <span class="n">kp_com</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>    <span class="c1"># 质心位置比例增益</span>
+    <span class="n">kd_com</span><span class="o">=</span><span class="mf">20.0</span>      <span class="c1"># 质心位置微分增益</span>
+<span class="p">)</span>
+
+<span class="c1"># 步态调度器</span>
+<span class="n">gait_scheduler</span> <span class="o">=</span> <span class="n">GaitScheduler</span><span class="p">(</span>
+    <span class="n">gait_type</span><span class="o">=</span><span class="s1">&#39;trot&#39;</span><span class="p">,</span>    <span class="c1"># 步态类型: trot/walk/bound</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="mf">1.25</span>       <span class="c1"># 步频 1.25 Hz</span>
+<span class="p">)</span>
+
+<span class="c1"># ==================== 主循环 ====================</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">):</span>
+    <span class="c1"># 1. 获取当前状态</span>
+    <span class="n">base_pos</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">base_quat</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">get_quat</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">base_vel</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">get_vel</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">base_ang_vel</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">get_ang</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    
+    <span class="c1"># 2. 生成期望轨迹 (简单示例: 向前行走)</span>
+    <span class="n">target_vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># 期望速度 1m/s</span>
+    <span class="n">desired_traj</span> <span class="o">=</span> <span class="n">generate_desired_trajectory</span><span class="p">(</span>
+        <span class="n">base_pos</span><span class="p">,</span> <span class="n">target_vel</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 3. MPC 计算期望接触力</span>
+    <span class="n">mpc</span><span class="o">.</span><span class="n">set_desired_trajectory</span><span class="p">(</span><span class="n">desired_traj</span><span class="p">)</span>
+    <span class="n">mpc</span><span class="o">.</span><span class="n">data_bus_read</span><span class="p">({</span>
+        <span class="s1">&#39;base_pos&#39;</span><span class="p">:</span> <span class="n">base_pos</span><span class="p">,</span>
+        <span class="s1">&#39;base_rpy&#39;</span><span class="p">:</span> <span class="n">quat_to_euler</span><span class="p">(</span><span class="n">base_quat</span><span class="p">),</span>
+        <span class="s1">&#39;base_lin_vel&#39;</span><span class="p">:</span> <span class="n">base_vel</span><span class="p">,</span>
+        <span class="s1">&#39;base_ang_vel&#39;</span><span class="p">:</span> <span class="n">base_ang_vel</span><span class="p">,</span>
+        <span class="s1">&#39;fe_l_pos_W&#39;</span><span class="p">:</span> <span class="n">get_foot_position</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;fe_r_pos_W&#39;</span><span class="p">:</span> <span class="n">get_foot_position</span><span class="p">(</span><span class="n">robot</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;leg_state&#39;</span><span class="p">:</span> <span class="n">gait_scheduler</span><span class="o">.</span><span class="n">get_leg_state</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="p">})</span>
+    <span class="n">mpc</span><span class="o">.</span><span class="n">cal</span><span class="p">()</span>
+    <span class="n">contact_forces</span> <span class="o">=</span> <span class="n">mpc</span><span class="o">.</span><span class="n">get_contact_forces</span><span class="p">()</span>  <span class="c1"># [FL, FR]</span>
+    
+    <span class="c1"># 4. WBC 计算关节力矩</span>
+    <span class="n">wbc</span><span class="o">.</span><span class="n">set_tasks</span><span class="p">({</span>
+        <span class="s1">&#39;com&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="n">contact_forces</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">],</span> <span class="s1">&#39;moment&#39;</span><span class="p">:</span> <span class="n">contact_forces</span><span class="p">[</span><span class="s1">&#39;moment&#39;</span><span class="p">]},</span>
+        <span class="s1">&#39;swing_foot_left&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pos&#39;</span><span class="p">:</span> <span class="n">desired_swing_pos_left</span><span class="p">,</span> <span class="s1">&#39;vel&#39;</span><span class="p">:</span> <span class="n">desired_swing_vel_left</span><span class="p">},</span>
+        <span class="s1">&#39;swing_foot_right&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pos&#39;</span><span class="p">:</span> <span class="n">desired_swing_pos_right</span><span class="p">,</span> <span class="s1">&#39;vel&#39;</span><span class="p">:</span> <span class="n">desired_swing_vel_right</span><span class="p">},</span>
+        <span class="s1">&#39;torso_orientation&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;quat&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])}</span>  <span class="c1"># 保持直立</span>
+    <span class="p">})</span>
+    <span class="n">joint_torques</span> <span class="o">=</span> <span class="n">wbc</span><span class="o">.</span><span class="n">compute_torques</span><span class="p">()</span>
+    
+    <span class="c1"># 5. 应用控制</span>
+    <span class="n">robot</span><span class="o">.</span><span class="n">control_dofs_force</span><span class="p">(</span><span class="n">joint_torques</span><span class="p">)</span>
+    
+    <span class="c1"># 6. 仿真步进</span>
+    <span class="n">scene</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="id14">
+<h3>3.2 关键接口说明<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MPCController</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MPC 控制器接口</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">horizon</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">mass</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">inertia</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            dt: 控制周期 (秒)</span>
+<span class="sd">            horizon: 预测步数 N</span>
+<span class="sd">            mass: 机器人质量 (kg)</span>
+<span class="sd">            inertia: 3x3 惯性张量 (kg·m²)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_desired_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Xd</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        设置期望轨迹</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            Xd: [Nx * N] 向量，包含 N 步的期望状态</span>
+<span class="sd">                每步状态: [roll, pitch, yaw, x, y, z, ωx, ωy, ωz, vx, vy, vz]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_weight</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">L_diag</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">K_diag</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        设置 MPC 权重</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            u_weight: 输入正则化权重 α</span>
+<span class="sd">            L_diag: 状态权重对角线 (12维)</span>
+<span class="sd">            K_diag: 输入权重对角线 (13维)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">cal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;执行 MPC 计算&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_contact_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        获取计算得到的接触力</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            {&#39;left&#39;: [Fx, Fy, Fz, τx, τy, τz],</span>
+<span class="sd">             &#39;right&#39;: [Fx, Fy, Fz, τx, τy, τz]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">WBCController</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    WBC 控制器接口</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">kp_com</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">kd_com</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            robot: Genesis 机器人实体</span>
+<span class="sd">            dt: 控制周期</span>
+<span class="sd">            kp_com: 质心位置比例增益</span>
+<span class="sd">            kd_com: 质心位置微分增益</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tasks</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        设置任务列表 (按优先级)</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            tasks: 任务字典，支持以下任务类型:</span>
+<span class="sd">                - &#39;com&#39;: 质心任务 {&#39;force&#39;: ..., &#39;moment&#39;: ...}</span>
+<span class="sd">                - &#39;swing_foot_left/right&#39;: 摆动脚任务 {&#39;pos&#39;: ..., &#39;vel&#39;: ...}</span>
+<span class="sd">                - &#39;torso_orientation&#39;: 上身姿态 {&#39;quat&#39;: ...}</span>
+<span class="sd">                - &#39;joint_posture&#39;: 关节姿态 {&#39;q&#39;: ...}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_torques</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        计算关节力矩</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            关节力矩数组 [n_dofs]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id15">
+<h2>4. 超参数指南<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
+<section id="id16">
+<h3>4.1 MPC 关键参数<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<section id="n-ch">
+<h4>预测步数 (N) 和控制时域 (ch)<a class="headerlink" href="#n-ch" title="Link to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数</p></th>
+<th class="head"><p>推荐值</p></th>
+<th class="head"><p>调优建议</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>N (预测步数)</p></td>
+<td><p>10-20</p></td>
+<td><p>地形复杂↑则N↑，但计算量↑</p></td>
+</tr>
+<tr class="row-odd"><td><p>ch (控制时域)</p></td>
+<td><p>3-5</p></td>
+<td><p>通常 &lt; N，减小计算量</p></td>
+</tr>
+<tr class="row-even"><td><p>dt (控制周期)</p></td>
+<td><p>0.005-0.01s</p></td>
+<td><p>越高频响应越快，但计算压力↑</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>经验公式</strong>: 预测时间 = N × dt 应覆盖 0.5-1.0 秒</p>
+</section>
+<section id="id17">
+<h4>权重矩阵调优<a class="headerlink" href="#id17" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 状态权重 L_diag (12维)</span>
+<span class="n">L_diag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>       <span class="c1"># 欧拉角 [roll, pitch, yaw]</span>
+    <span class="mf">1.0</span><span class="p">,</span> <span class="mf">200.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>     <span class="c1"># 位置 [x, y, z] - y(高度)权重通常最高</span>
+    <span class="mf">1e-7</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">,</span>    <span class="c1"># 角速度 [ωx, ωy, ωz]</span>
+    <span class="mf">100.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.0</span>     <span class="c1"># 线速度 [vx, vy, vz]</span>
+<span class="p">])</span>
+
+<span class="c1"># 输入权重 K_diag (13维)</span>
+<span class="n">K_diag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>       <span class="c1"># 左足力 [Fx, Fy, Fz]</span>
+    <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>       <span class="c1"># 左足力矩 [τx, τy, τz]</span>
+    <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>       <span class="c1"># 右足力 [Fx, Fy, Fz]</span>
+    <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>       <span class="c1"># 右足力矩 [τx, τy, τz]</span>
+    <span class="mf">1.0</span>                  <span class="c1"># 额外项</span>
+<span class="p">])</span>
+
+<span class="c1"># 输入正则化 α</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="mf">1e-6</span>  <span class="c1"># 防止输入过大，影响收敛速度</span>
+</pre></div>
+</div>
+<p><strong>调优建议</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>先调位置权重</strong>: 先确保机器人能站稳，再考虑其他</p></li>
+<li><p><strong>高度权重最重要</strong>: L_diag[4] (y/高度) 通常最大，防止摔倒</p></li>
+<li><p><strong>力矩权重较小</strong>: 通常力矩权重 &lt; 力权重，因为力矩对质心影响小</p></li>
+<li><p><strong>平滑性 α</strong>: 如果输入震荡，增大 α；如果响应慢，减小 α</p></li>
+</ol>
+</section>
+</section>
+<section id="id18">
+<h3>4.2 WBC 关键参数<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<section id="id19">
+<h4>任务权重<a class="headerlink" href="#id19" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 任务优先级 (从高到低)</span>
+<span class="n">task_weights</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;com&#39;</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>           <span class="c1"># 质心任务 - 最高优先级</span>
+    <span class="s1">&#39;swing_foot&#39;</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span>     <span class="c1"># 摆动脚 - 高优先级</span>
+    <span class="s1">&#39;torso_orientation&#39;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span>  <span class="c1"># 上身姿态 - 中优先级</span>
+    <span class="s1">&#39;joint_posture&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>    <span class="c1"># 关节姿态 - 低优先级</span>
+    <span class="s1">&#39;joint_limits&#39;</span><span class="p">:</span> <span class="mf">0.1</span>      <span class="c1"># 关节极限 - 最低优先级</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="pd">
+<h4>PD 增益<a class="headerlink" href="#pd" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 质心 PD 增益</span>
+<span class="n">kp_com</span> <span class="o">=</span> <span class="mf">100.0</span>   <span class="c1"># 位置比例增益</span>
+<span class="n">kd_com</span> <span class="o">=</span> <span class="mf">20.0</span>    <span class="c1"># 位置微分增益</span>
+
+<span class="c1"># 摆动脚 PD 增益</span>
+<span class="n">kp_swing</span> <span class="o">=</span> <span class="mf">400.0</span>  <span class="c1"># 需要更精确的位置跟踪</span>
+<span class="n">kd_swing</span> <span class="o">=</span> <span class="mf">40.0</span>
+
+<span class="c1"># 姿态 PD 增益</span>
+<span class="n">kp_orientation</span> <span class="o">=</span> <span class="mf">100.0</span>
+<span class="n">kd_orientation</span> <span class="o">=</span> <span class="mf">20.0</span>
+</pre></div>
+</div>
+<p><strong>调优建议</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>PD 增益比例</strong>: 通常 kd ≈ 0.1-0.2 × kp</p></li>
+<li><p><strong>摆动脚增益最高</strong>: 需要精确跟踪轨迹</p></li>
+<li><p><strong>避免过大 kp</strong>: 会引起振荡和数值不稳定</p></li>
+</ol>
+</section>
+</section>
+<section id="id20">
+<h3>4.3 步态参数<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 步态频率</span>
+<span class="n">gait_frequency</span> <span class="o">=</span> <span class="mf">1.25</span>  <span class="c1"># Hz (周期 0.8s)</span>
+
+<span class="c1"># 步态周期分段</span>
+<span class="n">duty_factor</span> <span class="o">=</span> <span class="mf">0.6</span>      <span class="c1"># 支撑相占比 (0.6 = 60%时间支撑)</span>
+<span class="n">swing_height</span> <span class="o">=</span> <span class="mf">0.08</span>    <span class="c1"># 摆动脚抬起高度 (m)</span>
+
+<span class="c1"># 落脚点规划</span>
+<span class="n">foot_offset</span> <span class="o">=</span> <span class="mf">0.1</span>      <span class="c1"># 落地点超前距离 (m)</span>
+<span class="n">foot_width</span> <span class="o">=</span> <span class="mf">0.2</span>       <span class="c1"># 双脚横向间距 (m)</span>
+</pre></div>
+</div>
+</section>
+<section id="id21">
+<h3>4.4 故障排查<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>现象</p></th>
+<th class="head"><p>可能原因</p></th>
+<th class="head"><p>解决方案</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>机器人抖动</strong></p></td>
+<td><p>控制频率太低或增益太高</p></td>
+<td><p>降低 kp，增加控制频率</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>响应迟缓</strong></p></td>
+<td><p>MPC权重太大或预测步数太少</p></td>
+<td><p>减小 α，增加 N</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>不稳定摔倒</strong></p></td>
+<td><p>高度权重不够或接触力约束失效</p></td>
+<td><p>增大 L_diag[4]，检查摩擦系数</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>支撑脚滑动</strong></p></td>
+<td><p>摩擦系数设置不当</p></td>
+<td><p>增大地面摩擦系数</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>QP求解失败</strong></p></td>
+<td><p>约束冲突或矩阵奇异</p></td>
+<td><p>添加正则化，检查约束一致性</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id22">
+<h2>5. 进阶技巧<a class="headerlink" href="#id22" title="Link to this heading"></a></h2>
+<section id="id23">
+<h3>5.1 自适应 MPC<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 根据速度自适应调整权重</span>
+<span class="k">if</span> <span class="n">target_vel</span> <span class="o">&gt;</span> <span class="mf">1.5</span><span class="p">:</span>  <span class="c1"># 高速</span>
+    <span class="n">L_diag</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span> <span class="o">*=</span> <span class="mf">2.0</span>  <span class="c1"># 增加速度跟踪权重</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="mi">15</span>  <span class="c1"># 增加预测步数</span>
+</pre></div>
+</div>
+</section>
+<section id="id24">
+<h3>5.2 软约束处理<a class="headerlink" href="#id24" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 使用松弛变量处理硬约束</span>
+<span class="n">slack_weight</span> <span class="o">=</span> <span class="mf">1e6</span>
+<span class="c1"># 在 QP 中添加: ||slack||^2 * slack_weight</span>
+</pre></div>
+</div>
+</section>
+<section id="warm-start">
+<h3>5.3 热身策略 (Warm Start)<a class="headerlink" href="#warm-start" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 使用上一帧的解作为初始猜测</span>
+<span class="n">mpc</span><span class="o">.</span><span class="n">set_initial_guess</span><span class="p">(</span><span class="n">previous_solution</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

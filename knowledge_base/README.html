@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genesis Cloud Sim 知识库 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/knowledge_base/README.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Genesis Cloud Sim 知识库</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/knowledge_base/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="genesis-cloud-sim">
+<h1>Genesis Cloud Sim 知识库<a class="headerlink" href="#genesis-cloud-sim" title="Link to this heading"></a></h1>
+<p>本知识库沉淀了从多个 Genesis 项目中提取的核心算法和经典实现。</p>
+<section id="id1">
+<h2>文档列表<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="mpc-wbc">
+<h3>1. MPC + WBC 全身控制器<a class="headerlink" href="#mpc-wbc" title="Link to this heading"></a></h3>
+<p><strong>文件</strong>: <code class="docutils literal notranslate"><span class="pre">01_mpc_wbc_controller.md</span></code></p>
+<p><strong>来源项目</strong>: <code class="docutils literal notranslate"><span class="pre">openloong-dyn-control</span></code>, <code class="docutils literal notranslate"><span class="pre">hugwbc-genesis</span></code></p>
+<p><strong>核心内容</strong>:</p>
+<ul class="simple">
+<li><p>MPC (模型预测控制) QP求解实现</p></li>
+<li><p>WBC (全身控制) 零空间投影</p></li>
+<li><p>步态调度器设计</p></li>
+<li><p>人形机器人平地/楼梯/地形行走控制</p></li>
+</ul>
+<p><strong>适用场景</strong>: 人形机器人全身控制、复杂地形行走、跳跃</p>
+</section>
+<hr class="docutils" />
+<section id="residual-rl">
+<h3>2. 残差强化学习 (Residual RL)<a class="headerlink" href="#residual-rl" title="Link to this heading"></a></h3>
+<p><strong>文件</strong>: <code class="docutils literal notranslate"><span class="pre">02_residual_rl.md</span></code></p>
+<p><strong>来源项目</strong>: <code class="docutils literal notranslate"><span class="pre">genesis-residual-rl</span></code></p>
+<p><strong>核心内容</strong>:</p>
+<ul class="simple">
+<li><p>残差网络架构设计 (轻量级 + 输出受限)</p></li>
+<li><p>组合策略 (BC + Residual)</p></li>
+<li><p>Residual SAC 训练 (只更新残差网络)</p></li>
+<li><p>Sim-to-Real 微调策略</p></li>
+</ul>
+<p><strong>适用场景</strong>: 行为克隆后微调、操作任务优化、安全探索</p>
+</section>
+<hr class="docutils" />
+<section id="id2">
+<h3>3. 球类运动控制<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p><strong>文件</strong>: <code class="docutils literal notranslate"><span class="pre">03_ball_sports_control.md</span></code></p>
+<p><strong>来源项目</strong>: <code class="docutils literal notranslate"><span class="pre">genesis-humanoid-badminton</span></code>, <code class="docutils literal notranslate"><span class="pre">genesis-table-tennis</span></code></p>
+<p><strong>核心内容</strong>:</p>
+<ul class="simple">
+<li><p>羽毛球/乒乓球物理建模 (空气动力学)</p></li>
+<li><p>三阶段课程学习 (步法→挥拍→协调)</p></li>
+<li><p>EKF 轨迹预测器</p></li>
+<li><p>全身协调控制 (23-29 DOF)</p></li>
+</ul>
+<p><strong>适用场景</strong>: 人形机器人球类运动、高速物体追踪</p>
+</section>
+<hr class="docutils" />
+<section id="id3">
+<h3>4. 通用操作奖励函数<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<p><strong>文件</strong>: <code class="docutils literal notranslate"><span class="pre">04_generalized_manipulation_reward.md</span></code></p>
+<p><strong>来源项目</strong>: <code class="docutils literal notranslate"><span class="pre">genesis-sim2real-dexterous</span></code></p>
+<p><strong>核心内容</strong>:</p>
+<ul class="simple">
+<li><p>接触奖励设计 (手掌 + 手指)</p></li>
+<li><p>物体目标奖励 (任务特定)</p></li>
+<li><p>手部引导奖励</p></li>
+<li><p>多任务通用框架</p></li>
+</ul>
+<p><strong>适用场景</strong>: 抓取放置、双手交接、箱体提升、插销装配</p>
+</section>
+<hr class="docutils" />
+<section id="id4">
+<h3>5. 双预测器架构<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<p><strong>文件</strong>: <code class="docutils literal notranslate"><span class="pre">05_dual_predictor_architecture.md</span></code></p>
+<p><strong>来源项目</strong>: <code class="docutils literal notranslate"><span class="pre">genesis-table-tennis</span></code></p>
+<p><strong>核心内容</strong>:</p>
+<ul class="simple">
+<li><p>学习预测器 (LSTM/MLP，快速鲁棒)</p></li>
+<li><p>物理预测器 (数值积分，精确一致)</p></li>
+<li><p>预测增强奖励设计</p></li>
+<li><p>观测增强策略输入</p></li>
+</ul>
+<p><strong>适用场景</strong>: 高速球类运动、动态避障、多智能体预测</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id5">
+<h2>快速参考<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<section id="id6">
+<h3>按任务类型选择文档<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>任务类型</p></th>
+<th class="head"><p>推荐文档</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>人形机器人行走</p></td>
+<td><p>01_mpc_wbc_controller.md</p></td>
+</tr>
+<tr class="row-odd"><td><p>操作任务微调</p></td>
+<td><p>02_residual_rl.md</p></td>
+</tr>
+<tr class="row-even"><td><p>球类运动</p></td>
+<td><p>03_ball_sports_control.md + 05_dual_predictor_architecture.md</p></td>
+</tr>
+<tr class="row-odd"><td><p>抓取放置</p></td>
+<td><p>04_generalized_manipulation_reward.md</p></td>
+</tr>
+<tr class="row-even"><td><p>Sim-to-Real</p></td>
+<td><p>02_residual_rl.md + 04_generalized_manipulation_reward.md</p></td>
+</tr>
+<tr class="row-odd"><td><p>高速预测</p></td>
+<td><p>05_dual_predictor_architecture.md</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id7">
+<h3>关键技术栈<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>控制器层:
+  ├── MPC (模型预测控制)
+  ├── WBC (全身控制)
+  └── 残差 RL (安全微调)
+
+感知层:
+  ├── EKF 预测
+  └── 双预测器 (学习 + 物理)
+
+学习层:
+  ├── 课程学习
+  ├── 奖励塑形
+  └── Sim-to-Real
+
+奖励层:
+  ├── 接触奖励
+  ├── 目标奖励
+  └── 预测增强奖励
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id8">
+<h2>使用建议<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>阅读顺序</strong>:</p>
+<ul class="simple">
+<li><p>新手: 04 → 02 → 01</p></li>
+<li><p>球类运动: 03 → 05</p></li>
+<li><p>全身控制: 01 → 02</p></li>
+</ul>
+</li>
+<li><p><strong>代码迁移</strong>:</p>
+<ul class="simple">
+<li><p>每个文档包含完整可运行的代码示例</p></li>
+<li><p>可以直接复制到 genesis-cloud-sim 项目中使用</p></li>
+<li><p>注意调整超参数以适应具体任务</p></li>
+</ul>
+</li>
+<li><p><strong>调试技巧</strong>:</p>
+<ul class="simple">
+<li><p>每个文档包含故障排查表格</p></li>
+<li><p>按现象查找可能原因和解决方案</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="id9">
+<h2>贡献指南<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<p>如需添加新的知识模块:</p>
+<ol class="arabic simple">
+<li><p>创建新的 markdown 文件 (<code class="docutils literal notranslate"><span class="pre">06_xxx.md</span></code>)</p></li>
+<li><p>遵循统一的文档结构:</p>
+<ul class="simple">
+<li><p>算法原理 (论文引用 + 核心思想)</p></li>
+<li><p>使用场景 (适用任务 + 限制)</p></li>
+<li><p>代码示例 (最小可运行)</p></li>
+<li><p>超参数指南 (调优建议)</p></li>
+</ul>
+</li>
+<li><p>更新本 README 的索引</p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="id10">
+<h2>相关资源<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://genesis-world.readthedocs.io/">Genesis 官方文档</a></p></li>
+<li><p><a class="reference external" href="https://github.com/OpenLoongRobot">OpenLoong 控制器</a></p></li>
+<li><p><a class="reference external" href="https://maniskill.readthedocs.io/">ManiSkill 文档</a></p></li>
+</ul>
+<hr class="docutils" />
+<p><em>最后更新: 2026-03-13</em></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

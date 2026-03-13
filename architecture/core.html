@@ -1,0 +1,299 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Core Components &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/architecture/core.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Runtime Architecture" href="runtime.html" />
+    <link rel="prev" title="Architecture Overview" href="overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Architecture Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Core Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#environmentcomposer">EnvironmentComposer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#scene-system">Scene System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#base-scene-class">Base Scene Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#predefined-scenes">Predefined Scenes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#robot-embodiments">Robot Embodiments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#available-robots">Available Robots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-custom-robots">Creating Custom Robots</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#task-system">Task System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#built-in-tasks">Built-in Tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-tasks">Custom Tasks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#registry-system">Registry System</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Core Components</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/architecture/core.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="core-components">
+<h1>Core Components<a class="headerlink" href="#core-components" title="Link to this heading"></a></h1>
+<p>The Core module provides the foundational building blocks for simulation environments.</p>
+<section id="environmentcomposer">
+<h2>EnvironmentComposer<a class="headerlink" href="#environmentcomposer" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">EnvironmentComposer</span></code> is the main entry point for creating simulation environments. It combines Scene, Robot, and Task components into a runnable <code class="docutils literal notranslate"><span class="pre">ComposedEnvironment</span></code>.</p>
+<section id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnvironmentComposer</span><span class="p">,</span> <span class="n">ComposerConfig</span>
+
+<span class="n">composer</span> <span class="o">=</span> <span class="n">EnvironmentComposer</span><span class="p">(</span><span class="n">ComposerConfig</span><span class="p">(</span>
+    <span class="n">headless</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span> <span class="mi">720</span><span class="p">),</span>
+<span class="p">))</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">composer</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="configuration">
+<h3>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dt</span></code></p></td>
+<td><p>float</p></td>
+<td><p>0.01</p></td>
+<td><p>Simulation timestep</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">substeps</span></code></p></td>
+<td><p>int</p></td>
+<td><p>10</p></td>
+<td><p>Physics substeps</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">headless</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>False</p></td>
+<td><p>Run without GUI</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">resolution</span></code></p></td>
+<td><p>tuple</p></td>
+<td><p>(640, 480)</p></td>
+<td><p>Camera resolution</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="scene-system">
+<h2>Scene System<a class="headerlink" href="#scene-system" title="Link to this heading"></a></h2>
+<section id="base-scene-class">
+<h3>Base Scene Class<a class="headerlink" href="#base-scene-class" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">SceneConfig</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyScene</span><span class="p">(</span><span class="n">Scene</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_custom</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Add custom objects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="n">ObjectLibrary</span><span class="o">.</span><span class="n">cube</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+</pre></div>
+</div>
+</section>
+<section id="predefined-scenes">
+<h3>Predefined Scenes<a class="headerlink" href="#predefined-scenes" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>EmptyRoom</strong>: Minimal environment for testing</p></li>
+<li><p><strong>LivingRoom</strong>: Furnished living space</p></li>
+<li><p><strong>Kitchen</strong>: Kitchen with appliances</p></li>
+<li><p><strong>Office</strong>: Office environment</p></li>
+</ul>
+</section>
+</section>
+<section id="robot-embodiments">
+<h2>Robot Embodiments<a class="headerlink" href="#robot-embodiments" title="Link to this heading"></a></h2>
+<section id="available-robots">
+<h3>Available Robots<a class="headerlink" href="#available-robots" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Robot</p></th>
+<th class="head"><p>DOF</p></th>
+<th class="head"><p>Type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>FrankaPanda</p></td>
+<td><p>7+1</p></td>
+<td><p>Collaborative arm</p></td>
+</tr>
+<tr class="row-odd"><td><p>UniversalRobotUR5</p></td>
+<td><p>6</p></td>
+<td><p>Industrial arm</p></td>
+</tr>
+<tr class="row-even"><td><p>MobileManipulator</p></td>
+<td><p>10+</p></td>
+<td><p>Mobile base + arm</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="creating-custom-robots">
+<h3>Creating Custom Robots<a class="headerlink" href="#creating-custom-robots" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotEmbodiment</span><span class="p">,</span> <span class="n">EmbodimentConfig</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyRobot</span><span class="p">(</span><span class="n">RobotEmbodiment</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spawn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Implementation</span>
+        <span class="k">pass</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="c1"># Implementation</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="task-system">
+<h2>Task System<a class="headerlink" href="#task-system" title="Link to this heading"></a></h2>
+<section id="built-in-tasks">
+<h3>Built-in Tasks<a class="headerlink" href="#built-in-tasks" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>PickPlaceTask</strong>: Grasp and place objects</p></li>
+<li><p><strong>NavigationTask</strong>: Navigate to target position</p></li>
+<li><p><strong>ReachTask</strong>: Move end-effector to target pose</p></li>
+</ul>
+</section>
+<section id="custom-tasks">
+<h3>Custom Tasks<a class="headerlink" href="#custom-tasks" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span><span class="p">,</span> <span class="n">TaskConfig</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyTask</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="c1"># Compute reward and termination</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_reward</span><span class="p">()</span>
+        <span class="n">terminated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_success</span><span class="p">()</span>
+        <span class="n">truncated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_count</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">max_episode_steps</span>
+        
+        <span class="k">return</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="p">{}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="registry-system">
+<h2>Registry System<a class="headerlink" href="#registry-system" title="Link to this heading"></a></h2>
+<p>The Registry pattern enables dynamic component instantiation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_scene</span><span class="p">,</span> <span class="n">default_registry</span>
+
+<span class="nd">@register_scene</span><span class="p">(</span><span class="s2">&quot;my_scene&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_my_scene</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">MyScene</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="c1"># Later</span>
+<span class="n">scene</span> <span class="o">=</span> <span class="n">default_registry</span><span class="p">()</span><span class="o">.</span><span class="n">create_scene</span><span class="p">(</span><span class="s2">&quot;my_scene&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="overview.html" class="btn btn-neutral float-left" title="Architecture Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="runtime.html" class="btn btn-neutral float-right" title="Runtime Architecture" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
