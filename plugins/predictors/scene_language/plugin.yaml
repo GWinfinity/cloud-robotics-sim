@@ -1,0 +1,32 @@
+name: scene_language
+version: 0.1.0
+description: Scene Language - 使用程序、文字和嵌入表示场景，支持文本到3D生成
+
+category: predictors
+source_project: genesis-scene-language
+
+author:
+  name: Scene Language Team (Stanford)
+  email: scene-language@cs.stanford.edu
+
+dependencies:
+  - numpy>=1.26
+  - torch>=2.0
+  - anthropic>=0.21
+  - openai>=1.0
+  - mitsuba>=3.6
+  - trimesh>=4.0
+  - pillow>=10.0
+  - scipy>=1.11
+  - imageio>=2.31
+  - tqdm>=4.66
+  - spacy>=3.7
+
+tags:
+  - scene_language
+  - text_to_3d
+  - llm
+  - program_synthesis
+  - procedural_generation
+  - mitsuba
+  - minecraft

@@ -1,0 +1,38 @@
+# Default configuration for MPC + WBC Controller
+
+mpc:
+  dt: 0.005
+  horizon: 10
+  control_horizon: 3
+  mass: 77.35
+  
+  # Weight parameters
+  alpha: 1.0e-6
+  L_diag: [1.0, 1.0, 1.0, 1.0, 200.0, 1.0, 1.0e-7, 1.0e-7, 1.0e-7, 100.0, 10.0, 1.0]
+  K_diag: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+  
+  # Force limits
+  max_force: [1000.0, 1000.0, 2280.0, 20.0, 80.0, 100.0]
+  min_force: [-1000.0, -1000.0, 0.0, -20.0, -80.0, -100.0]
+
+wbc:
+  num_dofs: 19
+  dt: 0.005
+  
+  # PD gains
+  kp_com: 100.0
+  kd_com: 20.0
+  kp_swing: 400.0
+  kd_swing: 40.0
+  kp_orientation: 100.0
+  kd_orientation: 20.0
+
+gait:
+  frequency: 1.25
+  gait_type: 'trot'
+  duty_factor: 0.5
+  swing_height: 0.08
+
+# Enable flags
+use_mpc: true
+use_wbc: true

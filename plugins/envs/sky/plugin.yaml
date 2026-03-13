@@ -1,0 +1,51 @@
+name: sky
+version: 0.3.11
+description: Genesis Sky - 通用物理引擎和机器人仿真平台核心
+
+category: envs
+source_project: genesis-sky
+
+author:
+  name: Genesis Embodied AI Team
+  email: genesis@genesis-ai.company
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - taichi>=1.7
+  - pymeshlab>=2022.2
+  - trimesh>=4.0
+  - imageio>=2.31
+  - scipy>=1.10
+  - pillow>=10.0
+  - tqdm>=4.66
+  - pydantic>=2.0
+  - screeninfo>=0.8
+  - pyglet>=2.0
+  - libigl>=2.4
+
+exports:
+  - Scene
+  - Entity
+  - Material
+  - RigidSolver
+  - MPMSolver
+  - SPHSolver
+  - FEMSolver
+  - PBDSolver
+  - ToolSolver
+  - Render
+  - Camera
+  - Light
+
+tags:
+  - genesis
+  - physics_engine
+  - simulation
+  - rigid_body
+  - mpm
+  - sph
+  - fem
+  - pbd
+  - rendering
+  - robotics

@@ -1,0 +1,33 @@
+name: wbm_embrace
+version: 0.1.0
+description: WBM Embrace - 人形机器人全身操作大型物体
+
+category: controllers
+source_project: genesis-wbm-embrace
+
+author:
+  name: WBM Embrace Team
+  email: contact@wbm-embrace.ai
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - genesis-world>=0.2.0
+  - pytorch3d>=0.7.0
+  - tensorboard>=2.13
+
+exports:
+  - EmbraceEnv
+  - MotionPrior
+  - NSDF
+  - TeacherStudentPolicy
+  - BulkyObjectGenerator
+  - WBMTrainer
+
+tags:
+  - wbm
+  - whole_body_manipulation
+  - bulky_objects
+  - motion_prior
+  - nsdf
+  - humanoid

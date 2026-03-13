@@ -1,0 +1,66 @@
+# Stage 3: Full Body Coordination
+
+curriculum_stage: 3
+
+description: |
+  Stage 3 - Full Body Coordination:
+  - All joints unfrozen
+  - Coordinate footwork and swing
+  - Complete the full hitting motion
+
+env:
+  num_envs: 1
+  episode_length: 1000
+  dt: 0.01
+  
+  # 全身控制 (无冻结关节)
+  frozen_joints: []
+
+# 奖励权重
+rewards:
+  hit:
+    weight: 10.0
+    description: "Successfully hit the shuttlecock"
+  
+  hit_speed:
+    weight: 1.0
+    target_speed: 15.0
+    description: "Hit speed reward"
+  
+  landing:
+    weight: 5.0
+    ideal_landing: [3.0, 0.0, 0.0]
+    description: "Landing position accuracy"
+  
+  rally:
+    weight: 2.0
+    consecutive_bonus: 0.5
+    description: "Consecutive hits bonus"
+  
+  balance:
+    weight: 1.0
+    description: "Maintain balance"
+  
+  energy:
+    weight: -0.0005
+    description: "Energy penalty"
+  
+  smoothness:
+    weight: -0.01
+    description: "Action smoothness"
+
+# 发球配置
+serve:
+  initial_velocity_range: [10.0, 15.0]
+  initial_angle_range: [-0.5, 0.5]
+  spin_range: [-5.0, 5.0]
+
+# 场地配置
+court:
+  bounds:
+    x_min: -6.7
+    x_max: 6.7
+    y_min: -2.59
+    y_max: 2.59
+  net_pos: [0, 0, 0.77]
+  net_height: 0.77

@@ -1,0 +1,33 @@
+name: slac
+version: 0.1.0
+description: SLAC - Simulation-Pretrained Latent Action Space for Whole-Body Real-World RL
+
+category: controllers
+source_project: genesis-slac
+
+author:
+  name: SLAC Team
+  email: contact@slac-rl.ai
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - genesis-world>=0.2.0
+  - pytorch3d>=0.7.0
+  - tensorboard>=2.13
+
+exports:
+  - SLACPretrainer
+  - LatentActionVAE
+  - SkillDiscovery
+  - DownstreamPolicy
+  - MobileManipulatorEnv
+  - LatentActionController
+
+tags:
+  - slac
+  - latent_action_space
+  - skill_discovery
+  - sim2real
+  - whole_body_rl
+  - unsupervised_learning

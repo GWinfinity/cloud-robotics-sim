@@ -1,0 +1,46 @@
+# Residual RL Default Configuration
+
+residual_network:
+  obs_dim: 100
+  action_dim: 10
+  hidden_dims: [256, 128, 64]
+  residual_scale: 0.2          # 输出范围限制 [-0.2, 0.2]
+  use_layer_norm: true
+  activation: 'tanh'           # 输出激活函数
+
+training:
+  lr_residual: 3.0e-4          # 残差网络学习率
+  lr_q: 3.0e-4                 # Q 网络学习率
+  lr_alpha: 3.0e-4             # 温度参数学习率
+  gamma: 0.99                  # 折扣因子
+  tau: 0.005                   # 软更新系数
+  batch_size: 256
+  buffer_size: 100000
+  update_freq: 4               # 每4步更新一次
+  
+  # 梯度裁剪
+  grad_clip_norm: 1.0
+  
+  # 目标熵
+  target_entropy: -10          # -action_dim
+
+bc_policy:
+  obs_dim: 100
+  action_dim: 10
+  hidden_dims: [256, 256]
+  dropout: 0.1
+
+vision_encoder:
+  input_channels: 3
+  output_dim: 512
+  use_resnet: true
+
+curriculum:
+  # 逐步增大 residual_scale
+  stages:
+    - episode: 0
+      residual_scale: 0.1      # 前100回合
+    - episode: 100
+      residual_scale: 0.2      # 100-500回合
+    - episode: 500
+      residual_scale: 0.3      # 500回合后

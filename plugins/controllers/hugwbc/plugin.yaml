@@ -1,0 +1,31 @@
+name: hugwbc
+version: 0.1.0
+description: HugWBC 人形机器人全身控制器 - 统一的多任务运动控制
+
+category: controllers
+source_project: hugwbc-genesis
+
+author:
+  name: HugWBC Team
+  email: contact@hugwbc.ai
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - genesis-world>=0.2.0
+  - pyyaml>=6.0
+
+exports:
+  - HugWBCEnv
+  - PPO
+  - TaskType
+  - DomainRandomizer
+  - RewardsCalculator
+
+tags:
+  - humanoid
+  - whole_body_control
+  - locomotion
+  - reinforcement_learning
+  - unitree_h1
+  - asymmetric_actor_critic

@@ -1,0 +1,40 @@
+name: maniskill
+version: 0.1.0
+description: Genesis ManiSkill - 机器人操作仿真平台，整合RoboCasa场景和ManiSkill API
+
+category: envs
+source_project: genesis-maniskill
+
+author:
+  name: Genesis ManiSkill Team
+  email: contact@genesis-maniskill.ai
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - genesis-world>=0.2.0
+  - gymnasium>=0.29
+  - pyyaml>=6.0
+  - h5py>=3.8
+  - imageio>=2.31
+
+exports:
+  - KitchenEnv
+  - TableTopEnv
+  - PickPlaceTask
+  - OpenDrawerTask
+  - RobotLoader
+  - FrankaRobot
+  - UR5Robot
+  - G1Robot
+  - TrajectoryDataset
+
+tags:
+  - manipulation
+  - kitchen
+  - tabletop
+  - gpu_parallel
+  - robocasa
+  - maniskill
+  - franka
+  - ur5

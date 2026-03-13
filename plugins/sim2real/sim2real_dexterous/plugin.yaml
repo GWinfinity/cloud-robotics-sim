@@ -1,0 +1,35 @@
+name: sim2real_dexterous
+version: 0.1.0
+description: Sim-to-Real 灵巧双手操作 - 基于视觉的人形机器人操作
+
+category: sim2real
+source_project: genesis-sim2real-dexterous
+
+author:
+  name: Sim2Real Dexterous Team
+  email: contact@sim2real.ai
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - torchvision>=0.15
+  - genesis-world>=0.2.0
+  - pytorch3d>=0.7.0
+  - opencv-python>=4.8
+  - scipy>=1.10
+
+exports:
+  - DexterousManipulationEnv
+  - Real2SimTuner
+  - PolicyDistillation
+  - HybridObjectRepresentation
+  - UniversalRewardFunction
+  - TaskType
+
+tags:
+  - sim2real
+  - dexterous_manipulation
+  - bimanual
+  - vision_based
+  - policy_distillation
+  - real2sim_tuning

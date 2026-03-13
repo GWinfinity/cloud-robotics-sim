@@ -1,0 +1,51 @@
+# Stage 1: Footwork Training
+
+curriculum_stage: 1
+
+description: |
+  Stage 1 - Footwork Training:
+  - Freeze upper body joints
+  - Focus on lower body movement and positioning
+  - Learn to reach optimal hitting position
+
+env:
+  num_envs: 1
+  episode_length: 1000
+  dt: 0.01
+  
+  # 课程配置
+  frozen_joints:
+    - shoulder_l
+    - shoulder_r
+    - elbow_l
+    - elbow_r
+    - wrist_l
+    - wrist_r
+
+# 奖励权重
+rewards:
+  position:
+    weight: 2.0
+    description: "Distance to optimal hitting position"
+  
+  balance:
+    weight: 1.0
+    description: "Maintain balance (torso height)"
+  
+  energy:
+    weight: -0.001
+    description: "Energy penalty"
+
+# 发球配置
+serve:
+  initial_velocity_range: [8.0, 12.0]
+  initial_angle_range: [-0.3, 0.3]
+
+# 场地配置
+court:
+  bounds:
+    x_min: -6.7
+    x_max: 6.7
+    y_min: -2.59
+    y_max: 2.59
+  net_pos: [0, 0, 0.77]

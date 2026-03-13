@@ -1,0 +1,30 @@
+name: badminton
+version: 0.1.0
+description: Humanoid robot badminton environment with three-stage curriculum learning
+
+category: envs
+source_project: genesis-humanoid-badminton
+
+author:
+  name: Genesis Cloud Sim Team
+  email: team@example.com
+
+dependencies:
+  - numpy>=1.20
+  - pyyaml>=5.4
+  - genesis-world>=0.2.0
+
+exports:
+  - BadmintonEnv
+  - Shuttlecock
+  - BadmintonCourt
+  - CurriculumStage
+  - EKFPredictor
+  - BadmintonRewards
+
+tags:
+  - humanoid
+  - ball_sports
+  - badminton
+  - curriculum_learning
+  - prediction

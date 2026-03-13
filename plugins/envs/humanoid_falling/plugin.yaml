@@ -1,0 +1,32 @@
+name: humanoid_falling
+version: 0.1.0
+description: 人形机器人跌倒保护 - 通过强化学习学会自我保护动作
+
+category: envs
+source_project: genesis-humanoid-falling
+
+author:
+  name: Humanoid Falling Team
+  email: contact@humanoid-falling.ai
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - genesis-world>=0.2.0
+  - pyyaml>=6.0
+  - tensorboard>=2.13
+
+exports:
+  - HumanoidFallingEnv
+  - FallingCurriculum
+  - PPO
+  - RewardCalculator
+  - ImpactMonitor
+
+tags:
+  - humanoid
+  - falling_protection
+  - self_protective
+  - curriculum_learning
+  - safety
+  - reinforcement_learning

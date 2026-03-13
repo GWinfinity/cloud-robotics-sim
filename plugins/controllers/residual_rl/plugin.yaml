@@ -1,0 +1,30 @@
+name: residual_rl
+version: 0.1.0
+description: Residual Reinforcement Learning for finetuning behavior cloning policies
+
+category: controllers
+source_project: genesis-residual-rl
+
+author:
+  name: Genesis Cloud Sim Team
+  email: team@example.com
+
+dependencies:
+  - torch>=1.10
+  - numpy>=1.20
+  - genesis-world>=0.2.0
+
+exports:
+  - ResidualNetwork
+  - CombinedPolicy
+  - ResidualSAC
+  - BCPolicy
+  - VisionEncoder
+  - finetune_residual
+
+tags:
+  - rl
+  - residual_learning
+  - behavior_cloning
+  - sim2real
+  - fine_tuning

@@ -1,0 +1,29 @@
+name: mpc_wbc
+version: 0.1.0
+description: MPC + WBC controller for humanoid robot locomotion
+
+category: controllers
+source_project: openloong-dyn-control
+
+author:
+  name: Genesis Cloud Sim Team
+  email: team@example.com
+
+dependencies:
+  - numpy>=1.20
+  - scipy>=1.7
+  - genesis-world>=0.2.0
+
+exports:
+  - MPCController
+  - WBCController
+  - MPCWBCController
+  - GaitScheduler
+  - WBCConfig
+
+tags:
+  - humanoid
+  - locomotion
+  - mpc
+  - wbc
+  - control

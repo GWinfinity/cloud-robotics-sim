@@ -1,0 +1,34 @@
+name: table_tennis
+version: 0.1.0
+description: 人形机器人乒乓球环境 - 基于预测增强的统一强化学习
+
+category: envs
+source_project: genesis-table-tennis
+
+author:
+  name: Genesis Table Tennis Team
+  email: contact@genesis-world.ai
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - genesis-world>=0.2.0
+  - scipy>=1.10
+  - pyyaml>=6.0
+
+exports:
+  - TableTennisEnv
+  - TableTennisBall
+  - BallTrajectoryPredictor
+  - TableTennisTable
+  - Racket
+  - DualPredictor
+  - UnifiedPolicy
+
+tags:
+  - humanoid
+  - table_tennis
+  - prediction
+  - unified_control
+  - reinforcement_learning
+  - unitree_g1
