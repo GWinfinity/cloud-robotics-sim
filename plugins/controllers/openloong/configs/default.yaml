@@ -1,0 +1,93 @@
+# OpenLoong Walking Controller Default Configuration
+
+# Walking Parameters
+walking:
+  # PD Controller Gains
+  kp_base: 40.0
+  kd_base: 4.0
+  kp_leg: 25.0
+  kd_leg: 2.5
+  kp_knee: 30.0
+  kd_knee: 3.0
+  kp_ankle: 35.0
+  kd_ankle: 3.5
+  
+  # MPC Weights
+  mpc_weight_roll: 10.0
+  mpc_weight_pitch: 10.0
+  mpc_weight_yaw: 5.0
+  mpc_weight_px: 100.0
+  mpc_weight_py: 200.0
+  mpc_weight_pz: 50.0
+  mpc_weight_wx: 1.0
+  mpc_weight_wy: 1.0
+  mpc_weight_wz: 1.0
+  mpc_weight_vx: 10.0
+  mpc_weight_vy: 10.0
+  mpc_weight_vz: 10.0
+  mpc_weight_force: 1.0
+  mpc_weight_torque: 1.0
+  mpc_weight_extra: 0.01
+  
+  # Gait Parameters
+  gait_period: 0.8
+  swing_height: 0.08
+  stance_ratio: 0.5
+  
+  # State Estimation
+  filter_alpha: 0.3
+  
+  # Task Parameters
+  desired_velocity: 0.2
+  torque_limit: 60.0
+  
+  # Robot Model
+  robot_urdf_path: null  # Will use default or auto-detect
+  initial_height: 1.0
+
+# Evaluation
+evaluation:
+  sim_duration: 10.0
+  enable_visualization: false
+  use_genesis: false  # Use simple evaluator by default
+  device: "cuda"
+
+# Environment
+environment:
+  max_episode_steps: 1000
+  render_mode: null  # or "human"
+  
+# Presets
+presets:
+  stable_walk:
+    description: "Stable walking gait, slower but robust"
+    kp_base: 50.0
+    kd_base: 5.0
+    kp_leg: 30.0
+    kd_leg: 3.0
+    kp_knee: 35.0
+    kd_knee: 3.5
+    kp_ankle: 40.0
+    kd_ankle: 4.0
+    gait_period: 0.9
+    swing_height: 0.06
+    
+  fast_walk:
+    description: "Faster walking gait, less stable"
+    kp_base: 35.0
+    kd_base: 3.5
+    kp_leg: 20.0
+    kd_leg: 2.0
+    gait_period: 0.6
+    swing_height: 0.10
+    desired_velocity: 0.4
+    
+  cautious_walk:
+    description: "Very cautious and slow"
+    kp_base: 60.0
+    kd_base: 6.0
+    kp_leg: 35.0
+    kd_leg: 3.5
+    gait_period: 1.0
+    swing_height: 0.05
+    desired_velocity: 0.1

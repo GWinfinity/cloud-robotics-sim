@@ -28,7 +28,7 @@ from .core.models.predictor import DualPredictor
 from .core.models.policy import UnifiedPolicy
 
 # 算法
-from .core.algorithms.ppo import PPO
+from .core.algorithms.ppo import RolloutBuffer
 
 __all__ = [
     'TableTennisEnv',
@@ -38,5 +38,5 @@ __all__ = [
     'Racket',
     'DualPredictor',
     'UnifiedPolicy',
-    'PPO',
+    'RolloutBuffer',
 ]

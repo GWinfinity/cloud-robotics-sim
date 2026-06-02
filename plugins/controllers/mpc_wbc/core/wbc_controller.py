@@ -154,7 +154,8 @@ class WBCController:
         """
         # 质心雅可比 (简化)
         J_com = np.zeros((3, self.num_dofs))
-        J_com[:, :6] = np.eye(3)  # 假设前6个是浮动基
+        cols = min(3, self.num_dofs)
+        J_com[:, :cols] = np.eye(3)[:, :cols]  # 适配任意num_dofs
         
         # 期望加速度 (PD控制)
         pos_err = desired_com_pos - com_pos

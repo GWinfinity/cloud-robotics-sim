@@ -24,19 +24,23 @@ __source__ = "genesis-humanoid-falling"
 
 # 环境
 from .core.envs.humanoid_env import HumanoidFallingEnv
-from .core.envs.curriculum import FallingCurriculum
+from .core.envs.curriculum import CurriculumManager, AdaptiveCurriculumManager, DomainRandomizationCurriculum
 
 # 算法
 from .core.algorithms.ppo import PPO
 
 # 工具
-from .core.utils.rewards import RewardCalculator
-from .core.utils.logger import ImpactMonitor
+from .core.utils.rewards import compute_triangle_reward, compute_impact_penalty
+from .core.utils.logger import Logger, TensorBoardLogger
 
 __all__ = [
     'HumanoidFallingEnv',
-    'FallingCurriculum',
+    'CurriculumManager',
+    'AdaptiveCurriculumManager',
+    'DomainRandomizationCurriculum',
     'PPO',
-    'RewardCalculator',
-    'ImpactMonitor',
+    'compute_triangle_reward',
+    'compute_impact_penalty',
+    'Logger',
+    'TensorBoardLogger',
 ]

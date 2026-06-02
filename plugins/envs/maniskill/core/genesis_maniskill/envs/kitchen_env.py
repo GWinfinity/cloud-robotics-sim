@@ -8,8 +8,8 @@ import numpy as np
 import genesis as gs
 from gymnasium import spaces
 
-from genesis_maniskill.envs.base_env import BaseEnv
-from genesis_maniskill.scenes.kitchen_scene import KitchenSceneBuilder
+from .base_env import BaseEnv
+from ..scenes.kitchen_scene import KitchenSceneBuilder
 
 
 class KitchenEnv(BaseEnv):

@@ -201,7 +201,7 @@ class RobotLoader:
         else:
             self.home_position = torch.zeros(self.config.total_dof)
     
-    def _load_robot(self) -> gs.Entity:
+    def _load_robot(self):
         """Load robot from URDF or MJCF."""
         # Try URDF first
         if self.config.urdf_path and Path(self.config.urdf_path).exists():
@@ -232,7 +232,7 @@ class RobotLoader:
             f"Searched: {self.config.urdf_path}, {self.config.mjcf_path}"
         )
     
-    def _load_urdf(self, path: str) -> gs.Entity:
+    def _load_urdf(self, path: str):
         """Load from URDF."""
         return self.scene.add_entity(
             gs.morphs.URDF(
@@ -241,7 +241,7 @@ class RobotLoader:
             ),
         )
     
-    def _load_mjcf(self, path: str) -> gs.Entity:
+    def _load_mjcf(self, path: str):
         """Load from MJCF."""
         return self.scene.add_entity(
             gs.morphs.MJCF(

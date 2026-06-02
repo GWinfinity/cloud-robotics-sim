@@ -97,7 +97,7 @@ class BaseEnv(gym.Env):
     
     def _build_agent(self):
         """Build the robot agent."""
-        from genesis_maniskill.agents import get_agent
+        from ..agents import get_agent
         self.robot = get_agent(
             self.robot_uid,
             scene=self.scene,
@@ -106,7 +106,7 @@ class BaseEnv(gym.Env):
     
     def _build_task(self):
         """Build the task."""
-        from genesis_maniskill.tasks import get_task
+        from ..tasks import get_task
         self.task = get_task(
             self.task_type,
             env=self,

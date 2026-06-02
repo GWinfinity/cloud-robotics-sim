@@ -16,20 +16,20 @@ Legacy style (still supported):
 """
 
 # Generic robot loader (new recommended way)
-from genesis_maniskill.agents.robot_loader import (
+from .robot_loader import (
     RobotLoader,
     RobotConfig,
     get_robot,
 )
 
 # Legacy robot classes (for backward compatibility)
-from genesis_maniskill.agents.franka import FrankaAgent
-from genesis_maniskill.agents.g1 import G1Agent
-from genesis_maniskill.agents.gr1 import GR1Agent
-from genesis_maniskill.agents.ur5 import UR5Agent
-from genesis_maniskill.agents.kinova import KinovaGen3Agent
-from genesis_maniskill.agents.xarm import XArmAgent
-from genesis_maniskill.agents.mobile_manipulator import MobileManipulatorAgent
+from .franka import FrankaAgent
+from .g1 import G1Agent
+from .gr1 import GR1Agent
+from .ur5 import UR5Agent
+from .kinova import KinovaGen3Agent
+from .xarm import XArmAgent
+from .mobile_manipulator import MobileManipulatorAgent
 
 
 def get_agent(agent_name: str, scene, num_envs: int = 1, **kwargs):

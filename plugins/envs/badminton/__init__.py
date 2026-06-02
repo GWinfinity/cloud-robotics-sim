@@ -17,15 +17,20 @@ __author__ = "Genesis Cloud Sim Team"
 
 from .core.badminton_env import BadmintonEnv
 from .core.shuttlecock import Shuttlecock, BadmintonCourt
-from .core.curriculum import CurriculumStage
-from .core.ekf import EKFPredictor
-from .core.rewards import BadmintonRewards
+from .core.curriculum import ThreeStageCurriculum, AdaptiveStageTransition, DomainRandomization
+from .core.ekf import ShuttlecockEKF, PredictionFreeVariant
+from .core.rewards import compute_hit_reward, compute_landing_reward, compute_footwork_reward
 
 __all__ = [
     'BadmintonEnv',
     'Shuttlecock',
     'BadmintonCourt',
-    'CurriculumStage',
-    'EKFPredictor',
-    'BadmintonRewards'
+    'ThreeStageCurriculum',
+    'AdaptiveStageTransition',
+    'DomainRandomization',
+    'ShuttlecockEKF',
+    'PredictionFreeVariant',
+    'compute_hit_reward',
+    'compute_landing_reward',
+    'compute_footwork_reward'
 ]

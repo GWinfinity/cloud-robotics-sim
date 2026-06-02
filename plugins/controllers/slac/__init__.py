@@ -24,9 +24,12 @@ __source__ = "genesis-slac"
 __paper__ = "arXiv:2506.04147"
 
 # 模型
-from .core.models.latent_action import LatentActionVAE
-from .core.models.skill_discovery import SkillDiscovery
-from .core.models.downstream_policy import DownstreamPolicy
+from .core.models.latent_action import (
+    LatentActionSpace,
+    PrimitiveActionDecoder,
+    LatentActionController,
+    SafetyConstrainedLatentSpace,
+)
 
 # 环境
 from .core.envs.mobile_manipulator import MobileManipulatorEnv
@@ -55,9 +58,9 @@ class LatentActionController:
 
 __all__ = [
     'SLACPretrainer',
-    'LatentActionVAE',
-    'SkillDiscovery',
-    'DownstreamPolicy',
-    'MobileManipulatorEnv',
+    'LatentActionSpace',
+    'PrimitiveActionDecoder',
     'LatentActionController',
+    'SafetyConstrainedLatentSpace',
+    'MobileManipulatorEnv',
 ]

@@ -1,0 +1,79 @@
+# ART Scenes Plugin for genesis-cloud-sim
+#
+# Artistic and culturally-themed scene presets for Genesis simulations.
+
+name: "art_scenes"
+version: "0.1.0"
+type: "scene"
+description: "Artistic and culturally-themed scene presets for Genesis simulations"
+author: "ART Team / Cloud Robotics Sim"
+license: "Apache-2.0"
+
+# Dependencies
+dependencies:
+  required:
+    - genesis-world>=0.4.0
+    - numpy>=1.20.0
+    - trimesh>=3.0.0
+  optional:
+    - pillow>=8.0.0  # For texture loading
+
+# Scene presets provided
+scenes:
+  spring_festival:
+    name: "Spring Festival Living Room"
+    description: "Traditional Chinese New Year decorated living room"
+    file: "spring_festival/scene.py"
+    class: "SpringFestivalScene"
+    
+# Assets
+assets:
+  furniture:
+    - sofa
+    - coffee_table
+    - tv_set
+    - carpet
+  decorations:
+    - lantern
+    - fu_character
+    - chinese_knot
+
+# Plugin configuration
+config:
+  default_room:
+    width: 20.0
+    height: 10.0
+    depth: 20.0
+    wall_color: [0.55, 0.27, 0.07]  # 暖棕色
+    ceiling_color: [1.0, 1.0, 1.0]  # 白色
+    
+  default_lighting:
+    ambient:
+      intensity: 0.4
+      color: [1.0, 1.0, 1.0]
+    directional:
+      intensity: 1.0
+      color: [1.0, 0.84, 0.0]  # 暖黄色
+
+# Entry points
+entry_points:
+  scene_builder: "core.scene_builder:SceneBuilder"
+  spring_festival: "spring_festival.scene:SpringFestivalScene"
+
+# Integration with other plugins
+integration:
+  compatible_with:
+    - dreamdojo
+    - maniskill
+  provides:
+    - room_generation
+    - furniture_placement
+    - cultural_decorations
+
+# Testing
+testing:
+  test_module: "tests.test_art_scenes"
+  required_tests:
+    - test_scene_creation
+    - test_furniture_placement
+    - test_decorations

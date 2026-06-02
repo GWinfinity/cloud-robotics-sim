@@ -38,7 +38,7 @@ class GaitScheduler:
         
         # 状态
         self.phase = 0.0  # 当前相位 [0, 1]
-        self.period = 1.0 / frequency
+        self.period = 1.0 / frequency if frequency > 0 else float('inf')
     
     def update(self, dt: float) -> float:
         """

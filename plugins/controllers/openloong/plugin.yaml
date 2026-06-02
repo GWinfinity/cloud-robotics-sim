@@ -1,0 +1,57 @@
+# OpenLoong Walking Controller Plugin
+
+name: "openloong"
+version: "0.1.0"
+type: "controller"
+description: "OpenLoong humanoid robot walking parameter optimization"
+author: "OpenEvolve Team / Cloud Robotics Sim"
+license: "Apache-2.0"
+
+# Dependencies
+dependencies:
+  required:
+    - numpy>=1.20.0
+  optional:
+    - genesis-world>=0.4.0
+    - gymnasium>=0.28.0
+
+# Controller capabilities
+capabilities:
+  - walking_control
+  - parameter_optimization
+  - gait_generation
+
+# Entry points
+entry_points:
+  parameters: "core.walking_params:WalkingParameters"
+  evaluator: "core.evaluator:WalkingEvaluator"
+  environment: "core.env:OpenLoongWalkingEnv"
+
+# Configuration
+config:
+  default_config: "configs/default.yaml"
+  
+  # Supported robots
+  supported_robots:
+    - openloong
+    - azure_loong
+    - humanoid  # Fallback
+
+# Integration with other plugins
+integration:
+  compatible_with:
+    - dreamdojo
+    - maniskill
+  provides:
+    - walking_evaluation
+    - parameter_tuning
+  uses:
+    - genesis_simulation
+
+# Testing
+testing:
+  test_module: "tests.test_openloong"
+  required_tests:
+    - test_walking_params
+    - test_evaluator
+    - test_environment

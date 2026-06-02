@@ -28,14 +28,19 @@ from .core.envs.embrace_env import EmbraceEnv
 from .core.envs.bulky_objects import BulkyObjectGenerator
 
 # 模型
-from .core.models.motion_prior import MotionPrior
+from .core.models.motion_prior import MotionPriorVAE, HumanMotionDataset, MotionPriorTrainer
 from .core.models.nsdf import NSDF
-from .core.models.teacher_student import TeacherStudentPolicy
+from .core.models.teacher_student import TeacherPolicy, StudentPolicy, DistillationLoss, WBMTrainer
 
 __all__ = [
     'EmbraceEnv',
     'BulkyObjectGenerator',
-    'MotionPrior',
+    'MotionPriorVAE',
+    'HumanMotionDataset',
+    'MotionPriorTrainer',
     'NSDF',
-    'TeacherStudentPolicy',
+    'TeacherPolicy',
+    'StudentPolicy',
+    'DistillationLoss',
+    'WBMTrainer',
 ]

@@ -33,12 +33,12 @@ from .core.algorithms.ppo import PPO
 
 # 工具
 from .core.utils.domain_rand import DomainRandomizer
-from .core.utils.rewards import RewardsCalculator
+from .core.utils.rewards import RewardComputer
 
 __all__ = [
     'HugWBCEnv',
     'TaskType',
     'PPO',
     'DomainRandomizer',
-    'RewardsCalculator',
+    'RewardComputer',
 ]

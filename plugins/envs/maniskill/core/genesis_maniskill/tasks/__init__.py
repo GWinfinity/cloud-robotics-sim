@@ -1,23 +1,23 @@
 """Tasks for Genesis ManiSkill"""
 
 # Basic tasks
-from genesis_maniskill.tasks.pick_place import PickPlaceTask
-from genesis_maniskill.tasks.open_drawer import OpenDrawerTask
-from genesis_maniskill.tasks.push import PushTask
-from genesis_maniskill.tasks.stack import StackTask
+from .pick_place import PickPlaceTask
+from .open_drawer import OpenDrawerTask
+from .push import PushTask
+from .stack import StackTask
 
 # Kitchen tasks
-from genesis_maniskill.tasks.prepare_food import PrepareFoodTask
-from genesis_maniskill.tasks.cleanup import CleanupTask
-from genesis_maniskill.tasks.organize_cabinet import OrganizeCabinetTask
+from .prepare_food import PrepareFoodTask
+from .cleanup import CleanupTask
+from .organize_cabinet import OrganizeCabinetTask
 
 # Tabletop tasks
-from genesis_maniskill.tasks.insert import InsertTask
-from genesis_maniskill.tasks.sort import SortTask
-from genesis_maniskill.tasks.assembly import AssemblyTask
+from .insert import InsertTask
+from .sort import SortTask
+from .assembly import AssemblyTask
 
 # Mobile manipulation
-from genesis_maniskill.tasks.mobile_manipulation import MobileManipulationTask
+from .mobile_manipulation import MobileManipulationTask
 
 
 TASK_REGISTRY = {

@@ -111,8 +111,11 @@ class MPCWBCController:
         else:
             # 简化: 只补偿重力
             contact_forces = np.zeros(12)
-            contact_forces[2] = -self.mpc.m * self.mpc.g / 2
-            contact_forces[8] = -self.mpc.m * self.mpc.g / 2
+            # 使用默认质量计算重力补偿
+            default_mass = 77.35
+            default_g = -9.81
+            contact_forces[2] = -default_mass * default_g / 2
+            contact_forces[8] = -default_mass * default_g / 2
         
         # WBC: 计算关节力矩
         if self.use_wbc:

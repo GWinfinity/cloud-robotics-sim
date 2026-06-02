@@ -18,12 +18,14 @@ __author__ = "Genesis Cloud Sim Team"
 
 from .core.residual_network import ResidualNetwork, CombinedPolicy, ResidualSAC
 from .core.bc_policy import BCPolicy
-from .core.vision_encoder import VisionEncoder
+from .core.vision_encoder import ResNet18Encoder, CustomVisionEncoder, MultiViewEncoder
 
 __all__ = [
     'ResidualNetwork',
     'CombinedPolicy',
     'ResidualSAC',
     'BCPolicy',
-    'VisionEncoder'
+    'ResNet18Encoder',
+    'CustomVisionEncoder',
+    'MultiViewEncoder',
 ]

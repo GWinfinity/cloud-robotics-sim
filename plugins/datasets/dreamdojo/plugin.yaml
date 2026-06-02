@@ -1,0 +1,76 @@
+# DreamDojo Genesis Dataset Plugin
+# 
+# This plugin provides Genesis physics simulator integration for DreamDojo's
+# world model training and inference within the genesis-cloud-sim framework.
+
+name: "dreamdojo"
+version: "0.1.0"
+type: "dataset"
+description: "Genesis physics simulator dataset integration for DreamDojo world models"
+author: "DreamDojo Team / Cloud Robotics Sim"
+license: "Apache-2.0"
+
+# Dependencies
+dependencies:
+  required:
+    - genesis-world>=0.4.0
+    - numpy>=1.20.0
+    - torch>=2.0.0
+    - h5py>=3.0.0
+  optional:
+    - tqdm>=4.60.0
+    - opencv-python>=4.5.0
+
+# Genesis compatibility
+genesis:
+  min_version: "0.4.0"
+  supported_backends:
+    - cuda
+    - cpu
+  supported_robots:
+    - humanoid
+    - franka
+    - ur5
+    - g1
+    - gr1
+    - custom
+
+# Plugin configuration
+config:
+  # Default configuration file
+  default_config: "configs/genesis.yaml"
+  
+  # Dataset paths (relative to plugin directory)
+  paths:
+    datasets: "datasets"
+    cache: "cache"
+    
+  # Embodiment tags recognized by this plugin
+  embodiments:
+    - genesis
+    - genesis_humanoid
+    - genesis_arm
+
+# Entry points
+entry_points:
+  simulator: "core.simulator:GenesisSimulator"
+  dataset: "core.dataset:GenesisDataset"
+  dataset_wrapper: "core.dataset:GenesisDatasetWrapper"
+
+# Integration with other plugins
+integration:
+  compatible_with:
+    - maniskill
+    - sky
+  provides:
+    - synthetic_data_generation
+    - online_simulation
+    - pregenerated_dataset_loading
+
+# Testing
+testing:
+  test_module: "tests.test_dreamdojo"
+  required_tests:
+    - test_simulator_init
+    - test_dataset_loading
+    - test_online_generation

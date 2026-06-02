@@ -24,7 +24,7 @@ __source__ = "genesis-sim2real-dexterous"
 __paper__ = "arXiv:2502.20396"
 
 # 环境
-from .core.envs.dexterous_env import DexterousManipulationEnv, TaskType
+from .core.envs.dexterous_env import DexterousManipulationEnv
 
 # 算法
 from .core.algorithms.real2sim_tuning import Real2SimTuner
@@ -32,13 +32,12 @@ from .core.algorithms.real2sim_tuning import Real2SimTuner
 # 模型
 from .core.models.policy_distillation import PolicyDistillation
 from .core.models.object_representation import HybridObjectRepresentation
-from .core.models.reward_function import UniversalRewardFunction
+from .core.models.reward_function import GeneralizedRewardFunction
 
 __all__ = [
     'DexterousManipulationEnv',
-    'TaskType',
     'Real2SimTuner',
     'PolicyDistillation',
     'HybridObjectRepresentation',
-    'UniversalRewardFunction',
+    'GeneralizedRewardFunction',
 ]

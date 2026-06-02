@@ -10,8 +10,8 @@ import torch.optim as optim
 import numpy as np
 from typing import Dict, Tuple, Optional
 
-from models.policy import UnifiedPolicy, ValueNetwork
-from models.predictor import LearnedPredictor
+from ..models.policy import UnifiedPolicy, ValueNetwork
+from ..models.predictor import LearnedPredictor
 
 
 class RolloutBuffer:

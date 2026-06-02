@@ -11,8 +11,8 @@ import numpy as np
 from typing import Dict, List, Optional
 import copy
 
-from models.fb_model import FBModel
-from models.policy import LatentConditionedPolicy
+from ..models.fb_model import FBModel
+from ..models.policy import LatentConditionedPolicy
 
 
 class ReplayBuffer:

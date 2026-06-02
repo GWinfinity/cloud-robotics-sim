@@ -5,12 +5,12 @@ Genesis ManiSkill: Robot Manipulation Simulation Platform
 __version__ = "0.1.0"
 
 # Environments
-from genesis_maniskill.envs.base_env import BaseEnv
-from genesis_maniskill.envs.kitchen_env import KitchenEnv
-from genesis_maniskill.envs.tabletop_env import TableTopEnv
+from .envs.base_env import BaseEnv
+from .envs.kitchen_env import KitchenEnv
+from .envs.tabletop_env import TableTopEnv
 
 # Robots
-from genesis_maniskill.agents import (
+from .agents import (
     get_agent,
     list_available_agents,
     get_agent_info,
@@ -24,7 +24,7 @@ from genesis_maniskill.agents import (
 )
 
 # Tasks
-from genesis_maniskill.tasks import (
+from .tasks import (
     get_task,
     list_available_tasks,
     PickPlaceTask,

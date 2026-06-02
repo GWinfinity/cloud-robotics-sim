@@ -5,8 +5,14 @@ Bulky Object Generation
 """
 
 import numpy as np
-import genesis as gs
 from typing import Dict, Tuple, List
+
+try:
+    import genesis as gs
+    HAS_GENESIS = True
+except ImportError:
+    HAS_GENESIS = False
+    gs = None
 
 
 class BulkyObjectGenerator:
@@ -20,12 +26,12 @@ class BulkyObjectGenerator:
     - 不规则形状
     """
     
-    def __init__(self, scene: gs.Scene, config: Dict):
+    def __init__(self, scene=None, config: Dict = None):
         self.scene = scene
-        self.config = config
+        self.config = config or {}
         
     def generate_box(self, size: Tuple[float, float, float], 
-                     position: np.ndarray, mass: float) -> gs.Entity:
+                     position: np.ndarray, mass: float):
         """生成长方体"""
         entity = self.scene.add_entity(
             morph=gs.morphs.Box(
@@ -41,7 +47,7 @@ class BulkyObjectGenerator:
         return entity
     
     def generate_cylinder(self, radius: float, height: float,
-                          position: np.ndarray, mass: float) -> gs.Entity:
+                          position: np.ndarray, mass: float):
         """生成圆柱体"""
         entity = self.scene.add_entity(
             morph=gs.morphs.Cylinder(
@@ -56,7 +62,7 @@ class BulkyObjectGenerator:
         return entity
     
     def generate_sphere(self, radius: float,
-                        position: np.ndarray, mass: float) -> gs.Entity:
+                        position: np.ndarray, mass: float):
         """生成球体"""
         entity = self.scene.add_entity(
             morph=gs.morphs.Sphere(
@@ -69,7 +75,7 @@ class BulkyObjectGenerator:
         )
         return entity
     
-    def generate_random_object(self, object_type: str = None) -> Tuple[gs.Entity, Dict]:
+    def generate_random_object(self, object_type: str = None):
         """
         生成随机物体
         
@@ -114,7 +120,7 @@ class BulkyObjectGenerator:
         
         return entity, info
     
-    def get_object_mesh_vertices(self, entity: gs.Entity, info: Dict) -> np.ndarray:
+    def get_object_mesh_vertices(self, entity, info: Dict) -> np.ndarray:
         """
         获取物体网格顶点 (用于NSDF)
         

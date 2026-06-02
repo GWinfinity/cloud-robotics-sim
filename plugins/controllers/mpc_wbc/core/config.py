@@ -41,8 +41,8 @@ class MPCConfig:
 
 
 @dataclass
-class WBCConfig:
-    """WBC 配置"""
+class WBCJointConfig:
+    """WBC 关节级配置"""
     num_dofs: int = 19                   # 自由度数量
     dt: float = 0.005                    # 控制周期
     
@@ -68,7 +68,7 @@ class GaitConfig:
 class WBCConfig:
     """完整配置"""
     mpc: MPCConfig = field(default_factory=MPCConfig)
-    wbc: WBCConfig = field(default_factory=WBCConfig)
+    wbc: WBCJointConfig = field(default_factory=WBCJointConfig)
     gait: GaitConfig = field(default_factory=GaitConfig)
     
     # 启用开关

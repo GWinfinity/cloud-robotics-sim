@@ -1,0 +1,105 @@
+# Genesis Simulator Configuration for DreamDojo
+# 
+# This configuration file defines default settings for Genesis simulator
+# across different robot embodiments.
+
+# Default scene configuration
+scene:
+  sim_options:
+    dt: 0.01
+    substeps: 10
+  viewer_options:
+    res: [1280, 720]
+    camera_pos: [3.5, 0.0, 2.5]
+    camera_lookat: [0.0, 0.0, 0.5]
+  show_viewer: false
+
+# Camera configuration
+camera:
+  res: [640, 480]
+  pos: [1.5, 0.0, 1.0]
+  lookat: [0.0, 0.0, 0.5]
+  fov: 40
+  GUI: false
+
+# Robot configurations
+robots:
+  humanoid:
+    type: "humanoid"
+    action_dim: 21
+    mjcf_path: "xml/humanoid/humanoid.xml"
+    default_pos: [0.0, 0.0, 1.0]
+    
+  franka:
+    type: "franka"
+    action_dim: 7
+    urdf_path: "urdf/robots/franka_emika_panda/panda.urdf"
+    default_pos: [0.0, 0.0, 0.0]
+    default_euler: [0, 0, 0]
+    
+  ur5:
+    type: "ur5"
+    action_dim: 6
+    urdf_path: "urdf/robots/ur5/ur5.urdf"
+    default_pos: [0.0, 0.0, 0.0]
+    default_euler: [0, 0, 0]
+    
+  g1:
+    type: "g1"
+    action_dim: 29
+    urdf_paths:
+      - "urdf/robots/g1/g1.urdf"
+      - "urdf/g1/g1.urdf"
+      - "assets/g1/g1.urdf"
+    default_pos: [0.0, 0.0, 0.8]
+    default_euler: [0, 0, 0]
+    
+  gr1:
+    type: "gr1"
+    action_dim: 32
+    urdf_paths:
+      - "urdf/robots/gr1/gr1.urdf"
+      - "urdf/gr1/gr1.urdf"
+      - "assets/gr1/gr1.urdf"
+    default_pos: [0.0, 0.0, 0.8]
+    default_euler: [0, 0, 0]
+
+# Dataset configuration
+dataset:
+  num_frames: 81
+  episode_length: 100
+  fps: 20
+  
+  # Embodiment-specific modality configs
+  embodiments:
+    genesis_humanoid:
+      timestep_interval: 2
+      video_key: "video.ego_view"
+      state_keys:
+        - "state.joint_position"
+        - "state.joint_velocity"
+        - "state.base_position"
+        - "state.base_orientation"
+      action_keys:
+        - "action.joint_position"
+        - "action.joint_velocity"
+        
+    genesis_arm:
+      timestep_interval: 2
+      video_key: "video.wrist_view"
+      state_keys:
+        - "state.arm_joint_position"
+        - "state.arm_joint_velocity"
+        - "state.ee_position"
+        - "state.ee_orientation"
+        - "state.gripper_position"
+      action_keys:
+        - "action.arm_joint_position"
+        - "action.gripper_position"
+
+# Training configuration
+training:
+  control_freq: 20
+  sim_freq: 100
+  batch_size: 32
+  num_workers: 4

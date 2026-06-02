@@ -26,7 +26,7 @@ __paper__ = "arXiv:2511.04131"
 
 # 模型
 from .core.models.fb_model import FBModel
-from .core.models.policy import BFMZeroPolicy
+from .core.models.policy import LatentConditionedPolicy, PromptEncoder, MultiTaskPolicy
 
 # 任务
 from .core.tasks.motion_tracking import MotionTrackingTask
@@ -40,15 +40,17 @@ from .core.envs.humanoid_env import HumanoidEnv
 from .core.algorithms.fb_training import FBTrainer
 
 # 工具
-from .core.utils.domain_rand import DomainRandomizer
+from .core.utils.domain_rand import DomainRandomization
 
 __all__ = [
     'FBModel',
-    'BFMZeroPolicy',
+    'LatentConditionedPolicy',
+    'PromptEncoder',
+    'MultiTaskPolicy',
     'MotionTrackingTask',
     'GoalReachingTask',
     'RewardOptimizationTask',
     'HumanoidEnv',
     'FBTrainer',
-    'DomainRandomizer',
+    'DomainRandomization',
 ]

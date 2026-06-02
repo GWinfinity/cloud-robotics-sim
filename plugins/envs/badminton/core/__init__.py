@@ -13,9 +13,9 @@ Genesis Humanoid Badminton
 __version__ = "0.1.0"
 __author__ = "Genesis RL Team"
 
-from envs.badminton_env import BadmintonEnv
-from envs.curriculum import ThreeStageCurriculum
-from algorithms.ppo import PPO
+from .badminton_env import BadmintonEnv
+from .curriculum import ThreeStageCurriculum
+from .algorithms.ppo import PPO
 
 __all__ = [
     'BadmintonEnv',
