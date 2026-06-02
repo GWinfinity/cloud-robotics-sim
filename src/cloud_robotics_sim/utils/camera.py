@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Camera utilities for Genesis simulations.
+"""Camera utilities for Genesis simulations.
 
 This module provides camera-related utilities adapted from ManiSkill's
 genesis_utils.py to work with genesis-cloud-sim's architecture.
@@ -30,12 +29,12 @@ References:
     - Genesis: https://github.com/Genesis-Embodied-AI/Genesis
 """
 
-from typing import Optional, Tuple, Union, List
-from typing import Any
+from typing import Any, List, Optional, Tuple, Union
 
 # Optional dependencies
 try:
     import numpy as np
+
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
@@ -43,6 +42,7 @@ except ImportError:
 
 try:
     import torch
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
@@ -51,6 +51,7 @@ except ImportError:
 # Genesis imports
 try:
     import genesis as gs
+
     HAS_GENESIS = True
 except ImportError:
     HAS_GENESIS = False
@@ -58,13 +59,13 @@ except ImportError:
 
 # Import Pose from genesis_compat
 try:
-    from .genesis_compat import Pose, matrix_to_quaternion, GENESIS_RENDER_SYSTEM
+    from .genesis_compat import GENESIS_RENDER_SYSTEM, Pose, matrix_to_quaternion
 except ImportError:
     # Fallback if not available
     class Pose:
         def __init__(self, raw_pose):
             self.raw_pose = raw_pose
-        
+
         @classmethod
         def create_from_pq(cls, p=None, q=None, device=None):
             if HAS_TORCH:
@@ -85,30 +86,32 @@ except ImportError:
                 return cls(raw_pose)
             else:
                 return cls(None)
-    
+
     def matrix_to_quaternion(matrix):
         if HAS_TORCH:
             return torch.tensor([1.0, 0.0, 0.0, 0.0])
         return [1.0, 0.0, 0.0, 0.0]
-    
+
     GENESIS_RENDER_SYSTEM = "1.0"
 
 
 ArrayLike = Any  # Union[np.ndarray, torch.Tensor]
 
 
-def genesis_pose_to_opencv_extrinsic(genesis_pose_matrix: ArrayLike) -> Optional[ArrayLike]:
+def genesis_pose_to_opencv_extrinsic(
+    genesis_pose_matrix: ArrayLike,
+) -> Optional[ArrayLike]:
     """Convert Genesis pose matrix to OpenCV extrinsic matrix.
-    
+
     Args:
         genesis_pose_matrix: Genesis pose matrix (4x4).
-        
+
     Returns:
         OpenCV extrinsic matrix (4x4).
     """
     if not HAS_NUMPY:
         return None
-        
+
     genesis2opencv = np.array(
         [
             [0.0, -1.0, 0.0, 0.0],
@@ -126,7 +129,7 @@ def look_at(
     eye: Union[List, ArrayLike],
     target: Union[List, ArrayLike],
     up: Union[List, ArrayLike] = (0, 0, 1),
-    device: Optional[str] = None
+    device: Optional[str] = None,
 ) -> Pose:
     """Get the camera pose in Genesis by the Look-At method.
 
@@ -141,14 +144,14 @@ def look_at(
         target: Looking-at location [x, y, z].
         up: A general direction of "up" from the camera (default: [0, 0, 1]).
         device: Device to put the pose on (for torch tensors).
-        
+
     Returns:
         Pose: Camera pose.
     """
     if not HAS_TORCH:
         # Fallback without torch - return simple pose
         return Pose.create_from_pq(p=eye, q=[1, 0, 0, 0], device=device)
-    
+
     # Convert inputs to tensors
     if not isinstance(eye, torch.Tensor):
         eye = torch.tensor(eye, dtype=torch.float32, device=device)
@@ -175,41 +178,41 @@ def look_at(
     left = torch.cross(up, forward, dim=-1)
     left = normalize_tensor(left)
     up = torch.cross(forward, left, dim=-1)
-    
+
     # Create rotation matrix
     rotation = torch.stack([forward, left, up], dim=-1)
-    
+
     return Pose.create_from_pq(p=eye, q=matrix_to_quaternion(rotation))
 
 
 def hex2rgba(h: str, correction: bool = True) -> Optional[ArrayLike]:
     """Convert hex color to RGBA.
-    
+
     Args:
         h: Hex color string (e.g., "#FF0000").
         correction: Whether to apply gamma correction.
-        
+
     Returns:
         RGBA color as numpy array [r, g, b, a] in range [0, 1].
     """
     if not HAS_NUMPY:
         return None
-        
+
     # https://stackoverflow.com/a/29643643
     h = h.lstrip("#")
     r, g, b = tuple(int(h[i : i + 2], 16) / 255 for i in (0, 2, 4))
     rgba = np.array([r, g, b, 1.0])
     if correction:  # reverse gamma correction in genesis
-        rgba = rgba ** 2.2
+        rgba = rgba**2.2
     return rgba
 
 
 def rgba2hex(rgba: ArrayLike) -> str:
     """Convert RGBA to hex color.
-    
+
     Args:
         rgba: RGBA values in range [0, 1] or [0, 255].
-        
+
     Returns:
         Hex color string (e.g., "#FF0000").
     """
@@ -218,9 +221,7 @@ def rgba2hex(rgba: ArrayLike) -> str:
         # Check if values are in [0, 1]
         if rgba.max() <= 1.0:
             rgba = (rgba * 255).astype(int)
-        return "#{:02x}{:02x}{:02x}".format(
-            int(rgba[0]), int(rgba[1]), int(rgba[2])
-        )
+        return "#{:02x}{:02x}{:02x}".format(int(rgba[0]), int(rgba[1]), int(rgba[2]))
     else:
         # Manual conversion
         r, g, b = rgba[:3]
@@ -233,18 +234,18 @@ def spherical_to_cartesian(
     radius: float,
     azimuth: float,
     elevation: float,
-    target: Union[List, ArrayLike] = (0, 0, 0)
+    target: Union[List, ArrayLike] = (0, 0, 0),
 ) -> ArrayLike:
     """Convert spherical coordinates to cartesian position.
-    
+
     Useful for positioning cameras around an object.
-    
+
     Args:
         radius: Distance from target.
         azimuth: Azimuth angle in radians (0 = positive x-axis).
         elevation: Elevation angle in radians (0 = horizontal).
         target: Target position to look at.
-        
+
     Returns:
         Camera position [x, y, z].
     """
@@ -255,6 +256,7 @@ def spherical_to_cartesian(
         return np.array([x, y, z]) + np.array(target)
     else:
         import math
+
         x = radius * math.cos(elevation) * math.cos(azimuth)
         y = radius * math.cos(elevation) * math.sin(azimuth)
         z = radius * math.sin(elevation)
@@ -263,11 +265,11 @@ def spherical_to_cartesian(
 
 def compute_fovy(focal_length: float, sensor_height: float) -> float:
     """Compute vertical field of view from focal length.
-    
+
     Args:
         focal_length: Focal length in mm.
         sensor_height: Sensor height in mm.
-        
+
     Returns:
         Vertical FOV in degrees.
     """
@@ -275,6 +277,7 @@ def compute_fovy(focal_length: float, sensor_height: float) -> float:
         return 2 * np.arctan(sensor_height / (2 * focal_length)) * 180 / np.pi
     else:
         import math
+
         return 2 * math.atan(sensor_height / (2 * focal_length)) * 180 / math.pi
 
 
@@ -284,42 +287,42 @@ def get_camera_rays(
     image_size: Tuple[int, int],
 ) -> Tuple[ArrayLike, ArrayLike]:
     """Compute camera rays for each pixel.
-    
+
     Args:
         camera_pose: Camera pose matrix (4x4).
         intrinsics: Camera intrinsics matrix (3x3).
         image_size: (height, width) of the image.
-        
+
     Returns:
         Tuple of (ray_origins, ray_directions) each with shape (H, W, 3).
     """
     if not HAS_NUMPY:
         return None, None
-        
+
     height, width = image_size
-    
+
     # Create pixel grid
     u, v = np.meshgrid(np.arange(width), np.arange(height))
-    
+
     # Convert to normalized camera coordinates
     fx, fy = intrinsics[0, 0], intrinsics[1, 1]
     cx, cy = intrinsics[0, 2], intrinsics[1, 2]
-    
+
     x = (u - cx) / fx
     y = (v - cy) / fy
     z = np.ones_like(x)
-    
+
     # Ray directions in camera space
     directions = np.stack([x, y, z], axis=-1)
     directions = directions / np.linalg.norm(directions, axis=-1, keepdims=True)
-    
+
     # Transform to world space
     R = camera_pose[:3, :3]
     t = camera_pose[:3, 3]
-    
+
     ray_directions = (R @ directions.reshape(-1, 3).T).T.reshape(height, width, 3)
     ray_origins = np.broadcast_to(t, ray_directions.shape)
-    
+
     return ray_origins, ray_directions
 
 
@@ -327,22 +330,23 @@ def get_camera_rays(
 # Viewer Creation Helpers
 # =============================================================================
 
+
 def create_viewer(viewer_camera_config) -> Optional[Any]:
     """Creates a viewer with the given camera config.
-    
+
     Args:
         viewer_camera_config: Configuration for the viewer camera.
-        
+
     Returns:
         Viewer object or None if Genesis not available.
     """
     if not HAS_GENESIS:
         return None
-    
+
     import sys
-    
+
     if GENESIS_RENDER_SYSTEM == "1.0":
-        if hasattr(gs, 'render') and hasattr(gs.render, 'set_viewer_shader_dir'):
+        if hasattr(gs, "render") and hasattr(gs.render, "set_viewer_shader_dir"):
             gs.render.set_viewer_shader_dir(
                 viewer_camera_config.shader_config.shader_pack
             )
@@ -362,18 +366,24 @@ def create_viewer(viewer_camera_config) -> Optional[Any]:
                         "ray_tracing_samples_per_pixel"
                     ]
                 )
-        
-        if hasattr(gs, 'Viewer'):
+
+        if hasattr(gs, "Viewer"):
             viewer = gs.Viewer(
                 resolutions=(viewer_camera_config.width, viewer_camera_config.height)
             )
             if sys.platform == "darwin":  # macOS
-                if hasattr(viewer, 'window') and hasattr(viewer.window, 'set_content_scale'):
+                if hasattr(viewer, "window") and hasattr(
+                    viewer.window, "set_content_scale"
+                ):
                     viewer.window.set_content_scale(1)
             return viewer
-            
+
     elif GENESIS_RENDER_SYSTEM == "1.1":
-        if hasattr(gs, 'Viewer') and hasattr(gs, 'render') and hasattr(gs.render, 'get_shader_pack'):
+        if (
+            hasattr(gs, "Viewer")
+            and hasattr(gs, "render")
+            and hasattr(gs.render, "get_shader_pack")
+        ):
             viewer = gs.Viewer(
                 resolutions=(viewer_camera_config.width, viewer_camera_config.height),
                 shader_pack=gs.render.get_shader_pack(
@@ -381,7 +391,7 @@ def create_viewer(viewer_camera_config) -> Optional[Any]:
                 ),
             )
             return viewer
-            
+
     return None
 
 

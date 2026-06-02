@@ -46,9 +46,12 @@ def run_plugin_test(plugin_path: str, name: str) -> dict:
         return result
 
     cmd = [
-        sys.executable, "-m", "pytest",
+        sys.executable,
+        "-m",
+        "pytest",
         test_path,
-        "-v", "--tb=short",
+        "-v",
+        "--tb=short",
         "-q",
     ]
 
@@ -109,8 +112,10 @@ def main():
             continue
 
         status = "✅" if result["success"] else "❌"
-        print(f"  {status} {result['passed']}/{result['total']} passed "
-              f"({result['failed']} failed, {result['skipped']} skipped)")
+        print(
+            f"  {status} {result['passed']}/{result['total']} passed "
+            f"({result['failed']} failed, {result['skipped']} skipped)"
+        )
 
         total_passed += result["passed"]
         total_failed += result["failed"]

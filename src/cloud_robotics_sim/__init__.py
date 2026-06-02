@@ -51,12 +51,14 @@ try:
         Task,
         TaskConfig,
     )
+
     # Vectorized environments
     from cloud_robotics_sim.core.vectorized import (
         GenesisVectorizedEnv,
         VecEnvConfig,
         VectorizedEnvironment,
     )
+
     _CORE_AVAILABLE = True
 except ImportError:
     _CORE_AVAILABLE = False
@@ -67,39 +69,41 @@ __all__ = [
 ]
 
 if _CORE_AVAILABLE:
-    __all__.extend([
-        # Composer
-        "EnvironmentComposer",
-        "ComposedEnvironment",
-        "ComposerConfig",
-        "EnvironmentVariantGenerator",
-        # Scene
-        "Scene",
-        "SceneConfig",
-        "ObjectSpawn",
-        "ObjectLibrary",
-        # Robot
-        "RobotEmbodiment",
-        "EmbodimentConfig",
-        "SensorConfig",
-        "FrankaPanda",
-        "UniversalRobotUR5",
-        # Task
-        "Task",
-        "TaskConfig",
-        "PickPlaceTask",
-        "NavigationTask",
-        # Registry
-        "AssetRegistry",
-        "SceneRegistry",
-        "RobotRegistry",
-        "TaskRegistry",
-        "register_scene",
-        "register_robot",
-        "register_task",
-        "default_registry",
-        # Vectorized
-        "VectorizedEnvironment",
-        "GenesisVectorizedEnv",
-        "VecEnvConfig",
-    ])
+    __all__.extend(
+        [
+            # Composer
+            "EnvironmentComposer",
+            "ComposedEnvironment",
+            "ComposerConfig",
+            "EnvironmentVariantGenerator",
+            # Scene
+            "Scene",
+            "SceneConfig",
+            "ObjectSpawn",
+            "ObjectLibrary",
+            # Robot
+            "RobotEmbodiment",
+            "EmbodimentConfig",
+            "SensorConfig",
+            "FrankaPanda",
+            "UniversalRobotUR5",
+            # Task
+            "Task",
+            "TaskConfig",
+            "PickPlaceTask",
+            "NavigationTask",
+            # Registry
+            "AssetRegistry",
+            "SceneRegistry",
+            "RobotRegistry",
+            "TaskRegistry",
+            "register_scene",
+            "register_robot",
+            "register_task",
+            "default_registry",
+            # Vectorized
+            "VectorizedEnvironment",
+            "GenesisVectorizedEnv",
+            "VecEnvConfig",
+        ]
+    )

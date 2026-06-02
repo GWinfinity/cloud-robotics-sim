@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Genesis Compatibility Utilities
+"""Genesis Compatibility Utilities
 
 This module provides compatibility utilities for Genesis-based simulations,
 adapted from ManiSkill's genesis_utils.py to work with genesis-cloud-sim's
@@ -31,12 +30,12 @@ References:
     - Genesis: https://github.com/Genesis-Embodied-AI/Genesis
 """
 
-from typing import Tuple, Union, Optional, List, Dict, Any
-from pathlib import Path
+from typing import Any, List, Optional
 
 # Optional dependencies with graceful fallback
 try:
     import numpy as np
+
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
@@ -44,6 +43,7 @@ except ImportError:
 
 try:
     import torch
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
@@ -54,6 +54,7 @@ try:
     import genesis as gs
     from genesis import utils as gu
     from genesis.utils import geom as gug
+
     HAS_GENESIS = True
 except ImportError:
     HAS_GENESIS = False
@@ -73,6 +74,7 @@ ArrayLike = Any  # Union[np.ndarray, torch.Tensor] when available
 # Object Query Utilities
 # =============================================================================
 
+
 def get_obj_by_name(objs: list, name: str, is_unique: bool = True) -> Any:
     """Get an object given the name.
 
@@ -88,7 +90,9 @@ def get_obj_by_name(objs: list, name: str, is_unique: bool = True) -> Any:
     Returns:
         The matched object or list of objects. None if no matches.
     """
-    matched_objects = [x for x in objs if hasattr(x, 'get_name') and x.get_name() == name]
+    matched_objects = [
+        x for x in objs if hasattr(x, "get_name") and x.get_name() == name
+    ]
     if len(matched_objects) > 1:
         if not is_unique:
             return matched_objects
@@ -102,7 +106,7 @@ def get_obj_by_name(objs: list, name: str, is_unique: bool = True) -> Any:
 
 def get_objs_by_names(objs: list, names: List[str]) -> list:
     """Get a list of objects given a list of names from a larger list of objects.
-    
+
     The returned list is in the order of the names given.
 
     Args:
@@ -116,7 +120,7 @@ def get_objs_by_names(objs: list, names: List[str]) -> list:
     ret = [None for _ in names]
 
     for obj in objs:
-        if hasattr(obj, 'get_name'):
+        if hasattr(obj, "get_name"):
             name = obj.get_name()
             if name in names:
                 ret[names.index(name)] = obj
@@ -125,12 +129,12 @@ def get_objs_by_names(objs: list, names: List[str]) -> list:
 
 def get_obj_by_type(objs: list, target_type: type, is_unique: bool = True) -> Any:
     """Get an object by its type.
-    
+
     Args:
         objs: List of objects to search.
         target_type: The type to match.
         is_unique: Whether to expect a unique match.
-        
+
     Returns:
         The matched object(s) or None.
     """
@@ -150,12 +154,13 @@ def get_obj_by_type(objs: list, target_type: type, is_unique: bool = True) -> An
 # URDF Configuration
 # =============================================================================
 
+
 def check_urdf_config(urdf_config: dict):
     """Check whether the urdf config is valid for Genesis.
 
     Args:
         urdf_config: Dict passed to Genesis URDF loader.
-        
+
     Raises:
         KeyError: If invalid keys are present.
     """
@@ -226,28 +231,30 @@ def apply_urdf_config(loader, urdf_config: dict):
                 mat = link_config["material"]
                 if hasattr(loader, "set_link_material"):
                     loader.set_link_material(
-                        name, 
-                        getattr(mat, 'static_friction', 0.5),
-                        getattr(mat, 'dynamic_friction', 0.5),
-                        getattr(mat, 'restitution', 0.0)
+                        name,
+                        getattr(mat, "static_friction", 0.5),
+                        getattr(mat, "dynamic_friction", 0.5),
+                        getattr(mat, "restitution", 0.0),
                     )
             if "patch_radius" in link_config:
                 if hasattr(loader, "set_link_patch_radius"):
                     loader.set_link_patch_radius(name, link_config["patch_radius"])
             if "min_patch_radius" in link_config:
                 if hasattr(loader, "set_link_min_patch_radius"):
-                    loader.set_link_min_patch_radius(name, link_config["min_patch_radius"])
+                    loader.set_link_min_patch_radius(
+                        name, link_config["min_patch_radius"]
+                    )
             if "density" in link_config:
                 if hasattr(loader, "set_link_density"):
                     loader.set_link_density(name, link_config["density"])
-    
+
     if "material" in urdf_config:
         mat = urdf_config["material"]
         if hasattr(loader, "set_material"):
             loader.set_material(
-                getattr(mat, 'static_friction', 0.5),
-                getattr(mat, 'dynamic_friction', 0.5),
-                getattr(mat, 'restitution', 0.0)
+                getattr(mat, "static_friction", 0.5),
+                getattr(mat, "dynamic_friction", 0.5),
+                getattr(mat, "restitution", 0.0),
             )
     if "patch_radius" in urdf_config:
         if hasattr(loader, "set_patch_radius"):
@@ -264,6 +271,7 @@ def apply_urdf_config(loader, urdf_config: dict):
 # State Extraction
 # =============================================================================
 
+
 def get_actor_state(actor) -> Optional[ArrayLike]:
     """Get the state of a Genesis actor.
 
@@ -276,22 +284,24 @@ def get_actor_state(actor) -> Optional[ArrayLike]:
     """
     if not HAS_NUMPY:
         return None
-        
+
     try:
         pose = actor.get_pose()
-        
+
         # Get position and quaternion from pose
         pos = np.array(pose.p, dtype=np.float32)
         quat = np.array(pose.q, dtype=np.float32)
-        
+
         # Get velocity and angular velocity
-        if hasattr(actor, 'get_linear_velocity') and hasattr(actor, 'get_angular_velocity'):
+        if hasattr(actor, "get_linear_velocity") and hasattr(
+            actor, "get_angular_velocity"
+        ):
             vel = actor.get_linear_velocity()
             ang_vel = actor.get_angular_velocity()
         else:
             vel = np.zeros(3, dtype=np.float32)
             ang_vel = np.zeros(3, dtype=np.float32)
-        
+
         return np.hstack([pos, quat, vel, ang_vel])
     except Exception:
         return None
@@ -309,27 +319,27 @@ def get_articulation_state(articulation) -> Optional[ArrayLike]:
     """
     if not HAS_NUMPY:
         return None
-        
+
     try:
         links = articulation.get_links()
         if not links:
             return None
-            
+
         root_link = links[0]
         pose = root_link.get_pose()
-        
+
         # Get root position and quaternion
         pos = np.array(pose.p, dtype=np.float32)
         quat = np.array(pose.q, dtype=np.float32)
-        
+
         # Get root velocity and angular velocity
         vel = root_link.get_linear_velocity()
         ang_vel = root_link.get_angular_velocity()
-        
+
         # Get joint positions and velocities
         qpos = articulation.get_qpos()
         qvel = articulation.get_qvel()
-        
+
         return np.hstack([pos, quat, vel, ang_vel, qpos, qvel])
     except Exception:
         return None
@@ -347,18 +357,18 @@ def get_articulation_padded_state(articulation, max_dof: int) -> Optional[ArrayL
     """
     if not HAS_NUMPY:
         return None
-        
+
     state = get_articulation_state(articulation)
     if state is None:
         return None
-        
+
     # Split into root (13) + joint states
     root_state = state[:13]
     joint_states = state[13:]
-    
+
     nq = len(joint_states) // 2  # qpos and qvel
     assert max_dof >= nq, (max_dof, nq)
-    
+
     padded_state = np.zeros(13 + 2 * max_dof, dtype=np.float32)
     padded_state[:13] = root_state
     padded_state[13 : 13 + nq] = joint_states[:nq]
@@ -369,6 +379,7 @@ def get_articulation_padded_state(articulation, max_dof: int) -> Optional[ArrayL
 # =============================================================================
 # Contact Processing
 # =============================================================================
+
 
 def get_pairwise_contacts(contacts: list, actor0, actor1) -> list:
     """Get pairwise contacts between two actors.
@@ -385,10 +396,16 @@ def get_pairwise_contacts(contacts: list, actor0, actor1) -> list:
     pairwise_contacts = []
     for contact in contacts:
         # Check if contact is between actor0 and actor1
-        if hasattr(contact, 'bodies') and len(contact.bodies) >= 2:
-            if contact.bodies[0].entity == actor0 and contact.bodies[1].entity == actor1:
+        if hasattr(contact, "bodies") and len(contact.bodies) >= 2:
+            if (
+                contact.bodies[0].entity == actor0
+                and contact.bodies[1].entity == actor1
+            ):
                 pairwise_contacts.append((contact, True))
-            elif contact.bodies[0].entity == actor1 and contact.bodies[1].entity == actor0:
+            elif (
+                contact.bodies[0].entity == actor1
+                and contact.bodies[1].entity == actor0
+            ):
                 pairwise_contacts.append((contact, False))
     return pairwise_contacts
 
@@ -406,10 +423,16 @@ def get_multiple_pairwise_contacts(contacts: list, actor0, actor1_list: list) ->
     """
     pairwise_contacts = {actor: [] for actor in actor1_list}
     for contact in contacts:
-        if hasattr(contact, 'bodies') and len(contact.bodies) >= 2:
-            if contact.bodies[0].entity == actor0 and contact.bodies[1].entity in actor1_list:
+        if hasattr(contact, "bodies") and len(contact.bodies) >= 2:
+            if (
+                contact.bodies[0].entity == actor0
+                and contact.bodies[1].entity in actor1_list
+            ):
                 pairwise_contacts[contact.bodies[1].entity].append((contact, True))
-            elif contact.bodies[0].entity in actor1_list and contact.bodies[1].entity == actor0:
+            elif (
+                contact.bodies[0].entity in actor1_list
+                and contact.bodies[1].entity == actor0
+            ):
                 pairwise_contacts[contact.bodies[0].entity].append((contact, False))
     return pairwise_contacts
 
@@ -425,11 +448,13 @@ def compute_total_impulse(contact_infos: list) -> ArrayLike:
     """
     if not HAS_NUMPY:
         return None
-        
+
     total_impulse = np.zeros(3)
     for contact, is_first in contact_infos:
-        if hasattr(contact, 'points'):
-            contact_impulse = np.sum([point.impulse for point in contact.points], axis=0)
+        if hasattr(contact, "points"):
+            contact_impulse = np.sum(
+                [point.impulse for point in contact.points], axis=0
+            )
             # Impulse is applied on the first component
             total_impulse += contact_impulse * (1 if is_first else -1)
     return total_impulse
@@ -462,7 +487,7 @@ def get_cpu_actor_contacts(contacts: list, actor) -> list:
     """
     entity_contacts = []
     for contact in contacts:
-        if hasattr(contact, 'bodies') and len(contact.bodies) >= 2:
+        if hasattr(contact, "bodies") and len(contact.bodies) >= 2:
             if contact.bodies[0].entity == actor:
                 entity_contacts.append((contact, True))
             elif contact.bodies[1].entity == actor:
@@ -482,7 +507,7 @@ def get_cpu_actors_contacts(contacts: list, actors: list) -> dict:
     """
     entity_contacts = {actor: [] for actor in actors}
     for contact in contacts:
-        if hasattr(contact, 'bodies') and len(contact.bodies) >= 2:
+        if hasattr(contact, "bodies") and len(contact.bodies) >= 2:
             if contact.bodies[0].entity in actors:
                 entity_contacts[contact.bodies[0].entity].append((contact, True))
             elif contact.bodies[1].entity in actors:
@@ -493,6 +518,7 @@ def get_cpu_actors_contacts(contacts: list, actors: list) -> dict:
 # =============================================================================
 # Joint and Actor Utilities
 # =============================================================================
+
 
 def check_joint_stuck(
     articulation,
@@ -512,7 +538,11 @@ def check_joint_stuck(
         True if the joint is stuck, False otherwise.
     """
     try:
-        if hasattr(articulation, 'get_qpos') and hasattr(articulation, 'get_drive_target') and hasattr(articulation, 'get_qvel'):
+        if (
+            hasattr(articulation, "get_qpos")
+            and hasattr(articulation, "get_drive_target")
+            and hasattr(articulation, "get_qvel")
+        ):
             actual_pos = articulation.get_qpos()[active_joint_idx]
             target_pos = articulation.get_drive_target()[active_joint_idx]
             actual_vel = articulation.get_qvel()[active_joint_idx]
@@ -526,7 +556,9 @@ def check_joint_stuck(
     return False
 
 
-def check_actor_static(actor, lin_thresh: float = 1e-3, ang_thresh: float = 1e-2) -> bool:
+def check_actor_static(
+    actor, lin_thresh: float = 1e-3, ang_thresh: float = 1e-2
+) -> bool:
     """Check if an actor is static.
 
     Args:
@@ -538,15 +570,17 @@ def check_actor_static(actor, lin_thresh: float = 1e-3, ang_thresh: float = 1e-2
         True if the actor is static, False otherwise.
     """
     try:
-        if hasattr(actor, 'linear_velocity') and hasattr(actor, 'angular_velocity'):
+        if hasattr(actor, "linear_velocity") and hasattr(actor, "angular_velocity"):
             lin_vel = actor.linear_velocity
             ang_vel = actor.angular_velocity
-        elif hasattr(actor, 'get_linear_velocity') and hasattr(actor, 'get_angular_velocity'):
+        elif hasattr(actor, "get_linear_velocity") and hasattr(
+            actor, "get_angular_velocity"
+        ):
             lin_vel = actor.get_linear_velocity()
             ang_vel = actor.get_angular_velocity()
         else:
             return True
-        
+
         if HAS_TORCH and isinstance(lin_vel, torch.Tensor):
             return torch.logical_and(
                 torch.linalg.norm(lin_vel, axis=1) <= lin_thresh,
@@ -559,8 +593,8 @@ def check_actor_static(actor, lin_thresh: float = 1e-3, ang_thresh: float = 1e-2
             )
         else:
             # Fallback without numpy
-            lin_norm = sum(x*x for x in lin_vel) ** 0.5
-            ang_norm = sum(x*x for x in ang_vel) ** 0.5
+            lin_norm = sum(x * x for x in lin_vel) ** 0.5
+            ang_norm = sum(x * x for x in ang_vel) ** 0.5
             return lin_norm <= lin_thresh and ang_norm <= ang_thresh
     except Exception:
         return True
@@ -568,10 +602,10 @@ def check_actor_static(actor, lin_thresh: float = 1e-3, ang_thresh: float = 1e-2
 
 def is_state_dict_consistent(state_dict: dict) -> bool:
     """Check if state dictionary has consistent batch dimensions.
-    
+
     Args:
         state_dict: Dictionary generated via env.get_state_dict().
-        
+
     Returns:
         True if all actors/articulations have the same batch dimension.
     """
@@ -579,7 +613,7 @@ def is_state_dict_consistent(state_dict: dict) -> bool:
     for name in ["actors", "articulations"]:
         if name in state_dict:
             for k, v in state_dict[name].items():
-                if hasattr(v, 'shape'):
+                if hasattr(v, "shape"):
                     if batch_size is None:
                         batch_size = v.shape[0]
                     else:
@@ -609,6 +643,7 @@ GENESIS_RENDER_SYSTEM = "1.0"
 try:
     from mani_skill.utils.geometry.rotation_conversions import matrix_to_quaternion
 except ImportError:
+
     def matrix_to_quaternion(matrix):
         """Fallback implementation."""
         if HAS_TORCH:
@@ -619,11 +654,13 @@ except ImportError:
 try:
     from mani_skill.utils.structs.pose import Pose
 except ImportError:
+
     class Pose:
         """Placeholder Pose class."""
+
         def __init__(self, raw_pose):
             self.raw_pose = raw_pose
-            
+
         @classmethod
         def create_from_pq(cls, p=None, q=None, device=None):
             if p is None:
