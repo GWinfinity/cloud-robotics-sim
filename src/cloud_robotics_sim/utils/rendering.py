@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Rendering utilities for Genesis simulations.
+"""Rendering utilities for Genesis simulations.
 
 This module provides rendering-related utilities adapted from ManiSkill's
 genesis_utils.py to work with genesis-cloud-sim's architecture.
@@ -30,12 +29,13 @@ References:
     - Genesis: https://github.com/Genesis-Embodied-AI/Genesis
 """
 
-from typing import Any, Optional, Dict, Union, List
 from pathlib import Path
+from typing import Any, List, Optional, Union
 
 # Optional dependencies
 try:
     import numpy as np
+
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
@@ -43,6 +43,7 @@ except ImportError:
 
 try:
     import torch
+
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
@@ -51,6 +52,7 @@ except ImportError:
 # Genesis imports
 try:
     import genesis as gs
+
     HAS_GENESIS = True
 except ImportError:
     HAS_GENESIS = False
@@ -68,9 +70,9 @@ except ImportError:
         b = int(h[4:6], 16) / 255
         rgba = [r, g, b, 1.0]
         if correction:
-            rgba = [c ** 2.2 for c in rgba[:3]] + [1.0]
+            rgba = [c**2.2 for c in rgba[:3]] + [1.0]
         return rgba
-    
+
     def rgba2hex(rgba):
         r, g, b = rgba[:3]
         if max(r, g, b) <= 1.0:
@@ -81,6 +83,7 @@ except ImportError:
 # =============================================================================
 # Material Utilities
 # =============================================================================
+
 
 def set_render_material(material: Any, **kwargs) -> Any:
     """Set render material properties.
@@ -93,7 +96,7 @@ def set_render_material(material: Any, **kwargs) -> Any:
             - roughness: Roughness factor (0-1)
             - specular: Specular factor (0-1)
             - emission: Emission color/intensity
-            
+
     Returns:
         The modified material object.
     """
@@ -143,25 +146,27 @@ def set_articulation_render_material(articulation: Any, **kwargs):
         articulation: Articulation object.
         **kwargs: Material properties to set (passed to set_render_material).
     """
-    if not hasattr(articulation, 'get_links'):
+    if not hasattr(articulation, "get_links"):
         return
-        
+
     for link in articulation.get_links():
-        if hasattr(link, 'entity'):
+        if hasattr(link, "entity"):
             entity = link.entity
-            if hasattr(entity, 'find_component_by_type'):
+            if hasattr(entity, "find_component_by_type"):
                 # Try to find render component
                 try:
-                    render_component = entity.find_component_by_type(gs.RenderBodyComponent)
+                    render_component = entity.find_component_by_type(
+                        gs.RenderBodyComponent
+                    )
                     if render_component is not None:
-                        for s in getattr(render_component, 'render_shapes', []):
-                            if hasattr(s, 'parts'):
+                        for s in getattr(render_component, "render_shapes", []):
+                            if hasattr(s, "parts"):
                                 for part in s.parts:
-                                    if hasattr(part, 'material'):
+                                    if hasattr(part, "material"):
                                         set_render_material(part.material, **kwargs)
                             else:
                                 # Directly set material if no parts
-                                if hasattr(s, 'material'):
+                                if hasattr(s, "material"):
                                     set_render_material(s.material, **kwargs)
                 except Exception:
                     pass
@@ -169,7 +174,7 @@ def set_articulation_render_material(articulation: Any, **kwargs):
 
 def set_entity_color(entity: Any, color: Union[str, List], recursive: bool = True):
     """Set color for an entity.
-    
+
     Args:
         entity: Genesis entity.
         color: Color as hex string or RGBA list.
@@ -177,21 +182,21 @@ def set_entity_color(entity: Any, color: Union[str, List], recursive: bool = Tru
     """
     if isinstance(color, str):
         color = hex2rgba(color)
-    
+
     # Try different methods to set color
-    if hasattr(entity, 'set_color'):
+    if hasattr(entity, "set_color"):
         entity.set_color(color)
-    elif hasattr(entity, 'color'):
+    elif hasattr(entity, "color"):
         entity.color = color
-    
+
     # Apply to render shapes
-    if hasattr(entity, 'render_shapes'):
+    if hasattr(entity, "render_shapes"):
         for shape in entity.render_shapes:
-            if hasattr(shape, 'material') and shape.material is not None:
+            if hasattr(shape, "material") and shape.material is not None:
                 set_render_material(shape.material, color=color)
-    
+
     # Recursive application
-    if recursive and hasattr(entity, 'get_children'):
+    if recursive and hasattr(entity, "get_children"):
         for child in entity.get_children():
             set_entity_color(child, color, recursive)
 
@@ -200,9 +205,10 @@ def set_entity_color(entity: Any, color: Union[str, List], recursive: bool = Tru
 # Shader and Rendering Configuration
 # =============================================================================
 
+
 class ShaderConfig:
     """Configuration for rendering shaders."""
-    
+
     def __init__(
         self,
         shader_pack: str = "default",
@@ -210,12 +216,11 @@ class ShaderConfig:
         ray_tracing_path_depth: int = 4,
         ray_tracing_samples_per_pixel: int = 32,
     ):
-        """
-        Args:
-            shader_pack: Shader pack to use ("default", "rt", "rt-fast", etc.)
-            ray_tracing_denoiser: Denoiser for ray tracing ("optix", "oidn")
-            ray_tracing_path_depth: Max ray tracing path depth
-            ray_tracing_samples_per_pixel: Samples per pixel for ray tracing
+        """Args:
+        shader_pack: Shader pack to use ("default", "rt", "rt-fast", etc.)
+        ray_tracing_denoiser: Denoiser for ray tracing ("optix", "oidn")
+        ray_tracing_path_depth: Max ray tracing path depth
+        ray_tracing_samples_per_pixel: Samples per pixel for ray tracing
         """
         self.shader_pack = shader_pack
         self.shader_pack_config = {
@@ -226,40 +231,34 @@ class ShaderConfig:
 
 
 def configure_rendering(
-    shader_pack: str = "default",
-    enable_ray_tracing: bool = False,
-    **kwargs
+    shader_pack: str = "default", enable_ray_tracing: bool = False, **kwargs
 ) -> bool:
     """Configure global rendering settings.
-    
+
     Args:
         shader_pack: Shader pack name.
         enable_ray_tracing: Whether to enable ray tracing.
         **kwargs: Additional settings.
-        
+
     Returns:
         True if configuration succeeded.
     """
     if not HAS_GENESIS:
         return False
-    
+
     try:
-        if hasattr(gs, 'render'):
-            if hasattr(gs.render, 'set_viewer_shader_dir'):
+        if hasattr(gs, "render"):
+            if hasattr(gs.render, "set_viewer_shader_dir"):
                 gs.render.set_viewer_shader_dir(shader_pack)
-            
+
             if enable_ray_tracing and shader_pack.startswith("rt"):
-                if hasattr(gs.render, 'set_ray_tracing_denoiser'):
-                    gs.render.set_ray_tracing_denoiser(
-                        kwargs.get('denoiser', 'optix')
-                    )
-                if hasattr(gs.render, 'set_ray_tracing_path_depth'):
-                    gs.render.set_ray_tracing_path_depth(
-                        kwargs.get('path_depth', 4)
-                    )
-                if hasattr(gs.render, 'set_ray_tracing_samples_per_pixel'):
+                if hasattr(gs.render, "set_ray_tracing_denoiser"):
+                    gs.render.set_ray_tracing_denoiser(kwargs.get("denoiser", "optix"))
+                if hasattr(gs.render, "set_ray_tracing_path_depth"):
+                    gs.render.set_ray_tracing_path_depth(kwargs.get("path_depth", 4))
+                if hasattr(gs.render, "set_ray_tracing_samples_per_pixel"):
                     gs.render.set_ray_tracing_samples_per_pixel(
-                        kwargs.get('samples_per_pixel', 32)
+                        kwargs.get("samples_per_pixel", 32)
                     )
         return True
     except Exception as e:
@@ -271,32 +270,33 @@ def configure_rendering(
 # Texture Utilities
 # =============================================================================
 
+
 def load_texture(path: Union[str, Path], **kwargs) -> Optional[Any]:
     """Load a texture from file.
-    
+
     Args:
         path: Path to texture file.
         **kwargs: Additional loading options.
-        
+
     Returns:
         Texture object or None.
     """
     if not HAS_GENESIS:
         return None
-    
+
     path = Path(path)
     if not path.exists():
         return None
-    
+
     try:
         # Try different methods to load texture
-        if hasattr(gs, 'Texture'):
+        if hasattr(gs, "Texture"):
             return gs.Texture(str(path), **kwargs)
-        elif hasattr(gs.render, 'Texture'):
+        elif hasattr(gs.render, "Texture"):
             return gs.render.Texture(str(path), **kwargs)
     except Exception as e:
         print(f"Warning: Failed to load texture {path}: {e}")
-    
+
     return None
 
 
@@ -307,21 +307,21 @@ def create_checkerboard_texture(
     color2: List[float] = [0.5, 0.5, 0.5],
 ) -> Optional[np.ndarray]:
     """Create a checkerboard texture pattern.
-    
+
     Args:
         size: Texture size (square).
         check_size: Size of each checker square.
         color1: First color (RGB).
         color2: Second color (RGB).
-        
+
     Returns:
         Texture array or None.
     """
     if not HAS_NUMPY:
         return None
-    
+
     texture = np.zeros((size, size, 3), dtype=np.float32)
-    
+
     for i in range(size):
         for j in range(size):
             x = i // check_size
@@ -330,7 +330,7 @@ def create_checkerboard_texture(
                 texture[i, j] = color1
             else:
                 texture[i, j] = color2
-    
+
     return texture
 
 
@@ -338,9 +338,10 @@ def create_checkerboard_texture(
 # Screenshot and Recording
 # =============================================================================
 
+
 def save_screenshot(camera_or_viewer, path: Union[str, Path], rgb: bool = True):
     """Save a screenshot from camera or viewer.
-    
+
     Args:
         camera_or_viewer: Camera or viewer object.
         path: Output file path.
@@ -348,38 +349,39 @@ def save_screenshot(camera_or_viewer, path: Union[str, Path], rgb: bool = True):
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     try:
         # Try to render and save
-        if hasattr(camera_or_viewer, 'render'):
+        if hasattr(camera_or_viewer, "render"):
             img = camera_or_viewer.render(rgb=rgb)
             if HAS_NUMPY and isinstance(img, np.ndarray):
                 # Save using PIL or similar
                 try:
                     from PIL import Image
+
                     if img.dtype == np.float32 or img.dtype == np.float64:
                         img = (img * 255).astype(np.uint8)
                     Image.fromarray(img).save(path)
                 except ImportError:
                     # Fallback: save as numpy array
-                    np.save(path.with_suffix('.npy'), img)
+                    np.save(path.with_suffix(".npy"), img)
     except Exception as e:
         print(f"Warning: Failed to save screenshot: {e}")
 
 
 def start_recording(viewer, path: Union[str, Path], fps: int = 30):
     """Start recording from viewer.
-    
+
     Args:
         viewer: Viewer object.
         path: Output video path.
         fps: Frames per second.
-        
+
     Returns:
         Recording handle or None.
     """
     try:
-        if hasattr(viewer, 'start_recording'):
+        if hasattr(viewer, "start_recording"):
             return viewer.start_recording(str(path), fps=fps)
     except Exception as e:
         print(f"Warning: Failed to start recording: {e}")
@@ -388,12 +390,12 @@ def start_recording(viewer, path: Union[str, Path], fps: int = 30):
 
 def stop_recording(recording_handle):
     """Stop recording.
-    
+
     Args:
         recording_handle: Handle from start_recording.
     """
     try:
-        if recording_handle and hasattr(recording_handle, 'stop'):
+        if recording_handle and hasattr(recording_handle, "stop"):
             recording_handle.stop()
     except Exception as e:
         print(f"Warning: Failed to stop recording: {e}")
