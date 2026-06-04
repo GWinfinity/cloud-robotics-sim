@@ -711,3 +711,92 @@ class SFOptions(Options):
     inlet_vel: Optional[tuple[int, int, int]] = (0, 0, 1)
     inlet_quat: Optional[tuple[int, int, int, int]] = (1, 0, 0, 0)
     inlet_s: Optional[float] = 400.0
+
+
+class EMOptions(Options):
+    """
+    Options configuring the EMSolver (Electromagnetic FDTD Solver).
+
+    Parameters
+    ----------
+    dt : float, optional
+        Time duration for each simulation step in seconds. If none, it will inherit from `SimOptions`. Defaults to None.
+    dim : int, optional
+        Spatial dimension (2 or 3). Defaults to 2.
+    resolution : tuple, optional
+        Grid resolution, e.g., (256, 256) or (128, 128, 128). Defaults to (128, 128).
+    dx : float, optional
+        Spatial step size. Defaults to 0.01.
+    boundary : str, optional
+        Boundary condition: 'pml' | 'pec' | 'pmc'. Defaults to 'pml'.
+    pml_layers : int, optional
+        Number of PML layers. Defaults to 10.
+    source_type : str, optional
+        Excitation source type: 'point' | 'plane_wave' | 'gaussian_pulse'. Defaults to 'point'.
+    source_position : tuple, optional
+        Source position. Defaults to None (center of grid).
+    wavelength : float, optional
+        Excitation wavelength. Defaults to 1.0.
+    epsilon_r : float or np.ndarray, optional
+        Relative permittivity distribution. Defaults to 1.0.
+    mu_r : float or np.ndarray, optional
+        Relative permeability distribution. Defaults to 1.0.
+    sigma : float or np.ndarray, optional
+        Electrical conductivity distribution. Defaults to 0.0.
+    """
+
+    dt: Optional[float] = None
+    dim: int = 2
+    resolution: tuple = (128, 128)
+    dx: float = 0.01
+    boundary: str = 'pml'
+    pml_layers: int = 10
+    source_type: str = 'point'
+    source_position: Optional[tuple] = None
+    wavelength: float = 1.0
+    epsilon_r: Optional[float] = 1.0
+    mu_r: Optional[float] = 1.0
+    sigma: Optional[float] = 0.0
+
+
+class ThermalOptions(Options):
+    """
+    Options configuring the ThermalSolver (Heat Conduction Solver).
+
+    Parameters
+    ----------
+    dt : float, optional
+        Time duration for each simulation step in seconds. If none, it will inherit from `SimOptions`. Defaults to None.
+    dim : int, optional
+        Spatial dimension (2 or 3). Defaults to 2.
+    resolution : tuple, optional
+        Grid resolution, e.g., (256, 256) or (128, 128, 128). Defaults to (128, 128).
+    dx : float, optional
+        Spatial step size. Defaults to 0.01.
+    alpha : float, optional
+        Thermal diffusivity (k/(rho*cp)). Defaults to 1.0.
+    k : float, optional
+        Thermal conductivity [W/(m*K)]. Defaults to 1.0.
+    rho : float, optional
+        Density [kg/m^3]. Defaults to 1.0.
+    cp : float, optional
+        Specific heat capacity [J/(kg*K)]. Defaults to 1.0.
+    boundary_temp : float or callable, optional
+        Dirichlet boundary temperature. Defaults to None (Neumann/insulated).
+    heat_source : callable, optional
+        Heat source function Q(x, y, ...). Defaults to None.
+    solver_type : str, optional
+        'transient' or 'steady'. Defaults to 'transient'.
+    """
+
+    dt: Optional[float] = None
+    dim: int = 2
+    resolution: tuple = (128, 128)
+    dx: float = 0.01
+    alpha: float = 1.0
+    k: float = 1.0
+    rho: float = 1.0
+    cp: float = 1.0
+    boundary_temp: Optional[float] = None
+    heat_source: Optional[callable] = None
+    solver_type: str = 'transient'

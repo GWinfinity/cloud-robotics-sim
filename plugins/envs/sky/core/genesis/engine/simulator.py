@@ -9,6 +9,7 @@ from genesis.options.solvers import (
     IPCCouplerOptions,
     LegacyCouplerOptions,
     SAPCouplerOptions,
+    EMOptions,
     FEMOptions,
     MPMOptions,
     PBDOptions,
@@ -16,18 +17,21 @@ from genesis.options.solvers import (
     SFOptions,
     SPHOptions,
     SimOptions,
+    ThermalOptions,
     ToolOptions,
 )
 from genesis.repr_base import RBC
 
 from .entities import HybridEntity
 from .solvers import (
+    EMSolver,
     FEMSolver,
     MPMSolver,
     PBDSolver,
     RigidSolver,
     SFSolver,
     SPHSolver,
+    ThermalSolver,
     ToolSolver,
 )
 from .couplers import IPCCoupler, LegacyCoupler, SAPCoupler
@@ -86,6 +90,8 @@ class Simulator(RBC):
         fem_options: FEMOptions,
         sf_options: SFOptions,
         pbd_options: PBDOptions,
+        em_options: EMOptions = None,
+        thermal_options: ThermalOptions = None,
     ):
         self._scene = scene
 
@@ -99,6 +105,8 @@ class Simulator(RBC):
         self.fem_options = fem_options
         self.sf_options = sf_options
         self.pbd_options = pbd_options
+        self.em_options = em_options
+        self.thermal_options = thermal_options
 
         self._dt: float = options.dt
         self._substep_dt: float = options.dt / options.substeps
@@ -118,6 +126,14 @@ class Simulator(RBC):
         self.pbd_solver = PBDSolver(self.scene, self, self.pbd_options)
         self.fem_solver = FEMSolver(self.scene, self, self.fem_options)
         self.sf_solver = SFSolver(self.scene, self, self.sf_options)
+        
+        # electromagnetic and thermal solvers (optional)
+        self.em_solver = None
+        self.thermal_solver = None
+        if self.em_options is not None:
+            self.em_solver = EMSolver(self.scene, self, self.em_options)
+        if self.thermal_options is not None:
+            self.thermal_solver = ThermalSolver(self.scene, self, self.thermal_options)
 
         self._solvers: list["Solver"] = gs.List(
             [
@@ -130,6 +146,12 @@ class Simulator(RBC):
                 self.sf_solver,
             ]
         )
+        
+        # Add EM and thermal solvers if configured
+        if self.em_solver is not None:
+            self._solvers.append(self.em_solver)
+        if self.thermal_solver is not None:
+            self._solvers.append(self.thermal_solver)
 
         self._active_solvers: list["Solver"] = gs.List()
 

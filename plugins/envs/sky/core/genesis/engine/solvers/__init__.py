@@ -5,3 +5,5 @@ from .sph_solver import SPHSolver
 from .fem_solver import FEMSolver
 from .sf_solver import SFSolver
 from .pbd_solver import PBDSolver
+from .em_solver import EMSolver
+from .thermal_solver import ThermalSolver
