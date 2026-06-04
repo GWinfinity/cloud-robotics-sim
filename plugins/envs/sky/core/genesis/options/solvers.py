@@ -922,3 +922,154 @@ class JouleHeatingOptions(Options):
     current_boundary: Optional[dict] = None
     max_iter: int = 1000
     tol: float = 1e-6
+
+
+class ConvectionOptions(Options):
+    """
+    Options configuring the ConvectionSolver.
+
+    Parameters
+    ----------
+    convection_type : str, optional
+        'forced' | 'natural' | 'mixed'. Defaults to 'forced'.
+    fluid : str, optional
+        'water' | 'air' | 'oil'. Defaults to 'water'.
+    flow_rate : float, optional
+        Volume flow rate [m^3/s]. Defaults to 0.001.
+    inlet_temp : float, optional
+        Inlet temperature [K]. Defaults to 300.0.
+    channel_diameter : float, optional
+        Channel diameter [m]. Defaults to 0.01.
+    channel_length : float, optional
+        Channel length [m]. Defaults to 0.1.
+    n_channels : int, optional
+        Number of parallel channels. Defaults to 1.
+    fan_speed : float, optional
+        Fan speed [RPM]. Defaults to 0.
+    fin_height : float, optional
+        Fin height [m]. Defaults to 0.02.
+    fin_thickness : float, optional
+        Fin thickness [m]. Defaults to 0.002.
+    fin_spacing : float, optional
+        Fin spacing [m]. Defaults to 0.005.
+    gravity : tuple, optional
+        Gravity vector. Defaults to (0, 0, -9.81).
+    orientation : str, optional
+        'vertical' | 'horizontal'. Defaults to 'vertical'.
+    """
+
+    convection_type: str = 'forced'
+    fluid: str = 'water'
+    flow_rate: float = 0.001
+    inlet_temp: float = 300.0
+    channel_diameter: float = 0.01
+    channel_length: float = 0.1
+    n_channels: int = 1
+    fan_speed: float = 0
+    fin_height: float = 0.02
+    fin_thickness: float = 0.002
+    fin_spacing: float = 0.005
+    gravity: tuple = (0, 0, -9.81)
+    orientation: str = 'vertical'
+
+
+class RadiationOptions(Options):
+    """
+    Options configuring the RadiationSolver.
+
+    Parameters
+    ----------
+    emissivity : float, optional
+        Surface emissivity. Defaults to 0.9.
+    T_ambient : float, optional
+        Ambient temperature [K]. Defaults to 300.0.
+    solar_flux : float, optional
+        Solar radiation flux [W/m^2]. Defaults to 0.0.
+    solar_direction : tuple, optional
+        Solar direction vector. Defaults to (0, 0, -1).
+    view_factors : np.ndarray, optional
+        View factor matrix. Defaults to None.
+    resolution : tuple, optional
+        Grid resolution. Defaults to (64, 64).
+    dx : float, optional
+        Grid spacing. Defaults to 0.01.
+    """
+
+    emissivity: float = 0.9
+    T_ambient: float = 300.0
+    solar_flux: float = 0.0
+    solar_direction: tuple = (0, 0, -1)
+    view_factors: Optional[np.ndarray] = None
+    resolution: tuple = (64, 64)
+    dx: float = 0.01
+
+
+class PhaseChangeOptions(Options):
+    """
+    Options configuring the PhaseChangeSolver.
+
+    Parameters
+    ----------
+    T_solidus : float
+        Solidus temperature [K].
+    T_liquidus : float
+        Liquidus temperature [K].
+    latent_heat : float
+        Latent heat [J/kg].
+    cp_solid : float, optional
+        Solid specific heat [J/(kg*K)]. Defaults to 1000.0.
+    cp_liquid : float, optional
+        Liquid specific heat [J/(kg*K)]. Defaults to 1000.0.
+    k_solid : float, optional
+        Solid thermal conductivity [W/(m*K)]. Defaults to 1.0.
+    k_liquid : float, optional
+        Liquid thermal conductivity [W/(m*K)]. Defaults to 1.0.
+    rho_solid : float, optional
+        Solid density [kg/m^3]. Defaults to 1000.0.
+    rho_liquid : float, optional
+        Liquid density [kg/m^3]. Defaults to 1000.0.
+    mushy_zone : float, optional
+        Mushy zone width [K]. Defaults to 5.0.
+    resolution : tuple, optional
+        Grid resolution. Defaults to (64, 64).
+    dx : float, optional
+        Grid spacing. Defaults to 0.001.
+    dt : float, optional
+        Time step. Defaults to 0.01.
+    """
+
+    T_solidus: float = 273.15
+    T_liquidus: float = 273.15
+    latent_heat: float = 334000.0
+    cp_solid: float = 1000.0
+    cp_liquid: float = 1000.0
+    k_solid: float = 1.0
+    k_liquid: float = 1.0
+    rho_solid: float = 1000.0
+    rho_liquid: float = 1000.0
+    mushy_zone: float = 5.0
+    resolution: tuple = (64, 64)
+    dx: float = 0.001
+    dt: float = 0.01
+
+
+class CoupledOptions(Options):
+    """
+    Options configuring the CoupledSolver.
+
+    Parameters
+    ----------
+    coupling_type : str, optional
+        'em_thermal' | 'thermal_structural' | 'full'. Defaults to 'full'.
+    update_interval : int, optional
+        Coupling update interval. Defaults to 10.
+    max_coupled_iter : int, optional
+        Maximum coupled iterations. Defaults to 5.
+    coupling_tol : float, optional
+        Coupling convergence tolerance. Defaults to 1e-3.
+    """
+
+    coupling_type: str = 'full'
+    update_interval: int = 10
+    max_coupled_iter: int = 5
+    coupling_tol: float = 1e-3

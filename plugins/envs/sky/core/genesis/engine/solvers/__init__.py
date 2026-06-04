@@ -10,3 +10,7 @@ from .thermal_solver import ThermalSolver
 from .magnetostatics_solver import MagnetostaticsSolver
 from .eddy_current_solver import EddyCurrentSolver
 from .joule_heating_solver import JouleHeatingSolver
+from .convection_solver import ConvectionSolver
+from .radiation_solver import RadiationSolver
+from .phase_change_solver import PhaseChangeSolver
+from .coupled_solver import CoupledSolver

@@ -9,6 +9,8 @@ from genesis.options.solvers import (
     IPCCouplerOptions,
     LegacyCouplerOptions,
     SAPCouplerOptions,
+    ConvectionOptions,
+    CoupledOptions,
     EddyCurrentOptions,
     EMOptions,
     FEMOptions,
@@ -16,6 +18,8 @@ from genesis.options.solvers import (
     MagnetostaticsOptions,
     MPMOptions,
     PBDOptions,
+    PhaseChangeOptions,
+    RadiationOptions,
     RigidOptions,
     SFOptions,
     SPHOptions,
@@ -27,6 +31,8 @@ from genesis.repr_base import RBC
 
 from .entities import HybridEntity
 from .solvers import (
+    ConvectionSolver,
+    CoupledSolver,
     EddyCurrentSolver,
     EMSolver,
     FEMSolver,
@@ -34,6 +40,8 @@ from .solvers import (
     MagnetostaticsSolver,
     MPMSolver,
     PBDSolver,
+    PhaseChangeSolver,
+    RadiationSolver,
     RigidSolver,
     SFSolver,
     SPHSolver,
@@ -101,6 +109,10 @@ class Simulator(RBC):
         magnetostatics_options: MagnetostaticsOptions = None,
         eddy_current_options: EddyCurrentOptions = None,
         joule_heating_options: JouleHeatingOptions = None,
+        convection_options: ConvectionOptions = None,
+        radiation_options: RadiationOptions = None,
+        phase_change_options: PhaseChangeOptions = None,
+        coupled_options: CoupledOptions = None,
     ):
         self._scene = scene
 
@@ -119,6 +131,10 @@ class Simulator(RBC):
         self.magnetostatics_options = magnetostatics_options
         self.eddy_current_options = eddy_current_options
         self.joule_heating_options = joule_heating_options
+        self.convection_options = convection_options
+        self.radiation_options = radiation_options
+        self.phase_change_options = phase_change_options
+        self.coupled_options = coupled_options
 
         self._dt: float = options.dt
         self._substep_dt: float = options.dt / options.substeps
@@ -145,6 +161,10 @@ class Simulator(RBC):
         self.magnetostatics_solver = None
         self.eddy_current_solver = None
         self.joule_heating_solver = None
+        self.convection_solver = None
+        self.radiation_solver = None
+        self.phase_change_solver = None
+        self.coupled_solver = None
         
         if self.em_options is not None:
             self.em_solver = EMSolver(self.scene, self, self.em_options)
@@ -156,6 +176,14 @@ class Simulator(RBC):
             self.eddy_current_solver = EddyCurrentSolver(self.scene, self, self.eddy_current_options)
         if self.joule_heating_options is not None:
             self.joule_heating_solver = JouleHeatingSolver(self.scene, self, self.joule_heating_options)
+        if self.convection_options is not None:
+            self.convection_solver = ConvectionSolver(self.scene, self, self.convection_options)
+        if self.radiation_options is not None:
+            self.radiation_solver = RadiationSolver(self.scene, self, self.radiation_options)
+        if self.phase_change_options is not None:
+            self.phase_change_solver = PhaseChangeSolver(self.scene, self, self.phase_change_options)
+        if self.coupled_options is not None:
+            self.coupled_solver = CoupledSolver(self.scene, self, self.coupled_options)
 
         self._solvers: list["Solver"] = gs.List(
             [
@@ -180,6 +208,14 @@ class Simulator(RBC):
             self._solvers.append(self.eddy_current_solver)
         if self.joule_heating_solver is not None:
             self._solvers.append(self.joule_heating_solver)
+        if self.convection_solver is not None:
+            self._solvers.append(self.convection_solver)
+        if self.radiation_solver is not None:
+            self._solvers.append(self.radiation_solver)
+        if self.phase_change_solver is not None:
+            self._solvers.append(self.phase_change_solver)
+        if self.coupled_solver is not None:
+            self._solvers.append(self.coupled_solver)
 
         self._active_solvers: list["Solver"] = gs.List()
 
