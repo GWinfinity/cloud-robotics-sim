@@ -7,3 +7,6 @@ from .sf_solver import SFSolver
 from .pbd_solver import PBDSolver
 from .em_solver import EMSolver
 from .thermal_solver import ThermalSolver
+from .magnetostatics_solver import MagnetostaticsSolver
+from .eddy_current_solver import EddyCurrentSolver
+from .joule_heating_solver import JouleHeatingSolver

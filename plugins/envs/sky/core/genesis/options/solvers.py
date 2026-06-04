@@ -800,3 +800,125 @@ class ThermalOptions(Options):
     boundary_temp: Optional[float] = None
     heat_source: Optional[callable] = None
     solver_type: str = 'transient'
+
+
+class MagnetostaticsOptions(Options):
+    """
+    Options configuring the MagnetostaticsSolver.
+
+    Parameters
+    ----------
+    dt : float, optional
+        Time duration for each simulation step in seconds. If none, it will inherit from `SimOptions`. Defaults to None.
+    method : str, optional
+        Solution method: 'scalar' | 'vector' | 'auto'. Defaults to 'auto'.
+    resolution : tuple, optional
+        Grid resolution. Defaults to (64, 64, 64).
+    dx : float, optional
+        Spatial step size. Defaults to 0.001.
+    max_iter : int, optional
+        Maximum iterations. Defaults to 1000.
+    tol : float, optional
+        Convergence tolerance. Defaults to 1e-6.
+    mu_r : float or np.ndarray, optional
+        Relative permeability. Defaults to 1000.0.
+    M : np.ndarray, optional
+        Permanent magnet magnetization [A/m]. Defaults to None.
+    J : np.ndarray, optional
+        Free current density [A/m^2]. Defaults to None.
+    bh_curve : dict, optional
+        B-H curve data {'H': array, 'B': array}. Defaults to None.
+    """
+
+    dt: Optional[float] = None
+    method: str = 'auto'
+    resolution: tuple = (64, 64, 64)
+    dx: float = 0.001
+    max_iter: int = 1000
+    tol: float = 1e-6
+    mu_r: Optional[float] = 1000.0
+    M: Optional[np.ndarray] = None
+    J: Optional[np.ndarray] = None
+    bh_curve: Optional[dict] = None
+
+
+class EddyCurrentOptions(Options):
+    """
+    Options configuring the EddyCurrentSolver.
+
+    Parameters
+    ----------
+    dt : float, optional
+        Time duration for each simulation step in seconds. If none, it will inherit from `SimOptions`. Defaults to None.
+    frequency : float, optional
+        Excitation frequency [Hz]. Defaults to 50.0.
+    resolution : tuple, optional
+        Grid resolution. Defaults to (64, 64, 64).
+    dx : float, optional
+        Spatial step size. Defaults to 0.001.
+    max_iter : int, optional
+        Maximum iterations. Defaults to 1000.
+    tol : float, optional
+        Convergence tolerance. Defaults to 1e-6.
+    mu_r : float or np.ndarray, optional
+        Relative permeability. Defaults to 1000.0.
+    sigma : float or np.ndarray, optional
+        Electrical conductivity [S/m]. Defaults to 1e6.
+    Js : np.ndarray, optional
+        Source current density [A/m^2]. Defaults to None.
+    """
+
+    dt: Optional[float] = None
+    frequency: float = 50.0
+    resolution: tuple = (64, 64, 64)
+    dx: float = 0.001
+    max_iter: int = 1000
+    tol: float = 1e-6
+    mu_r: Optional[float] = 1000.0
+    sigma: Optional[float] = 1e6
+    Js: Optional[np.ndarray] = None
+
+
+class JouleHeatingOptions(Options):
+    """
+    Options configuring the JouleHeatingSolver.
+
+    Parameters
+    ----------
+    dt : float, optional
+        Time duration for each simulation step in seconds. If none, it will inherit from `SimOptions`. Defaults to None.
+    resolution : tuple, optional
+        Grid resolution. Defaults to (64, 64, 64).
+    dx : float, optional
+        Spatial step size. Defaults to 0.001.
+    dt : float, optional
+        Thermal time step. Defaults to 0.01.
+    sigma : float or np.ndarray, optional
+        Electrical conductivity [S/m]. Defaults to 1e6.
+    k : float or np.ndarray, optional
+        Thermal conductivity [W/(m*K)]. Defaults to 1.0.
+    rho : float, optional
+        Density [kg/m^3]. Defaults to 1.0.
+    cp : float, optional
+        Specific heat capacity [J/(kg*K)]. Defaults to 1.0.
+    voltage_boundary : dict, optional
+        Voltage boundary conditions. Defaults to None.
+    current_boundary : dict, optional
+        Current boundary conditions. Defaults to None.
+    max_iter : int, optional
+        Maximum iterations for electric field. Defaults to 1000.
+    tol : float, optional
+        Convergence tolerance. Defaults to 1e-6.
+    """
+
+    resolution: tuple = (64, 64, 64)
+    dx: float = 0.001
+    dt: float = 0.01
+    sigma: Optional[float] = 1e6
+    k: Optional[float] = 1.0
+    rho: float = 1.0
+    cp: float = 1.0
+    voltage_boundary: Optional[dict] = None
+    current_boundary: Optional[dict] = None
+    max_iter: int = 1000
+    tol: float = 1e-6

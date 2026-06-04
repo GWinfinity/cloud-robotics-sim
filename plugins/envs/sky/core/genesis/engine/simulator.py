@@ -9,8 +9,11 @@ from genesis.options.solvers import (
     IPCCouplerOptions,
     LegacyCouplerOptions,
     SAPCouplerOptions,
+    EddyCurrentOptions,
     EMOptions,
     FEMOptions,
+    JouleHeatingOptions,
+    MagnetostaticsOptions,
     MPMOptions,
     PBDOptions,
     RigidOptions,
@@ -24,8 +27,11 @@ from genesis.repr_base import RBC
 
 from .entities import HybridEntity
 from .solvers import (
+    EddyCurrentSolver,
     EMSolver,
     FEMSolver,
+    JouleHeatingSolver,
+    MagnetostaticsSolver,
     MPMSolver,
     PBDSolver,
     RigidSolver,
@@ -92,6 +98,9 @@ class Simulator(RBC):
         pbd_options: PBDOptions,
         em_options: EMOptions = None,
         thermal_options: ThermalOptions = None,
+        magnetostatics_options: MagnetostaticsOptions = None,
+        eddy_current_options: EddyCurrentOptions = None,
+        joule_heating_options: JouleHeatingOptions = None,
     ):
         self._scene = scene
 
@@ -107,6 +116,9 @@ class Simulator(RBC):
         self.pbd_options = pbd_options
         self.em_options = em_options
         self.thermal_options = thermal_options
+        self.magnetostatics_options = magnetostatics_options
+        self.eddy_current_options = eddy_current_options
+        self.joule_heating_options = joule_heating_options
 
         self._dt: float = options.dt
         self._substep_dt: float = options.dt / options.substeps
@@ -130,10 +142,20 @@ class Simulator(RBC):
         # electromagnetic and thermal solvers (optional)
         self.em_solver = None
         self.thermal_solver = None
+        self.magnetostatics_solver = None
+        self.eddy_current_solver = None
+        self.joule_heating_solver = None
+        
         if self.em_options is not None:
             self.em_solver = EMSolver(self.scene, self, self.em_options)
         if self.thermal_options is not None:
             self.thermal_solver = ThermalSolver(self.scene, self, self.thermal_options)
+        if self.magnetostatics_options is not None:
+            self.magnetostatics_solver = MagnetostaticsSolver(self.scene, self, self.magnetostatics_options)
+        if self.eddy_current_options is not None:
+            self.eddy_current_solver = EddyCurrentSolver(self.scene, self, self.eddy_current_options)
+        if self.joule_heating_options is not None:
+            self.joule_heating_solver = JouleHeatingSolver(self.scene, self, self.joule_heating_options)
 
         self._solvers: list["Solver"] = gs.List(
             [
@@ -147,11 +169,17 @@ class Simulator(RBC):
             ]
         )
         
-        # Add EM and thermal solvers if configured
+        # Add optional solvers if configured
         if self.em_solver is not None:
             self._solvers.append(self.em_solver)
         if self.thermal_solver is not None:
             self._solvers.append(self.thermal_solver)
+        if self.magnetostatics_solver is not None:
+            self._solvers.append(self.magnetostatics_solver)
+        if self.eddy_current_solver is not None:
+            self._solvers.append(self.eddy_current_solver)
+        if self.joule_heating_solver is not None:
+            self._solvers.append(self.joule_heating_solver)
 
         self._active_solvers: list["Solver"] = gs.List()
 
