@@ -83,9 +83,13 @@ except ImportError:
                 if q.ndim == 1:
                     q = q.unsqueeze(0)
                 raw_pose = torch.cat([p, q], dim=-1)
-                return cls(raw_pose)
             else:
-                return cls(None)
+                if p is None:
+                    p = [[0.0, 0.0, 0.0]]
+                if q is None:
+                    q = [[1.0, 0.0, 0.0, 0.0]]
+                raw_pose = list(p) + list(q)
+            return cls(raw_pose)
 
     def matrix_to_quaternion(matrix):
         if HAS_TORCH:

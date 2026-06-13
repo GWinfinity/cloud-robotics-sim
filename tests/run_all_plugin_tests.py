@@ -129,7 +129,10 @@ def main():
     print("SUMMARY")
     print("=" * 70)
     print(f"Total:  {total_tests} tests")
-    print(f"Passed: {total_passed} ({100*total_passed/total_tests:.1f}%)")
+    if total_tests > 0:
+        print(f"Passed: {total_passed} ({100*total_passed/total_tests:.1f}%)")
+    else:
+        print(f"Passed: {total_passed}")
     print(f"Failed: {total_failed}")
     print(f"Skipped: {total_skipped}")
 

@@ -132,6 +132,8 @@ class ABTestRunner:
 
         self.warmup_steps = warmup_steps
         self.step_count = 0
+        self._step_count_a = 0
+        self._step_count_b = 0
 
         self.results = ABTestResult(variant_a=variant_a_name, variant_b=variant_b_name)
 
@@ -182,10 +184,13 @@ class ABTestRunner:
 
         # 记录结果 (如果不是预热阶段)
         self.step_count += 1
-        if self.step_count > self.warmup_steps:
-            if variant == "a":
+        if variant == "a":
+            self._step_count_a += 1
+            if self._step_count_a > self.warmup_steps:
                 self.results.metrics_a.append(metrics)
-            else:
+        else:
+            self._step_count_b += 1
+            if self._step_count_b > self.warmup_steps:
                 self.results.metrics_b.append(metrics)
 
         return metrics

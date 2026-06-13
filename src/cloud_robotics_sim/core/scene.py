@@ -234,8 +234,8 @@ class Scene(ABC):
 
         self._build_room_structure()
         self._setup_lighting()
-        self._spawn_objects()
         self._build_custom()
+        self._spawn_objects()
 
         logger.info(f"Scene built with {len(self.entities)} objects")
         return self

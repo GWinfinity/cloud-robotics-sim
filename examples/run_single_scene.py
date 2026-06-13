@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import genesis as gs
+from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
 from scenes import create_scene
 
 
@@ -22,7 +23,7 @@ def main():
     
     # 初始化 Genesis
     print("\n1. Initializing Genesis...")
-    gs.init(backend=gs.backends.CUDA)
+    gs.init(backend=get_genesis_backend('cuda'))
     
     # 创建场景
     print("\n2. Creating scene...")

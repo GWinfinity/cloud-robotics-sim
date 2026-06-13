@@ -6,6 +6,7 @@ import os
 import numpy as np
 import torch
 import genesis as gs
+from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
 from typing import Dict, Tuple, Optional
 
 
@@ -27,7 +28,7 @@ class HumanoidEnv:
         self.headless = headless
         
         # 初始化Genesis
-        gs.init(backend=gs.backends.CUDA)
+        gs.init(backend=get_genesis_backend('cuda'))
         
         # 创建场景
         self.scene = self._create_scene()

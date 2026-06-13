@@ -64,6 +64,55 @@ except ImportError:
 
 
 # =============================================================================
+# Genesis Backend Compatibility (v0.x → v1.0 migration)
+# =============================================================================
+# genesis-world 1.0.0 changed: gs.backends.CUDA → gs._gs_backend.cuda
+# This helper normalizes the API so code works across versions.
+
+def get_genesis_backend(name: str = "cuda"):
+    """Get a genesis backend by name, compatible with both old and new API.
+
+    Args:
+        name: Backend name ('cuda', 'cpu', 'GPU', 'CPU')
+
+    Returns:
+        The backend object, or None if genesis is not installed.
+    """
+    if not HAS_GENESIS:
+        return None
+    name_lower = name.lower()
+    # Try new API first (genesis-world >= 1.0)
+    if hasattr(gs, '_gs_backend'):
+        backend = getattr(gs._gs_backend, name_lower, None)
+        if backend is not None:
+            return backend
+    # Fall back to old API (genesis-world < 1.0)
+    if hasattr(gs, 'backends'):
+        backend = getattr(gs.backends, name, None) or getattr(gs.backends, name_lower, None)
+        if backend is not None:
+            return backend
+    return None
+
+
+def genesis_init(headless: bool = True, use_cuda: bool = True, **kwargs):
+    """Initialize Genesis with version-compatible backend selection.
+
+    Args:
+        headless: Run without viewer.
+        use_cuda: Use GPU if available, else CPU.
+        **kwargs: Passed to gs.init().
+    """
+    if not HAS_GENESIS:
+        raise RuntimeError("genesis-world is not installed")
+    backend = get_genesis_backend("cuda" if use_cuda else "cpu")
+    if backend is None:
+        # Last resort: let genesis pick
+        gs.init(**kwargs)
+    else:
+        gs.init(backend=backend, **kwargs)
+
+
+# =============================================================================
 # Type Aliases
 # =============================================================================
 

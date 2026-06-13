@@ -292,14 +292,14 @@ class ReachTask(Task):
         self.step_count = 0
         self.succeeded = False
 
-        # Sample random target if needed
-        if seed > 0:
-            np.random.seed(seed)
+        # Sample random target if seed is provided
+        if seed is not None:
+            rng = np.random.RandomState(seed)
             self.target_position = np.array(
                 [
-                    np.random.uniform(0.3, 0.7),
-                    np.random.uniform(-0.3, 0.3),
-                    np.random.uniform(0.2, 0.6),
+                    rng.uniform(0.3, 0.7),
+                    rng.uniform(-0.3, 0.3),
+                    rng.uniform(0.2, 0.6),
                 ]
             )
 

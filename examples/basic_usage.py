@@ -17,6 +17,7 @@ from cloud_robotics_sim import (
     SceneConfig,
     TaskConfig,
 )
+from cloud_robotics_sim.core.scenes import EmptyRoom
 
 
 def create_living_room_scene() -> Scene:
@@ -27,7 +28,7 @@ def create_living_room_scene() -> Scene:
         default_camera_pos=(2.5, 2.5, 2.5),
     )
     
-    scene = Scene(config)
+    scene = EmptyRoom(size=(5.0, 5.0, 3.0))
     
     # Add furniture
     scene.add_object(ObjectLibrary.sofa_three_seat(position=(0, -1.5, 0)))

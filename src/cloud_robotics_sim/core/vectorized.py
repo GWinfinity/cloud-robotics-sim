@@ -109,12 +109,10 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
 
     def initialize(self) -> None:
         """Initialize Genesis and create parallel environments."""
-        import genesis as gs
+        from cloud_robotics_sim.utils.genesis_compat import genesis_init
 
         try:
-            gs.init(
-                backend=gs.backends.CUDA if self.config.use_cuda else gs.backends.CPU
-            )
+            genesis_init(use_cuda=self.config.use_cuda)
         except RuntimeError:
             logger.debug("Genesis already initialized")
 
