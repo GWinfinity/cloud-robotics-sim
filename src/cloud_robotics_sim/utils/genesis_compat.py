@@ -69,6 +69,7 @@ except ImportError:
 # genesis-world 1.0.0 changed: gs.backends.CUDA → gs._gs_backend.cuda
 # This helper normalizes the API so code works across versions.
 
+
 def get_genesis_backend(name: str = "cuda"):
     """Get a genesis backend by name, compatible with both old and new API.
 
@@ -82,13 +83,15 @@ def get_genesis_backend(name: str = "cuda"):
         return None
     name_lower = name.lower()
     # Try new API first (genesis-world >= 1.0)
-    if hasattr(gs, '_gs_backend'):
+    if hasattr(gs, "_gs_backend"):
         backend = getattr(gs._gs_backend, name_lower, None)
         if backend is not None:
             return backend
     # Fall back to old API (genesis-world < 1.0)
-    if hasattr(gs, 'backends'):
-        backend = getattr(gs.backends, name, None) or getattr(gs.backends, name_lower, None)
+    if hasattr(gs, "backends"):
+        backend = getattr(gs.backends, name, None) or getattr(
+            gs.backends, name_lower, None
+        )
         if backend is not None:
             return backend
     return None
