@@ -29,8 +29,11 @@ References:
     - Genesis: https://github.com/Genesis-Embodied-AI/Genesis
 """
 
+import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
+
+logger = logging.getLogger(__name__)
 
 # Optional dependencies
 try:
@@ -262,7 +265,7 @@ def configure_rendering(
                     )
         return True
     except Exception as e:
-        print(f"Warning: Failed to configure rendering: {e}")
+        logger.warning("Failed to configure rendering: %s", e)
         return False
 
 
@@ -295,7 +298,7 @@ def load_texture(path: Union[str, Path], **kwargs) -> Optional[Any]:
         elif hasattr(gs.render, "Texture"):
             return gs.render.Texture(str(path), **kwargs)
     except Exception as e:
-        print(f"Warning: Failed to load texture {path}: {e}")
+        logger.warning("Failed to load texture %s: %s", path, e)
 
     return None
 
@@ -366,7 +369,7 @@ def save_screenshot(camera_or_viewer, path: Union[str, Path], rgb: bool = True):
                     # Fallback: save as numpy array
                     np.save(path.with_suffix(".npy"), img)
     except Exception as e:
-        print(f"Warning: Failed to save screenshot: {e}")
+        logger.warning("Failed to save screenshot: %s", e)
 
 
 def start_recording(viewer, path: Union[str, Path], fps: int = 30):
@@ -384,7 +387,7 @@ def start_recording(viewer, path: Union[str, Path], fps: int = 30):
         if hasattr(viewer, "start_recording"):
             return viewer.start_recording(str(path), fps=fps)
     except Exception as e:
-        print(f"Warning: Failed to start recording: {e}")
+        logger.warning("Failed to start recording: %s", e)
     return None
 
 
@@ -398,7 +401,7 @@ def stop_recording(recording_handle):
         if recording_handle and hasattr(recording_handle, "stop"):
             recording_handle.stop()
     except Exception as e:
-        print(f"Warning: Failed to stop recording: {e}")
+        logger.warning("Failed to stop recording: %s", e)
 
 
 __all__ = [

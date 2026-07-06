@@ -16,7 +16,7 @@ import numpy as np
 from cloud_robotics_sim.core.embodiment import RobotEmbodiment
 from cloud_robotics_sim.core.scene import Scene
 from cloud_robotics_sim.core.task import Task
-from cloud_robotics_sim.utils.genesis_compat import genesis_init
+from cloud_robotics_sim.utils.genesis_compat import ensure_genesis_initialized
 
 logger = logging.getLogger(__name__)
 
@@ -247,10 +247,7 @@ class EnvironmentComposer:
         logger.info("=" * 60)
 
         # Initialize Genesis physics engine
-        try:
-            genesis_init(headless=self.config.headless)
-        except RuntimeError:
-            logger.debug("Genesis already initialized")
+        ensure_genesis_initialized(headless=self.config.headless)
 
         # Create viewer if not headless
         viewer_options = None

@@ -33,10 +33,20 @@ pip install -e ".[dev]"
 
 ### Option 3: Docker
 
+Build and run locally (CPU or GPU):
+
 ```bash
-docker pull cloudrobotics/sim:latest
-docker run -it --gpus all cloudrobotics/sim:latest
+# CPU
+docker compose up -d
+docker exec -it genesis-cloud-sim-cpu bash
+
+# GPU (requires NVIDIA Container Toolkit)
+docker compose -f docker-compose.gpu.yml up -d
+docker exec -it genesis-cloud-sim-gpu bash
 ```
+
+See the full [Docker Usage Guide](./docker.md) for manual builds, GUI forwarding,
+and troubleshooting.
 
 ## GPU Setup
 

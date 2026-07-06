@@ -120,6 +120,9 @@ include = '\.pyi?$'
 [tool.ruff]
 line-length = 88
 target-version = "py310"
+exclude = [
+    "plugins/do_as_i_do/assets/sharpa-urdf-usd-xml-main",
+]
 
 [tool.ruff.lint]
 select = [

@@ -123,7 +123,13 @@ class BaseEnv(gym.Env):
         """Setup default cameras."""
         # Base camera setup - override in subclasses
         pass
-    
+
+    SUPPORTED_OBS_MODES = ("state", "rgb", "rgbd")
+
+    def _validate_obs_mode(self):
+        if self.obs_mode not in self.SUPPORTED_OBS_MODES:
+            raise ValueError(f"Unknown obs_mode: {self.obs_mode}. Supported: {self.SUPPORTED_OBS_MODES}")
+
     def _setup_spaces(self):
         """Setup action and observation spaces."""
         # Action space from robot
@@ -158,8 +164,8 @@ class BaseEnv(gym.Env):
                 dtype=np.uint8
             )
         else:
-            raise ValueError(f"Unknown obs_mode: {self.obs_mode}")
-    
+            self._validate_obs_mode()
+
     def _get_state_obs_dim(self) -> int:
         """Get state observation dimension. Override in subclasses."""
         # Robot state + task-specific state
@@ -253,7 +259,7 @@ class BaseEnv(gym.Env):
         elif self.obs_mode == "rgbd":
             return self._get_rgbd_obs()
         else:
-            raise ValueError(f"Unknown obs_mode: {self.obs_mode}")
+            self._validate_obs_mode()
     
     def _get_state_obs(self) -> np.ndarray:
         """Get state observation."""

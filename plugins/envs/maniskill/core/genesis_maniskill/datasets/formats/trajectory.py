@@ -202,9 +202,16 @@ class TrajectoryDataset:
     - Conversion to PyTorch DataLoader
     """
     
+    SUPPORTED_FORMATS = ("hdf5", "zarr")
+
     def __init__(self, trajectories: Optional[List[Trajectory]] = None):
         self.trajectories = trajectories or []
-    
+
+    @classmethod
+    def _validate_format(cls, format: str):
+        if format not in cls.SUPPORTED_FORMATS:
+            raise ValueError(f"Unknown format: {format}. Supported: {cls.SUPPORTED_FORMATS}")
+
     def __len__(self) -> int:
         return len(self.trajectories)
     
@@ -246,20 +253,21 @@ class TrajectoryDataset:
     def save(self, path: Union[str, Path], format: str = 'hdf5'):
         """
         Save dataset.
-        
+
         Args:
             path: Save path
             format: 'hdf5' or 'zarr'
         """
+        self._validate_format(format)
         path = Path(path)
         path.mkdir(parents=True, exist_ok=True)
-        
+
         if format == 'hdf5':
             # Save each trajectory as separate file
             for i, traj in enumerate(self.trajectories):
                 traj_path = path / f'trajectory_{i:06d}.hdf5'
                 traj.save_hdf5(traj_path)
-            
+
             # Save metadata
             metadata = {
                 'num_trajectories': len(self.trajectories),
@@ -267,27 +275,25 @@ class TrajectoryDataset:
             }
             with open(path / 'metadata.json', 'w') as f:
                 json.dump(metadata, f, indent=2)
-        
         elif format == 'zarr':
             # TODO: Implement Zarr format
             raise NotImplementedError("Zarr format not yet implemented")
-        else:
-            raise ValueError(f"Unknown format: {format}")
     
     @classmethod
     def load(cls, path: Union[str, Path], format: str = 'hdf5') -> "TrajectoryDataset":
         """Load dataset."""
+        cls._validate_format(format)
         path = Path(path)
-        
+
         if format == 'hdf5':
             trajectories = []
             for traj_file in sorted(path.glob('trajectory_*.hdf5')):
                 traj = Trajectory.load_hdf5(traj_file)
                 trajectories.append(traj)
-            
+
             return cls(trajectories)
         else:
-            raise ValueError(f"Unknown format: {format}")
+            raise NotImplementedError(f"Loading from {format} format not yet implemented")
     
     def to_torch_dataset(self, obs_key: str = 'state'):
         """Convert to PyTorch dataset for training."""

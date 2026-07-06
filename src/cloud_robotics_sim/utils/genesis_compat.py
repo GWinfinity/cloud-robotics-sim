@@ -30,7 +30,10 @@ References:
     - Genesis: https://github.com/Genesis-Embodied-AI/Genesis
 """
 
+import logging
 from typing import Any, List, Optional
+
+logger = logging.getLogger(__name__)
 
 # Optional dependencies with graceful fallback
 try:
@@ -113,6 +116,14 @@ def genesis_init(headless: bool = True, use_cuda: bool = True, **kwargs):
         gs.init(**kwargs)
     else:
         gs.init(backend=backend, **kwargs)
+
+
+def ensure_genesis_initialized(**kwargs):
+    """Initialize Genesis if not already initialized (idempotent)."""
+    try:
+        genesis_init(**kwargs)
+    except RuntimeError:
+        logger.debug("Genesis already initialized")
 
 
 # =============================================================================
@@ -355,7 +366,8 @@ def get_actor_state(actor) -> Optional[ArrayLike]:
             ang_vel = np.zeros(3, dtype=np.float32)
 
         return np.hstack([pos, quat, vel, ang_vel])
-    except Exception:
+    except Exception as e:
+        logger.debug("Failed to get actor state: %s", e)
         return None
 
 
@@ -393,7 +405,8 @@ def get_articulation_state(articulation) -> Optional[ArrayLike]:
         qvel = articulation.get_qvel()
 
         return np.hstack([pos, quat, vel, ang_vel, qpos, qvel])
-    except Exception:
+    except Exception as e:
+        logger.debug("Failed to get articulation state: %s", e)
         return None
 
 
@@ -603,8 +616,8 @@ def check_joint_stuck(
                 abs(actual_pos - target_pos) > pos_diff_threshold
                 and abs(actual_vel) < vel_threshold
             )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Failed to check joint stuck: %s", e)
     return False
 
 
@@ -648,7 +661,8 @@ def check_actor_static(
             lin_norm = sum(x * x for x in lin_vel) ** 0.5
             ang_norm = sum(x * x for x in ang_vel) ** 0.5
             return lin_norm <= lin_thresh and ang_norm <= ang_thresh
-    except Exception:
+    except Exception as e:
+        logger.debug("Failed to check actor static: %s", e)
         return True
 
 

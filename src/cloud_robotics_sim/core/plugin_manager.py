@@ -133,7 +133,7 @@ class PluginManager:
             return module
 
         except ImportError as e:
-            raise ImportError(f"Failed to load plugin {name}: {e}")
+            raise ImportError(f"Failed to load plugin {name}: {e}") from e
 
     def get_plugin_info(self, category: str, name: str) -> PluginInfo:
         """Get plugin metadata"""
