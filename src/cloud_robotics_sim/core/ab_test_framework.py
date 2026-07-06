@@ -454,7 +454,8 @@ class GradualMigration:
             logger.warning("  Current ratio: %.1%%", self.plugin_ratio)
             logger.warning("  Plugin samples: %d", self.plugin_samples)
             logger.warning(
-                "  Plugin success rate: %.1%%", self.plugin_successes / (self.plugin_samples + 1e-6)
+                "  Plugin success rate: %.1%%",
+                self.plugin_successes / (self.plugin_samples + 1e-6),
             )
             return False
 
@@ -465,7 +466,9 @@ class GradualMigration:
         self.plugin_samples = 0
         self.plugin_successes = 0
 
-        logger.info("Plugin ratio increased: %.1%% -> %.1%%", old_ratio, self.plugin_ratio)
+        logger.info(
+            "Plugin ratio increased: %.1%% -> %.1%%", old_ratio, self.plugin_ratio
+        )
         return True
 
     def get_status(self) -> dict[str, Any]:
