@@ -2,7 +2,8 @@
 Table-top scene builder for manipulation tasks.
 """
 
-from typing import Dict, List, Optional, Tuple
+from __future__ import annotations
+
 import numpy as np
 import torch
 import genesis as gs
@@ -16,9 +17,9 @@ class TableTopSceneBuilder:
     def __init__(
         self,
         scene: gs.Scene,
-        table_size: Tuple[float, float, float] = (1.0, 0.6, 0.05),
+        table_size: tuple[float, float, float] = (1.0, 0.6, 0.05),
         num_objects: int = 1,
-        object_types: Optional[List[str]] = None,
+        object_types: Optional[list[str]] = None,
         num_envs: int = 1,
         config: Optional[Dict] = None
     ):

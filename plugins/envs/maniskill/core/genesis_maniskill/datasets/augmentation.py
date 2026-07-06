@@ -8,7 +8,9 @@ Provides various augmentation techniques for training data:
 - Trajectory mixing
 """
 
-from typing import Callable, List, Optional
+from __future__ import annotations
+
+from typing import Callable
 import numpy as np
 import copy
 
@@ -20,7 +22,7 @@ class TrajectoryAugmenter:
     Apply augmentations to trajectory datasets.
     """
     
-    def __init__(self, augmentations: List[Callable]):
+    def __init__(self, augmentations: list[Callable]):
         """
         Initialize augmenter with list of augmentation functions.
         
@@ -48,10 +50,10 @@ class TrajectoryAugmenter:
     
     def augment_dataset(
         self,
-        trajectories: List[Trajectory],
+        trajectories: list[Trajectory],
         n_copies: int = 1,
         keep_original: bool = True
-    ) -> List[Trajectory]:
+    ) -> list[Trajectory]:
         """
         Augment entire dataset.
         
@@ -114,7 +116,7 @@ def add_action_noise(
 def perturb_states(
     trajectory: Trajectory,
     perturb_scale: float = 0.01,
-    state_keys: Optional[List[str]] = None
+    state_keys: Optional[list[str]] = None
 ) -> Trajectory:
     """
     Add small perturbations to state observations.

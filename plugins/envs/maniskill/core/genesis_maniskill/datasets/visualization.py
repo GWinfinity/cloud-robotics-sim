@@ -5,7 +5,8 @@ Provides tools to visualize and debug trajectory data.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from __future__ import annotations
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
@@ -18,7 +19,7 @@ class TrajectoryVisualizer:
     Visualize trajectory data.
     """
     
-    def __init__(self, figsize: Tuple[int, int] = (16, 10)):
+    def __init__(self, figsize: tuple[int, int] = (16, 10)):
         self.figsize = figsize
     
     def plot_trajectory(
@@ -238,8 +239,8 @@ Tasks: {', '.join(stats['tasks']) if stats['tasks'] else 'N/A'}
     
     def compare_trajectories(
         self,
-        trajectories: List[Trajectory],
-        labels: Optional[List[str]] = None,
+        trajectories: list[Trajectory],
+        labels: Optional[list[str]] = None,
         save_path: Optional[Path] = None,
         show: bool = True
     ):

@@ -3,11 +3,12 @@ Mobile Manipulator Environment
 
 移动操作器环境，支持全身操作任务
 """
+from __future__ import annotations
 
 import numpy as np
 import genesis as gs
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
-from typing import Dict, Tuple, Optional
+
 
 
 class MobileManipulatorEnv:
@@ -24,7 +25,7 @@ class MobileManipulatorEnv:
     
     def __init__(
         self,
-        config: Dict,
+        config: dict,
         num_envs: int = 1,
         headless: bool = False,
         device: str = 'cuda'
@@ -138,7 +139,7 @@ class MobileManipulatorEnv:
         
         return self.get_observation()
     
-    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, Dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, dict]:
         """执行动作"""
         # 应用动作
         self._apply_action(action)

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import traceback
 from pathlib import Path
 import json
@@ -10,17 +11,17 @@ import numpy as np
 
 try:
     from engine.utils.code_llama_client import setup_llama
-except:
+except Exception:
     setup_llama = None
 
 try:
     from engine.utils.volc_engine_client import setup_volc_engine
-except:
+except Exception:
     setup_volc_engine = None
 
 try:
     from engine.utils.qwen_client import setup_qwen
-except:
+except Exception:
     setup_qwen = None
 from engine.utils.lm_utils import unwrap_results
 from engine.utils.execute_utils import execute_command
@@ -34,7 +35,7 @@ from engine.constants import (
     MAX_TOKENS,
     DRY_RUN,
 )
-from typing import List, Union, Optional
+from typing import Union
 
 root = Path(__file__).parent
 
@@ -130,12 +131,12 @@ def save_prompts(
                     raise NotImplementedError(f"{prompt['type']=}")
 
 
-def read_tasks() -> List[str]:
+def read_tasks() -> list[str]:
     with open(root / "test_0608.txt", "r") as f:
         return [line.strip() for line in f]
 
 
-def read_example(path: Optional[str] = None, animate: bool = False) -> str:
+def read_example(path: str | None = None, animate: bool = False) -> str:
     if path is None:
         path = (
             root
@@ -224,8 +225,8 @@ get_impl = {
 def generate(
     user_prompt: Union[str, list[dict[str, str]], None],
     system_prompt: str,
-    prepend_messages: Optional[list] = None,
-    lm_config: Optional[dict] = None,
+    prepend_messages: list | None = None,
+    lm_config: dict | None = None,
     skip_cache: bool = False,
 ):
     if LLM_PROVIDER == "gpt":
@@ -274,11 +275,11 @@ def run(
     save_dir: str,
     user_prompt: Union[str, list[dict[str, str]], None],
     system_prompt: str,
-    extra_info: Optional[dict] = None,
-    prepend_messages: Optional[list] = None,
-    prepend_program: Optional[str] = None,
+    extra_info: dict | None = None,
+    prepend_messages: list | None = None,
+    prepend_program: str | None = None,
     execute: bool = True,
-    lm_config: Optional[dict] = None,
+    lm_config: dict | None = None,
     code_only: bool = False,
     dry_run: bool = False,
 ):
@@ -567,8 +568,8 @@ def run_self_reflect_and_moe(
     animate: bool,
     num_reflections: int,
     num_experts: int,
-    extra_info: Optional[dict] = None,
-    lm_config: Optional[dict] = None,
+    extra_info: dict | None = None,
+    lm_config: dict | None = None,
 ):
     assert (
         LLM_PROVIDER == "claude"

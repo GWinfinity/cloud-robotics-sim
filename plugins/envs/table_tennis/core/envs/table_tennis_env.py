@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Table Tennis Environment for Unitree G1
 
@@ -9,7 +11,7 @@ import numpy as np
 import torch
 import genesis as gs
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
-from typing import Dict, Tuple, Optional, List
+from typing import Optional
 
 from .ball_physics import TableTennisBall, BallTrajectoryPredictor
 from .table import TableTennisTable, Racket
@@ -174,7 +176,7 @@ class TableTennisEnv:
         
         self.ball.reset(serve_pos, velocity, angular_vel)
     
-    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, Dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, Dict]:
         """
         执行动作
         
@@ -263,7 +265,7 @@ class TableTennisEnv:
                 hand_vel.cpu().numpy(),
                 normal
             )
-        except:
+        except Exception:
             pass
     
     def _check_hit(self) -> Dict:
@@ -381,7 +383,7 @@ class TableTennisEnv:
             torso_pos = self.robot.get_pos().cpu().numpy()
             if torso_pos[2] < 0.4:
                 return True
-        except:
+        except Exception:
             pass
         
         return False

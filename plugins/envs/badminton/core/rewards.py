@@ -1,16 +1,17 @@
+from __future__ import annotations
+
 """
 羽毛球奖励函数
 """
 
 import numpy as np
-from typing import Dict, Tuple
 
 
 def compute_hit_reward(
     hit: bool,
     hit_speed: float,
     target_speed: float = 15.0,
-    weights: Dict = None
+    weights: dict = None
 ) -> float:
     """
     计算击球奖励
@@ -42,8 +43,8 @@ def compute_hit_reward(
 def compute_landing_reward(
     landing_pos: np.ndarray,
     ideal_landing: np.ndarray,
-    court_bounds: Dict,
-    weights: Dict = None
+    court_bounds: dict,
+    weights: dict = None
 ) -> float:
     """
     计算落点奖励
@@ -81,7 +82,7 @@ def compute_footwork_reward(
     robot_pos: np.ndarray,
     target_pos: np.ndarray,
     robot_vel: np.ndarray,
-    weights: Dict = None
+    weights: dict = None
 ) -> float:
     """
     计算步法奖励

@@ -3,13 +3,18 @@
 Simple plugin system for organizing reusable components.
 """
 
+from __future__ import annotations
+
 import importlib
+import logging
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import yaml
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -22,7 +27,7 @@ class PluginInfo:
     description: str
     path: Path
     exports: list
-    config: Optional[Dict] = None
+    config: dict | None = None
 
 
 class PluginManager:
@@ -35,7 +40,7 @@ class PluginManager:
         >>> controller = plugin.MPCWBCController()
     """
 
-    def __init__(self, plugins_dir: Optional[str] = None):
+    def __init__(self, plugins_dir: str | None = None):
         """Args:
         plugins_dir: Path to plugins directory.
                     Defaults to ../plugins relative to this file.
@@ -47,10 +52,10 @@ class PluginManager:
         else:
             self.plugins_dir = Path(plugins_dir)
 
-        self._plugins: Dict[str, Dict[str, PluginInfo]] = {}
-        self._loaded_modules: Dict[str, Any] = {}
+        self._plugins: dict[str, dict[str, PluginInfo]] = {}
+        self._loaded_modules: dict[str, Any] = {}
 
-    def discover_plugins(self) -> Dict[str, list]:
+    def discover_plugins(self) -> dict[str, list]:
         """Discover all available plugins in the plugins directory.
 
         Returns:
@@ -59,7 +64,7 @@ class PluginManager:
         discovered = {}
 
         if not self.plugins_dir.exists():
-            print(f"Plugins directory not found: {self.plugins_dir}")
+            logger.warning("Plugins directory not found: %s", self.plugins_dir)
             return discovered
 
         for category_dir in self.plugins_dir.iterdir():
@@ -94,7 +99,7 @@ class PluginManager:
                         discovered[category].append(metadata["name"])
 
                     except Exception as e:
-                        print(f"Error loading plugin from {plugin_dir}: {e}")
+                        logger.error("Error loading plugin from %s: %s", plugin_dir, e)
 
         return discovered
 
@@ -141,7 +146,7 @@ class PluginManager:
             raise ValueError(f"Plugin not found: {category}/{name}")
         return self._plugins[category][name]
 
-    def list_plugins(self, category: Optional[str] = None) -> Dict[str, list]:
+    def list_plugins(self, category: str | None = None) -> dict[str, list]:
         """List all available plugins"""
         if category:
             return {category: list(self._plugins.get(category, {}).keys())}
@@ -199,7 +204,7 @@ class PluginManager:
 
 
 # Global plugin manager instance
-_plugin_manager: Optional[PluginManager] = None
+_plugin_manager: PluginManager | None = None
 
 
 def get_plugin_manager() -> PluginManager:
@@ -216,6 +221,6 @@ def load_plugin(category: str, name: str) -> Any:
     return get_plugin_manager().load_plugin(category, name)
 
 
-def list_plugins(category: Optional[str] = None) -> Dict[str, list]:
+def list_plugins(category: str | None = None) -> dict[str, list]:
     """Convenience function to list plugins"""
     return get_plugin_manager().list_plugins(category)

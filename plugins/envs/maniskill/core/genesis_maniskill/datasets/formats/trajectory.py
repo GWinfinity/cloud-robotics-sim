@@ -7,8 +7,10 @@ This format is designed to be:
 - Easy to convert to/from various formats (HDF5, Zarr, TFRecord)
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Union, Any
+from typing import Union, Any
 import numpy as np
 import torch
 import h5py
@@ -29,14 +31,14 @@ class Step:
         truncated: Whether episode was truncated
         info: Additional info dict
     """
-    obs: Dict[str, np.ndarray]
+    obs: dict[str, np.ndarray]
     action: np.ndarray
     reward: float = 0.0
     terminated: bool = False
     truncated: bool = False
-    info: Dict[str, Any] = field(default_factory=dict)
+    info: dict[str, Any] = field(default_factory=dict)
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
             "obs": self.obs,
@@ -48,7 +50,7 @@ class Step:
         }
     
     @classmethod
-    def from_dict(cls, data: Dict) -> "Step":
+    def from_dict(cls, data: dict) -> "Step":
         """Create Step from dictionary."""
         return cls(**data)
 
@@ -62,8 +64,8 @@ class Trajectory:
         steps: List of steps
         metadata: Episode metadata (task, scene, robot, etc.)
     """
-    steps: List[Step] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    steps: list[Step] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
     
     def __len__(self) -> int:
         return len(self.steps)
@@ -72,7 +74,7 @@ class Trajectory:
         """Add a step to the trajectory."""
         self.steps.append(step)
     
-    def get_observations(self, key: Optional[str] = None) -> np.ndarray:
+    def get_observations(self, key: str | None = None) -> np.ndarray:
         """
         Get all observations.
         
@@ -102,7 +104,7 @@ class Trajectory:
             step.terminated or step.truncated for step in self.steps
         ])
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert trajectory to dictionary."""
         return {
             "steps": [step.to_dict() for step in self.steps],
@@ -110,7 +112,7 @@ class Trajectory:
         }
     
     @classmethod
-    def from_dict(cls, data: Dict) -> "Trajectory":
+    def from_dict(cls, data: dict) -> "Trajectory":
         """Create Trajectory from dictionary."""
         steps = [Step.from_dict(s) for s in data["steps"]]
         return cls(steps=steps, metadata=data.get("metadata", {}))
@@ -204,7 +206,7 @@ class TrajectoryDataset:
     
     SUPPORTED_FORMATS = ("hdf5", "zarr")
 
-    def __init__(self, trajectories: Optional[List[Trajectory]] = None):
+    def __init__(self, trajectories: list[Trajectory] | None = None):
         self.trajectories = trajectories or []
 
     @classmethod
@@ -230,7 +232,7 @@ class TrajectoryDataset:
         ]
         return TrajectoryDataset(filtered)
     
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get dataset statistics."""
         num_episodes = len(self.trajectories)
         total_steps = sum(len(t) for t in self.trajectories)

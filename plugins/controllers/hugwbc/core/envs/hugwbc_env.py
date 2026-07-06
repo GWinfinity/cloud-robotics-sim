@@ -4,12 +4,13 @@ HugWBC Environment for Genesis
 基于论文 "HugWBC: A Unified and General Humanoid Whole-Body Controller for Versatile Locomotion"
 适配到 Genesis 物理引擎
 """
+from __future__ import annotations
 
 import os
 import numpy as np
 import torch
 import genesis as gs
-from typing import Dict, Tuple, Optional, List
+from typing import Optional
 import yaml
 from enum import Enum
 
@@ -106,7 +107,7 @@ class HugWBCEnv:
             'command_tracking_error': np.zeros(num_envs),
         }
         
-    def _load_config(self, config_path: Optional[str]) -> Dict:
+    def _load_config(self, config_path: Optional[str]) -> dict:
         """加载配置"""
         if config_path and os.path.exists(config_path):
             with open(config_path, 'r') as f:
@@ -114,7 +115,7 @@ class HugWBCEnv:
         else:
             return self._get_default_config()
     
-    def _get_default_config(self) -> Dict:
+    def _get_default_config(self) -> dict:
         """获取默认配置"""
         return {
             'genesis': {
@@ -253,7 +254,7 @@ class HugWBCEnv:
         """获取默认关节位置"""
         return self.robot.init_qpos[:self.n_dofs]
     
-    def _init_domain_rand_params(self) -> Dict:
+    def _init_domain_rand_params(self) -> dict:
         """初始化域随机化参数"""
         return {
             'friction': np.ones(self.num_envs),
@@ -261,7 +262,7 @@ class HugWBCEnv:
             'com_offset': np.zeros((self.num_envs, 3)),
         }
     
-    def reset(self, env_ids: Optional[List[int]] = None) -> Tuple[np.ndarray, np.ndarray]:
+    def reset(self, env_ids: Optional[list[int]] = None) -> tuple[np.ndarray, np.ndarray]:
         """重置环境"""
         if env_ids is None:
             env_ids = list(range(self.num_envs))
@@ -298,7 +299,7 @@ class HugWBCEnv:
         
         return obs, privileged_obs
     
-    def _resample_commands(self, env_ids: List[int]):
+    def _resample_commands(self, env_ids: list[int]):
         """重新采样速度命令"""
         ranges = self.command_ranges
         
@@ -307,7 +308,7 @@ class HugWBCEnv:
             self.commands[i, 1] = np.random.uniform(*ranges['lin_vel_y'])
             self.commands[i, 2] = np.random.uniform(*ranges['ang_vel_yaw'])
     
-    def step(self, actions: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Dict]:
+    def step(self, actions: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict]:
         """执行一步仿真"""
         # 裁剪动作
         actions = np.clip(actions, -1, 1)
@@ -348,7 +349,7 @@ class HugWBCEnv:
         
         # 重置完成的 episode
         done_indices = np.where(dones)[0]
-        if len(done_indices) > 0:
+        if done_indices.size > 0:
             obs, privileged_obs = self.reset(done_indices.tolist())
         
         info = {
@@ -365,42 +366,25 @@ class HugWBCEnv:
         # 只使用第一个环境的动作（目前只支持单环境）
         target_positions = self.default_joint_pos + actions[0] * action_scale
         self.robot.control_dofs_position(target_positions)
-    
+
+    def _to_numpy(self, tensor, max_len: int | None = None) -> np.ndarray:
+        """Convert tensor to numpy array, truncating to max_len if specified."""
+        arr = tensor.cpu().numpy() if hasattr(tensor, 'cpu') else np.array(tensor)
+        return arr[:max_len] if max_len else arr
+
     def get_observations(self) -> np.ndarray:
         """获取观察值 - 目前只支持 num_envs=1"""
         # 关节状态
-        qpos = self.robot.get_dofs_position()
-        if hasattr(qpos, 'cpu'):
-            qpos = qpos.cpu().numpy()[:self.n_dofs]
-        else:
-            qpos = np.array(qpos)[:self.n_dofs]
-        
-        qvel = self.robot.get_dofs_velocity()
-        if hasattr(qvel, 'cpu'):
-            qvel = qvel.cpu().numpy()[:self.n_dofs]
-        else:
-            qvel = np.array(qvel)[:self.n_dofs]
+        qpos = self._to_numpy(self.robot.get_dofs_position(), self.n_dofs)
+        qvel = self._to_numpy(self.robot.get_dofs_velocity(), self.n_dofs)
         
         # 上一帧动作 (取第一个环境)
         last_action = self.last_actions[0]
         
         # IMU 数据
-        base_ang_vel = self.robot.get_ang()
-        if hasattr(base_ang_vel, 'cpu'):
-            base_ang_vel = base_ang_vel.cpu().numpy()
-        else:
-            base_ang_vel = np.array(base_ang_vel)
-        if base_ang_vel.shape != (3,):
-            base_ang_vel = base_ang_vel[:3]
-        
+        base_ang_vel = self._to_numpy(self.robot.get_ang(), 3)
         # 投影重力
-        base_quat = self.robot.get_quat()
-        if hasattr(base_quat, 'cpu'):
-            base_quat = base_quat.cpu().numpy()
-        else:
-            base_quat = np.array(base_quat)
-        if base_quat.shape != (4,):
-            base_quat = base_quat[:4]
+        base_quat = self._to_numpy(self.robot.get_quat(), 4)
         projected_gravity = self._quat_rotate_inverse(base_quat, np.array([0, 0, -1]))
         
         # 命令 (取第一个环境)
@@ -453,23 +437,8 @@ class HugWBCEnv:
         rewards = np.zeros(self.num_envs)
         reward_config = self.config['rewards']
         
-        base_vel = self.robot.get_vel()
-        if hasattr(base_vel, 'cpu'):
-            base_vel = base_vel.cpu().numpy()
-        else:
-            base_vel = np.array(base_vel)
-        
-        base_ang_vel = self.robot.get_ang()
-        if hasattr(base_ang_vel, 'cpu'):
-            base_ang_vel = base_ang_vel.cpu().numpy()
-        else:
-            base_ang_vel = np.array(base_ang_vel)
-        
-        # 确保形状正确
-        if base_vel.shape != (3,):
-            base_vel = base_vel[:3]
-        if base_ang_vel.shape != (3,):
-            base_ang_vel = base_ang_vel[:3]
+        base_vel = self._to_numpy(self.robot.get_vel(), 3)
+        base_ang_vel = self._to_numpy(self.robot.get_ang(), 3)
         
         if np.any(np.isnan(base_vel)):
             base_vel = np.zeros(3)
@@ -507,11 +476,7 @@ class HugWBCEnv:
             dones[:] = True
             return dones
         
-        base_pos = self.robot.get_pos()
-        if hasattr(base_pos, 'cpu'):
-            base_pos = base_pos.cpu().numpy()
-        else:
-            base_pos = np.array(base_pos)
+        base_pos = self._to_numpy(self.robot.get_pos())
         
         # 处理不同形状的 base_pos
         if base_pos.ndim == 0:

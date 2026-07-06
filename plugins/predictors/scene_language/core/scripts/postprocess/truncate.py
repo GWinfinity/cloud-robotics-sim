@@ -41,7 +41,7 @@ def input_with_confirm(prompt, eval_fn=lambda s: s):
         response = input(prompt)
         try:
             response = eval_fn(response)
-        except:
+        except Exception:
             traceback.print_exc()
             print("Input cannot be evaluated.")
         confirm = input(f"You entered: '{response}'. Is this correct? ([y]/n): ").lower()
@@ -250,7 +250,7 @@ def get_parser():
 if __name__ == "__main__":
     try:
         main()
-    except:
+    except Exception:
         extype, value, tb = sys.exc_info()
         traceback.print_exc()
         pdb.post_mortem(tb)

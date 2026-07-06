@@ -3,7 +3,8 @@ Kitchen environment based on RoboCasa design.
 Adapted for Genesis backend.
 """
 
-from typing import Dict, Optional, Tuple
+from __future__ import annotations
+
 import numpy as np
 import genesis as gs
 from gymnasium import spaces

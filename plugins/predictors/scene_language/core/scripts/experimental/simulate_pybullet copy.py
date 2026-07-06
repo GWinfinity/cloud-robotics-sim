@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import genesis as gs
-from typing import Any, Dict, List
+from typing import Any
 from engine.constants import ENGINE_MODE, PROJ_DIR
 from pathlib import Path
 import sys
@@ -94,10 +96,10 @@ class GenesisEnv(Env):
     def __init__(self):
         super().__init__()
         self.shape_scene: Shape | None = None
-        self.shape_leaves: List[Shape] = []
+        self.shape_leaves: list[Shape] = []
         
         self.gs_scene: gs.Scene | None = None
-        self.gs_entities: List[gs.Entity] = []
+        self.gs_entities: list[gs.Entity] = []
     
     def reset(self):
         # Initialize Genesis backend

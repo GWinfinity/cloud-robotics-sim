@@ -3,12 +3,13 @@ Behavior Cloning (BC) Policy
 
 基础策略，从人类演示数据学习
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class VisualEncoder(nn.Module):
@@ -133,7 +134,7 @@ class BCPolicy(nn.Module):
         self,
         obs: torch.Tensor,
         image: Optional[torch.Tensor] = None
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -233,7 +234,7 @@ class BCTrainer:
         
         self.train_step = 0
     
-    def train_epoch(self, dataloader) -> Dict[str, float]:
+    def train_epoch(self, dataloader) -> dict[str, float]:
         """训练一个epoch"""
         self.policy.train()
         

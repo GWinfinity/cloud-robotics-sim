@@ -1,4 +1,6 @@
-from typing import Literal, Union, Tuple, Optional
+from __future__ import annotations
+
+from typing import Literal, Union, Optional
 from type_utils import Shape, P
 import numpy as np
 from math_utils import translation_matrix
@@ -13,7 +15,7 @@ __all__ = ["primitive_call"]
 
 def primitive_call(name: Literal["set_cuboid", "spawn_entity"],
                    block_type: str,
-                   scale: Tuple[int, int, int] = (1, 1, 1),
+                   scale: tuple[int, int, int] = (1, 1, 1),
                    fill: bool = True,
                    block_kwargs: Optional[dict] = None,
                    prompt_kwargs_29fc3136: Optional[dict] = None) -> Shape:

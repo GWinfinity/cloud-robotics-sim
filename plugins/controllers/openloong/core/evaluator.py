@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2025 Cloud Robotics Sim
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 """
 OpenLoong Walking Evaluator
@@ -16,7 +17,7 @@ References:
     - OpenLoong: https://github.com/loongOpen/OpenLoong-Dyn-Control
 """
 
-from typing import Dict, Any, Optional, Tuple
+from typing import Any
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -68,7 +69,7 @@ class EvaluationResult:
     error_message: Optional[str] = None
     """Error message if evaluation failed"""
     
-    def to_tuple(self) -> Tuple[float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float]:
         """Convert to tuple format for OpenEvolve compatibility.
         
         Returns:
@@ -76,7 +77,7 @@ class EvaluationResult:
         """
         return (self.stability_score, self.final_height, self.fall_time)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             'stability_score': self.stability_score,
@@ -333,7 +334,7 @@ class WalkingEvaluator:
             # Cleanup
             try:
                 gs.destroy()
-            except:
+            except Exception:
                 pass
         
         # Calculate metrics
@@ -389,7 +390,7 @@ def compare_parameters(
     params1: WalkingParameters,
     params2: WalkingParameters,
     use_genesis: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Compare two sets of walking parameters.
     
     Args:

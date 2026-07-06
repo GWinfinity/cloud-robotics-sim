@@ -72,7 +72,7 @@ class UR5Agent:
                     pos=(0.0, 0.0, 0.0),
                 ),
             )
-        except:
+        except Exception:
             # Fallback: create from MJCF
             try:
                 robot = self.scene.add_entity(
@@ -81,7 +81,7 @@ class UR5Agent:
                         pos=(0.0, 0.0, 0.0),
                     ),
                 )
-            except:
+            except Exception:
                 # Final fallback: use generic
                 import genesis as gs
                 robot = self.scene.add_entity(

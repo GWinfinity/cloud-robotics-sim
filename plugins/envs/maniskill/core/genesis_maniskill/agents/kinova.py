@@ -66,7 +66,7 @@ class KinovaGen3Agent:
                     pos=(0.0, 0.0, 0.0),
                 ),
             )
-        except:
+        except Exception:
             try:
                 robot = self.scene.add_entity(
                     gs.morphs.MJCF(
@@ -74,7 +74,7 @@ class KinovaGen3Agent:
                         pos=(0.0, 0.0, 0.0),
                     ),
                 )
-            except:
+            except Exception:
                 import genesis as gs
                 robot = self.scene.add_entity(
                     gs.morphs.Box(

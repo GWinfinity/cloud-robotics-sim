@@ -1,4 +1,6 @@
-from typing import Literal, Union, Tuple, Any
+from __future__ import annotations
+
+from typing import Literal, Union, Any
 from type_utils import Shape, P
 from _shape_utils import primitive_call as _primitive_call
 from engine.constants import ENGINE_MODE
@@ -11,7 +13,7 @@ __all__ = ["primitive_call"]
 def primitive_call(
         name: Literal["cube", "sphere", "cylinder"],
         shape_kwargs: dict[str, Any],
-        color: Tuple[float, float, float] = (1., 1., 1.),
+        color: tuple[float, float, float] = (1., 1., 1.),
 ) -> Shape:
     """
     Constructs a primitive shape.
@@ -25,7 +27,7 @@ def primitive_call(
                 - radius: float - radius of the cylinder.
                 - p0: P - 3-tuple of floats for the start point of the cylinder's centerline.
                 - p1: P - 3-tuple of floats for the end point of the cylinder's centerline.
-        color: Tuple[float, float, float] - RGB color in range [0, 1]^3.
+        color: tuple[float, float, float] - RGB color in range [0, 1]^3.
 
     Returns:
         Shape - the primitive shape.

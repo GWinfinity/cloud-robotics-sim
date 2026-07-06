@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import NamedTuple, Any, Callable, Literal, Generator, List
+from typing import NamedTuple, Any, Callable, Literal, Generator
 
 import math
 import random

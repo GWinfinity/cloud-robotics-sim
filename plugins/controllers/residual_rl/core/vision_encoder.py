@@ -3,11 +3,12 @@ Vision Encoders for Visual Observations
 
 支持ResNet18和自定义CNN编码器
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torchvision.models as models
-from typing import Dict
+
 
 
 class ResNet18Encoder(nn.Module):

@@ -5,7 +5,9 @@ Loads data from ManiSkill's format (HDF5 or pickled trajectories) and converts t
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Tuple
+from __future__ import annotations
+
+from typing import Union
 import numpy as np
 import h5py
 import pickle
@@ -96,7 +98,7 @@ class ManiSkillLoader:
         
         raise ValueError(f"Could not detect format for {self.dataset_path}")
     
-    def get_trajectory_files(self) -> List[Path]:
+    def get_trajectory_files(self) -> list[Path]:
         """Get list of trajectory files."""
         if self.format == 'hdf5_single':
             return [self.dataset_path]
@@ -246,7 +248,7 @@ class ManiSkillLoader:
         
         return trajectory
     
-    def load_all(self, max_trajs: Optional[int] = None) -> List[Trajectory]:
+    def load_all(self, max_trajs: Optional[int] = None) -> list[Trajectory]:
         """
         Load all trajectories.
         
@@ -308,7 +310,7 @@ def load_maniskill_dataset(
     dataset_path: Union[str, Path],
     max_trajs: Optional[int] = None,
     load_images: bool = True,
-) -> List[Trajectory]:
+) -> list[Trajectory]:
     """
     Convenience function to load ManiSkill dataset.
     

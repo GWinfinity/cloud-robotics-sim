@@ -8,8 +8,9 @@ Examples:
 """
 
 import torch
+from __future__ import annotations
+
 import numpy as np
-from typing import List, Tuple
 
 
 class AssemblyTask:
@@ -27,9 +28,9 @@ class AssemblyTask:
         
         self.parts: List = []
         self.assembly_positions: List = []
-        self.assembly_order: List[int] = []
+        self.assembly_order: list[int] = []
         
-        self.parts_assembled: List[bool] = []
+        self.parts_assembled: list[bool] = []
         self.current_part_idx = 0
         
         # Tolerance for successful placement
@@ -153,7 +154,7 @@ class AssemblyTask:
             return 1.0
         return sum(self.parts_assembled) / len(self.parts)
     
-    def get_current_part(self) -> Tuple[object, torch.Tensor]:
+    def get_current_part(self) -> tuple[object, torch.Tensor]:
         """Get the current part to assemble and its target position."""
         if self.current_part_idx < len(self.parts):
             part = self.parts[self.current_part_idx]

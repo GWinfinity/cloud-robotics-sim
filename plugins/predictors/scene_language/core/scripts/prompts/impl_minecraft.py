@@ -58,6 +58,6 @@ def main():
         for node in library_equiv.values():
             try:
                 execute(node(), save_dir=(save_dir / node.name).as_posix(), description=node.name)
-            except:
+            except Exception:
                 import traceback; traceback.print_exc()
                 pass

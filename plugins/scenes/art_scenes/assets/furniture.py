@@ -17,7 +17,9 @@ References:
     - Original: ART/spring-festival/genesis_scene.py
 """
 
-from typing import Optional, List, Tuple, Dict, Any, Union
+from __future__ import annotations
+
+from typing import Optional, Any, Union
 
 # Optional dependencies
 try:
@@ -44,11 +46,11 @@ except ImportError:
 
 
 # Type aliases
-ColorType = Union[Tuple[float, float, float], Tuple[float, float, float, float]]
-PositionType = Union[Tuple[float, float, float], List[float]]
+ColorType = Union[tuple[float, float, float], tuple[float, float, float, float]]
+PositionType = Union[tuple[float, float, float], list[float]]
 
 
-def _to_rgba_color(color: ColorType) -> Tuple[int, int, int, int]:
+def _to_rgba_color(color: ColorType) -> tuple[int, int, int, int]:
     """Convert float color to integer RGBA."""
     rgb = tuple(int(c * 255) for c in color[:3])
     if len(color) == 4:
@@ -78,7 +80,7 @@ class Sofa:
         fabric_color: Optional[ColorType] = None,
         pillow_color: Optional[ColorType] = None,
         add_pillows: bool = True,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Create an L-shaped sofa with main section, chaise lounge, and single seat.
         
         Args:
@@ -235,7 +237,7 @@ class CoffeeTable:
         depth: float = 2.1,
         height: float = 1.0,
         with_shelf: bool = True,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Create a wooden coffee table with cylindrical legs.
         
         Args:
@@ -315,7 +317,7 @@ class TVSet:
         cabinet_color: Optional[ColorType] = None,
         screen_color: Optional[ColorType] = None,
         gold_color: Optional[ColorType] = None,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Create a TV stand with drawers, handles, TV screen, and stand.
         
         Args:
@@ -451,7 +453,7 @@ def create_furniture_set(
     table_position: PositionType = (0, 0, 2.5),
     tv_position: PositionType = (0, 0, -8),
     carpet_position: PositionType = (0, 0, 4),
-) -> Dict[str, List[Any]]:
+) -> dict[str, list[Any]]:
     """Create a complete furniture set (sofa, table, TV, carpet).
     
     Args:

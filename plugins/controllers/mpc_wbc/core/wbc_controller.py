@@ -5,8 +5,9 @@ WBC (Whole-Body Control) Controller
 核心算法: 基于零空间投影的全身优先级控制
 """
 
+from __future__ import annotations
+
 import numpy as np
-from typing import Dict, List, Optional, Tuple
 
 
 class WBCController:
@@ -47,7 +48,7 @@ class WBCController:
         self.kd_orientation = 20.0
         
         # 任务列表
-        self.tasks: List[Dict] = []
+        self.tasks: list[dict] = []
         
         # 惯性矩阵 (简化，实际需要机器人模型)
         self.M = np.eye(num_dofs) * 10.0
@@ -145,7 +146,7 @@ class WBCController:
         desired_com_pos: np.ndarray,
         desired_com_vel: np.ndarray,
         contact_forces: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         计算质心任务
         
@@ -176,7 +177,7 @@ class WBCController:
         swing_foot_vel: np.ndarray,
         desired_pos: np.ndarray,
         desired_vel: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         计算摆动脚任务
         

@@ -3,7 +3,8 @@ Table-top manipulation environment.
 Similar to ManiSkill's tabletop tasks but using Genesis backend.
 """
 
-from typing import Dict, List, Optional, Tuple
+from __future__ import annotations
+
 import numpy as np
 import torch
 import genesis as gs
@@ -32,9 +33,9 @@ class TableTopEnv(BaseEnv):
     
     def __init__(
         self,
-        table_size: Tuple[float, float, float] = (1.0, 0.6, 0.05),
+        table_size: tuple[float, float, float] = (1.0, 0.6, 0.05),
         num_objects: int = 1,
-        object_types: Optional[List[str]] = None,
+        object_types: Optional[list[str]] = None,
         **kwargs
     ):
         self.table_size = table_size
@@ -147,14 +148,14 @@ class TableTopEnv(BaseEnv):
             return self.objects[object_name].get_pos()
         raise ValueError(f"Object {object_name} not found")
     
-    def get_object_pose(self, object_name: str) -> Tuple[torch.Tensor, torch.Tensor]:
+    def get_object_pose(self, object_name: str) -> tuple[torch.Tensor, torch.Tensor]:
         """Get object pose (position, quaternion)."""
         if object_name in self.objects:
             obj = self.objects[object_name]
             return obj.get_pos(), obj.get_quat()
         raise ValueError(f"Object {object_name} not found")
     
-    def get_table_bounds(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def get_table_bounds(self) -> tuple[torch.Tensor, torch.Tensor]:
         """Get table bounds (min, max)."""
         table_half_size = torch.tensor([
             self.table_size[0] / 2,

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Real-to-Sim Tuning
 
@@ -7,7 +9,7 @@ Real-to-Sim Tuning
 import torch
 import torch.nn as nn
 import numpy as np
-from typing import Dict, List, Optional
+from typing import Optional
 from scipy.optimize import minimize
 
 
@@ -29,7 +31,7 @@ class SimulationParameterModel(nn.Module):
         self.observation_noise = nn.Parameter(torch.tensor(initial_params.get('observation_noise', 0.01)))
         self.action_delay = nn.Parameter(torch.tensor(initial_params.get('action_delay', 0.0)))
     
-    def get_params(self) -> Dict[str, float]:
+    def get_params(self) -> dict[str, float]:
         """获取参数字典"""
         return {
             'friction': torch.clamp(self.friction, 0.1, 2.0).item(),
@@ -66,7 +68,7 @@ class Real2SimTuner:
     
     def tune(
         self,
-        real_trajectories: List[Dict],
+        real_trajectories: list[Dict],
         num_iterations: int = 100,
         method: str = 'gradient'  # 'gradient' 或 'bayesian'
     ) -> Dict:
@@ -88,7 +90,7 @@ class Real2SimTuner:
     
     def _gradient_based_tuning(
         self,
-        real_trajectories: List[Dict],
+        real_trajectories: list[Dict],
         num_iterations: int
     ) -> Dict:
         """基于梯度的调优"""
@@ -117,7 +119,7 @@ class Real2SimTuner:
     
     def _bayesian_optimization(
         self,
-        real_trajectories: List[Dict],
+        real_trajectories: list[Dict],
         num_iterations: int
     ) -> Dict:
         """贝叶斯优化 (简化版)"""

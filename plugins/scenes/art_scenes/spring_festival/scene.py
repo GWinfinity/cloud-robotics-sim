@@ -30,7 +30,9 @@ References:
     - Original: ART/spring-festival/genesis_scene.py
 """
 
-from typing import Optional, Dict, Any, List
+from __future__ import annotations
+
+from typing import Optional, Any
 from pathlib import Path
 
 # Optional dependencies
@@ -82,8 +84,8 @@ class SpringFestivalScene:
         lighting_config: Optional[LightingConfig] = None,
         add_furniture: bool = True,
         add_decorations: bool = True,
-        viewer_options: Optional[Dict[str, Any]] = None,
-        sim_options: Optional[Dict[str, Any]] = None,
+        viewer_options: Optional[dict[str, Any]] = None,
+        sim_options: Optional[dict[str, Any]] = None,
     ):
         """
         Args:
@@ -119,7 +121,7 @@ class SpringFestivalScene:
         # Scene and builder will be created in build()
         self.scene: Optional[Any] = None
         self.builder: Optional[SceneBuilder] = None
-        self.entities: Dict[str, List[Any]] = {}
+        self.entities: dict[str, list[Any]] = {}
         
     def build(self, headless: bool = False, device: str = "cuda") -> Any:
         """Build the complete scene.
@@ -283,7 +285,7 @@ class SpringFestivalScene:
                 pass
         print("Simulation complete.")
     
-    def export_entities(self) -> Dict[str, List[Any]]:
+    def export_entities(self) -> dict[str, list[Any]]:
         """Export all created entities.
         
         Returns:

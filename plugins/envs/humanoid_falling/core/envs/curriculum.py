@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 课程学习管理器 - Domain Diversification Curriculum
 
@@ -8,7 +10,6 @@
 """
 
 import numpy as np
-from typing import Dict, List, Tuple
 import yaml
 
 
@@ -136,7 +137,7 @@ class CurriculumManager:
         """获取当前等级的参数"""
         return self.current_params
     
-    def get_push_params(self) -> Tuple[List[float], float]:
+    def get_push_params(self) -> tuple[list[float], float]:
         """
         获取当前推力的参数
         

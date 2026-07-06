@@ -4,12 +4,13 @@ Latent Action Space for SLAC
 将高维原始动作压缩到低维潜在空间
 促进时间抽象和安全探索
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class LatentActionSpace(nn.Module):
@@ -56,7 +57,7 @@ class LatentActionSpace(nn.Module):
         self.fc_mu = nn.Linear(prev_dim, latent_dim)
         self.fc_logvar = nn.Linear(prev_dim, latent_dim)
         
-    def encode(self, primitive_sequence: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def encode(self, primitive_sequence: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         编码原始动作序列到潜在动作
         
@@ -84,7 +85,7 @@ class LatentActionSpace(nn.Module):
         eps = torch.randn_like(std)
         return mu + eps * std
     
-    def forward(self, primitive_sequence: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, primitive_sequence: torch.Tensor) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -106,7 +107,7 @@ class LatentActionSpace(nn.Module):
         reconstructed: torch.Tensor,
         mu: torch.Tensor,
         logvar: torch.Tensor
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         VAE损失函数
         
@@ -286,7 +287,7 @@ class SafetyConstrainedLatentSpace(nn.Module):
     def __init__(
         self,
         latent_dim: int = 8,
-        safety_bounds: Optional[Dict] = None
+        safety_bounds: Optional[dict] = None
     ):
         super().__init__()
         

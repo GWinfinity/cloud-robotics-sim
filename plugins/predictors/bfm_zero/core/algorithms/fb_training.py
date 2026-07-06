@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 FB Model Training Algorithm
 
@@ -8,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-from typing import Dict, List, Optional
+from typing import Optional
 import copy
 
 from ..models.fb_model import FBModel
@@ -58,7 +60,7 @@ class ReplayBuffer:
         self.ptr = (self.ptr + 1) % self.capacity
         self.size = min(self.size + 1, self.capacity)
     
-    def sample(self, batch_size: int) -> Dict[str, torch.Tensor]:
+    def sample(self, batch_size: int) -> dict[str, torch.Tensor]:
         """采样批次"""
         indices = np.random.randint(0, self.size, size=batch_size)
         
@@ -119,7 +121,7 @@ class FBTrainer:
         self.total_steps = 0
         self.episode_count = 0
     
-    def train_step(self, batch_size: int) -> Dict[str, float]:
+    def train_step(self, batch_size: int) -> dict[str, float]:
         """
         执行一步训练
         
@@ -150,7 +152,7 @@ class FBTrainer:
         losses = {**fb_losses, **policy_losses}
         return losses
     
-    def _update_fb_model(self, batch: Dict[str, torch.Tensor]) -> Dict[str, float]:
+    def _update_fb_model(self, batch: dict[str, torch.Tensor]) -> dict[str, float]:
         """更新FB模型"""
         states = batch['states']
         actions = batch['actions']
@@ -194,7 +196,7 @@ class FBTrainer:
             'fb_alignment': fb_loss_dict['fb_alignment'].item()
         }
     
-    def _update_policy(self, batch: Dict[str, torch.Tensor]) -> Dict[str, float]:
+    def _update_policy(self, batch: dict[str, torch.Tensor]) -> dict[str, float]:
         """更新策略"""
         states = batch['states']
         actions = batch['actions']
@@ -290,7 +292,7 @@ class FBOptimizer:
     
     def adapt(
         self,
-        target_task_data: List[Dict],
+        target_task_data: list[Dict],
         initial_latent: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """

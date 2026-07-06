@@ -3,9 +3,10 @@ Bulky Object Generation
 
 生成多样化的物体用于拥抱任务
 """
+from __future__ import annotations
 
 import numpy as np
-from typing import Dict, Tuple, List
+
 
 try:
     import genesis as gs
@@ -26,11 +27,11 @@ class BulkyObjectGenerator:
     - 不规则形状
     """
     
-    def __init__(self, scene=None, config: Dict = None):
+    def __init__(self, scene=None, config: dict = None):
         self.scene = scene
         self.config = config or {}
         
-    def generate_box(self, size: Tuple[float, float, float], 
+    def generate_box(self, size: tuple[float, float, float], 
                      position: np.ndarray, mass: float):
         """生成长方体"""
         entity = self.scene.add_entity(
@@ -120,7 +121,7 @@ class BulkyObjectGenerator:
         
         return entity, info
     
-    def get_object_mesh_vertices(self, entity, info: Dict) -> np.ndarray:
+    def get_object_mesh_vertices(self, entity, info: dict) -> np.ndarray:
         """
         获取物体网格顶点 (用于NSDF)
         
@@ -143,7 +144,7 @@ class BulkyObjectGenerator:
         
         return vertices
     
-    def _sample_box_surface(self, size: Tuple[float, float, float], 
+    def _sample_box_surface(self, size: tuple[float, float, float], 
                            position: np.ndarray, num_points: int = 1000) -> np.ndarray:
         """采样长方体表面点"""
         points = []

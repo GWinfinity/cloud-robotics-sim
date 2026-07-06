@@ -5,7 +5,8 @@ Allows visualizing and validating converted trajectories by replaying them.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from __future__ import annotations
+
 import numpy as np
 import time
 
@@ -187,7 +188,7 @@ class TrajectoryReplayer:
         dataset: TrajectoryDataset,
         max_trajectories: Optional[int] = None,
         verbose: bool = True,
-    ) -> List[Dict]:
+    ) -> list[Dict]:
         """
         Replay multiple trajectories.
         
@@ -242,10 +243,10 @@ class TrajectoryReplayer:
     
     def _create_comparison_frames(
         self,
-        frames_original: List[np.ndarray],
-        frames_replayed: List[np.ndarray],
-        errors: List[float],
-    ) -> List[np.ndarray]:
+        frames_original: list[np.ndarray],
+        frames_replayed: list[np.ndarray],
+        errors: list[float],
+    ) -> list[np.ndarray]:
         """Create side-by-side comparison frames."""
         import cv2
         
@@ -278,7 +279,7 @@ class TrajectoryReplayer:
         
         return comparison_frames
     
-    def _save_video(self, frames: List[np.ndarray], path: Path):
+    def _save_video(self, frames: list[np.ndarray], path: Path):
         """Save frames as video."""
         import cv2
         
@@ -323,7 +324,7 @@ class DatasetValidator:
         trajectory: Trajectory,
         obs_tolerance: float = 0.1,
         reward_tolerance: float = 0.01,
-    ) -> Tuple[bool, Dict]:
+    ) -> tuple[bool, Dict]:
         """
         Validate a single trajectory.
         

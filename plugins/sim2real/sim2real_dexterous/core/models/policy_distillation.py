@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Divide-and-Conquer Policy Distillation
 
@@ -9,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, List, Optional
+from typing import Optional
 
 
 class ExpertPolicy(nn.Module):
@@ -41,7 +43,7 @@ class ExpertPolicy(nn.Module):
         self.mean_head = nn.Linear(prev_dim, action_dim)
         self.log_std_head = nn.Linear(prev_dim, action_dim)
     
-    def forward(self, obs: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, obs: torch.Tensor) -> dict[str, torch.Tensor]:
         """前向传播"""
         features = self.feature_net(obs)
         mean = torch.tanh(self.mean_head(features))
@@ -140,7 +142,7 @@ class MultiTaskPolicy(nn.Module):
         self,
         obs: torch.Tensor,
         task_id: torch.Tensor
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -191,7 +193,7 @@ class PolicyDistillation:
     
     def __init__(
         self,
-        expert_policies: List[ExpertPolicy],
+        expert_policies: list[ExpertPolicy],
         student_policy: MultiTaskPolicy,
         method: str = 'dagger',
         device: str = 'cuda'
@@ -213,7 +215,7 @@ class PolicyDistillation:
         self,
         observations: torch.Tensor,
         task_ids: torch.Tensor
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         蒸馏步骤
         

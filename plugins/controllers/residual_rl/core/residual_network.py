@@ -3,12 +3,13 @@ Residual Network for RL Finetuning
 
 轻量级残差网络，学习对BC策略的修正
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class ResidualNetwork(nn.Module):
@@ -80,7 +81,7 @@ class ResidualNetwork(nn.Module):
         self,
         obs: torch.Tensor,
         bc_action: Optional[torch.Tensor] = None
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -147,7 +148,7 @@ class CombinedPolicy(nn.Module):
         obs: torch.Tensor,
         image: Optional[torch.Tensor] = None,
         use_residual: bool = True
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -184,7 +185,7 @@ class CombinedPolicy(nn.Module):
         obs: np.ndarray,
         image: Optional[np.ndarray] = None,
         use_residual: bool = True
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """获取动作 (numpy接口)"""
         with torch.no_grad():
             obs_t = torch.FloatTensor(obs).unsqueeze(0) if obs is not None else None
@@ -280,7 +281,7 @@ class ResidualSAC:
             
             return final_action.cpu().numpy()[0]
     
-    def update(self, batch: Dict) -> Dict[str, float]:
+    def update(self, batch: dict) -> dict[str, float]:
         """更新网络"""
         obs = batch['obs'].to(self.device)
         action = batch['action'].to(self.device)

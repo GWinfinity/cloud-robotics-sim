@@ -8,15 +8,15 @@ from engine.utils.parsel_utils import setup_gpt
 from engine.utils.claude_client import setup_claude
 try:
     from engine.utils.code_llama_client import setup_llama
-except:
+except Exception:
     setup_llama = None
 try:
     from engine.utils.volc_engine_client import setup_volc_engine
-except:
+except Exception:
     setup_volc_engine = None
 try:
     from engine.utils.qwen_client import setup_qwen
-except:
+except Exception:
     setup_qwen = None
 from engine.utils.execute_utils import execute_command_retries, execute_command
 import time

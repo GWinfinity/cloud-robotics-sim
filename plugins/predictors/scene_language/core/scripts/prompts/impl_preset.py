@@ -42,7 +42,7 @@ def core(engine_modes: list[Literal['neural', 'lmd', 'omost', 'loosecontrol', 'd
     try:
         import torch
         cuda_is_available = torch.cuda.is_available()
-    except:
+    except Exception:
         cuda_is_available = False
 
     from PIL import Image
@@ -58,7 +58,7 @@ def core(engine_modes: list[Literal['neural', 'lmd', 'omost', 'loosecontrol', 'd
     try:
         from tu.loggers.utils import print_vcv_url
         from tu.loggers.utils import setup_vi
-    except:
+    except Exception:
         print_vcv_url = lambda *args, **kwargs: print('[INFO]', str(args) + str(kwargs))
 
         class Helper:

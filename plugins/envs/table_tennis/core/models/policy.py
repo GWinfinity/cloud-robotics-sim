@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Unified Policy for Whole-Body Control
 
@@ -16,7 +18,7 @@ import torch
 import torch.nn as nn
 from torch.distributions import Normal
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class UnifiedPolicy(nn.Module):
@@ -83,7 +85,7 @@ class UnifiedPolicy(nn.Module):
         self,
         obs: torch.Tensor,
         deterministic: bool = False
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -131,7 +133,7 @@ class UnifiedPolicy(nn.Module):
         self,
         obs: np.ndarray,
         deterministic: bool = False
-    ) -> Tuple[np.ndarray, Optional[float]]:
+    ) -> tuple[np.ndarray, Optional[float]]:
         """
         获取动作 (numpy接口)
         
@@ -151,7 +153,7 @@ class UnifiedPolicy(nn.Module):
         self,
         obs: torch.Tensor,
         actions: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         评估动作 (用于PPO更新)
         

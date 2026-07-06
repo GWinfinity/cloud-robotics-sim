@@ -30,8 +30,10 @@ References:
     - Genesis: https://github.com/Genesis-Embodied-AI/Genesis
 """
 
+from __future__ import annotations
+
 import logging
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +169,7 @@ def get_obj_by_name(objs: list, name: str, is_unique: bool = True) -> Any:
         return None
 
 
-def get_objs_by_names(objs: list, names: List[str]) -> list:
+def get_objs_by_names(objs: list, names: list[str]) -> list:
     """Get a list of objects given a list of names from a larger list of objects.
 
     The returned list is in the order of the names given.
@@ -201,7 +203,7 @@ def get_obj_by_type(objs: list, target_type: type, is_unique: bool = True) -> An
     Returns:
         The matched object(s) or None.
     """
-    matched_objects = [x for x in objs if type(x) == target_type]
+    matched_objects = [x for x in objs if isinstance(x, target_type)]
     if len(matched_objects) > 1:
         if not is_unique:
             return matched_objects
@@ -252,7 +254,7 @@ def parse_urdf_config(config_dict: dict) -> dict:
     Returns:
         URDF config passed to Genesis URDF loader.
     """
-    urdf_config = dict()
+    urdf_config = {}
 
     # Create the global physical material for all links
     if "material" in config_dict:
@@ -272,7 +274,7 @@ def parse_urdf_config(config_dict: dict) -> dict:
 
     # Specify properties for links
     if "link" in config_dict:
-        urdf_config["link"] = dict()
+        urdf_config["link"] = {}
         for k, link_config in config_dict["link"].items():
             urdf_config["link"][k] = link_config.copy()
             # substitute with actual material

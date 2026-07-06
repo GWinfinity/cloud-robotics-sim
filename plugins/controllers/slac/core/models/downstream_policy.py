@@ -3,12 +3,13 @@ Downstream Task Policy
 
 使用预训练的潜在动作空间学习下游任务
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Tuple, Optional
+
 
 
 class DownstreamPolicy(nn.Module):
@@ -63,7 +64,7 @@ class DownstreamPolicy(nn.Module):
         self,
         obs: torch.Tensor,
         deterministic: bool = False
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -194,7 +195,7 @@ class LatentSAC:
         
         return latent_action
     
-    def update(self, batch: Dict) -> Dict[str, float]:
+    def update(self, batch: dict) -> dict[str, float]:
         """更新网络"""
         obs = batch['obs'].to(self.device)
         latent_action = batch['latent_action'].to(self.device)
@@ -268,7 +269,7 @@ class LatentSAC:
             'alpha': alpha.item()
         }
     
-    def _compute_log_prob(self, policy_output: Dict) -> torch.Tensor:
+    def _compute_log_prob(self, policy_output: dict) -> torch.Tensor:
         """计算对数概率 (简化版)"""
         # 这里应该使用更精确的分布计算
         # 简化为使用标准差估计

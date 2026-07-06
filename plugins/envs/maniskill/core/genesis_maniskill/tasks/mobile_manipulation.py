@@ -6,8 +6,9 @@ Combines locomotion and manipulation skills.
 """
 
 import torch
+from __future__ import annotations
+
 import numpy as np
-from typing import Tuple
 
 
 class MobileManipulationTask:

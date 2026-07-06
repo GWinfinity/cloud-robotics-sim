@@ -1,4 +1,6 @@
-from typing import Union, Callable, Set, List
+from __future__ import annotations
+
+from typing import Union, Callable
 import numpy as np
 from type_utils import Shape
 from shape_utils import concat_shapes, transform_shape, placeholder
@@ -90,7 +92,7 @@ class Entity:
         self.data: Shape = data
         self.cls: Hole = None  # type: ignore # may be set later
         self.embd: dict = None  # type: ignore # may be set later
-        self._prev: List['Entity'] = []
+        self._prev: list['Entity'] = []
         self._op: str = ''
 
     def sum(self, other: 'Entity') -> 'Entity':

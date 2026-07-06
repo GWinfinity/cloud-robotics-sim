@@ -1,11 +1,12 @@
 """
 Logger for HugWBC Training
 """
+from __future__ import annotations
 
 import os
 import sys
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any
 import json
 
 
@@ -48,7 +49,7 @@ class Logger:
         if self.use_tensorboard:
             self.writer.add_scalar(tag, value, step)
     
-    def log_scalars(self, tag: str, values: Dict[str, float], step: int):
+    def log_scalars(self, tag: str, values: dict[str, float], step: int):
         """记录多个标量值"""
         if self.use_tensorboard:
             self.writer.add_scalars(tag, values, step)
@@ -58,7 +59,7 @@ class Logger:
         if self.use_tensorboard:
             self.writer.add_histogram(tag, values, step)
     
-    def save_config(self, config: Dict[str, Any]):
+    def save_config(self, config: dict[str, Any]):
         """保存配置"""
         config_path = os.path.join(self.log_dir, 'config.json')
         with open(config_path, 'w') as f:

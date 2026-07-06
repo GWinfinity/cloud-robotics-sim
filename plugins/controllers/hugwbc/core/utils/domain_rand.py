@@ -3,9 +3,10 @@ Domain Randomization for HugWBC
 
 域随机化实现，提高策略泛化能力
 """
+from __future__ import annotations
 
 import numpy as np
-from typing import Dict, Tuple
+
 
 
 class DomainRandomizer:
@@ -15,7 +16,7 @@ class DomainRandomizer:
     对物理参数进行随机化，提高策略鲁棒性
     """
     
-    def __init__(self, config: Dict, num_envs: int):
+    def __init__(self, config: dict, num_envs: int):
         self.config = config
         self.num_envs = num_envs
         
@@ -29,7 +30,7 @@ class DomainRandomizer:
         # 当前随机化参数
         self.params = self._generate_params()
     
-    def _generate_params(self) -> Dict:
+    def _generate_params(self) -> dict:
         """生成随机参数"""
         return {
             'friction': np.random.uniform(*self.friction_range, self.num_envs),
@@ -71,7 +72,7 @@ class DomainRandomizer:
             *self.joint_damping_range, len(env_ids)
         )
     
-    def get_params(self, env_idx: int) -> Dict:
+    def get_params(self, env_idx: int) -> dict:
         """获取指定环境的参数"""
         return {k: v[env_idx] for k, v in self.params.items()}
     
@@ -102,7 +103,7 @@ class Curriculum:
     逐渐增加任务难度
     """
     
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         self.config = config
         
         # 难度级别
@@ -117,7 +118,7 @@ class Curriculum:
         self.success_history = []
         self.window_size = config.get('window_size', 100)
     
-    def get_current_params(self) -> Dict:
+    def get_current_params(self) -> dict:
         """获取当前难度参数"""
         return self.levels[self.current_level]
     

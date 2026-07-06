@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Unitree G1 Humanoid Environment for BFM-Zero
 """
@@ -7,7 +9,7 @@ import numpy as np
 import torch
 import genesis as gs
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class HumanoidEnv:
@@ -89,7 +91,7 @@ class HumanoidEnv:
         """获取动作维度"""
         return 12  # 简化为12个关节
     
-    def reset(self) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+    def reset(self) -> tuple[np.ndarray, Optional[np.ndarray]]:
         """重置环境"""
         # 应用域随机化
         self.domain_rand.randomize(self.robot)
@@ -110,7 +112,7 @@ class HumanoidEnv:
         
         return obs, privileged
     
-    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, Dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, Dict]:
         """执行动作"""
         # 应用域随机化的动作噪声
         action = self.domain_rand.add_action_noise(action)

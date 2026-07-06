@@ -184,7 +184,7 @@ class ComposedEnvironment:
         """Get observation space specification."""
         return {
             "proprioception_dim": self.robot.obs_dim,
-            "has_camera": len(self.robot.cameras) > 0,
+            "has_camera": bool(self.robot.cameras),
         }
 
     @property

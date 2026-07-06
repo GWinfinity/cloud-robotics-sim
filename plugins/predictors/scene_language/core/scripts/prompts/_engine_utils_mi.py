@@ -1,4 +1,6 @@
-from typing import Literal, Union, Tuple, Any, Optional
+from __future__ import annotations
+
+from typing import Literal, Union, Any, Optional
 from type_utils import Shape, P
 import numpy as np
 from math_utils import translation_matrix
@@ -14,7 +16,7 @@ __all__ = ["primitive_call"]
 
 def primitive_call(name: Literal["cube", "sphere"],
                    scale: Union[float, P] = 1,
-                   color: Tuple[float, float, float] = (1., 1., 1.),
+                   color: tuple[float, float, float] = (1., 1., 1.),
                    set_mode: Literal["center", "min", "max"] = 'center',
                    set_to: P = (0, 0, 0),
                    shape_kwargs: Optional[dict[str, Any]] = None,
@@ -35,7 +37,7 @@ def primitive_call(name: Literal["cube", "sphere"],
     Args:
         name: str - 'cube' or 'sphere'.
         scale: float | P - float or 3-tuple of floats for `cube`, float for `sphere` (only uniform scaling supported!).
-        color: Tuple[float, float, float] - RGB color in range [0, 1]^3.
+        color: tuple[float, float, float] - RGB color in range [0, 1]^3.
         set_mode: str - 'center', 'min', or 'max'. Default is 'center'.
         set_to: P - A 3-tuple of floats, setting the `set_mode` (center / min / max) of bounding box to this point. Default is `(0, 0, 0)`.
     """
@@ -70,7 +72,7 @@ def primitive_call(name: Literal["cube", "sphere"],
 
 # def primitive_call_reduced(name: Literal['cube', 'sphere'],
 #                    scale: Union[float, P] = 1,
-#                    color: Tuple[float, float, float] = (1., 1., 1.)) -> Shape:
+#                    color: tuple[float, float, float] = (1., 1., 1.)) -> Shape:
 #     """
 #     Constructs a primitive shape centered at the origin, with bounding box minimum corner at (0, 0, 0),
 #     and max corner at (scale[0], scale[1], scale[2]) if scale is a 3-tuple or (scale, scale, scale) if scale is a float.
@@ -78,14 +80,14 @@ def primitive_call(name: Literal["cube", "sphere"],
 #     Args:
 #         name: str - shape type, 'cube' or 'sphere'
 #         scale: float | P - float or 3-tuple of floats for `cube`, float for `sphere` (only uniform scaling supported!).
-#         color: Tuple[float, float, float] - RGB color in range [0, 1]^3.
+#         color: tuple[float, float, float] - RGB color in range [0, 1]^3.
 #     """
 #     return primitive_call(name=name, scale=scale, color=color, set_mode='min', set_to=(0, 0, 0))
 
 
 def I0BpHzM2Xn_primitive_call_from_minecraft(name: Literal["set_cuboid", "spawn_entity"],
                    block_type: str, 
-                   scale: Tuple[int, int, int] = (1, 1, 1),
+                   scale: tuple[int, int, int] = (1, 1, 1),
                    fill: bool = True) -> Shape:
     # Derive color from block_type
     default_color = (1, 1, 1)

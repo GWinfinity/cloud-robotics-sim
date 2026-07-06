@@ -7,26 +7,26 @@ IGNORE_INDEX = -100  # The default setting in CrossEntropyLoss
 
 try:
     from .key import ANTHROPIC_API_KEY
-except:
+except Exception:
     print("Warning: No Anthropic keys found.")
     ANTHROPIC_API_KEY = ''
 try:
     from .key import OPENAI_API_KEY
-except:
+except Exception:
     # print("Warning: No OpenAI keys found.")
     OPENAI_API_KEY = ''
 
 # 火山引擎配置
 try:
     from .key import VOLC_ENGINE_API_KEY
-except:
+except Exception:
     print("Warning: No Volc Engine keys found.")
     VOLC_ENGINE_API_KEY = ''
 
 # 阿里云Qwen配置
 try:
     from .key import ALIYUN_QWEN_API_KEY
-except:
+except Exception:
     print("Warning: No Aliyun Qwen keys found.")
     ALIYUN_QWEN_API_KEY = ''
 

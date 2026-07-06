@@ -6,8 +6,9 @@ in proper positions inside the cabinet.
 """
 
 import torch
+from __future__ import annotations
+
 import numpy as np
-from typing import List, Tuple
 
 
 class OrganizeCabinetTask:
@@ -30,7 +31,7 @@ class OrganizeCabinetTask:
         self.items: List = []
         self.target_positions: List = []
         
-        self.items_placed: List[bool] = []
+        self.items_placed: list[bool] = []
         self.cabinet_opened = False
         
     def reset(self):

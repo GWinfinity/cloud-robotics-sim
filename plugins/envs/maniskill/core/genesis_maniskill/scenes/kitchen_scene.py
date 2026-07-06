@@ -2,7 +2,8 @@
 Kitchen scene builder adapted from RoboCasa for Genesis.
 """
 
-from typing import Dict, List, Optional
+from __future__ import annotations
+
 import numpy as np
 import torch
 import genesis as gs

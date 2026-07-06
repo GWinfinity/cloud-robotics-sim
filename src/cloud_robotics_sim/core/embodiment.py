@@ -16,6 +16,22 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+# Franka Panda dimensions
+_FRANKA_JOINTS = 7
+_FRANKA_GRIPPER = 1
+_FRANKA_OBS_DIM = _FRANKA_JOINTS * 3 + 2  # joints + velocities + target + gripper
+_FRANKA_ACTION_DIM = _FRANKA_JOINTS + _FRANKA_GRIPPER
+
+# UR5 dimensions
+_UR5_JOINTS = 6
+_UR5_OBS_DIM = _UR5_JOINTS * 3  # joints + velocities + target
+_UR5_ACTION_DIM = _UR5_JOINTS
+
+# Mobile manipulator dimensions
+_MOBILE_BASE_DOF = 2
+_MOBILE_OBS_DIM = 30  # Placeholder: base + arm + gripper + targets
+_MOBILE_ACTION_DIM = _MOBILE_BASE_DOF + _FRANKA_ACTION_DIM
+
 
 @dataclass
 class SensorConfig:
@@ -167,8 +183,8 @@ class FrankaPanda(RobotEmbodiment):
 
     def __init__(self, config: EmbodimentConfig | None = None) -> None:
         super().__init__(config)
-        self._obs_dim = 23  # 7 joints + 7 velocities + 2 gripper + 7 target
-        self._action_dim = 8  # 7 joints + 1 gripper
+        self._obs_dim = _FRANKA_OBS_DIM
+        self._action_dim = _FRANKA_ACTION_DIM
 
     def spawn(
         self,
@@ -252,8 +268,8 @@ class UniversalRobotUR5(RobotEmbodiment):
 
     def __init__(self, config: EmbodimentConfig | None = None) -> None:
         super().__init__(config)
-        self._obs_dim = 18  # 6 joints + 6 velocities + 6 target
-        self._action_dim = 6
+        self._obs_dim = _UR5_OBS_DIM
+        self._action_dim = _UR5_ACTION_DIM
 
     def spawn(
         self,
@@ -332,8 +348,8 @@ class MobileManipulator(RobotEmbodiment):
         super().__init__(config)
         self.base_type = base_type
         self.arm_type = arm_type
-        self._obs_dim = 30  # Placeholder
-        self._action_dim = 10  # 2 base + 7 arm + 1 gripper
+        self._obs_dim = _MOBILE_OBS_DIM
+        self._action_dim = _MOBILE_ACTION_DIM
 
     def spawn(
         self,

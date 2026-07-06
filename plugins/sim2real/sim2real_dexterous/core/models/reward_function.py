@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Generalized Reward Function
 
@@ -7,7 +9,6 @@ Generalized Reward Function
 
 import torch
 import numpy as np
-from typing import Dict, Optional
 
 
 class GeneralizedRewardFunction:

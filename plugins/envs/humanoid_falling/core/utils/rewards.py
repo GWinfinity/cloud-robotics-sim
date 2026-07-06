@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 """
 奖励函数实现 - 专门用于人形机器人跌倒保护
 """
 
 import numpy as np
-from typing import Dict, List, Tuple
 
 
 def compute_triangle_reward(
@@ -54,7 +55,7 @@ def compute_triangle_reward(
                 
                 # 奖励大面积的稳定支撑
                 reward += min(base_area * 0.5, 1.0)
-            except:
+            except Exception:
                 # scipy 不可用，使用简化计算
                 # 计算包围盒面积
                 if len(support_points) >= 3:
@@ -84,8 +85,8 @@ def compute_triangle_reward(
 
 
 def compute_impact_penalty(
-    contact_forces: Dict[str, float],
-    critical_parts: List[str] = None,
+    contact_forces: dict[str, float],
+    critical_parts: list[str] = None,
     force_threshold: float = 100.0
 ) -> float:
     """
@@ -231,7 +232,7 @@ def compute_joint_protection_reward(
 
 def check_com_in_support_polygon(
     com: np.ndarray,
-    support_points: List[np.ndarray]
+    support_points: list[np.ndarray]
 ) -> bool:
     """
     检查重心投影是否在支撑多边形内
@@ -272,9 +273,9 @@ def check_com_in_support_polygon(
 
 
 def compute_falling_style_reward(
-    body_contacts: Dict[str, bool],
-    contact_sequence: List[str],
-    target_sequence: List[str] = None
+    body_contacts: dict[str, bool],
+    contact_sequence: list[str],
+    target_sequence: list[str] = None
 ) -> float:
     """
     计算跌倒风格奖励

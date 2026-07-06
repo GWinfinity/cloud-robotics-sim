@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Latent-Conditioned Policy
 
@@ -14,7 +16,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal
 import numpy as np
-from typing import Dict, Optional
 
 
 class LatentConditionedPolicy(nn.Module):
@@ -89,7 +90,7 @@ class LatentConditionedPolicy(nn.Module):
         latent: torch.Tensor,
         history: Optional[torch.Tensor] = None,
         deterministic: bool = False
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         前向传播
         

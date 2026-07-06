@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 PPO with Prediction Augmentation
 
@@ -8,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 from ..models.policy import UnifiedPolicy, ValueNetwork
 from ..models.predictor import LearnedPredictor
@@ -165,7 +167,7 @@ class PPOTrainer:
         
         self.total_steps = 0
     
-    def select_action(self, obs: np.ndarray) -> Tuple[np.ndarray, float, float]:
+    def select_action(self, obs: np.ndarray) -> tuple[np.ndarray, float, float]:
         """选择动作"""
         with torch.no_grad():
             obs_t = torch.FloatTensor(obs).to(self.device)
@@ -195,7 +197,7 @@ class PPOTrainer:
             done=torch.FloatTensor([done]).to(self.device)
         )
     
-    def update(self, next_obs: np.ndarray) -> Dict[str, float]:
+    def update(self, next_obs: np.ndarray) -> dict[str, float]:
         """更新网络"""
         # 计算下一状态价值
         with torch.no_grad():

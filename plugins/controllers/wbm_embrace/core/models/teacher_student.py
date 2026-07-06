@@ -3,12 +3,13 @@ Teacher-Student Architecture for WBM
 
 教师策略使用特权信息，学生策略通过蒸馏学习
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class TeacherPolicy(nn.Module):
@@ -76,7 +77,7 @@ class TeacherPolicy(nn.Module):
         )
     
     def forward(self, state: torch.Tensor, nsdf_features: torch.Tensor, 
-                contact_info: torch.Tensor) -> Dict[str, torch.Tensor]:
+                contact_info: torch.Tensor) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -165,7 +166,7 @@ class StudentPolicy(nn.Module):
         self.mean_head = nn.Linear(prev_dim, action_dim)
         self.log_std_head = nn.Linear(prev_dim, action_dim)
     
-    def forward(self, obs: torch.Tensor, nsdf_query: Optional[torch.Tensor] = None) -> Dict[str, torch.Tensor]:
+    def forward(self, obs: torch.Tensor, nsdf_query: Optional[torch.Tensor] = None) -> dict[str, torch.Tensor]:
         """前向传播"""
         if self.use_nsdf_embedding and nsdf_query is not None:
             nsdf_embed = self.nsdf_embedding(nsdf_query)
@@ -261,7 +262,7 @@ class WBMTrainer:
         student_obs: torch.Tensor,
         nsdf_query: torch.Tensor,
         target_action: torch.Tensor
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         训练一步
         

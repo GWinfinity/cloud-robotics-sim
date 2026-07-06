@@ -1,7 +1,7 @@
 from pathlib import Path
 try:
     from tu.loggers.utils import print_vcv_url
-except:
+except Exception:
     print_vcv_url = lambda *args, **kwargs: print('[INFO]', str(args) + str(kwargs))
 
 import time

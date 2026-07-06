@@ -1,4 +1,6 @@
-from typing import Dict, Any
+from __future__ import annotations
+
+from typing import Any
 import numpy as np
 import torch.nn.functional as F
 from jaxtyping import Float
@@ -22,7 +24,7 @@ def collate(
         width: int,
         world_scales: Float[Tensor, "B"],
         world_centers: Float[Tensor, "B 3"],
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     from threestudio.utils.ops import (
         get_full_projection_matrix,
         get_mvp_matrix,

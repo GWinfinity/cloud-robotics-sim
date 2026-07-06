@@ -3,12 +3,13 @@ Neural Signed Distance Field (NSDF)
 
 提供准确连续的几何感知，用于全身拥抱任务中的接触意识
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class NSDF(nn.Module):
@@ -26,7 +27,7 @@ class NSDF(nn.Module):
         self,
         hidden_dims: list = [256, 256, 128, 128],
         activation: str = 'softplus',
-        bounds: Dict = None,
+        bounds: dict = None,
         grid_resolution: int = 64
     ):
         super().__init__()
@@ -128,7 +129,7 @@ class NSDF(nn.Module):
         
         return gradients
     
-    def get_contact_points(self, robot_body_positions: torch.Tensor, threshold: float = 0.05) -> Tuple[torch.Tensor, torch.Tensor]:
+    def get_contact_points(self, robot_body_positions: torch.Tensor, threshold: float = 0.05) -> tuple[torch.Tensor, torch.Tensor]:
         """
         获取潜在接触点
         
@@ -164,7 +165,7 @@ class NSDF(nn.Module):
         
         return reward - penalty
     
-    def reconstruct_mesh(self, resolution: int = 64) -> Tuple[np.ndarray, np.ndarray]:
+    def reconstruct_mesh(self, resolution: int = 64) -> tuple[np.ndarray, np.ndarray]:
         """
         从NSDF重建网格 (使用Marching Cubes)
         
@@ -267,7 +268,7 @@ class MultiObjectNSDF(nn.Module):
         # 物体存在掩码
         self.object_active = torch.zeros(max_objects, dtype=torch.bool)
     
-    def query_scene(self, positions: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def query_scene(self, positions: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         查询整个场景
         

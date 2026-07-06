@@ -5,7 +5,9 @@ Converts RoboCasa datasets to the unified Genesis ManiSkill format.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from __future__ import annotations
+
+from typing import Union
 import numpy as np
 
 from genesis_maniskill.datasets.loaders.robocasa_loader import RoboCasaLoader
@@ -27,7 +29,7 @@ class RoboCasaConverter:
         self,
         source_path: Union[str, Path],
         target_path: Union[str, Path],
-        layout_map: Optional[Dict[int, int]] = None,
+        layout_map: Optional[dict[int, int]] = None,
         action_normalization: bool = True,
     ):
         """

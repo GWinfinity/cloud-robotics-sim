@@ -3,7 +3,9 @@ Base environment class for Genesis ManiSkill.
 Inspired by ManiSkill's BaseEnv but adapted for Genesis backend.
 """
 
-from typing import Dict, List, Optional, Tuple, Union, Any
+from __future__ import annotations
+
+from typing import Union, Any
 import numpy as np
 import torch
 import genesis as gs
@@ -176,7 +178,7 @@ class BaseEnv(gym.Env):
         *,
         seed: Optional[int] = None,
         options: Optional[Dict] = None
-    ) -> Tuple[Union[np.ndarray, Dict], Dict]:
+    ) -> tuple[Union[np.ndarray, Dict], Dict]:
         """Reset the environment."""
         super().reset(seed=seed)
         
@@ -216,7 +218,7 @@ class BaseEnv(gym.Env):
     def step(
         self,
         action: Union[np.ndarray, torch.Tensor]
-    ) -> Tuple[Union[np.ndarray, Dict], torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
+    ) -> tuple[Union[np.ndarray, Dict], torch.Tensor, torch.Tensor, torch.Tensor, Dict]:
         """
         Step the environment.
         

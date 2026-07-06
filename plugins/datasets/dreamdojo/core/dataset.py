@@ -21,8 +21,10 @@ Adapted from DreamDojo's genesis_dreams module to work with
 genesis-cloud-sim's plugin architecture.
 """
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Optional, Dict, Any, List, Tuple, Callable
+from typing import Optional, Any, Callable
 import random
 
 # Optional heavy dependencies
@@ -71,7 +73,7 @@ class GenesisDataset(Dataset):
         episode_length: int = 100,
         num_episodes: int = 1000,
         robot_type: str = "humanoid",
-        simulator_config: Optional[Dict[str, Any]] = None,
+        simulator_config: Optional[dict[str, Any]] = None,
         pre_generated_path: Optional[str] = None,
         transforms: Optional[Callable] = None,
         seed: int = 0,
@@ -142,7 +144,7 @@ class GenesisDataset(Dataset):
     def __len__(self) -> int:
         return self.num_episodes
     
-    def __getitem__(self, idx: int) -> Dict[str, Any]:
+    def __getitem__(self, idx: int) -> dict[str, Any]:
         """
         Get a sample from the dataset.
         
@@ -157,7 +159,7 @@ class GenesisDataset(Dataset):
             # Generate synthetic data on-the-fly without simulator
             return self._get_synthetic_sample(idx)
     
-    def _get_online_sample(self, idx: int) -> Dict[str, Any]:
+    def _get_online_sample(self, idx: int) -> dict[str, Any]:
         """Generate sample using online Genesis simulation."""
         self.rng.seed(self.seed + idx)
         
@@ -211,7 +213,7 @@ class GenesisDataset(Dataset):
         
         return data
     
-    def _get_pre_generated_sample(self, idx: int) -> Dict[str, Any]:
+    def _get_pre_generated_sample(self, idx: int) -> dict[str, Any]:
         """Get sample from pre-generated data."""
         episode_key = f"episode_{idx % len(self.pre_generated_data)}"
         episode = self.pre_generated_data[episode_key]
@@ -248,7 +250,7 @@ class GenesisDataset(Dataset):
         
         return data
     
-    def _get_synthetic_sample(self, idx: int) -> Dict[str, Any]:
+    def _get_synthetic_sample(self, idx: int) -> dict[str, Any]:
         """
         Generate synthetic sample without simulator.
         
@@ -354,7 +356,7 @@ class GenesisRLDataset(Dataset):
     def __len__(self) -> int:
         return self.num_episodes
     
-    def __getitem__(self, idx: int) -> Dict[str, Any]:
+    def __getitem__(self, idx: int) -> dict[str, Any]:
         """Generate episode using RL policy."""
         self.rng.seed(self.seed + idx)
         self.simulator.reset(seed=self.seed + idx)
@@ -459,7 +461,7 @@ class GenesisDatasetWrapper:
         }
         return action_dims.get(robot_type, 7)
         
-    def generate_episode(self, policy: Optional[Callable] = None) -> Dict[str, Any]:
+    def generate_episode(self, policy: Optional[Callable] = None) -> dict[str, Any]:
         """
         Generate a single episode using Genesis simulation.
         

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 训练日志记录器
 """
@@ -6,7 +8,7 @@ import os
 import json
 import time
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 import numpy as np
 
 
@@ -63,7 +65,7 @@ class Logger:
         self.log_file.write(log_message + '\n')
         self.log_file.flush()
     
-    def log_metrics(self, step: int, metrics: Dict[str, Any]):
+    def log_metrics(self, step: int, metrics: dict[str, Any]):
         """
         记录训练指标
         
@@ -147,7 +149,7 @@ class TensorBoardLogger(Logger):
             self.print_and_log("Warning: tensorboard not installed, using file logging only")
             self.has_tensorboard = False
     
-    def log_metrics(self, step: int, metrics: Dict[str, Any]):
+    def log_metrics(self, step: int, metrics: dict[str, Any]):
         """记录指标到 TensorBoard"""
         super().log_metrics(step, metrics)
         

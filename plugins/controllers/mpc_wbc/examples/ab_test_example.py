@@ -202,7 +202,7 @@ def run_gradual_migration():
             }
             fn(state)
             migration.update_metrics(is_plugin, success=True)
-        except:
+        except Exception:
             migration.update_metrics(is_plugin, success=False)
     
     status = migration.get_status()
@@ -222,7 +222,7 @@ def run_gradual_migration():
             try:
                 fn({})
                 migration.update_metrics(is_plugin, success=True)
-            except:
+            except Exception:
                 migration.update_metrics(is_plugin, success=False)
         
         status = migration.get_status()

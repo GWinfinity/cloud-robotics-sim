@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Goal Reaching Task
 
@@ -6,7 +8,6 @@ Goal Reaching Task
 
 import numpy as np
 import torch
-from typing import Dict, Optional
 
 
 class GoalReachingTask:

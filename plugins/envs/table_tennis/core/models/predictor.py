@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Dual Predictor Architecture
 
@@ -9,7 +11,7 @@ Dual Predictor Architecture
 import torch
 import torch.nn as nn
 import numpy as np
-from typing import Dict, Tuple, Optional, List
+from typing import Optional
 
 
 class LearnedPredictor(nn.Module):
@@ -84,7 +86,7 @@ class LearnedPredictor(nn.Module):
     def predict_future(
         self,
         history_states: np.ndarray
-    ) -> List[Dict[str, np.ndarray]]:
+    ) -> list[dict[str, np.ndarray]]:
         """
         numpy接口预测
         
@@ -108,7 +110,7 @@ class LearnedPredictor(nn.Module):
         
         return future_states
     
-    def get_immediate_prediction(self, history_states: np.ndarray) -> Dict[str, np.ndarray]:
+    def get_immediate_prediction(self, history_states: np.ndarray) -> dict[str, np.ndarray]:
         """获取最近的预测"""
         predictions = self.predict_future(history_states)
         return predictions[0] if predictions else None
@@ -150,7 +152,7 @@ class PhysicsPredictor:
         initial_vel: np.ndarray,
         initial_omega: Optional[np.ndarray] = None,
         time_horizon: Optional[float] = None
-    ) -> List[Dict]:
+    ) -> list[Dict]:
         """
         预测完整轨迹
         
@@ -216,7 +218,7 @@ class PhysicsPredictor:
         initial_vel: np.ndarray,
         racket_height: float = 0.8,
         max_time: float = 1.0
-    ) -> Optional[Tuple[np.ndarray, float]]:
+    ) -> Optional[tuple[np.ndarray, float]]:
         """
         预测击球点
         
@@ -246,7 +248,7 @@ class PhysicsPredictor:
         initial_pos: np.ndarray,
         initial_vel: np.ndarray,
         table_height: float = 0.76
-    ) -> Optional[Tuple[np.ndarray, float]]:
+    ) -> Optional[tuple[np.ndarray, float]]:
         """预测落点"""
         trajectory = self.predict_trajectory(initial_pos, initial_vel)
         

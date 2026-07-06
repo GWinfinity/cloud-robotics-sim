@@ -4,8 +4,9 @@ MPC-WBC Configuration
 配置类: 管理 MPC + WBC 控制器的所有参数
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Optional, List
 import numpy as np
 
 
@@ -19,17 +20,17 @@ class MPCConfig:
     
     # 权重参数
     alpha: float = 1e-6                  # 输入正则化
-    L_diag: List[float] = field(default_factory=lambda: [
+    L_diag: list[float] = field(default_factory=lambda: [
         1.0, 1.0, 1.0,      # 欧拉角
         1.0, 200.0, 1.0,    # 位置 (高度权重高)
         1e-7, 1e-7, 1e-7,   # 角速度
         100.0, 10.0, 1.0    # 线速度
     ])
-    K_diag: List[float] = field(default_factory=lambda: [1.0] * 13)
+    K_diag: list[float] = field(default_factory=lambda: [1.0] * 13)
     
     # 约束
-    max_force: Optional[List[float]] = None
-    min_force: Optional[List[float]] = None
+    max_force: Optional[list[float]] = None
+    min_force: Optional[list[float]] = None
     
     def __post_init__(self):
         if self.max_force is None:

@@ -1,16 +1,17 @@
+from __future__ import annotations
+
 """
 Domain Randomization Utilities
 """
 
 import numpy as np
 import torch
-from typing import Dict
 
 
 class DomainRandomization:
     """域随机化管理器"""
     
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         self.config = config
         self.enabled = config.get('enabled', False)
         

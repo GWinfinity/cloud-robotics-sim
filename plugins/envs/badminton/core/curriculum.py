@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 三阶段课程学习管理器
 
@@ -8,7 +10,7 @@
 """
 
 import numpy as np
-from typing import Dict, List, Tuple, Optional
+from typing import Optional
 import yaml
 
 
@@ -250,7 +252,7 @@ class ThreeStageCurriculum:
         """是否应该冻结下肢"""
         return self.current_config.get('freeze_lower_body', False)
     
-    def get_frozen_joint_indices(self, joint_names: List[str]) -> List[int]:
+    def get_frozen_joint_indices(self, joint_names: list[str]) -> list[int]:
         """
         获取应该冻结的关节索引
         

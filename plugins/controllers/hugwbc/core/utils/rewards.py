@@ -3,10 +3,11 @@ Reward Functions for HugWBC
 
 基于 HugWBC 论文的奖励函数实现
 """
+from __future__ import annotations
 
 import numpy as np
 import torch
-from typing import Dict, Tuple
+
 
 
 class RewardComputer:
@@ -16,7 +17,7 @@ class RewardComputer:
     计算 HugWBC 的各种奖励项
     """
     
-    def __init__(self, config: Dict, num_envs: int, device: str = 'cuda'):
+    def __init__(self, config: dict, num_envs: int, device: str = 'cuda'):
         self.config = config
         self.num_envs = num_envs
         self.device = device
@@ -46,7 +47,7 @@ class RewardComputer:
         feet_air_time: np.ndarray,
         # 其他
         **kwargs
-    ) -> Tuple[np.ndarray, Dict]:
+    ) -> tuple[np.ndarray, dict]:
         """
         计算所有奖励
         
@@ -112,7 +113,7 @@ class RewardComputer:
         for key in self.episode_sums.keys():
             self.episode_sums[key][env_ids] = 0
     
-    def get_episode_sums(self) -> Dict:
+    def get_episode_sums(self) -> dict:
         """获取 episode 统计"""
         return {k: v.copy() for k, v in self.episode_sums.items()}
 

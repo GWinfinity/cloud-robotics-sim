@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Motion Tracking Task
 
@@ -6,7 +8,6 @@ Motion Tracking Task
 
 import numpy as np
 import torch
-from typing import Dict, List, Optional
 
 
 class MotionTrackingTask:
@@ -93,7 +94,7 @@ class MotionLibrary:
         """获取运动"""
         return self.motions.get(name)
     
-    def list_motions(self) -> List[str]:
+    def list_motions(self) -> list[str]:
         """列出所有运动"""
         return list(self.motions.keys())
 

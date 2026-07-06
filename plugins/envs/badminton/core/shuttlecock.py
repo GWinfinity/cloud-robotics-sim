@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 羽毛球物理模拟
 
@@ -9,7 +11,7 @@
 
 import numpy as np
 import genesis as gs
-from typing import Optional, Tuple
+from typing import Optional
 
 
 class Shuttlecock:
@@ -223,7 +225,7 @@ class Shuttlecock:
         racket_pos: np.ndarray,
         racket_vel: np.ndarray,
         racket_normal: np.ndarray
-    ) -> Tuple[bool, float]:
+    ) -> tuple[bool, float]:
         """
         检查与球拍的碰撞
         

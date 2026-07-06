@@ -3,13 +3,14 @@ Whole-Body Embracing Environment
 
 人形机器人全身拥抱环境
 """
+from __future__ import annotations
 
 import os
 import numpy as np
 import torch
 import genesis as gs
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
-from typing import Dict, Tuple, Optional
+
 
 from .bulky_objects import BulkyObjectGenerator
 
@@ -27,7 +28,7 @@ class EmbraceEnv:
     
     def __init__(
         self,
-        config: Dict,
+        config: dict,
         num_envs: int = 1,
         headless: bool = False,
         device: str = 'cuda'
@@ -108,7 +109,7 @@ class EmbraceEnv:
         # 关节位置(23) + 关节速度(23) + 根节点位置(3) + 根节点方向(4) + 物体位置(7) = 60
         return 60
     
-    def reset(self) -> Tuple[np.ndarray, Dict]:
+    def reset(self) -> tuple[np.ndarray, dict]:
         """重置环境"""
         self.current_step = 0
         self.episode_stats = {
@@ -144,7 +145,7 @@ class EmbraceEnv:
         
         return obs, info
     
-    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, Dict]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, dict]:
         """执行动作"""
         # 应用动作
         self._apply_action(action)
@@ -195,7 +196,7 @@ class EmbraceEnv:
         # 设置关节位置
         self.robot.control_dofs_position(action)
     
-    def _check_contacts(self) -> Dict:
+    def _check_contacts(self) -> dict:
         """检查多接触点"""
         # 获取接触信息
         contacts = self.robot.get_contacts()
@@ -249,7 +250,7 @@ class EmbraceEnv:
         
         return obs.astype(np.float32)
     
-    def _compute_reward(self, action: np.ndarray, contact_info: Dict) -> float:
+    def _compute_reward(self, action: np.ndarray, contact_info: dict) -> float:
         """计算奖励"""
         reward = 0.0
         reward_config = self.config['rewards']

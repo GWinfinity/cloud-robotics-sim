@@ -8,8 +8,9 @@ Examples:
 """
 
 import torch
+from __future__ import annotations
+
 import numpy as np
-from typing import Dict, List, Tuple
 
 
 class SortTask:
@@ -26,11 +27,11 @@ class SortTask:
         self.robot = robot
         
         self.objects_to_sort: List = []
-        self.sort_bins: Dict[str, object] = {}
+        self.sort_bins: dict[str, object] = {}
         
         # Object -> target bin mapping
-        self.object_targets: Dict[object, str] = {}
-        self.objects_sorted: List[bool] = []
+        self.object_targets: dict[object, str] = {}
+        self.objects_sorted: list[bool] = []
         
         # Classification criteria
         self.sort_by = 'color'  # 'color', 'size', 'type'
@@ -171,7 +172,7 @@ class SortTask:
             return 1.0
         return sum(self.objects_sorted) / len(self.objects_to_sort)
     
-    def get_next_object(self) -> Tuple[object, str]:
+    def get_next_object(self) -> tuple[object, str]:
         """Get the next object to sort and its target bin."""
         for i, (obj, sorted_status) in enumerate(zip(self.objects_to_sort, self.objects_sorted)):
             if not sorted_status:

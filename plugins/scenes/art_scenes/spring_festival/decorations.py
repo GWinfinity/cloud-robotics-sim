@@ -16,7 +16,9 @@ References:
     - Original: ART/spring-festival/genesis_scene.py
 """
 
-from typing import Any, Dict, Optional, List, Tuple, Union
+from __future__ import annotations
+
+from typing import Any, Optional, Union
 
 # Optional dependencies
 try:
@@ -43,11 +45,11 @@ except ImportError:
 
 
 # Type aliases
-ColorType = Union[Tuple[float, float, float], Tuple[float, float, float, float]]
-PositionType = Union[Tuple[float, float, float], List[float]]
+ColorType = Union[tuple[float, float, float], tuple[float, float, float, float]]
+PositionType = Union[tuple[float, float, float], list[float]]
 
 
-def _to_rgba_color(color: ColorType) -> Tuple[int, int, int, int]:
+def _to_rgba_color(color: ColorType) -> tuple[int, int, int, int]:
     """Convert float color to integer RGBA."""
     rgb = tuple(int(c * 255) for c in color[:3])
     if len(color) == 4:
@@ -75,7 +77,7 @@ class Lantern:
         scale: float = 1.0,
         red_color: Optional[ColorType] = None,
         gold_color: Optional[ColorType] = None,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Create a traditional Chinese lantern.
         
         The lantern consists of:
@@ -159,7 +161,7 @@ class Lantern:
         count: int = 4,
         spacing: float = 4.0,
         scale: float = 1.0,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Create a string of lanterns in a row.
         
         Args:
@@ -208,7 +210,7 @@ class FuCharacter:
         thickness: float = 0.05,
         upside_down: bool = True,
         red_color: Optional[ColorType] = None,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Create a Fu character decoration.
         
         Args:
@@ -286,7 +288,7 @@ class ChineseKnot:
         scale: float = 1.0,
         red_color: Optional[ColorType] = None,
         gold_color: Optional[ColorType] = None,
-    ) -> List[Any]:
+    ) -> list[Any]:
         """Create a Chinese knot decoration.
         
         The knot consists of:
@@ -381,7 +383,7 @@ class SpringFestivalDecorations:
         room_width: float = 20.0,
         room_depth: float = 20.0,
         room_height: float = 10.0,
-    ) -> Dict[str, List[Any]]:
+    ) -> dict[str, list[Any]]:
         """Create a full set of Spring Festival decorations for a room.
         
         Args:

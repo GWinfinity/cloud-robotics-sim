@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2025 Cloud Robotics Sim
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 """
 OpenLoong Walking Environment
@@ -18,7 +19,7 @@ References:
     - Gymnasium: https://gymnasium.farama.org/
 """
 
-from typing import Optional, Tuple, Dict, Any, Union
+from typing import Any, Union
 from pathlib import Path
 
 # Optional dependencies
@@ -164,8 +165,8 @@ class OpenLoongWalkingEnv:
     def reset(
         self,
         seed: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[Any, Dict[str, Any]]:
+        options: Optional[dict[str, Any]] = None,
+    ) -> tuple[Any, dict[str, Any]]:
         """Reset the environment.
         
         Args:
@@ -199,7 +200,7 @@ class OpenLoongWalkingEnv:
         self.current_obs = obs
         return obs, info
     
-    def step(self, action) -> Tuple[Any, float, bool, bool, Dict[str, Any]]:
+    def step(self, action) -> tuple[Any, float, bool, bool, dict[str, Any]]:
         """Take a step in the environment.
         
         Args:
@@ -382,7 +383,7 @@ class OpenLoongWalkingEnv:
         if self.scene is not None:
             try:
                 gs.destroy()
-            except:
+            except Exception:
                 pass
             self.scene = None
             self.robot = None

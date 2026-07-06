@@ -4,9 +4,10 @@ MPC + WBC Combined Controller
 来源: openloong-dyn-control
 组合 MPC (高层规划) + WBC (底层执行)
 """
+from __future__ import annotations
 
 import numpy as np
-from typing import Optional, Dict, Tuple
+
 from .mpc_controller import MPCController
 from .wbc_controller import WBCController
 from .gait_scheduler import GaitScheduler

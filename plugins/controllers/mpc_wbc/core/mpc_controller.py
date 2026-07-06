@@ -8,9 +8,10 @@ MPC (Model Predictive Control) Controller
 输入: [FL_x, FL_y, FL_z, τL_x, τL_y, τL_z, FR_x, FR_y, FR_z, τR_x, τR_y, τR_z] (12维)
 """
 
+from __future__ import annotations
+
 import numpy as np
 from scipy.linalg import expm
-from typing import Optional, Dict
 
 
 class MPCController:

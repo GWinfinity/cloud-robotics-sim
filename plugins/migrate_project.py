@@ -12,11 +12,13 @@ Usage:
         --target ./plugins/controllers/my_controller
 """
 
+from __future__ import annotations
+
 import argparse
 import shutil
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 
 class MigrationTool:
@@ -32,7 +34,7 @@ class MigrationTool:
         else:
             self.target_path = Path(__file__).parent / category / name
         
-        self.files_to_migrate: List[Path] = []
+        self.files_to_migrate: list[Path] = []
     
     def analyze(self) -> dict:
         """分析源项目结构"""
@@ -66,7 +68,7 @@ class MigrationTool:
         
         return analysis
     
-    def prompt_files(self, analysis: dict) -> List[Path]:
+    def prompt_files(self, analysis: dict) -> list[Path]:
         """交互式选择要迁移的文件"""
         print("\n" + "=" * 60)
         print("Select files to migrate (core implementation only)")
@@ -120,7 +122,7 @@ class MigrationTool:
             (self.target_path / d).mkdir(parents=True, exist_ok=True)
             print(f"  Created: {d}/")
     
-    def copy_files(self, files: List[Path]):
+    def copy_files(self, files: list[Path]):
         """复制文件到目标目录"""
         print("\nCopying files...")
         

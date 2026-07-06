@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Dexterous Manipulation Environment
 
@@ -10,7 +12,7 @@ Dexterous Manipulation Environment
 import numpy as np
 import genesis as gs
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class DexterousManipulationEnv:
@@ -126,7 +128,7 @@ class DexterousManipulationEnv:
         
         return objects
     
-    def reset(self) -> Dict[str, np.ndarray]:
+    def reset(self) -> dict[str, np.ndarray]:
         """重置环境"""
         self.current_step = 0
         self.episode_stats = {}
@@ -140,7 +142,7 @@ class DexterousManipulationEnv:
         
         return self.get_observation()
     
-    def step(self, action: np.ndarray) -> Tuple[Dict, float, bool, Dict]:
+    def step(self, action: np.ndarray) -> tuple[Dict, float, bool, Dict]:
         """执行动作"""
         # 应用动作
         self._apply_action(action)
@@ -175,7 +177,7 @@ class DexterousManipulationEnv:
         action = np.clip(action, -1, 1)
         self.robot.control_dofs_position(action)
     
-    def get_observation(self) -> Dict[str, np.ndarray]:
+    def get_observation(self) -> dict[str, np.ndarray]:
         """获取观测"""
         # 本体感觉
         joint_pos = self.robot.get_dofs_position().cpu().numpy()

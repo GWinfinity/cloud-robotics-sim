@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Hybrid Object Representation
 
@@ -8,7 +10,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Optional, Tuple
 
 
 class VisualEncoder(nn.Module):

@@ -3,13 +3,14 @@ PPO Algorithm for HugWBC
 
 基于 rsl_rl 的 PPO 实现，适配 Genesis 环境
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Normal
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 import os
 
 
@@ -90,7 +91,7 @@ class ActorCritic(nn.Module):
         """前向传播 (不直接使用)"""
         raise NotImplementedError
     
-    def act(self, obs: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def act(self, obs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         根据观察选择动作
         
@@ -108,7 +109,7 @@ class ActorCritic(nn.Module):
         return action, log_prob
     
     def evaluate(self, obs: torch.Tensor, privileged_obs: torch.Tensor, 
-                 actions: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+                 actions: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         评估动作 (用于训练)
         
@@ -314,7 +315,7 @@ class PPO:
         self.total_steps = 0
         self.updates = 0
     
-    def act(self, obs: np.ndarray, privileged_obs: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def act(self, obs: np.ndarray, privileged_obs: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         根据观察选择动作
         
@@ -351,7 +352,7 @@ class PPO:
         self.buffer.add(obs, privileged_obs, action, log_prob, reward, value, done)
         self.total_steps += 1
     
-    def update(self, next_obs: np.ndarray, next_privileged_obs: np.ndarray) -> Dict:
+    def update(self, next_obs: np.ndarray, next_privileged_obs: np.ndarray) -> dict:
         """
         更新策略
         

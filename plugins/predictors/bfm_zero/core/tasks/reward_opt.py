@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Reward Optimization Task
 
@@ -6,7 +8,7 @@ Reward Optimization Task
 
 import numpy as np
 import torch
-from typing import Callable, Dict, Optional
+from typing import Callable
 
 
 class RewardOptimizationTask:

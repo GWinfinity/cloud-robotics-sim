@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pathlib import Path
 import uuid
 from run_utils import SYSTEM_HEADER, run, read_tasks, SYSTEM_RULES, read_example
@@ -5,9 +6,9 @@ from engine.utils.argparse_utils import setup_save_dir, modify_string_for_file
 from engine.constants import ENGINE_MODE, PROMPT_MODE, LLM_PROVIDER
 try:
     from tu.loggers.utils import print_vcv_url
-except:
+except Exception:
     print("tu not available for import")
-from typing import List, Union
+from typing import Union
 import argparse
 import time
 import os

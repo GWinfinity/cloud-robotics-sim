@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Forward-Backward (FB) Model Implementation
 
@@ -13,7 +15,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class ForwardModel(nn.Module):
@@ -240,7 +242,7 @@ class FBModel(nn.Module):
         action: torch.Tensor,
         goal_state: torch.Tensor,
         reward: Optional[torch.Tensor] = None
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -268,7 +270,7 @@ class FBModel(nn.Module):
         reward: torch.Tensor,
         done: torch.Tensor,
         gamma: float = 0.99
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         计算FB损失
         

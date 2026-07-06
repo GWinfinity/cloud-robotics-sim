@@ -9,7 +9,9 @@ Provides tools to:
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import Union
 import numpy as np
 import copy
 
@@ -30,7 +32,7 @@ class DatasetSplitter:
         train_ratio: float = 0.8,
         val_ratio: float = 0.1,
         test_ratio: float = 0.1,
-    ) -> Tuple[TrajectoryDataset, TrajectoryDataset, TrajectoryDataset]:
+    ) -> tuple[TrajectoryDataset, TrajectoryDataset, TrajectoryDataset]:
         """
         Randomly split dataset into train/val/test.
         
@@ -70,7 +72,7 @@ class DatasetSplitter:
         train_ratio: float = 0.8,
         val_ratio: float = 0.1,
         test_ratio: float = 0.1,
-    ) -> Tuple[TrajectoryDataset, TrajectoryDataset, TrajectoryDataset]:
+    ) -> tuple[TrajectoryDataset, TrajectoryDataset, TrajectoryDataset]:
         """
         Split dataset while maintaining class distribution.
         
@@ -88,7 +90,7 @@ class DatasetSplitter:
             "Ratios must sum to 1.0"
         
         # Group by stratify key
-        groups: Dict[str, List[int]] = {}
+        groups: dict[str, list[int]] = {}
         for i, traj in enumerate(dataset.trajectories):
             key = str(traj.metadata.get(stratify_key, 'unknown'))
             if key not in groups:
@@ -121,7 +123,7 @@ class DatasetSplitter:
         self,
         dataset: TrajectoryDataset,
         k: int = 5,
-    ) -> List[Tuple[TrajectoryDataset, TrajectoryDataset]]:
+    ) -> list[tuple[TrajectoryDataset, TrajectoryDataset]]:
         """
         Create k-fold cross-validation splits.
         
@@ -160,7 +162,7 @@ class DatasetSplitter:
         self,
         dataset: TrajectoryDataset,
         train_ratio: float = 0.8,
-    ) -> Tuple[TrajectoryDataset, TrajectoryDataset]:
+    ) -> tuple[TrajectoryDataset, TrajectoryDataset]:
         """
         Split dataset temporally (first N for train, rest for test).
         
@@ -188,7 +190,7 @@ class DatasetMerger:
     
     @staticmethod
     def merge(
-        datasets: List[TrajectoryDataset],
+        datasets: list[TrajectoryDataset],
         deduplicate: bool = False,
     ) -> TrajectoryDataset:
         """
@@ -227,8 +229,8 @@ class DatasetMerger:
     
     @staticmethod
     def merge_by_task(
-        datasets: List[TrajectoryDataset],
-        task_weights: Optional[Dict[str, float]] = None,
+        datasets: list[TrajectoryDataset],
+        task_weights: Optional[dict[str, float]] = None,
     ) -> TrajectoryDataset:
         """
         Merge datasets with optional task weighting.
@@ -284,7 +286,7 @@ class DatasetBalancer:
             Balanced dataset
         """
         # Group by task
-        task_groups: Dict[str, List[Trajectory]] = {}
+        task_groups: dict[str, list[Trajectory]] = {}
         for traj in dataset.trajectories:
             task = str(traj.metadata.get('task_type', 'unknown'))
             if task not in task_groups:
@@ -337,7 +339,7 @@ class DatasetBalancer:
         bins = np.linspace(lengths.min(), lengths.max(), n_bins + 1)
         
         # Group by bin
-        bin_groups: Dict[int, List[int]] = {i: [] for i in range(n_bins)}
+        bin_groups: dict[int, list[int]] = {i: [] for i in range(n_bins)}
         for i, length in enumerate(lengths):
             bin_idx = min(int((length - bins[0]) / (bins[1] - bins[0])), n_bins - 1)
             bin_groups[bin_idx].append(i)
@@ -434,7 +436,7 @@ class DatasetFilter:
     @staticmethod
     def filter_by_task(
         dataset: TrajectoryDataset,
-        tasks: List[str],
+        tasks: list[str],
     ) -> TrajectoryDataset:
         """
         Filter trajectories by task type.
@@ -523,17 +525,17 @@ def split_dataset(
     val_ratio: float = 0.1,
     test_ratio: float = 0.1,
     seed: int = 42,
-) -> Tuple[TrajectoryDataset, TrajectoryDataset, TrajectoryDataset]:
+) -> tuple[TrajectoryDataset, TrajectoryDataset, TrajectoryDataset]:
     """Convenience function for random split."""
     splitter = DatasetSplitter(seed=seed)
     return splitter.random_split(dataset, train_ratio, val_ratio, test_ratio)
 
 
-def merge_datasets(datasets: List[TrajectoryDataset]) -> TrajectoryDataset:
+def merge_datasets(datasets: list[TrajectoryDataset]) -> TrajectoryDataset:
     """Convenience function for merging datasets."""
     return DatasetMerger.merge(datasets)
 
 
-def filter_by_task(dataset: TrajectoryDataset, tasks: List[str]) -> TrajectoryDataset:
+def filter_by_task(dataset: TrajectoryDataset, tasks: list[str]) -> TrajectoryDataset:
     """Convenience function for filtering by task."""
     return DatasetFilter.filter_by_task(dataset, tasks)

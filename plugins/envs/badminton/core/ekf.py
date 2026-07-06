@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 扩展卡尔曼滤波 (EKF) 羽毛球轨迹预测
 
@@ -5,7 +7,7 @@
 """
 
 import numpy as np
-from typing import Optional, List, Tuple
+from typing import Optional
 
 
 class ShuttlecockEKF:
@@ -199,7 +201,7 @@ class ShuttlecockEKF:
         
         return trajectory
     
-    def get_impact_point(self, court_height: float = 0.0) -> Optional[Tuple[np.ndarray, float]]:
+    def get_impact_point(self, court_height: float = 0.0) -> Optional[tuple[np.ndarray, float]]:
         """
         预测落点位置和时间
         
@@ -231,7 +233,7 @@ class ShuttlecockEKF:
         max_reach: float = 2.0,
         min_height: float = 0.5,
         max_height: float = 2.5
-    ) -> Optional[Tuple[np.ndarray, float]]:
+    ) -> Optional[tuple[np.ndarray, float]]:
         """
         计算最优击球点
         

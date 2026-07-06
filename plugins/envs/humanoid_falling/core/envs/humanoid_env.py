@@ -3,12 +3,14 @@ Humanoid Falling Environment for Genesis
 基于论文 "Discovering Self-Protective Falling Policy for Humanoid Robot via Deep Reinforcement Learning"
 """
 
+from __future__ import annotations
+
 import os
 import numpy as np
 import torch
 import genesis as gs
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
-from typing import Dict, Tuple, Optional, List
+from typing import Optional
 import yaml
 
 
@@ -65,7 +67,7 @@ class HumanoidFallingEnv:
         # 记录碰撞信息
         self.contact_forces = {}
         
-    def _load_config(self, config_path: Optional[str]) -> Dict:
+    def _load_config(self, config_path: Optional[str]) -> dict:
         """加载配置"""
         if config_path and os.path.exists(config_path):
             with open(config_path, 'r') as f:
@@ -165,7 +167,7 @@ class HumanoidFallingEnv:
         
         return self.get_obs()
     
-    def step(self, actions: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict]:
+    def step(self, actions: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict]:
         """
         执行一步仿真
         
@@ -365,7 +367,7 @@ class HumanoidFallingEnv:
         
         return reward
     
-    def _get_key_body_positions(self) -> Dict:
+    def _get_key_body_positions(self) -> dict:
         """获取关键身体部位的位置和状态"""
         positions = {
             'hands_ground': [False, False],  # 左右手
@@ -390,7 +392,7 @@ class HumanoidFallingEnv:
                     link = self.robot.get_link(link_name)
                     if link.get_contacts():
                         positions['hands_ground'][i] = True
-                except:
+                except Exception:
                     pass
             
             for i, link_name in enumerate(['foot_l', 'foot_r']):
@@ -398,7 +400,7 @@ class HumanoidFallingEnv:
                     link = self.robot.get_link(link_name)
                     if link.get_contacts():
                         positions['feet_ground'][i] = True
-                except:
+                except Exception:
                     pass
                     
         except Exception as e:
@@ -406,7 +408,7 @@ class HumanoidFallingEnv:
         
         return positions
     
-    def _compute_support_base_area(self, body_positions: Dict) -> float:
+    def _compute_support_base_area(self, body_positions: dict) -> float:
         """计算支撑底面积 (用于评估三角形稳定性)"""
         # 简化的底面积计算
         # 实际应根据接触点位置计算凸包面积
@@ -427,7 +429,7 @@ class HumanoidFallingEnv:
             torso_pos = self.robot.get_link('torso').get_pos()
             height = torso_pos[2].item()
             return max(0, min(height, 1.0))
-        except:
+        except Exception:
             return 0.0
     
     def _check_termination(self) -> bool:
@@ -441,12 +443,12 @@ class HumanoidFallingEnv:
             torso_pos = self.robot.get_link('torso').get_pos()
             if torso_pos[2].item() < 0.2:  # 躯干高度过低
                 return True
-        except:
+        except Exception:
             pass
         
         return False
     
-    def set_push_params(self, force_range: List[float], duration: float):
+    def set_push_params(self, force_range: list[float], duration: float):
         """设置推力参数 (用于课程学习)"""
         self.push_force_range = force_range
         self.push_duration = duration

@@ -17,7 +17,9 @@ References:
     - Original: ART/spring-festival/genesis_scene.py
 """
 
-from typing import Optional, List, Tuple, Dict, Any, Union
+from __future__ import annotations
+
+from typing import Any, Union
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -48,9 +50,9 @@ except ImportError:
 
 
 # Type aliases
-ColorType = Union[Tuple[float, float, float], Tuple[float, float, float, float]]
-PositionType = Union[Tuple[float, float, float], List[float]]
-SizeType = Union[Tuple[float, float, float], List[float]]
+ColorType = Union[tuple[float, float, float], tuple[float, float, float, float]]
+PositionType = Union[tuple[float, float, float], list[float]]
+SizeType = Union[tuple[float, float, float], list[float]]
 
 
 @dataclass
@@ -79,7 +81,7 @@ class LightingConfig:
     directional_pos: PositionType = (10, 20, 10)
     directional_dir: PositionType = (0, -1, 0)
     
-    point_lights: Optional[List[Dict[str, Any]]] = None
+    point_lights: Optional[list[dict[str, Any]]] = None
 
 
 class SceneBuilder:
@@ -101,14 +103,29 @@ class SceneBuilder:
     def set_scene(self, scene: Any):
         """Set the Genesis scene to build into."""
         self.scene = scene
-        
+
+    @staticmethod
+    def _apply_visual_color(mesh: Any, color: ColorType) -> None:
+        """Apply RGBA vertex colors to a trimesh mesh."""
+        rgb = tuple(int(c * 255) for c in color[:3])
+        alpha = int(color[3] * 255) if len(color) == 4 else 255
+        mesh.visual.vertex_colors = list(rgb + (alpha,)) * len(mesh.vertices)
+
+    @staticmethod
+    def _build_material(props: dict[str, Any] | None = None) -> Any:
+        """Build a Rigid material with optional overrides."""
+        kwargs: dict[str, Any] = {"friction": 0.5}
+        if props:
+            kwargs.update(props)
+        return gs.materials.Rigid(**kwargs)
+
     def create_box_from_trimesh(
         self,
         pos: PositionType,
         size: SizeType,
         color: ColorType,
         fixed: bool = True,
-        material_props: Optional[Dict[str, Any]] = None,
+        material_props: Optional[dict[str, Any]] = None,
         **kwargs
     ) -> Optional[Any]:
         """Create a box entity using trimesh.
@@ -129,29 +146,10 @@ class SceneBuilder:
             
         # Create box mesh
         mesh = trimesh.creation.box(extents=size)
-        
-        # Add visual colors
-        rgb_color = tuple(int(c * 255) for c in color[:3])
-        if len(color) == 4:
-            rgb_color = rgb_color + (int(color[3] * 255),)
-        else:
-            rgb_color = rgb_color + (255,)
-        mesh.visual.vertex_colors = list(rgb_color) * len(mesh.vertices)
-        
-        # Create material
-        material_kwargs = {"friction": 0.5}
-        if material_props:
-            material_kwargs.update(material_props)
-        
-        # Add entity to scene
+        self._apply_visual_color(mesh, color)
         entity = self.scene.add_entity(
-            gs.morphs.Mesh(
-                file=mesh,
-                pos=pos,
-                fixed=fixed,
-                **kwargs
-            ),
-            material=gs.materials.Rigid(**material_kwargs),
+            gs.morphs.Mesh(file=mesh, pos=pos, fixed=fixed, **kwargs),
+            material=self._build_material(material_props),
         )
         
         self.created_entities.append(entity)
@@ -165,7 +163,7 @@ class SceneBuilder:
         color: ColorType,
         radius_top: Optional[float] = None,
         fixed: bool = True,
-        material_props: Optional[Dict[str, Any]] = None,
+        material_props: Optional[dict[str, Any]] = None,
         **kwargs
     ) -> Optional[Any]:
         """Create a cylinder entity using trimesh.
@@ -208,33 +206,14 @@ class SceneBuilder:
                 sections=32
             )
         
-        # Add visual colors
-        rgb_color = tuple(int(c * 255) for c in color[:3])
-        if len(color) == 4:
-            rgb_color = rgb_color + (int(color[3] * 255),)
-        else:
-            rgb_color = rgb_color + (255,)
-        mesh.visual.vertex_colors = list(rgb_color) * len(mesh.vertices)
-        
-        # Create material
-        material_kwargs = {"friction": 0.5}
-        if material_props:
-            material_kwargs.update(material_props)
-        
-        # Add entity to scene
+        self._apply_visual_color(mesh, color)
         entity = self.scene.add_entity(
-            gs.morphs.Mesh(
-                file=mesh,
-                pos=pos,
-                fixed=fixed,
-                **kwargs
-            ),
-            material=gs.materials.Rigid(**material_kwargs),
+            gs.morphs.Mesh(file=mesh, pos=pos, fixed=fixed, **kwargs),
+            material=self._build_material(material_props),
         )
-        
         self.created_entities.append(entity)
         return entity
-    
+
     def create_sphere_from_trimesh(
         self,
         pos: PositionType,
@@ -242,8 +221,8 @@ class SceneBuilder:
         color: ColorType,
         subdivisions: int = 2,
         fixed: bool = True,
-        scale: Optional[Tuple[float, float, float]] = None,
-        material_props: Optional[Dict[str, Any]] = None,
+        scale: Optional[tuple[float, float, float]] = None,
+        material_props: Optional[dict[str, Any]] = None,
         **kwargs
     ) -> Optional[Any]:
         """Create a sphere entity using trimesh.
@@ -270,29 +249,10 @@ class SceneBuilder:
         # Apply scale if provided
         if scale is not None:
             mesh.apply_scale(scale)
-        
-        # Add visual colors
-        rgb_color = tuple(int(c * 255) for c in color[:3])
-        if len(color) == 4:
-            rgb_color = rgb_color + (int(color[3] * 255),)
-        else:
-            rgb_color = rgb_color + (255,)
-        mesh.visual.vertex_colors = list(rgb_color) * len(mesh.vertices)
-        
-        # Create material
-        material_kwargs = {"friction": 0.5}
-        if material_props:
-            material_kwargs.update(material_props)
-        
-        # Add entity to scene
+        self._apply_visual_color(mesh, color)
         entity = self.scene.add_entity(
-            gs.morphs.Mesh(
-                file=mesh,
-                pos=pos,
-                fixed=fixed,
-                **kwargs
-            ),
-            material=gs.materials.Rigid(**material_kwargs),
+            gs.morphs.Mesh(file=mesh, pos=pos, fixed=fixed, **kwargs),
+            material=self._build_material(material_props),
         )
         
         self.created_entities.append(entity)
@@ -307,7 +267,7 @@ class SceneBuilder:
         sections_major: int = 64,
         sections_minor: int = 16,
         fixed: bool = True,
-        material_props: Optional[Dict[str, Any]] = None,
+        material_props: Optional[dict[str, Any]] = None,
         **kwargs
     ) -> Optional[Any]:
         """Create a torus (ring) entity using trimesh.
@@ -337,34 +297,16 @@ class SceneBuilder:
             sections_minor=sections_minor
         )
         
-        # Add visual colors
-        rgb_color = tuple(int(c * 255) for c in color[:3])
-        if len(color) == 4:
-            rgb_color = rgb_color + (int(color[3] * 255),)
-        else:
-            rgb_color = rgb_color + (255,)
-        mesh.visual.vertex_colors = list(rgb_color) * len(mesh.vertices)
-        
-        # Create material
-        material_kwargs = {"friction": 0.5}
-        if material_props:
-            material_kwargs.update(material_props)
-        
-        # Add entity to scene
+        self._apply_visual_color(mesh, color)
         entity = self.scene.add_entity(
-            gs.morphs.Mesh(
-                file=mesh,
-                pos=pos,
-                fixed=fixed,
-                **kwargs
-            ),
-            material=gs.materials.Rigid(**material_kwargs),
+            gs.morphs.Mesh(file=mesh, pos=pos, fixed=fixed, **kwargs),
+            material=self._build_material(material_props),
         )
         
         self.created_entities.append(entity)
         return entity
     
-    def create_room(self, config: Optional[RoomConfig] = None) -> List[Any]:
+    def create_room(self, config: Optional[RoomConfig] = None) -> list[Any]:
         """Create a complete room structure.
         
         Args:
@@ -508,10 +450,10 @@ class SceneBuilder:
 def create_scene_with_room(
     room_config: Optional[RoomConfig] = None,
     lighting_config: Optional[LightingConfig] = None,
-    viewer_options: Optional[Dict[str, Any]] = None,
-    sim_options: Optional[Dict[str, Any]] = None,
+    viewer_options: Optional[dict[str, Any]] = None,
+    sim_options: Optional[dict[str, Any]] = None,
     show_viewer: bool = True,
-) -> Optional[Tuple[Any, SceneBuilder]]:
+) -> Optional[tuple[Any, SceneBuilder]]:
     """Convenience function to create a scene with a complete room.
     
     Args:

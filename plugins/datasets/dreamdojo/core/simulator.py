@@ -28,7 +28,9 @@ References:
     - Documentation: https://genesis-embodied-ai.github.io/
 """
 
-from typing import Optional, Dict, Any, List, Tuple, Union
+from __future__ import annotations
+
+from typing import Optional, Any, Union
 from pathlib import Path
 from enum import Enum
 from dataclasses import dataclass, field
@@ -71,7 +73,7 @@ class GenesisRobotType(Enum):
 class GenesisSimulatorConfig:
     """Configuration for Genesis simulator."""
     
-    scene_config: Optional[Dict[str, Any]] = None
+    scene_config: Optional[dict[str, Any]] = None
     robot_type: GenesisRobotType = GenesisRobotType.HUMANOID
     robot_urdf_path: Optional[str] = None
     control_freq: int = 20
@@ -266,7 +268,7 @@ class GenesisSimulator:
         self.scene.reset()
         self._episode_count += 1
         
-    def step(self, action: Optional[Any] = None) -> Tuple[Any, dict]:
+    def step(self, action: Optional[Any] = None) -> tuple[Any, dict]:
         """
         Step the simulation.
         
@@ -326,7 +328,7 @@ class GenesisSimulator:
             return None
         try:
             return self.robot.get_q()
-        except:
+        except Exception:
             return None
     
     def get_joint_velocities(self) -> Optional[Any]:
@@ -335,7 +337,7 @@ class GenesisSimulator:
             return None
         try:
             return self.robot.get_dq()
-        except:
+        except Exception:
             return None
     
     def get_base_position(self) -> Optional[Any]:
@@ -346,7 +348,7 @@ class GenesisSimulator:
             links = self.robot.get_links()
             if links:
                 return np.array(links[0].get_pos())
-        except:
+        except Exception:
             pass
         return None
     
@@ -358,7 +360,7 @@ class GenesisSimulator:
             links = self.robot.get_links()
             if links:
                 return np.array(links[0].get_quat())
-        except:
+        except Exception:
             pass
         return None
     
@@ -383,11 +385,11 @@ class GenesisSimulator:
             self.scene = None
         try:
             gs.destroy()
-        except:
+        except Exception:
             pass
         self._initialized = False
         
-    def get_state(self) -> Dict[str, Any]:
+    def get_state(self) -> dict[str, Any]:
         """
         Get current robot state.
         
@@ -405,7 +407,7 @@ class GenesisSimulator:
         # Try to get torque/force if available
         try:
             state["joint_torque"] = self.robot.get_force()
-        except:
+        except Exception:
             pass
             
         # Add base pose
@@ -418,7 +420,7 @@ class GenesisSimulator:
             
         return state
     
-    def set_state(self, state: Dict[str, Any]):
+    def set_state(self, state: dict[str, Any]):
         """
         Set robot state.
         
@@ -431,12 +433,12 @@ class GenesisSimulator:
         if "joint_position" in state and state["joint_position"] is not None:
             try:
                 self.robot.set_q(state["joint_position"])
-            except:
+            except Exception:
                 pass
         if "joint_velocity" in state and state["joint_velocity"] is not None:
             try:
                 self.robot.set_dq(state["joint_velocity"])
-            except:
+            except Exception:
                 pass
 
 

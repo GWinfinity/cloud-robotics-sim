@@ -2,8 +2,9 @@
 Camera sensor for Genesis ManiSkill.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Tuple
 import torch
 import genesis as gs
 
@@ -27,8 +28,8 @@ class Camera:
         self,
         scene: gs.Scene,
         config: CameraConfig = None,
-        pos: Tuple[float, float, float] = (1.0, 1.0, 1.0),
-        lookat: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+        pos: tuple[float, float, float] = (1.0, 1.0, 1.0),
+        lookat: tuple[float, float, float] = (0.0, 0.0, 0.0),
     ):
         self.scene = scene
         self.config = config or CameraConfig()
@@ -63,6 +64,6 @@ class Camera:
         seg = self.camera.render(segmentation=True)
         return seg
     
-    def set_pose(self, pos: Tuple[float, float, float], lookat: Tuple[float, float, float]):
+    def set_pose(self, pos: tuple[float, float, float], lookat: tuple[float, float, float]):
         """Set camera pose."""
         self.camera.set_pose(pos=pos, lookat=lookat)

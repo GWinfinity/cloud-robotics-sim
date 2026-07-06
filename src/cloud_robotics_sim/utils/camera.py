@@ -29,7 +29,9 @@ References:
     - Genesis: https://github.com/Genesis-Embodied-AI/Genesis
 """
 
-from typing import Any, List, Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import Any, Optional, Union
 
 # Optional dependencies
 try:
@@ -130,9 +132,9 @@ def genesis_pose_to_opencv_extrinsic(
 
 
 def look_at(
-    eye: Union[List, ArrayLike],
-    target: Union[List, ArrayLike],
-    up: Union[List, ArrayLike] = (0, 0, 1),
+    eye: Union[list, ArrayLike],
+    target: Union[list, ArrayLike],
+    up: Union[list, ArrayLike] = (0, 0, 1),
     device: Optional[str] = None,
 ) -> Pose:
     """Get the camera pose in Genesis by the Look-At method.
@@ -238,7 +240,7 @@ def spherical_to_cartesian(
     radius: float,
     azimuth: float,
     elevation: float,
-    target: Union[List, ArrayLike] = (0, 0, 0),
+    target: Union[list, ArrayLike] = (0, 0, 0),
 ) -> ArrayLike:
     """Convert spherical coordinates to cartesian position.
 
@@ -288,8 +290,8 @@ def compute_fovy(focal_length: float, sensor_height: float) -> float:
 def get_camera_rays(
     camera_pose: ArrayLike,
     intrinsics: ArrayLike,
-    image_size: Tuple[int, int],
-) -> Tuple[ArrayLike, ArrayLike]:
+    image_size: tuple[int, int],
+) -> tuple[ArrayLike, ArrayLike]:
     """Compute camera rays for each pixel.
 
     Args:

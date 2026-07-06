@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 PPO (Proximal Policy Optimization) 实现
 
@@ -9,7 +11,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Normal
 import numpy as np
-from typing import Dict, Tuple, List, Optional
+from typing import Optional
 
 
 class ActorCritic(nn.Module):
@@ -24,8 +26,8 @@ class ActorCritic(nn.Module):
         self,
         obs_dim: int,
         action_dim: int,
-        actor_hidden: List[int] = [512, 256, 128],
-        critic_hidden: List[int] = [512, 256, 128],
+        actor_hidden: list[int] = [512, 256, 128],
+        critic_hidden: list[int] = [512, 256, 128],
         activation: str = 'elu'
     ):
         super().__init__()
@@ -82,7 +84,7 @@ class ActorCritic(nn.Module):
         nn.init.orthogonal_(self.critic_head.weight, gain=1.0)
         nn.init.constant_(self.critic_head.bias, 0.0)
     
-    def forward(self, obs: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, obs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         前向传播
         
@@ -104,7 +106,7 @@ class ActorCritic(nn.Module):
         self,
         obs: torch.Tensor,
         action: Optional[torch.Tensor] = None
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         获取动作和价值估计
         
@@ -232,7 +234,7 @@ class RolloutBuffer:
             # 回报
             self.returns[t] = self.advantages[t] + self.values[t]
         
-    def get_batches(self, batch_size: int) -> List[Dict]:
+    def get_batches(self, batch_size: int) -> list[Dict]:
         """生成训练批次"""
         # 展平缓冲区
         b_obs = self.observations.reshape(-1, self.observations.shape[-1])
@@ -332,7 +334,7 @@ class PPO:
         self.total_steps = 0
         self.updates = 0
         
-    def select_action(self, obs: np.ndarray) -> Tuple[np.ndarray, float, float]:
+    def select_action(self, obs: np.ndarray) -> tuple[np.ndarray, float, float]:
         """
         选择动作
         

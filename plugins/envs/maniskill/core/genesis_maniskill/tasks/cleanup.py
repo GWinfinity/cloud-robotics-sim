@@ -6,8 +6,9 @@ in their proper storage locations.
 """
 
 import torch
+from __future__ import annotations
+
 import numpy as np
-from typing import Dict, List, Tuple
 
 
 class CleanupTask:
@@ -26,10 +27,10 @@ class CleanupTask:
         self.robot = robot
         
         self.items_to_clean: List = []
-        self.storage_locations: Dict[str, object] = {}
+        self.storage_locations: dict[str, object] = {}
         
-        self.item_targets: Dict[object, str] = {}  # item -> target location name
-        self.items_placed: List[bool] = []
+        self.item_targets: dict[object, str] = {}  # item -> target location name
+        self.items_placed: list[bool] = []
         
     def reset(self):
         """Reset task."""
@@ -138,7 +139,7 @@ class CleanupTask:
             return 1.0
         return sum(self.items_placed) / len(self.items_placed)
     
-    def get_next_target(self) -> Tuple[object, object]:
+    def get_next_target(self) -> tuple[object, object]:
         """Get the next item to clean and its target location."""
         for i, (item, placed) in enumerate(zip(self.items_to_clean, self.items_placed)):
             if not placed:

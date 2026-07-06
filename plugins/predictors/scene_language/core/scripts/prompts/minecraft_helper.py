@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import difflib
 import spacy
 import json
@@ -5,7 +7,7 @@ import itertools
 
 
 # engine-specific helper has access to engine-agnostic helper
-from typing import Optional, List
+from typing import Optional
 from pathlib import Path
 import time
 from type_utils import T, Shape, P
@@ -42,7 +44,7 @@ def prepare_dir_for_exec(
 
 
 def execute_animation(
-    frames: List[Shape],
+    frames: list[Shape],
     save_dir: Optional[str] = None,
     save_prefix: Optional[str] = None,
     description: Optional[str] = None,

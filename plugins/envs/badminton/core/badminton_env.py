@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 人形机器人羽毛球环境
 
@@ -12,7 +14,7 @@ import numpy as np
 import torch
 import genesis as gs
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
-from typing import Dict, Tuple, Optional, List
+from typing import Optional
 import yaml
 
 from .shuttlecock import Shuttlecock, BadmintonCourt
@@ -199,7 +201,7 @@ class BadmintonEnv:
         # 总计: ~75
         return 75
     
-    def _get_frozen_joints(self) -> List[str]:
+    def _get_frozen_joints(self) -> list[str]:
         """获取当前课程阶段冻结的关节"""
         frozen = []
         
@@ -261,7 +263,7 @@ class BadmintonEnv:
         
         self.shuttlecock.reset(serve_pos, velocity)
     
-    def step(self, actions: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict]:
+    def step(self, actions: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, Dict]:
         """
         执行一步仿真
         
@@ -552,7 +554,7 @@ class BadmintonEnv:
             torso_pos = self.robot.get_pos().cpu().numpy()
             if torso_pos[2] < 0.5:  # 躯干高度过低
                 return True
-        except:
+        except Exception:
             pass
         
         # 羽毛球出界 (可选)

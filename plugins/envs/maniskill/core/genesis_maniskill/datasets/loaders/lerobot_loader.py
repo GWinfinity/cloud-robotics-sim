@@ -8,7 +8,9 @@ Reference: https://github.com/huggingface/lerobot
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from __future__ import annotations
+
+from typing import Union
 import numpy as np
 
 from genesis_maniskill.datasets.formats.trajectory import Trajectory, Step
@@ -49,7 +51,7 @@ class LeRobotLoader:
     def __init__(
         self,
         dataset_path: Union[str, Path],
-        delta_timestamps: Optional[List[float]] = None,
+        delta_timestamps: Optional[list[float]] = None,
     ):
         """
         Initialize LeRobot loader.
@@ -69,7 +71,7 @@ class LeRobotLoader:
             self.lerobot_available = False
             print("Warning: LeRobot not installed. Install with: pip install lerobot")
     
-    def _load_with_lerobot(self) -> List[Trajectory]:
+    def _load_with_lerobot(self) -> list[Trajectory]:
         """Load dataset using LeRobot library."""
         from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
         
@@ -138,7 +140,7 @@ class LeRobotLoader:
         
         return trajectories
     
-    def _load_without_lerobot(self) -> List[Trajectory]:
+    def _load_without_lerobot(self) -> list[Trajectory]:
         """Load dataset manually without LeRobot library."""
         import pandas as pd
         
@@ -196,7 +198,7 @@ class LeRobotLoader:
         
         return trajectories
     
-    def load_all(self, max_episodes: Optional[int] = None) -> List[Trajectory]:
+    def load_all(self, max_episodes: Optional[int] = None) -> list[Trajectory]:
         """
         Load all episodes.
         
@@ -254,7 +256,7 @@ class LeRobotLoader:
 def load_lerobot_dataset(
     dataset_path: Union[str, Path],
     max_episodes: Optional[int] = None,
-) -> List[Trajectory]:
+) -> list[Trajectory]:
     """
     Convenience function to load LeRobot dataset.
     

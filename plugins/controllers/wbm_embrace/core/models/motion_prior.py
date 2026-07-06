@@ -3,12 +3,13 @@ Human Motion Prior using Conditional VAE
 
 从大规模人类运动数据学习先验，生成运动学自然、物理可行的全身运动
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Tuple, Optional
+
 
 
 class MotionPriorVAE(nn.Module):
@@ -60,7 +61,7 @@ class MotionPriorVAE(nn.Module):
         self.decoder = nn.Sequential(*decoder_layers)
         self.fc_output = nn.Linear(prev_dim, input_dim)
         
-    def encode(self, pose: torch.Tensor, condition: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def encode(self, pose: torch.Tensor, condition: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """编码姿态到潜在空间"""
         x = torch.cat([pose, condition], dim=-1)
         h = self.encoder(x)
@@ -86,7 +87,7 @@ class MotionPriorVAE(nn.Module):
         
         return output
     
-    def forward(self, pose: torch.Tensor, condition: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, pose: torch.Tensor, condition: torch.Tensor) -> dict[str, torch.Tensor]:
         """前向传播"""
         # 编码
         mu, logvar = self.encode(pose, condition)
@@ -105,7 +106,7 @@ class MotionPriorVAE(nn.Module):
         }
     
     def loss_function(self, recon_pose: torch.Tensor, target_pose: torch.Tensor, 
-                      mu: torch.Tensor, logvar: torch.Tensor) -> Dict[str, torch.Tensor]:
+                      mu: torch.Tensor, logvar: torch.Tensor) -> dict[str, torch.Tensor]:
         """
         VAE损失函数
         
@@ -228,7 +229,7 @@ class MotionPriorTrainer:
         self.model = model
         self.optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     
-    def train_step(self, pose_batch: torch.Tensor, condition_batch: torch.Tensor) -> Dict[str, float]:
+    def train_step(self, pose_batch: torch.Tensor, condition_batch: torch.Tensor) -> dict[str, float]:
         """训练一步"""
         # 前向传播
         output = self.model(pose_batch, condition_batch)

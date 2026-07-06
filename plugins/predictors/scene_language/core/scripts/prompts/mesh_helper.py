@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import trimesh
 from type_utils import T, Shape, Box, P
 from math_utils import _scale_matrix, translation_matrix, rotation_matrix, identity_matrix, align_vectors
-from typing import Literal, Callable, Union, Optional, List
+from typing import Literal, Callable, Union, Optional
 import numpy as np
 from engine.constants import PROJ_DIR
 from pathlib import Path

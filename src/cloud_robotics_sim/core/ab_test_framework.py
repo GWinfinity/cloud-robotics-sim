@@ -1,16 +1,21 @@
+from __future__ import annotations
+
 """A/B Testing Framework for Plugin Migration
 
 用于插件迁移的 A/B 测试框架，支持新旧实现对比测试。
 """
 
 import json
+import logging
 import time
 import traceback
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Optional
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -26,7 +31,7 @@ class TestMetrics:
     error_message: str = ""  # 错误信息
 
     # 业务指标 (根据插件类型定制)
-    custom_metrics: Dict[str, float] = field(default_factory=dict)
+    custom_metrics: dict[str, float] = field(default_factory=dict)
 
     # 时间戳
     timestamp: float = field(default_factory=time.time)
@@ -39,19 +44,19 @@ class ABTestResult:
     variant_a: str  # A 版本名称 (通常是旧版)
     variant_b: str  # B 版本名称 (通常是新版 plugin)
 
-    metrics_a: List[TestMetrics] = field(default_factory=list)
-    metrics_b: List[TestMetrics] = field(default_factory=list)
+    metrics_a: list[TestMetrics] = field(default_factory=list)
+    metrics_b: list[TestMetrics] = field(default_factory=list)
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """生成测试摘要"""
 
-        def _avg(metrics_list: List[TestMetrics], key: str):
+        def _avg(metrics_list: list[TestMetrics], key: str):
             values = [
                 getattr(m, key) for m in metrics_list if getattr(m, key) is not None
             ]
             return np.mean(values) if values else 0.0
 
-        def _success_rate(metrics_list: List[TestMetrics]):
+        def _success_rate(metrics_list: list[TestMetrics]):
             if not metrics_list:
                 return 0.0
             return sum(1 for m in metrics_list if m.success) / len(metrics_list)
@@ -200,7 +205,7 @@ class ABTestRunner:
         test_fn: Callable,
         collect_custom_metrics: Optional[Callable] = None,
         random_order: bool = True,
-    ) -> Dict[str, TestMetrics]:
+    ) -> dict[str, TestMetrics]:
         """同时运行 A/B 两个版本
 
         Args:
@@ -293,10 +298,10 @@ class ABTestRunner:
         with open(json_path, "w") as f:
             json.dump(self.results.summary(), f, indent=2)
 
-        print(f"Report saved to: {report_path}")
+        logger.info("Report saved to: %s", report_path)
         return report_path
 
-    def recommend_migration(self) -> Dict[str, Any]:
+    def recommend_migration(self) -> dict[str, Any]:
         """基于测试结果给出迁移建议
 
         Returns:
@@ -304,7 +309,7 @@ class ABTestRunner:
                 'recommend': bool,      # 是否建议迁移
                 'confidence': float,    # 置信度
                 'reason': str,          # 原因
-                'cautions': List[str]   # 注意事项
+                'cautions': list[str]   # 注意事项
             }
         """
         summary = self.results.summary()
@@ -445,11 +450,11 @@ class GradualMigration:
     def increase_plugin_ratio(self, amount: float = 0.1):
         """增加 plugin 流量比例"""
         if not self.can_increase_ratio(amount):
-            print("Cannot increase plugin ratio yet.")
-            print(f"  Current ratio: {self.plugin_ratio:.1%}")
-            print(f"  Plugin samples: {self.plugin_samples}")
-            print(
-                f"  Plugin success rate: {self.plugin_successes/(self.plugin_samples+1e-6):.1%}"
+            logger.warning("Cannot increase plugin ratio yet.")
+            logger.warning("  Current ratio: %.1%%", self.plugin_ratio)
+            logger.warning("  Plugin samples: %d", self.plugin_samples)
+            logger.warning(
+                "  Plugin success rate: %.1%%", self.plugin_successes / (self.plugin_samples + 1e-6)
             )
             return False
 
@@ -460,10 +465,10 @@ class GradualMigration:
         self.plugin_samples = 0
         self.plugin_successes = 0
 
-        print(f"Plugin ratio increased: {old_ratio:.1%} -> {self.plugin_ratio:.1%}")
+        logger.info("Plugin ratio increased: %.1%% -> %.1%%", old_ratio, self.plugin_ratio)
         return True
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """获取当前状态"""
         return {
             "plugin_ratio": self.plugin_ratio,

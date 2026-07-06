@@ -5,7 +5,9 @@ Loads data from RoboCasa's HDF5 format and converts to unified trajectory format
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from __future__ import annotations
+
+from typing import Union
 import numpy as np
 import h5py
 import json
@@ -47,7 +49,7 @@ class RoboCasaLoader:
     def __init__(
         self,
         dataset_path: Union[str, Path],
-        demo_keys: Optional[List[str]] = None,
+        demo_keys: Optional[list[str]] = None,
         load_images: bool = True,
         load_depth: bool = False,
     ):
@@ -102,7 +104,7 @@ class RoboCasaLoader:
             self.hdf5_file.close()
             self.hdf5_file = None
     
-    def get_demo_keys(self) -> List[str]:
+    def get_demo_keys(self) -> list[str]:
         """Get list of available demo keys."""
         if self.hdf5_file is None:
             self.open()
@@ -206,7 +208,7 @@ class RoboCasaLoader:
         
         return trajectory
     
-    def load_all(self, max_demos: Optional[int] = None) -> List[Trajectory]:
+    def load_all(self, max_demos: Optional[int] = None) -> list[Trajectory]:
         """
         Load all demos.
         
@@ -263,7 +265,7 @@ def load_robocasa_dataset(
     dataset_path: Union[str, Path],
     max_demos: Optional[int] = None,
     load_images: bool = True,
-) -> List[Trajectory]:
+) -> list[Trajectory]:
     """
     Convenience function to load RoboCasa dataset.
     

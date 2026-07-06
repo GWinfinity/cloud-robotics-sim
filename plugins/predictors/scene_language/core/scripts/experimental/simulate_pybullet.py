@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import kubric as kb
 from kubric.simulator.pybullet import PyBullet as KubricSimulator
-from typing import Any, Dict, List
+from typing import Any
 from engine.constants import ENGINE_MODE, PROJ_DIR
 from pathlib import Path
 import sys
@@ -97,7 +99,7 @@ class PyBulletEnv(Env):
     def __init__(self):
         super().__init__()
         self.shape_scene: Shape | None = None
-        self.shape_leaves: List[Shape] = []
+        self.shape_leaves: list[Shape] = []
         
         self.kb_scene: kb.Scene | None = None
         self.kb_engine: KubricSimulator | None = None

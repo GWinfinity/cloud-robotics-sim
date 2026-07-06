@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 # engine-specific helper has access to engine-agnostic helper
 from engine.constants import ENGINE_MODE, PROJ_DIR  # set mitsuba variant within constants.py to avoid errors in typing mi.Sensor
 import tempfile
-from typing import Literal, Callable, Union, Optional, List
+from typing import Literal, Callable, Union, Optional
 import time
 from pathlib import Path
 import mitsuba as mi
@@ -1032,7 +1034,7 @@ def cone_fn(radius: float, p0: P, p1: P, color=(1, 1, 1)) -> Shape:
     return segments
 
 
-def curve_fn(name: str, control_points: List[P], radius: Union[float, List[float]], color: P) -> Shape:
+def curve_fn(name: str, control_points: list[P], radius: Union[float, list[float]], color: P) -> Shape:
     if not isinstance(radius, (list, tuple)):
         radius = [radius] * len(control_points)
     if len(radius) != len(control_points):
@@ -1054,11 +1056,11 @@ def curve_fn(name: str, control_points: List[P], radius: Union[float, List[float
     }]
 
 
-def bsplinecurve_fn(control_points: List[P], radius: Union[float, List[float]], color: P) -> Shape:
+def bsplinecurve_fn(control_points: list[P], radius: Union[float, list[float]], color: P) -> Shape:
     return curve_fn('bsplinecurve', control_points, radius, color)
 
 
-def linearcurve_fn(control_points: List[P], radius: Union[float, List[float]], color: P) -> Shape:
+def linearcurve_fn(control_points: list[P], radius: Union[float, list[float]], color: P) -> Shape:
     return curve_fn('linearcurve', control_points, radius, color)
 
 

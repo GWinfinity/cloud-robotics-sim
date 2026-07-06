@@ -4,11 +4,12 @@ Transform utilities.
 
 import math
 import numpy as np
+from __future__ import annotations
+
 import torch
-from typing import Tuple
 
 
-def euler_to_quat(roll: float, pitch: float, yaw: float) -> Tuple[float, float, float, float]:
+def euler_to_quat(roll: float, pitch: float, yaw: float) -> tuple[float, float, float, float]:
     """
     Convert Euler angles (roll, pitch, yaw) to quaternion (w, x, y, z).
     
@@ -35,7 +36,7 @@ def euler_to_quat(roll: float, pitch: float, yaw: float) -> Tuple[float, float, 
     return (w, x, y, z)
 
 
-def quat_to_euler(w: float, x: float, y: float, z: float) -> Tuple[float, float, float]:
+def quat_to_euler(w: float, x: float, y: float, z: float) -> tuple[float, float, float]:
     """
     Convert quaternion (w, x, y, z) to Euler angles (roll, pitch, yaw).
     
@@ -93,7 +94,7 @@ def pose_to_matrix(pos: np.ndarray, quat: np.ndarray) -> np.ndarray:
     return T
 
 
-def matrix_to_pose(T: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def matrix_to_pose(T: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Convert 4x4 transformation matrix to position and quaternion.
     

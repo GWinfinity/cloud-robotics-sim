@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2025 Cloud Robotics Sim
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 """
 OpenLoong Walking Parameters
@@ -15,7 +16,7 @@ References:
     - OpenLoong: https://github.com/loongOpen/OpenLoong-Dyn-Control
 """
 
-from typing import Dict, Tuple, Optional, Any
+from typing import Any
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -215,7 +216,7 @@ class WalkingParameters:
                     self.robot_urdf_path = path
                     break
     
-    def get_pd_gains(self) -> Dict[str, Tuple[float, float]]:
+    def get_pd_gains(self) -> dict[str, tuple[float, float]]:
         """Get PD gains as a dictionary.
         
         Returns:
@@ -270,7 +271,7 @@ class WalkingParameters:
             self.mpc_weight_extra
         ])
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert parameters to dictionary.
         
         Returns:
@@ -320,7 +321,7 @@ class WalkingParameters:
         }
     
     @classmethod
-    def from_dict(cls, params_dict: Dict[str, Any]) -> "WalkingParameters":
+    def from_dict(cls, params_dict: dict[str, Any]) -> "WalkingParameters":
         """Create WalkingParameters from dictionary.
         
         Args:

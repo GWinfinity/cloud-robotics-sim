@@ -15,7 +15,7 @@ try:
     from scripts.exp.icl_0429.prompts.lmd_plus_helper import run_pipe as run_lmd
     from migc_helper import run_pipe as run_migc
     from gala3d_helper import run_pipe as run_gala3d, run_pipe_post as run_gala3d_post, run_pipe_post_animation as run_gala3d_post_animation
-except:
+except Exception:
     print("[WARNING] Failed to import neural pipelines.")
     # import traceback; traceback.print_exc()
 from dsl_utils import library, set_fake_call_enabled, set_seed, set_track_history_enabled, clear_history, animation_library_call

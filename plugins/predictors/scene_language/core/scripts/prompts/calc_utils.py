@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from type_utils import Shape, P
 import numpy as np
-from typing import Literal, Tuple
+from typing import Literal
 from _shape_utils import compute_bbox, compute_bboxes
 from math_utils import translation_matrix
 from shape_utils import transform_shape, concat_shapes
@@ -19,7 +21,7 @@ def attach(direction: P, shapes: list[Shape]) -> list[Shape]:
     return _attach(direction, shapes)[0]
 
 
-def _attach(direction: P, shapes: list[Shape], atol: float = 1e-2) -> Tuple[list[Shape], bool]:
+def _attach(direction: P, shapes: list[Shape], atol: float = 1e-2) -> tuple[list[Shape], bool]:
     dir = np.asarray(direction) / np.linalg.norm(direction)
     out_shapes = []
     s2 = None
@@ -57,7 +59,7 @@ def align_with_center(normal: P, shapes: list[Shape]) -> list[Shape]:
     return _align('center', normal, shapes)[0]
 
 
-def _align(key: Literal['min', 'max', 'center'], normal: P, shapes: list[Shape], atol: float = 1e-2) -> Tuple[list[Shape], bool]:
+def _align(key: Literal['min', 'max', 'center'], normal: P, shapes: list[Shape], atol: float = 1e-2) -> tuple[list[Shape], bool]:
     out_shapes = []
     normal = np.array(normal) / np.linalg.norm(normal)
     proj_lens = []

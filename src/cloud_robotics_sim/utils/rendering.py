@@ -29,9 +29,11 @@ References:
     - Genesis: https://github.com/Genesis-Embodied-AI/Genesis
 """
 
+from __future__ import annotations
+
 import logging
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -175,7 +177,7 @@ def set_articulation_render_material(articulation: Any, **kwargs):
                     pass
 
 
-def set_entity_color(entity: Any, color: Union[str, List], recursive: bool = True):
+def set_entity_color(entity: Any, color: Union[str, list], recursive: bool = True):
     """Set color for an entity.
 
     Args:
@@ -306,8 +308,8 @@ def load_texture(path: Union[str, Path], **kwargs) -> Optional[Any]:
 def create_checkerboard_texture(
     size: int = 512,
     check_size: int = 64,
-    color1: List[float] = [1.0, 1.0, 1.0],
-    color2: List[float] = [0.5, 0.5, 0.5],
+    color1: list[float] | None = None,
+    color2: list[float] | None = None,
 ) -> Optional[np.ndarray]:
     """Create a checkerboard texture pattern.
 
@@ -320,6 +322,10 @@ def create_checkerboard_texture(
     Returns:
         Texture array or None.
     """
+    if color1 is None:
+        color1 = [1.0, 1.0, 1.0]
+    if color2 is None:
+        color2 = [0.5, 0.5, 0.5]
     if not HAS_NUMPY:
         return None
 

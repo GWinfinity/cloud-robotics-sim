@@ -2,8 +2,9 @@
 Geometry utilities for sampling and calculations.
 """
 
+from __future__ import annotations
+
 import numpy as np
-from typing import Tuple
 
 
 def sample_sphere(radius: float, num_points: int = 1) -> np.ndarray:
@@ -51,7 +52,7 @@ def sample_cylinder(radius: float, height: float, num_points: int = 1) -> np.nda
     return np.stack([x, y, z], axis=-1)
 
 
-def sample_box(size: Tuple[float, float, float], num_points: int = 1) -> np.ndarray:
+def sample_box(size: tuple[float, float, float], num_points: int = 1) -> np.ndarray:
     """
     Sample random points inside a box.
     
@@ -69,7 +70,7 @@ def sample_box(size: Tuple[float, float, float], num_points: int = 1) -> np.ndar
     return np.stack([x, y, z], axis=-1)
 
 
-def compute_bounding_box(points: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def compute_bounding_box(points: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Compute axis-aligned bounding box.
     

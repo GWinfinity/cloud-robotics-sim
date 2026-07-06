@@ -20,8 +20,10 @@ Usage:
     )
 """
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Union, Any
 import xml.etree.ElementTree as ET
 import numpy as np
 import torch
@@ -55,17 +57,17 @@ class RobotConfig:
     def __init__(
         self,
         name: str = "robot",
-        urdf_path: Optional[str] = None,
-        mjcf_path: Optional[str] = None,
-        arm_dof: Optional[int] = None,
+        urdf_path: str | None = None,
+        mjcf_path: str | None = None,
+        arm_dof: int | None = None,
         gripper_dof: int = 0,
-        joint_limits: Optional[Dict] = None,
-        velocity_limits: Optional[np.ndarray] = None,
-        effort_limits: Optional[np.ndarray] = None,
-        home_position: Optional[np.ndarray] = None,
+        joint_limits: dict | None = None,
+        velocity_limits: np.ndarray | None = None,
+        effort_limits: np.ndarray | None = None,
+        home_position: np.ndarray | None = None,
         ee_link_name: str = "",
         base_link_name: str = "",
-        gripper_names: Optional[List[str]] = None,
+        gripper_names: list[str] | None = None,
         control_mode: str = "pd_joint_pos",
         scale_actions: bool = True,
         default_gripper: str = "none",
@@ -94,7 +96,7 @@ class RobotConfig:
         return (self.arm_dof or 0) + self.gripper_dof
     
     @classmethod
-    def from_dict(cls, config_dict: Dict) -> "RobotConfig":
+    def from_dict(cls, config_dict: dict) -> "RobotConfig":
         """Create config from dictionary."""
         # Convert lists to numpy arrays
         if 'joint_limits' in config_dict:
@@ -126,7 +128,7 @@ class RobotConfig:
             config_dict = json.load(f)
         return cls.from_dict(config_dict)
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
             'name': self.name,
@@ -169,7 +171,7 @@ class RobotLoader:
         scene: gs.Scene,
         config: RobotConfig,
         num_envs: int = 1,
-        control_mode: Optional[str] = None,
+        control_mode: str | None = None,
     ):
         """
         Initialize robot loader.
@@ -263,7 +265,7 @@ class RobotLoader:
             else:
                 self.config.arm_dof = total_dof
                 
-        except:
+        except Exception:
             # Default to 7 if can't detect
             self.config.arm_dof = 7
     
@@ -282,7 +284,7 @@ class RobotLoader:
                 'upper': np.array([np.pi] * dof),
             }
     
-    def _parse_urdf_limits(self, path: str) -> Dict:
+    def _parse_urdf_limits(self, path: str) -> dict:
         """Parse joint limits from URDF."""
         tree = ET.parse(path)
         root = tree.getroot()
@@ -426,14 +428,14 @@ class RobotLoader:
         """Get joint velocities."""
         return self.robot.get_dofs_velocity()
     
-    def get_ee_pose(self) -> Tuple[torch.Tensor, torch.Tensor]:
+    def get_ee_pose(self) -> tuple[torch.Tensor, torch.Tensor]:
         """Get end-effector pose."""
         # Try to find EE link
         if self.config.ee_link_name:
             try:
                 link = self.robot.get_link(self.config.ee_link_name)
                 return link.get_pos(), link.get_quat()
-            except:
+            except Exception:
                 pass
         
         # Default to last link
@@ -442,7 +444,7 @@ class RobotLoader:
             ee_pos = self.robot.get_link(link_idx).get_pos()
             ee_quat = self.robot.get_link(link_idx).get_quat()
             return ee_pos, ee_quat
-        except:
+        except Exception:
             # Fallback
             return torch.zeros(self.num_envs, 3), torch.zeros(self.num_envs, 4)
     
@@ -470,7 +472,7 @@ class RobotLoader:
         scene: gs.Scene,
         urdf_path: str,
         num_envs: int = 1,
-        name: Optional[str] = None,
+        name: str | None = None,
         **kwargs
     ) -> "RobotLoader":
         """
@@ -499,7 +501,7 @@ class RobotLoader:
         scene: gs.Scene,
         mjcf_path: str,
         num_envs: int = 1,
-        name: Optional[str] = None,
+        name: str | None = None,
         **kwargs
     ) -> "RobotLoader":
         """Create loader from MJCF file."""

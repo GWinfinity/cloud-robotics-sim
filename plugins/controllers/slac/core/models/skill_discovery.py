@@ -4,12 +4,13 @@ Skill Discovery for SLAC
 基于DIAYN的无监督技能发现
 促进多样性和状态覆盖
 """
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 
 class DIAYNDiscriminator(nn.Module):
@@ -196,7 +197,7 @@ class SkillDiscovery(nn.Module):
         state: torch.Tensor,
         skill: torch.Tensor,
         visited_states: Optional[list] = None
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         获取内在奖励
         
@@ -300,7 +301,7 @@ class SkillConditionedPolicy(nn.Module):
         self,
         state: torch.Tensor,
         skill: torch.Tensor
-    ) -> Dict[str, torch.Tensor]:
+    ) -> dict[str, torch.Tensor]:
         """
         前向传播
         
@@ -352,7 +353,7 @@ class SkillLibrary:
         """获取特定技能的所有轨迹"""
         return self.skills[skill_id]
     
-    def analyze_skills(self) -> Dict:
+    def analyze_skills(self) -> dict:
         """分析学到的技能"""
         analysis = {}
         

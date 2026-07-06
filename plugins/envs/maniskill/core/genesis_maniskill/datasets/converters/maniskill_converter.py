@@ -5,7 +5,9 @@ Converts ManiSkill datasets to the unified Genesis ManiSkill format.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from __future__ import annotations
+
+from typing import Union
 import numpy as np
 
 from genesis_maniskill.datasets.loaders.maniskill_loader import ManiSkillLoader
@@ -50,8 +52,8 @@ class ManiSkillConverter:
         self,
         source_path: Union[str, Path],
         target_path: Union[str, Path],
-        task_map: Optional[Dict[str, str]] = None,
-        scene_map: Optional[Dict[str, str]] = None,
+        task_map: Optional[dict[str, str]] = None,
+        scene_map: Optional[dict[str, str]] = None,
         obs_mode: str = 'state',
     ):
         """

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Table Tennis Ball Physics
 
@@ -9,7 +11,7 @@ Table Tennis Ball Physics
 
 import numpy as np
 import genesis as gs
-from typing import Optional, Tuple, List
+from typing import Optional
 
 
 class TableTennisBall:
@@ -215,7 +217,7 @@ class BallTrajectoryPredictor:
         initial_pos: np.ndarray,
         initial_vel: np.ndarray,
         initial_omega: Optional[np.ndarray] = None
-    ) -> List[dict]:
+    ) -> list[dict]:
         """
         预测轨迹
         
@@ -270,7 +272,7 @@ class BallTrajectoryPredictor:
         initial_pos: np.ndarray,
         initial_vel: np.ndarray,
         racket_plane_z: float = 0.8
-    ) -> Optional[Tuple[np.ndarray, float]]:
+    ) -> Optional[tuple[np.ndarray, float]]:
         """
         预测击球点
         
@@ -302,7 +304,7 @@ class BallTrajectoryPredictor:
         initial_pos: np.ndarray,
         initial_vel: np.ndarray,
         table_height: float = 0.76
-    ) -> Optional[Tuple[np.ndarray, float]]:
+    ) -> Optional[tuple[np.ndarray, float]]:
         """
         预测落点
         

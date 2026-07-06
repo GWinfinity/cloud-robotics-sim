@@ -1,11 +1,12 @@
+from __future__ import annotations
 import os
 from engine.third_party.omost.lib_omost.canvas import Canvas, valid_colors, safe_str
-from typing import Union, Tuple
+from typing import Union
 import shutil
 from pathlib import Path
 try:
     import cv2
-except:
+except Exception:
     print('[ERROR] failed to load cv2')
 import numpy as np
 import numpy.typing
@@ -23,7 +24,7 @@ class MyCanvas(Canvas):
                                  box: 'BBox',
                                  description: str,
                                  detailed_descriptions: list[str], tags: str, atmosphere: str, style: str,
-                                 quality_meta: str, color: Union[Tuple[float, float, float], None],
+                                 quality_meta: str, color: Union[tuple[float, float, float], None],
                                  erode_kernel: int = 8):
         h, w = segm.shape
         rect = (box.min[1] / h, box.max[1] / h, box.min[0] / w, box.max[0] / w)
