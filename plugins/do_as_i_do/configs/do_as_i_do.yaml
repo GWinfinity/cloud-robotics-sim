@@ -1,0 +1,40 @@
+# Default configuration for the do-as-i-do reproduction plugin.
+#
+# This scaffold can use either:
+#   * UR3 arms + Allegro Hands (default, no extra assets)
+#   * UR3 arms + Sharpa Wave hands (set robot.hand_type: sharpa)
+
+headless: true
+
+robot:
+  # Set to a local URDF/MJCF path to override the auto-generated robot.
+  urdf_path: null
+  # Hand type used for retargeting and synthetic demo generation: allegro or sharpa.
+  hand_type: allegro
+
+scene:
+  table_height: 0.75
+  table_size: [0.8, 1.2, 0.02]
+  object_size: 0.05
+  object_mesh_path: null
+
+simulation:
+  dt: 0.01
+  substeps: 10
+  backend: cpu
+
+env:
+  max_steps: 500
+
+reconstruction:
+  backend: synthetic
+  num_frames: 150
+  fps: 30.0
+  # original_repo_path: /path/to/GWinfinity/do-as-i-do
+
+retargeting:
+  method: ik
+  hand_open_degrees: 10.0
+
+deployment:
+  frequency_hz: 50.0

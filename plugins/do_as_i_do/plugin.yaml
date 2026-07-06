@@ -1,0 +1,35 @@
+name: do_as_i_do
+version: 0.1.0
+description: >
+  End-to-end scaffolding for reproducing "Do as I Do: Dexterous Manipulation Data
+  from Everyday Human Videos" on genesis-cloud-sim. Supports pluggable reconstruction,
+  retargeting, Genesis simulation replay, and deployment stubs.
+
+category: imitation_learning
+source_project: https://github.com/GWinfinity/do-as-i-do
+
+author:
+  name: genesis-cloud-sim community
+  email: ""
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - genesis-world>=0.2.0
+  - trimesh>=4.0
+
+exports:
+  - DoAsIDoPipeline
+  - DoAsIDoEnv
+  - DemoSequence
+  - RobotTrajectory
+  - SyntheticReconstructionStage
+  - IKRetargeter
+  - DeploymentStub
+
+tags:
+  - imitation_learning
+  - dexterous_manipulation
+  - bimanual
+  - human_video
+  - do_as_i_do

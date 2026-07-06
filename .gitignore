@@ -172,3 +172,9 @@ config.local.yaml
 config.local.yml
 secrets.yaml
 secrets.yml
+
+# Downloaded robot assets (large / long paths on Windows)
+plugins/do_as_i_do/assets/sharpa-urdf-usd-xml-main/
+plugins/do_as_i_do/assets/sharpa-urdf-usd-xml.zip
+plugins/do_as_i_do/assets/robots/*.urdf
+!plugins/do_as_i_do/assets/robots/.gitkeep

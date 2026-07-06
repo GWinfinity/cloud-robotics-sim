@@ -1,0 +1,26 @@
+services:
+  genesis-cloud-sim-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: nvidia/cuda:12.1.0-runtime-ubuntu22.04
+        PYTORCH_INDEX_URL: https://download.pytorch.org/whl/cu121
+    image: genesis-cloud-sim:gpu
+    container_name: genesis-cloud-sim-gpu
+    runtime: nvidia
+    environment:
+      - GENESIS_BACKEND=cuda
+      - TAICHI_ARCH=cuda
+      - NVIDIA_VISIBLE_DEVICES=all
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/workspace
+      - genesis-cache:/home/dev/.cache
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    command: ["/bin/bash"]
+
+volumes:
+  genesis-cache:

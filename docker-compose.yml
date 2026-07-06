@@ -1,0 +1,24 @@
+services:
+  genesis-cloud-sim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: ubuntu:22.04
+        PYTORCH_INDEX_URL: https://download.pytorch.org/whl/cpu
+    image: genesis-cloud-sim:cpu
+    container_name: genesis-cloud-sim-cpu
+    environment:
+      - GENESIS_BACKEND=cpu
+      - TAICHI_ARCH=cpu
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/workspace
+      - genesis-cache:/home/dev/.cache
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    command: ["/bin/bash"]
+
+volumes:
+  genesis-cache:
