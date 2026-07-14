@@ -1,5 +1,4 @@
-"""
-Run all plugin tests and generate report.
+"""Run all plugin tests and generate report.
 Usage: python tests/run_all_plugin_tests.py
 """
 
@@ -92,6 +91,7 @@ def run_plugin_test(plugin_path: str, name: str) -> dict:
 
 
 def main():
+    """Run plugin tests and print a summary report."""
     print("=" * 70)
     print("Genesis Cloud Sim - Plugin Test Report")
     print("=" * 70)
@@ -107,7 +107,7 @@ def main():
         result = run_plugin_test(plugin_path, name)
 
         if result["total"] == 0:
-            print(f"  ⚠️  No tests found or import error")
+            print("  ⚠️  No tests found or import error")
             print(f"  Output: {result['output'][:200]}")
             continue
 

@@ -164,7 +164,8 @@ Examples:
         parser.print_help()
         return 1
 
-    return args.func(args)
+    result = args.func(args)
+    return 0 if result is None else int(result)
 
 
 if __name__ == "__main__":

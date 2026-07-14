@@ -4,6 +4,8 @@ This example demonstrates how to create a simple pick-and-place
 environment and run a random policy.
 """
 
+import argparse
+
 import numpy as np
 
 from cloud_robotics_sim import (
@@ -46,13 +48,29 @@ def create_living_room_scene() -> Scene:
 
 def main():
     """Run the basic usage example."""
+    parser = argparse.ArgumentParser(
+        description="Cloud Robotics Sim - Basic Usage Example"
+    )
+    parser.add_argument(
+        "--headless",
+        action="store_true",
+        help="Run without the interactive viewer.",
+    )
+    parser.add_argument(
+        "--episodes",
+        type=int,
+        default=3,
+        help="Number of episodes to run.",
+    )
+    args = parser.parse_args()
+
     print("=" * 60)
     print("Cloud Robotics Sim - Basic Usage Example")
     print("=" * 60)
-    
+
     # Create composer with visualization
     composer = EnvironmentComposer(ComposerConfig(
-        headless=False,
+        headless=args.headless,
         resolution=(800, 600),
     ))
     
@@ -77,7 +95,7 @@ def main():
     # Run random policy
     print("\nRunning random policy for 3 episodes...")
     
-    for episode in range(3):
+    for episode in range(args.episodes):
         obs, info = env.reset(seed=episode)
         episode_reward = 0.0
         

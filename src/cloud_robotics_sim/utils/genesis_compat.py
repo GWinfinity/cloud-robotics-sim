@@ -63,69 +63,127 @@ try:
     HAS_GENESIS = True
 except ImportError:
     HAS_GENESIS = False
-    gs = None
-    gu = None
-    gug = None
+    gs = None  # type: ignore[assignment]
+    gu = None  # type: ignore[assignment]
+    gug = None  # type: ignore[assignment]
 
 
 # =============================================================================
-# Genesis Backend Compatibility (v0.x → v1.0 migration)
+# Genesis Backend Compatibility (genesis-world >= 1.0)
 # =============================================================================
-# genesis-world 1.0.0 changed: gs.backends.CUDA → gs._gs_backend.cuda
-# This helper normalizes the API so code works across versions.
+# genesis-world 1.0+ exposes backends as gs.cpu / gs.cuda / gs.gpu.
+# Older internal names (gs._gs_backend) are avoided when public names exist.
 
 
-def get_genesis_backend(name: str = "cuda"):
-    """Get a genesis backend by name, compatible with both old and new API.
+def get_genesis_backend(name: str = "cuda") -> Any:
+    """Get a genesis backend by name.
 
     Args:
-        name: Backend name ('cuda', 'cpu', 'GPU', 'CPU')
+        name: Backend name ('cuda', 'cpu', 'gpu'). 'musa' is not a native
+            Genesis backend and will return None; use ``device.py`` for MUSA
+            torch-device selection.
 
     Returns:
-        The backend object, or None if genesis is not installed.
+        The backend object, or None if genesis is not installed or the name
+        is not supported.
     """
-    if not HAS_GENESIS:
+    if not HAS_GENESIS or gs is None:
         return None
     name_lower = name.lower()
-    # Try new API first (genesis-world >= 1.0)
+    # MUSA is not a Genesis backend (Genesis uses Taichi/CUDA).
+    if name_lower == "musa":
+        return None
+    # Prefer public top-level backend names (genesis-world >= 1.0).
+    backend = getattr(gs, name_lower, None)
+    if backend is not None:
+        return backend
+    # Fallback to the internal enum namespace if the public name is missing.
     if hasattr(gs, "_gs_backend"):
-        backend = getattr(gs._gs_backend, name_lower, None)
-        if backend is not None:
-            return backend
-    # Fall back to old API (genesis-world < 1.0)
-    if hasattr(gs, "backends"):
-        backend = getattr(gs.backends, name, None) or getattr(
-            gs.backends, name_lower, None
-        )
-        if backend is not None:
-            return backend
+        return getattr(gs._gs_backend, name_lower, None)
     return None
 
 
-def genesis_init(headless: bool = True, use_cuda: bool = True, **kwargs):
+def genesis_init(
+    headless: bool = True,
+    use_cuda: bool = True,
+    device: Optional[str] = None,
+    **kwargs: Any,
+) -> None:
     """Initialize Genesis with version-compatible backend selection.
 
     Args:
-        headless: Run without viewer.
-        use_cuda: Use GPU if available, else CPU.
+        headless: Run without viewer (kept for API compatibility; Genesis
+            itself does not accept this parameter).
+        use_cuda: Use GPU if available, else CPU. If CUDA is requested but
+            unavailable, automatically falls back to CPU.
+        device: Optional device preference (``cpu``/``cuda``/``musa``). When
+            ``musa`` is requested, Genesis itself still runs on the CPU backend
+            because Genesis does not yet support MUSA; PyTorch tensors can be
+            placed on MUSA via ``device.set_default_device``.
         **kwargs: Passed to gs.init().
     """
-    if not HAS_GENESIS:
+    del headless  # Not used; gs.init does not accept this parameter.
+    if not HAS_GENESIS or gs is None:
         raise RuntimeError("genesis-world is not installed")
+
+    if getattr(gs, "_initialized", False):
+        logger.debug("Genesis already initialized, skipping")
+        return
+
+    # Resolve device preference for Genesis backend selection. MUSA is not a
+    # native Genesis backend, so we fall back to CPU for the physics engine.
+    if device is not None:
+        from .device import get_device
+
+        resolved = get_device(device)
+        if resolved == "musa":
+            logger.debug(
+                "MUSA requested for Genesis; physics engine will use CPU backend"
+            )
+            use_cuda = False
+        else:
+            use_cuda = resolved == "cuda"
+
     backend = get_genesis_backend("cuda" if use_cuda else "cpu")
     if backend is None:
-        # Last resort: let genesis pick
         gs.init(**kwargs)
-    else:
+        return
+
+    try:
         gs.init(backend=backend, **kwargs)
+    except gs.GenesisException:
+        if use_cuda:
+            logger.debug("CUDA backend failed, falling back to CPU")
+            backend = get_genesis_backend("cpu")
+            if backend is not None:
+                gs.init(backend=backend, **kwargs)
+                return
+        raise
 
 
-def ensure_genesis_initialized(**kwargs):
+def ensure_genesis_initialized(**kwargs: Any) -> None:
     """Initialize Genesis if not already initialized (idempotent)."""
+    if not HAS_GENESIS or gs is None:
+        raise RuntimeError("genesis-world is not installed")
     try:
         genesis_init(**kwargs)
-    except RuntimeError:
+    except gs.GenesisException:
         logger.debug("Genesis already initialized")
+
+
+def get_genesis_lights() -> Any:
+    """Return the Genesis lights module if available.
+
+    genesis-world 1.2+ does not expose ``gs.lights``; lighting is configured
+    through ``VisOptions`` or the default scene lighting. This helper lets
+    callers gracefully handle either case.
+
+    Returns:
+        The ``gs.lights`` module, or None if it is not available.
+    """
+    if not HAS_GENESIS or gs is None:
+        return None
+    return getattr(gs, "lights", None)
 
 
 # =============================================================================

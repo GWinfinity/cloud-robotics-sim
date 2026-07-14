@@ -195,14 +195,19 @@ class FrankaPanda(RobotEmbodiment):
         self.scene = scene
         pos = position or self.config.base_position
 
+        # Prefer an explicit model path from the embodiment config; fall back to
+        # the Genesis built-in / current-directory lookup for backwards compatibility.
+        model_path = self.config.urdf_path or "franka_emika_panda/panda.xml"
+
         try:
-            # Use Genesis built-in Franka if available
             self.entity = scene.add_entity(
-                morph=gs.morphs.MJCF(file="franka_emika_panda/panda.xml"),
-                pos=pos,
+                morph=gs.morphs.MJCF(
+                    file=model_path,
+                    pos=pos,
+                ),
             )
         except Exception as e:
-            logger.warning(f"Failed to load MJCF Franka: {e}")
+            logger.warning(f"Failed to load MJCF Franka from '{model_path}': {e}")
             # Fallback to procedural creation
             self._create_procedural_franka(pos)
 
@@ -212,18 +217,31 @@ class FrankaPanda(RobotEmbodiment):
 
     def _create_procedural_franka(self, position: tuple[float, float, float]) -> None:
         """Create a simplified procedural Franka."""
-        # Simplified base representation
+        # Simplified base representation. Mark it fixed so the placeholder
+        # does not participate in unstable rigid-body contact dynamics when
+        # the real MJCF asset is unavailable.
         self.entity = self.scene.add_entity(
-            morph=gs.morphs.Box(size=(0.2, 0.2, 0.1)),
-            pos=position,
+            morph=gs.morphs.Box(
+                size=(0.2, 0.2, 0.1),
+                pos=position,
+                fixed=True,
+            ),
         )
 
     def reset(self) -> None:
         """Reset joint positions and velocities."""
         if self.entity and hasattr(self.entity, "set_qpos"):
-            # Reset to home configuration
-            home_qpos = np.zeros(self._action_dim - 1)  # Exclude gripper
-            self.entity.set_qpos(home_qpos)
+            # Only attempt to set qpos if the entity actually has DOFs.
+            # Procedural/fixed placeholder entities report zero DOFs.
+            n_dofs = getattr(self.entity, "n_dofs", 0) or getattr(
+                self.entity, "n_qs", 0
+            )
+            if n_dofs > 0:
+                # Reset to home configuration. The MJCF Franka has two
+                # independent finger DOFs, so the qpos size must match the
+                # entity rather than the 8-dim action space.
+                home_qpos = np.zeros(n_dofs)
+                self.entity.set_qpos(home_qpos)
 
     def apply_action(self, action: np.ndarray) -> None:
         """Apply joint position targets.
@@ -232,9 +250,20 @@ class FrankaPanda(RobotEmbodiment):
             action: 8-dimensional vector [7 joints, gripper].
         """
         if self.entity and hasattr(self.entity, "control_dofs_position"):
-            scaled_action = action * self.config.action_scale
-            self.entity.control_dofs_position(scaled_action[:-1])
-            # Gripper control would go here
+            n_dofs = getattr(self.entity, "n_dofs", 0) or getattr(
+                self.entity, "n_qs", 0
+            )
+            if n_dofs > 0:
+                scaled_action = action * self.config.action_scale
+                arm_targets = scaled_action[:_FRANKA_JOINTS]
+                gripper_target = scaled_action[_FRANKA_JOINTS]
+                # The real MJCF Franka exposes two finger DOFs driven by a
+                # single tendon. Expand the scalar gripper command to both.
+                if n_dofs == _FRANKA_ACTION_DIM + 1:
+                    targets = np.concatenate([arm_targets, np.full(2, gripper_target)])
+                else:
+                    targets = np.concatenate([arm_targets, np.array([gripper_target])])
+                self.entity.control_dofs_position(targets)
 
     def get_observation(self) -> dict:
         """Get current robot state."""
@@ -282,8 +311,10 @@ class UniversalRobotUR5(RobotEmbodiment):
 
         try:
             self.entity = scene.add_entity(
-                morph=gs.morphs.URDF(file="ur5/ur5.urdf"),
-                pos=pos,
+                morph=gs.morphs.URDF(
+                    file="ur5/ur5.urdf",
+                    pos=pos,
+                ),
             )
         except Exception as e:
             logger.warning(f"Failed to load URDF UR5: {e}")
@@ -296,20 +327,30 @@ class UniversalRobotUR5(RobotEmbodiment):
     def _create_procedural_ur5(self, position: tuple[float, float, float]) -> None:
         """Create simplified UR5 representation."""
         self.entity = self.scene.add_entity(
-            morph=gs.morphs.Box(size=(0.18, 0.18, 0.12)),
-            pos=position,
+            morph=gs.morphs.Box(
+                size=(0.18, 0.18, 0.12),
+                pos=position,
+            ),
         )
 
     def reset(self) -> None:
         """Reset to home position."""
         if self.entity and hasattr(self.entity, "set_qpos"):
-            self.entity.set_qpos(np.zeros(6))
+            n_dofs = getattr(self.entity, "n_dofs", 0) or getattr(
+                self.entity, "n_qs", 0
+            )
+            if n_dofs > 0:
+                self.entity.set_qpos(np.zeros(6))
 
     def apply_action(self, action: np.ndarray) -> None:
         """Apply joint position targets."""
         if self.entity and hasattr(self.entity, "control_dofs_position"):
-            scaled_action = action * self.config.action_scale
-            self.entity.control_dofs_position(scaled_action)
+            n_dofs = getattr(self.entity, "n_dofs", 0) or getattr(
+                self.entity, "n_qs", 0
+            )
+            if n_dofs > 0:
+                scaled_action = action * self.config.action_scale
+                self.entity.control_dofs_position(scaled_action)
 
     def get_observation(self) -> dict:
         """Get current robot state."""
@@ -362,8 +403,10 @@ class MobileManipulator(RobotEmbodiment):
 
         # Create mobile base
         self.entity = scene.add_entity(
-            morph=gs.morphs.Box(size=(0.6, 0.4, 0.2)),
-            pos=pos,
+            morph=gs.morphs.Box(
+                size=(0.6, 0.4, 0.2),
+                pos=pos,
+            ),
         )
 
         logger.info(f"Mobile manipulator spawned at {pos}")

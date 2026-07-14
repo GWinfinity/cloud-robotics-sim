@@ -61,7 +61,7 @@ class PluginManager:
         Returns:
             Dict mapping category names to lists of plugin names
         """
-        discovered = {}
+        discovered: dict[str, list[str]] = {}
 
         if not self.plugins_dir.exists():
             logger.warning("Plugins directory not found: %s", self.plugins_dir)

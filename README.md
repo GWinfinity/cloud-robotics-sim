@@ -21,11 +21,14 @@ A cloud-native robotics simulation platform built on [Genesis](https://genesis-w
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/cloud-robotics-sim.git
+git clone https://github.com/GWinfinity/cloud-robotics-sim.git
 cd cloud-robotics-sim
 
 # Install with pip
 pip install -e ".[dev]"
+
+# Or use uv (recommended for reproducible lockfile)
+uv sync --extra dev
 ```
 
 ### Basic Usage

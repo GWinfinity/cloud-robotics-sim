@@ -1,0 +1,20 @@
+# Continuous Improvement Loop Configuration
+
+baseline_config_path: configs/franka_pickplace.yaml
+output_dir: ./outputs/improvement_loop
+
+n_baseline_episodes: 30
+n_validation_episodes: 50
+max_iterations: 10
+
+min_success_rate_delta: 0.05
+min_reward_delta: 5.0
+max_latency_regression: 10.0
+
+thresholds:
+  min_success_rate: 0.8
+  max_latency_ms: 100.0
+  max_physics_violations: 5.0
+  min_stability_score: 0.85
+  min_mean_reward: -50.0
+  min_episodes: 10

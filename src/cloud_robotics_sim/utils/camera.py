@@ -65,6 +65,8 @@ try:
 except ImportError:
     # Fallback if not available
     class Pose:
+        """Fallback pose container."""
+
         def __init__(self, raw_pose):
             self.raw_pose = raw_pose
 
@@ -323,10 +325,12 @@ def get_camera_rays(
     directions = directions / np.linalg.norm(directions, axis=-1, keepdims=True)
 
     # Transform to world space
-    R = camera_pose[:3, :3]
+    rotation = camera_pose[:3, :3]
     t = camera_pose[:3, 3]
 
-    ray_directions = (R @ directions.reshape(-1, 3).T).T.reshape(height, width, 3)
+    ray_directions = (rotation @ directions.reshape(-1, 3).T).T.reshape(
+        height, width, 3
+    )
     ray_origins = np.broadcast_to(t, ray_directions.shape)
 
     return ray_origins, ray_directions

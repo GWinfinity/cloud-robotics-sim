@@ -13,6 +13,7 @@ environment:
   robot:
     type: franka_panda
     base_position: [0.0, 0.0, 0.0]
+    urdf_path: D:/githbi/awesome-robot-descriptions-main/robot_descriptions/Arms/franka_emika_panda/panda.xml
   
   task:
     type: pick_place
@@ -23,8 +24,10 @@ environment:
   simulation:
     dt: 0.01
     substeps: 10
-    headless: false
+    headless: true
     resolution: [640, 480]
+
+use_cuda: false
 
 training:
   algorithm: PPO

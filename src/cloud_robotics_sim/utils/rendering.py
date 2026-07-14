@@ -68,7 +68,8 @@ try:
     from .camera import hex2rgba, rgba2hex
 except ImportError:
     # Fallback implementations
-    def hex2rgba(h: str, correction: bool = True):
+    def hex2rgba(h: str, correction: bool = True) -> list[float]:
+        """Convert a hex color string to normalized RGBA."""
         h = h.lstrip("#")
         r = int(h[0:2], 16) / 255
         g = int(h[2:4], 16) / 255
@@ -78,7 +79,8 @@ except ImportError:
             rgba = [c**2.2 for c in rgba[:3]] + [1.0]
         return rgba
 
-    def rgba2hex(rgba):
+    def rgba2hex(rgba) -> str:
+        """Convert normalized RGBA to a hex color string."""
         r, g, b = rgba[:3]
         if max(r, g, b) <= 1.0:
             r, g, b = int(r * 255), int(g * 255), int(b * 255)

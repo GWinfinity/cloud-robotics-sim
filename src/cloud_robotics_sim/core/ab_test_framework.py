@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-"""A/B Testing Framework for Plugin Migration
-
-用于插件迁移的 A/B 测试框架，支持新旧实现对比测试。
-"""
-
 import json
 import logging
 import time
@@ -16,6 +11,11 @@ from typing import Any, Callable, Optional
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+"""A/B Testing Framework for Plugin Migration.
+
+用于插件迁移的 A/B 测试框架，支持新旧实现对比测试。
+"""
 
 
 @dataclass
@@ -318,7 +318,7 @@ class ABTestRunner:
         b_success = summary["variant_b"]["success_rate"]
         latency_improvement = summary["improvement"]["latency_delta_percent"]
 
-        recommendation = {
+        recommendation: dict[str, Any] = {
             "recommend": False,
             "confidence": 0.0,
             "reason": "",
@@ -410,7 +410,7 @@ class GradualMigration:
         self.legacy_samples = 0
         self.legacy_successes = 0
 
-        self.history = []
+        self.history: list[dict[str, Any]] = []
 
     def select_implementation(self) -> Callable:
         """选择实现版本"""
@@ -454,7 +454,8 @@ class GradualMigration:
             logger.warning("  Current ratio: %.1%%", self.plugin_ratio)
             logger.warning("  Plugin samples: %d", self.plugin_samples)
             logger.warning(
-                "  Plugin success rate: %.1%%", self.plugin_successes / (self.plugin_samples + 1e-6)
+                "  Plugin success rate: %.1%%",
+                self.plugin_successes / (self.plugin_samples + 1e-6),
             )
             return False
 
@@ -465,7 +466,9 @@ class GradualMigration:
         self.plugin_samples = 0
         self.plugin_successes = 0
 
-        logger.info("Plugin ratio increased: %.1%% -> %.1%%", old_ratio, self.plugin_ratio)
+        logger.info(
+            "Plugin ratio increased: %.1%% -> %.1%%", old_ratio, self.plugin_ratio
+        )
         return True
 
     def get_status(self) -> dict[str, Any]:

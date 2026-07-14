@@ -149,7 +149,7 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
         rewards = np.zeros(self.num_envs)
         terminated = np.zeros(self.num_envs, dtype=bool)
         truncated = np.zeros(self.num_envs, dtype=bool)
-        infos = [{} for _ in range(self.num_envs)]
+        infos: list[dict[str, Any]] = [{} for _ in range(self.num_envs)]
 
         return obs, rewards, terminated, truncated, infos
 

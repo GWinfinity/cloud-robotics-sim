@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 
@@ -219,7 +220,9 @@ class NavigationTask(Task):
         # Compute initial distance
         if robot.entity and hasattr(robot.entity, "get_pos"):
             robot_pos = robot.entity.get_pos()
-            self._prev_distance = np.linalg.norm(robot_pos - self.target_position)
+            self._prev_distance = float(
+                np.linalg.norm(robot_pos - self.target_position)
+            )
 
         return {
             "target_position": self.target_position.tolist(),
@@ -241,7 +244,7 @@ class NavigationTask(Task):
 
         if robot.entity and hasattr(robot.entity, "get_pos"):
             robot_pos = robot.entity.get_pos()
-            distance = np.linalg.norm(robot_pos - self.target_position)
+            distance = float(np.linalg.norm(robot_pos - self.target_position))
 
             # Progress reward
             if self._prev_distance is not None:
@@ -353,5 +356,7 @@ class ReachTask(Task):
         """Approximate end-effector position."""
         if robot.entity and hasattr(robot.entity, "get_pos"):
             # Simplified: use robot base position
-            return robot.entity.get_pos() + np.array([0.5, 0.0, 0.5])
+            pos = np.asarray(robot.entity.get_pos(), dtype=np.float64)
+            offset = np.array([0.5, 0.0, 0.5], dtype=np.float64)
+            return cast(np.ndarray, pos + offset)
         return None

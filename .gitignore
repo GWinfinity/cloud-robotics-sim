@@ -110,6 +110,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.pdfvenv/
 
 # Spyder project settings
 .spyderproject
@@ -172,6 +173,11 @@ config.local.yaml
 config.local.yml
 secrets.yaml
 secrets.yml
+
+# Backup / temporary files
+*.bak
+_tmp_*
+check_taichi_internals.py
 
 # Downloaded robot assets (large / long paths on Windows)
 plugins/do_as_i_do/assets/sharpa-urdf-usd-xml-main/

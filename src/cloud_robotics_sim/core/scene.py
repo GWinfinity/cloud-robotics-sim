@@ -13,6 +13,8 @@ from typing import Any
 
 import genesis as gs
 
+from cloud_robotics_sim.utils.genesis_compat import get_genesis_lights
+
 logger = logging.getLogger(__name__)
 
 
@@ -250,6 +252,7 @@ class Scene(ABC):
             morph=gs.morphs.Box(
                 size=(width, depth, thickness),
                 pos=(0.0, 0.0, -thickness / 2),
+                fixed=True,
             ),
             surface=gs.surfaces.Default(color=(0.9, 0.9, 0.9, 1.0)),
         )
@@ -281,32 +284,42 @@ class Scene(ABC):
 
         for name, pos, size in wall_configs:
             wall = self.scene.add_entity(
-                morph=gs.morphs.Box(size=size, pos=pos),
+                morph=gs.morphs.Box(size=size, pos=pos, fixed=True),
                 surface=gs.surfaces.Default(color=(0.95, 0.95, 0.95, 1.0)),
             )
             self.room_entities[f"wall_{name}"] = wall
 
     def _setup_lighting(self) -> None:
         """Configure scene lighting."""
-        # Ambient light
-        self.scene.add_light(
-            gs.lights.Ambient(
-                color=(1.0, 1.0, 1.0),
-                intensity=self.config.ambient_light[0],
-            )
-        )
+        lights = get_genesis_lights()
+        if lights is None:
+            # genesis-world 1.2+ does not expose gs.lights; the default Scene
+            # already provides lighting through VisOptions.
+            logger.debug("Skipping explicit lighting setup (gs.lights unavailable)")
+            return
 
-        # Main directional light
-        main = self.config.main_light
-        self.scene.add_light(
-            gs.lights.Directional(
-                pos=main["pos"],
-                direction=(0.0, 0.3, -1.0),
-                color=main["color"],
-                intensity=main["intensity"],
-                cast_shadow=True,
+        try:
+            # Ambient light
+            self.scene.add_light(
+                lights.Ambient(
+                    color=(1.0, 1.0, 1.0),
+                    intensity=self.config.ambient_light[0],
+                )
             )
-        )
+
+            # Main directional light
+            main = self.config.main_light
+            self.scene.add_light(
+                lights.Directional(
+                    pos=main["pos"],
+                    direction=(0.0, 0.3, -1.0),
+                    color=main["color"],
+                    intensity=main["intensity"],
+                    cast_shadow=True,
+                )
+            )
+        except AttributeError:
+            logger.debug("Skipping legacy lighting setup for this Genesis version")
 
     def _spawn_objects(self) -> None:
         """Instantiate all configured objects."""

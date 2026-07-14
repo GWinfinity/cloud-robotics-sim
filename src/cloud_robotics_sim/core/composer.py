@@ -96,18 +96,26 @@ class ComposedEnvironment:
         np.random.seed(seed)
         self.scene.reset()
 
-        # Reset robot position
-        spawn_pos = self._select_spawn_position()
+        # Reset robot and task state. The robot was already spawned at the
+        # correct position during composition; avoid calling set_pos() here
+        # because teleporting a built rigid body frequently causes NaN
+        # constraint forces in Genesis.
         self.robot.reset()
-        if hasattr(self.robot.entity, "set_pos"):
-            self.robot.entity.set_pos(spawn_pos)
-
-        # Reset task state
         task_info = self.task.reset(self.scene, self.robot, seed)
 
-        # Stabilize simulation
-        for _ in range(10):
-            self.gs_scene.step()
+        # Stabilize simulation. If the very first steps are unstable (e.g.
+        # inter-penetration or bad initial state), surface a clear message
+        # instead of an opaque NaN crash.
+        try:
+            for _ in range(10):
+                self.gs_scene.step()
+        except Exception as exc:
+            logger.error(
+                "Simulation stabilization failed during reset: %s. "
+                "Try decreasing dt or increasing substeps.",
+                exc,
+            )
+            raise
 
         obs = self._get_observation()
         info = {"seed": seed, **task_info}
@@ -172,7 +180,7 @@ class ComposedEnvironment:
             Rendered frame as numpy array, or None if unavailable.
         """
         if mode == "rgb_array" and "head_cam" in self.robot.cameras:
-            return self.robot.cameras["head_cam"].render(rgb=True)[0]
+            return np.asarray(self.robot.cameras["head_cam"].render(rgb=True)[0])
         return None
 
     def close(self) -> None:
@@ -315,12 +323,15 @@ class EnvironmentComposer:
             ...     "living_room", "franka_panda", "pick_place"
             ... )
         """
-        from cloud_robotics_sim.core.registry import default_registry
+        from cloud_robotics_sim.core.registry import AssetRegistry, default_registry
 
         reg = registry or default_registry
-        scene = reg.create_scene(scene_name, **(scene_kwargs or {}))
-        robot = reg.create_robot(robot_name, **(robot_kwargs or {}))
-        task = reg.create_task(task_name, **(task_kwargs or {}))
+        asset_registry = reg() if callable(reg) else reg
+        if not isinstance(asset_registry, AssetRegistry):
+            raise TypeError(f"Expected AssetRegistry, got {type(asset_registry)}")
+        scene = asset_registry.create_scene(scene_name, **(scene_kwargs or {}))
+        robot = asset_registry.create_robot(robot_name, **(robot_kwargs or {}))
+        task = asset_registry.create_task(task_name, **(task_kwargs or {}))
 
         return self.compose(scene, robot, task)
 
@@ -452,5 +463,5 @@ try:
             self.env.close()
 
 except ImportError:
-    GenesisGymEnv = None
+    GenesisGymEnv = None  # type: ignore[misc, assignment]
     logger.debug("Gymnasium not available, skipping GenesisGymEnv")

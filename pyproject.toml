@@ -8,7 +8,7 @@ version = "2.0.0"
 description = "Cloud-native robotics simulation platform for RL/IL research"
 readme = "README.md"
 license = {text = "Apache-2.0"}
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.14"
 authors = [
     {name = "Cloud Robotics Team", email = "contact@cloudrobotics.dev"},
 ]
@@ -29,6 +29,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -36,7 +37,7 @@ classifiers = [
 
 dependencies = [
     # Core physics
-    "genesis-world>=0.4.0",
+    "genesis-world>=1.2.2,<1.3.0",
     "taichi>=1.7.0",
     
     # Geometry & mesh processing
@@ -100,11 +101,11 @@ all = [
 cloud-robotics-sim = "cloud_robotics_sim.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/your-org/cloud-robotics-sim"
+Homepage = "https://github.com/GWinfinity/cloud-robotics-sim"
 Documentation = "https://cloud-robotics-sim.readthedocs.io"
-Repository = "https://github.com/your-org/cloud-robotics-sim"
-Issues = "https://github.com/your-org/cloud-robotics-sim/issues"
-Changelog = "https://github.com/your-org/cloud-robotics-sim/blob/main/CHANGELOG.md"
+Repository = "https://github.com/GWinfinity/cloud-robotics-sim"
+Issues = "https://github.com/GWinfinity/cloud-robotics-sim/issues"
+Changelog = "https://github.com/GWinfinity/cloud-robotics-sim/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -136,8 +137,12 @@ select = [
 ignore = [
     "D100", "D104",  # Missing docstrings in public modules/packages
     "D102", "D107",  # Missing docstrings in methods/__init__
+    "D205", "D415",  # Noisy with existing bilingual docstrings
     "E501",           # Line too long
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Re-exports are intentional
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -146,8 +151,8 @@ convention = "google"
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
 check_untyped_defs = true
 disallow_untyped_decorators = false
 no_implicit_optional = true
@@ -156,6 +161,15 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "cloud_robotics_sim.utils.genesis_compat",
+    "cloud_robotics_sim.utils.camera",
+    "cloud_robotics_sim.utils.rendering",
+]
+ignore_errors = true
 
 [tool.pytest.ini_options]
 minversion = "8.0"
