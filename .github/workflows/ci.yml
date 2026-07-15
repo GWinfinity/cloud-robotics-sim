@@ -58,6 +58,11 @@ jobs:
       - name: Debug disk space
         run: df -h
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1 xvfb
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -68,7 +73,7 @@ jobs:
 
       - name: Smoke test
         run: |
-          python -c "import cloud_robotics_sim; print(f'Version: {cloud_robotics_sim.__version__}')"
+          xvfb-run -a python -c "import cloud_robotics_sim; print(f'Version: {cloud_robotics_sim.__version__}')"
 
       - name: Test with pytest
-        run: pytest tests/ -v --tb=short
+        run: xvfb-run -a pytest tests/ -v --tb=short
