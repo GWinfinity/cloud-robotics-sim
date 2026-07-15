@@ -135,13 +135,31 @@ def genesis_init(
     # or incomplete genesis module object into genesis.utils.misc, so the
     # get_device() helper cannot access gs.gpu/gs.cuda/etc. Point it at the
     # canonical module from sys.modules instead and make sure the canonical
-    # module exposes the backend attributes that get_device() compares against.
+    # module exposes the backend attributes that get_device() and gs.init()
+    # compare against.
     import sys
+
+    def _inject_backend_names(_mod: Any) -> None:
+        """Expose backend enum members as module attributes and in gs.init globals."""
+        _enum = getattr(_mod, "_gs_backend", None)
+        if _enum is None:
+            return
+        for _name, _member in _enum.__members__.items():
+            if not hasattr(_mod, _name):
+                try:
+                    setattr(_mod, _name, _member)
+                except Exception:
+                    pass
+        _init_fn = getattr(_mod, "init", None)
+        if callable(_init_fn):
+            for _name, _member in _enum.__members__.items():
+                _init_fn.__globals__[_name] = _member
 
     is_real_genesis = gs is sys.modules.get("genesis")
     if is_real_genesis:
         try:
             canonical_gs = sys.modules["genesis"]
+            _inject_backend_names(canonical_gs)
             try:
                 import genesis.utils.misc as _misc
 
@@ -150,18 +168,15 @@ def genesis_init(
                         "Aligning genesis.utils.misc.gs with canonical genesis module"
                     )
                     _misc.gs = canonical_gs
+                _inject_backend_names(_misc.gs)
             except Exception:
                 pass
-
-            backend_enum = getattr(canonical_gs, "_gs_backend", None)
-            if backend_enum is not None:
-                for _backend_name in ("cpu", "cuda", "gpu"):
-                    if not hasattr(canonical_gs, _backend_name):
-                        _backend_val = getattr(backend_enum, _backend_name, None)
-                        if _backend_val is not None:
-                            setattr(canonical_gs, _backend_name, _backend_val)
         except Exception:
             pass
+    else:
+        # If our local gs reference differs from sys.modules (e.g. after a
+        # reload or wrapper), still try to make it backend-aware.
+        _inject_backend_names(gs)
 
     # In GitHub Actions / CI runners there is no GPU, so force the CPU backend
     # explicitly as requested (gs.init(backend=gs.cpu)).
