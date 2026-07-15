@@ -130,6 +130,11 @@ def genesis_init(
         logger.debug("Genesis already initialized, skipping")
         return
 
+    # Compatibility patch: some genesis-world Linux wheels do not expose gs.gpu
+    # at the top level, but gs.init's internal get_device() compares against it.
+    if not hasattr(gs, "gpu") and hasattr(gs, "cuda"):
+        gs.gpu = gs.cuda
+
     # Resolve device preference for Genesis backend selection. MUSA is not a
     # native Genesis backend, so we fall back to CPU for the physics engine.
     if device is not None:
