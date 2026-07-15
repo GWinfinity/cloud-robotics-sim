@@ -133,6 +133,15 @@ def genesis_init(
     # Compatibility workaround: some genesis-world Linux wheels do not expose
     # gs.gpu at the top level, which causes gs.init(backend=...) to crash
     # inside get_device(). Fall back to auto-detection in that case.
+    import sys
+    print("[DEBUG] genesis_compat gs id:", id(gs), "sys.modules genesis id:", id(sys.modules["genesis"]))
+    print("[DEBUG] hasattr(gs, 'gpu'):", hasattr(gs, "gpu"))
+    try:
+        print("[DEBUG] gs.gpu:", gs.gpu)
+    except Exception as e:
+        print("[DEBUG] gs.gpu access error:", e)
+    import genesis.utils.misc as _misc
+    print("[DEBUG] misc.gs id:", id(_misc.gs), "hasattr gpu:", hasattr(_misc.gs, "gpu"))
     if not hasattr(gs, "gpu"):
         logger.debug("gs.gpu missing; letting gs.init auto-detect backend")
         gs.init(**kwargs)
