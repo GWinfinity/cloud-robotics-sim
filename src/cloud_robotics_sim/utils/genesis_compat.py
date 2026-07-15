@@ -33,6 +33,7 @@ References:
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
@@ -130,29 +131,43 @@ def genesis_init(
         logger.debug("Genesis already initialized, skipping")
         return
 
-    # Compatibility workaround: some genesis-world Linux wheels do not expose
-    # gs.gpu at the top level, which causes gs.init(backend=...) to crash
-    # inside get_device(). Fall back to auto-detection in that case.
+    # Compatibility workaround: some genesis-world Linux wheels import a stale
+    # or incomplete genesis module object into genesis.utils.misc, so the
+    # get_device() helper cannot access gs.gpu/gs.cuda/etc. Point it at the
+    # canonical module from sys.modules instead and make sure the canonical
+    # module exposes the backend attributes that get_device() compares against.
     import sys
 
-    print(
-        "[DEBUG] genesis_compat gs id:",
-        id(gs),
-        "sys.modules genesis id:",
-        id(sys.modules["genesis"]),
-    )
-    print("[DEBUG] hasattr(gs, 'gpu'):", hasattr(gs, "gpu"))
-    try:
-        print("[DEBUG] gs.gpu:", gs.gpu)
-    except Exception as e:
-        print("[DEBUG] gs.gpu access error:", e)
-    import genesis.utils.misc as _misc
+    is_real_genesis = gs is sys.modules.get("genesis")
+    if is_real_genesis:
+        try:
+            canonical_gs = sys.modules["genesis"]
+            try:
+                import genesis.utils.misc as _misc
 
-    print("[DEBUG] misc.gs id:", id(_misc.gs), "hasattr gpu:", hasattr(_misc.gs, "gpu"))
-    if not hasattr(gs, "gpu"):
-        logger.debug("gs.gpu missing; letting gs.init auto-detect backend")
-        gs.init(**kwargs)
-        return
+                if _misc.gs is not canonical_gs:
+                    logger.debug(
+                        "Aligning genesis.utils.misc.gs with canonical genesis module"
+                    )
+                    _misc.gs = canonical_gs
+            except Exception:
+                pass
+
+            backend_enum = getattr(canonical_gs, "_gs_backend", None)
+            if backend_enum is not None:
+                for _backend_name in ("cpu", "cuda", "gpu"):
+                    if not hasattr(canonical_gs, _backend_name):
+                        _backend_val = getattr(backend_enum, _backend_name, None)
+                        if _backend_val is not None:
+                            setattr(canonical_gs, _backend_name, _backend_val)
+        except Exception:
+            pass
+
+    # In GitHub Actions / CI runners there is no GPU, so force the CPU backend
+    # explicitly as requested (gs.init(backend=gs.cpu)).
+    if os.environ.get("CI", "").lower() == "true":
+        logger.debug("CI environment detected; forcing Genesis CPU backend")
+        use_cuda = False
 
     # Resolve device preference for Genesis backend selection. MUSA is not a
     # native Genesis backend, so we fall back to CPU for the physics engine.
@@ -175,6 +190,15 @@ def genesis_init(
 
     try:
         gs.init(backend=backend, **kwargs)
+    except AttributeError as exc:
+        # Some genesis-world Linux wheels crash inside get_device() because
+        # gs.gpu is not available during initialization. Retry without an
+        # explicit backend to let Genesis auto-detect.
+        if "gpu" in str(exc).lower():
+            logger.debug("gs.init backend parameter incompatible; auto-detecting")
+            gs.init(**kwargs)
+            return
+        raise
     except gs.GenesisException:
         if use_cuda:
             logger.debug("CUDA backend failed, falling back to CPU")
