@@ -134,8 +134,9 @@ def genesis_init(
     # at the top level, but gs.init's internal get_device() compares against it.
     if not hasattr(gs, "gpu"):
         gpu_backend = get_genesis_backend("cuda")
-        if gpu_backend is not None:
-            gs.gpu = gpu_backend
+        # Use the real CUDA backend if available; otherwise use a unique sentinel
+        # so that internal ``backend == gs.gpu`` comparisons do not crash.
+        gs.gpu = gpu_backend if gpu_backend is not None else object()
 
     # Resolve device preference for Genesis backend selection. MUSA is not a
     # native Genesis backend, so we fall back to CPU for the physics engine.
