@@ -44,7 +44,8 @@ jobs:
         run: mypy src/cloud_robotics_sim
 
       - name: Smoke test
-        run: python -c "import cloud_robotics_sim; print(f'Version: {cloud_robotics_sim.__version__}')"
+        run: |
+          python -c "import cloud_robotics_sim; print(f'Version: {cloud_robotics_sim.__version__}')"
 
       - name: Test with pytest
         run: pytest tests/ -v --tb=short
