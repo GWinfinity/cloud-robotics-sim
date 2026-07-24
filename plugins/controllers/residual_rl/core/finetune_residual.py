@@ -3,19 +3,15 @@
 Finetune with Residual RL
 """
 
-import os
-import sys
 import argparse
+
 import yaml
 import numpy as np
 import torch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from envs.manipulation_env import ManipulationEnv
-from models.bc_policy import BCPolicy, VisualEncoder
-from models.residual_network import ResidualNetwork, CombinedPolicy
-from models.residual_network import ResidualSAC
+from .envs.manipulation_env import ManipulationEnv
+from .bc_policy import BCPolicy, VisualEncoder
+from .residual_network import ResidualNetwork, CombinedPolicy, ResidualSAC
 
 
 def parse_args():

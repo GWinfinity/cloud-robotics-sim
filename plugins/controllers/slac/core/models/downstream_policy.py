@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 
 
@@ -78,7 +77,7 @@ class DownstreamPolicy(nn.Module):
         features = self.feature_net(obs)
         
         mean = self.mean_head(features)
-        log_std = torch.clamp(self.log_std_head(features), np.log(min_std), np.log(max_std))
+        log_std = torch.clamp(self.log_std_head(features), np.log(self.min_std), np.log(self.max_std))
         std = torch.exp(log_std)
         
         if deterministic:

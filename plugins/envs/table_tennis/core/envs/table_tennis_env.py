@@ -11,7 +11,7 @@ import numpy as np
 import torch
 import genesis as gs
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
-from typing import Optional
+from typing import Dict, Optional
 
 from .ball_physics import TableTennisBall, BallTrajectoryPredictor
 from .table import TableTennisTable, Racket

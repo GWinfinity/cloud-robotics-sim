@@ -19,7 +19,7 @@ References:
     - Gymnasium: https://gymnasium.farama.org/
 """
 
-from typing import Any, Union
+from typing import Any, Optional, Union
 from pathlib import Path
 
 # Optional dependencies

@@ -341,7 +341,11 @@ class ResidualSAC:
         new_q = torch.min(new_q1, new_q2)
         
         alpha = self.log_alpha.exp()
-        residual_loss = (alpha * 0 - new_q).mean()  # 简化版，实际应计算log_prob
+        # Approximate entropy bonus: penalize large residuals to encourage
+        # exploration.  A proper SAC update would use log_prob from a
+        # stochastic policy, but this residual network is deterministic.
+        entropy_bonus = -residual.pow(2).mean()
+        residual_loss = (alpha * entropy_bonus - new_q).mean()
         
         self.residual_optimizer.zero_grad()
         residual_loss.backward()

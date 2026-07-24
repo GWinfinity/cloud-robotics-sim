@@ -16,7 +16,7 @@ References:
     - OpenLoong: https://github.com/loongOpen/OpenLoong-Dyn-Control
 """
 
-from typing import Any
+from typing import Any, Optional
 from dataclasses import dataclass, field
 from pathlib import Path
 

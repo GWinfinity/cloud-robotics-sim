@@ -214,12 +214,12 @@ class HugWBCEnv:
     
     def _add_rough_terrain(self):
         """添加复杂地形"""
-        np.random.seed(42)
+        rng = np.random.default_rng(42)
         for i in range(10):
-            x = np.random.uniform(2, 10)
-            y = np.random.uniform(-2, 2)
-            height = np.random.uniform(0.05, 0.2)
-            size = np.random.uniform(0.3, 0.8)
+            x = rng.uniform(2, 10)
+            y = rng.uniform(-2, 2)
+            height = rng.uniform(0.05, 0.2)
+            size = rng.uniform(0.3, 0.8)
             
             self.scene.add_entity(
                 morph=gs.morphs.Box(

@@ -46,16 +46,6 @@ class SLACPretrainer:
         """预训练潜在动作空间"""
         pass
 
-class LatentActionController:
-    """潜在动作控制器"""
-    def __init__(self, latent_action_vae, downstream_policy):
-        self.latent_action_vae = latent_action_vae
-        self.downstream_policy = downstream_policy
-    
-    def get_action(self, obs, latent_action):
-        """将潜在动作解码为原始动作"""
-        return self.latent_action_vae.decode(latent_action, obs)
-
 __all__ = [
     'SLACPretrainer',
     'LatentActionSpace',
