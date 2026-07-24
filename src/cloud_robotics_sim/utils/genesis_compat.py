@@ -45,7 +45,7 @@ try:
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
-    np = None
+    np = None  # type: ignore[assignment]
 
 try:
     import torch
@@ -53,20 +53,16 @@ try:
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
-    torch = None
+    torch = None  # type: ignore[assignment]
 
 # Genesis imports (optional - will fail gracefully if not installed)
 try:
     import genesis as gs
-    from genesis import utils as gu
-    from genesis.utils import geom as gug
 
     HAS_GENESIS = True
 except ImportError:
     HAS_GENESIS = False
-    gs = None  # type: ignore[assignment]
-    gu = None  # type: ignore[assignment]
-    gug = None  # type: ignore[assignment]
+    gs = None
 
 
 # =============================================================================
@@ -249,6 +245,16 @@ def get_genesis_lights() -> Any:
     return getattr(gs, "lights", None)
 
 
+def is_genesis_scene(scene: Any) -> bool:
+    """Return True if *scene* is a native Genesis gs.Scene instance."""
+    if not HAS_GENESIS or gs is None:
+        return False
+    try:
+        return isinstance(scene, gs.Scene)
+    except Exception:
+        return False
+
+
 # =============================================================================
 # Type Aliases
 # =============================================================================
@@ -302,7 +308,8 @@ def get_objs_by_names(objs: list, names: list[str]) -> list:
     Returns:
         List of matched objects in the order of names. None for no matches.
     """
-    assert isinstance(objs, (list, tuple)), type(objs)
+    if not isinstance(objs, (list, tuple)):
+        raise TypeError(f"Expected list or tuple, got {type(objs).__name__}")
     ret = [None for _ in names]
 
     for obj in objs:
@@ -555,7 +562,8 @@ def get_articulation_padded_state(articulation, max_dof: int) -> Optional[ArrayL
     joint_states = state[13:]
 
     nq = len(joint_states) // 2  # qpos and qvel
-    assert max_dof >= nq, (max_dof, nq)
+    if max_dof < nq:
+        raise ValueError(f"max_dof ({max_dof}) must be >= actual DOFs ({nq})")
 
     padded_state = np.zeros(13 + 2 * max_dof, dtype=np.float32)
     padded_state[:13] = root_state
@@ -609,7 +617,7 @@ def get_multiple_pairwise_contacts(contacts: list, actor0, actor1_list: list) ->
     Returns:
         Dictionary mapping each actor to a list of contacts.
     """
-    pairwise_contacts = {actor: [] for actor in actor1_list}
+    pairwise_contacts: dict[Any, list] = {actor: [] for actor in actor1_list}
     for contact in contacts:
         if hasattr(contact, "bodies") and len(contact.bodies) >= 2:
             if (
@@ -693,7 +701,7 @@ def get_cpu_actors_contacts(contacts: list, actors: list) -> dict:
     Returns:
         Dictionary mapping each actor to a list of contacts.
     """
-    entity_contacts = {actor: [] for actor in actors}
+    entity_contacts: dict[Any, list] = {actor: [] for actor in actors}
     for contact in contacts:
         if hasattr(contact, "bodies") and len(contact.bodies) >= 2:
             if contact.bodies[0].entity in actors:
@@ -735,7 +743,7 @@ def check_joint_stuck(
             target_pos = articulation.get_drive_target()[active_joint_idx]
             actual_vel = articulation.get_qvel()[active_joint_idx]
 
-            return (
+            return bool(
                 abs(actual_pos - target_pos) > pos_diff_threshold
                 and abs(actual_vel) < vel_threshold
             )
@@ -770,12 +778,13 @@ def check_actor_static(
             return True
 
         if HAS_TORCH and isinstance(lin_vel, torch.Tensor):
-            return torch.logical_and(
+            result = torch.logical_and(
                 torch.linalg.norm(lin_vel, axis=1) <= lin_thresh,
                 torch.linalg.norm(ang_vel, axis=1) <= ang_thresh,
             )
+            return bool(result.all())
         elif HAS_NUMPY:
-            return (
+            return bool(
                 np.linalg.norm(lin_vel) <= lin_thresh
                 and np.linalg.norm(ang_vel) <= ang_thresh
             )
@@ -783,7 +792,7 @@ def check_actor_static(
             # Fallback without numpy
             lin_norm = sum(x * x for x in lin_vel) ** 0.5
             ang_norm = sum(x * x for x in ang_vel) ** 0.5
-            return lin_norm <= lin_thresh and ang_norm <= ang_thresh
+            return bool(lin_norm <= lin_thresh and ang_norm <= ang_thresh)
     except Exception as e:
         logger.debug("Failed to check actor static: %s", e)
         return True
@@ -834,17 +843,91 @@ try:
 except ImportError:
 
     def matrix_to_quaternion(matrix):
-        """Fallback implementation."""
-        if HAS_TORCH:
-            return torch.tensor([1.0, 0.0, 0.0, 0.0])
-        return [1.0, 0.0, 0.0, 0.0]
+        """Fallback: convert rotation matrix to quaternion (w, x, y, z).
+
+        Uses Shepperd's method for numerical stability. Accepts a 3x3 or
+        batched (N, 3, 3) rotation matrix as a numpy array or torch tensor.
+        """
+        if HAS_TORCH and isinstance(matrix, torch.Tensor):
+            m = matrix.reshape(-1, 3, 3).float()
+            trace = m[:, 0, 0] + m[:, 1, 1] + m[:, 2, 2]
+            quat = torch.zeros(m.shape[0], 4, device=m.device, dtype=m.dtype)
+
+            # Case 1: trace > 0
+            s = torch.sqrt(trace + 1.0) * 2  # 4w
+            w = 0.25 * s
+            x = (m[:, 2, 1] - m[:, 1, 2]) / s
+            y = (m[:, 0, 2] - m[:, 2, 0]) / s
+            z = (m[:, 1, 0] - m[:, 0, 1]) / s
+            mask = trace > 0
+            quat[mask] = torch.stack([w, x, y, z], dim=-1)[mask]
+
+            # Case 2-4: largest diagonal element
+            for i, (j, k) in enumerate([(0, (1, 2)), (1, (0, 2)), (2, (0, 1))]):
+                j1, j2 = k
+                cond = (
+                    (~mask) & (m[:, i, i] > m[:, j1, j1]) & (m[:, i, i] > m[:, j2, j2])
+                )
+                if cond.any():
+                    s2 = (
+                        torch.sqrt(
+                            1.0 + m[cond, i, i] - m[cond, j1, j1] - m[cond, j2, j2]
+                        )
+                        * 2
+                    )
+                    q = torch.zeros(int(cond.sum()), 4, device=m.device, dtype=m.dtype)
+                    q[:, i + 1] = 0.25 * s2
+                    q[:, 0] = (m[cond, j2, j1] - m[cond, j1, j2]) / s2
+                    q[:, j1 + 1] = (m[cond, j1, i] + m[cond, i, j1]) / s2
+                    q[:, j2 + 1] = (m[cond, j2, i] + m[cond, i, j2]) / s2
+                    quat[cond] = q
+
+            # Normalize
+            quat = quat / quat.norm(dim=-1, keepdim=True).clamp(min=1e-8)
+            return quat.squeeze(0) if matrix.ndim == 2 else quat
+
+        # Numpy fallback
+        m_np = np.asarray(matrix, dtype=np.float64).reshape(-1, 3, 3)
+        quat_np = np.zeros((m_np.shape[0], 4), dtype=np.float64)
+        trace_np = m_np[:, 0, 0] + m_np[:, 1, 1] + m_np[:, 2, 2]
+
+        pos = trace_np > 0
+        if pos.any():
+            s_np = np.sqrt(trace_np[pos] + 1.0) * 2
+            quat_np[pos, 0] = 0.25 * s_np
+            quat_np[pos, 1] = (m_np[pos, 2, 1] - m_np[pos, 1, 2]) / s_np
+            quat_np[pos, 2] = (m_np[pos, 0, 2] - m_np[pos, 2, 0]) / s_np
+            quat_np[pos, 3] = (m_np[pos, 1, 0] - m_np[pos, 0, 1]) / s_np
+
+        for i, (j1, j2) in enumerate([(1, 2), (0, 2), (0, 1)]):
+            neg = (
+                (~pos)
+                & (m_np[:, i, i] > m_np[:, j1, j1])
+                & (m_np[:, i, i] > m_np[:, j2, j2])
+            )
+            if neg.any():
+                s2_np = (
+                    np.sqrt(
+                        1.0 + m_np[neg, i, i] - m_np[neg, j1, j1] - m_np[neg, j2, j2]
+                    )
+                    * 2
+                )
+                quat_np[neg, 0] = (m_np[neg, j2, j1] - m_np[neg, j1, j2]) / s2_np
+                quat_np[neg, i + 1] = 0.25 * s2_np
+                quat_np[neg, j1 + 1] = (m_np[neg, j1, i] + m_np[neg, i, j1]) / s2_np
+                quat_np[neg, j2 + 1] = (m_np[neg, j2, i] + m_np[neg, i, j2]) / s2_np
+
+        norms = np.linalg.norm(quat_np, axis=-1, keepdims=True)
+        quat_np = quat_np / np.maximum(norms, 1e-8)
+        result = quat_np[0] if matrix.ndim == 2 else quat_np
+        return result.tolist() if not HAS_NUMPY else result
 
 
 try:
     from mani_skill.utils.structs.pose import Pose
 except ImportError:
 
-    class Pose:
+    class Pose:  # type: ignore[no-redef]
         """Placeholder Pose class."""
 
         def __init__(self, raw_pose):
@@ -876,7 +959,7 @@ except ImportError:
                     q = q.unsqueeze(0)
                 raw_pose = torch.cat([p, q], dim=-1)
             else:
-                raw_pose = list(p) + list(q)
+                raw_pose = list(p) + list(q)  # type: ignore[assignment]
             return cls(raw_pose)
 
 
@@ -904,6 +987,7 @@ __all__ = [
     "check_joint_stuck",
     "check_actor_static",
     "is_state_dict_consistent",
+    "is_genesis_scene",
     # Compatibility
     "Pose",
     "matrix_to_quaternion",

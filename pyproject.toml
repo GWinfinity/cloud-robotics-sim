@@ -163,14 +163,6 @@ warn_unreachable = true
 strict_equality = true
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-module = [
-    "cloud_robotics_sim.utils.genesis_compat",
-    "cloud_robotics_sim.utils.camera",
-    "cloud_robotics_sim.utils.rendering",
-]
-ignore_errors = true
-
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q --strict-markers"
@@ -185,6 +177,7 @@ source = ["src/cloud_robotics_sim"]
 branch = true
 
 [tool.coverage.report]
+fail_under = 70
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",

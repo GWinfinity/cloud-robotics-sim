@@ -12,7 +12,26 @@ from cloud_robotics_sim import (
     EnvironmentComposer,
     EnvironmentVariantGenerator,
 )
+from cloud_robotics_sim.backend import SceneBackend
 from cloud_robotics_sim.core.composer import GenesisGymEnv
+
+
+def _make_mock_backend(scene_backend: SceneBackend | None = None):
+    """Create a mock SimulatorBackend returning the given scene_backend."""
+    backend = MagicMock()
+    backend.name = "genesis"
+    if scene_backend is None:
+        scene_backend = MagicMock(spec=SceneBackend)
+        scene_backend.backend = backend
+    backend.create_scene.return_value = scene_backend
+    backend.create_box.return_value = MagicMock()
+    backend.create_sphere.return_value = MagicMock()
+    backend.create_cylinder.return_value = MagicMock()
+    backend.create_mesh.return_value = MagicMock()
+    backend.load_mjcf.return_value = MagicMock()
+    backend.load_urdf.return_value = MagicMock()
+    backend.create_light.return_value = MagicMock()
+    return backend, scene_backend
 
 
 class TestComposerConfig:
@@ -57,7 +76,7 @@ class TestEnvironmentComposer:
         assert composer.config.dt == 0.02
 
     def test_compose(self, monkeypatch):
-        """Test composing environment with mocked Genesis."""
+        """Test composing environment with mocked backend."""
         composer = EnvironmentComposer(ComposerConfig(headless=True))
 
         scene = MagicMock()
@@ -71,24 +90,10 @@ class TestEnvironmentComposer:
         task = MagicMock()
         task.config = SimpleNamespace(name="test_task")
 
-        gs_scene = MagicMock()
-
-        gs = SimpleNamespace(
-            Scene=MagicMock(return_value=gs_scene),
-            options=SimpleNamespace(
-                ViewerOptions=MagicMock(),
-                SimOptions=MagicMock(),
-            ),
-            morphs=SimpleNamespace(),
-        )
-
+        backend, scene_backend = _make_mock_backend()
         monkeypatch.setattr(
-            "cloud_robotics_sim.core.composer.gs",
-            gs,
-        )
-        monkeypatch.setattr(
-            "cloud_robotics_sim.core.composer.ensure_genesis_initialized",
-            MagicMock(),
+            "cloud_robotics_sim.core.composer.get_backend",
+            MagicMock(return_value=backend),
         )
 
         env = composer.compose(scene, robot, task)
@@ -97,10 +102,10 @@ class TestEnvironmentComposer:
         assert env.scene is scene
         assert env.robot is robot
         assert env.task is task
-        assert env.gs_scene is gs_scene
-        scene.build.assert_called_once_with(gs_scene)
-        robot.spawn.assert_called_once_with(gs_scene, position=(1.0, 2.0, 0.1))
-        gs_scene.build.assert_called_once()
+        assert env.scene_backend is scene_backend
+        scene.build.assert_called_once_with(scene_backend)
+        robot.spawn.assert_called_once_with(scene_backend, position=(1.0, 2.0, 0.1))
+        scene_backend.build.assert_called_once()
 
     def test_compose_with_spawn_position(self, monkeypatch):
         """Test composing environment with explicit spawn position."""
@@ -116,24 +121,15 @@ class TestEnvironmentComposer:
         task = MagicMock()
         task.config = SimpleNamespace(name="test_task")
 
-        gs_scene = MagicMock()
-        gs = SimpleNamespace(
-            Scene=MagicMock(return_value=gs_scene),
-            options=SimpleNamespace(
-                ViewerOptions=MagicMock(),
-                SimOptions=MagicMock(),
-            ),
-        )
-
-        monkeypatch.setattr("cloud_robotics_sim.core.composer.gs", gs)
+        backend, scene_backend = _make_mock_backend()
         monkeypatch.setattr(
-            "cloud_robotics_sim.core.composer.ensure_genesis_initialized",
-            MagicMock(),
+            "cloud_robotics_sim.core.composer.get_backend",
+            MagicMock(return_value=backend),
         )
 
         composer.compose(scene, robot, task, spawn_position=(5.0, 5.0, 0.1))
 
-        robot.spawn.assert_called_once_with(gs_scene, position=(5.0, 5.0, 0.1))
+        robot.spawn.assert_called_once_with(scene_backend, position=(5.0, 5.0, 0.1))
 
     def test_compose_from_registry(self, monkeypatch):
         """Test compose_from_registry with a fake AssetRegistry."""
@@ -157,19 +153,10 @@ class TestEnvironmentComposer:
         registry.robots.register("robot_name")(lambda **kwargs: robot)
         registry.tasks.register("task_name")(lambda **kwargs: task)
 
-        gs_scene = MagicMock()
-        gs = SimpleNamespace(
-            Scene=MagicMock(return_value=gs_scene),
-            options=SimpleNamespace(
-                ViewerOptions=MagicMock(),
-                SimOptions=MagicMock(),
-            ),
-        )
-
-        monkeypatch.setattr("cloud_robotics_sim.core.composer.gs", gs)
+        backend, scene_backend = _make_mock_backend()
         monkeypatch.setattr(
-            "cloud_robotics_sim.core.composer.ensure_genesis_initialized",
-            MagicMock(),
+            "cloud_robotics_sim.core.composer.get_backend",
+            MagicMock(return_value=backend),
         )
 
         env = composer.compose_from_registry(
@@ -302,10 +289,10 @@ class TestComposedEnvironment:
         task.reset.return_value = {"task_info": "reset"}
         task.step.return_value = (1.0, False, False, {"task": "info"})
 
-        gs_scene = MagicMock()
-        gs_scene.step = MagicMock()
+        scene_backend = MagicMock(spec=SceneBackend)
+        scene_backend.step = MagicMock()
 
-        return ComposedEnvironment(scene, robot, task, gs_scene)
+        return ComposedEnvironment(scene, robot, task, scene_backend)
 
     def test_reset(self):
         """Test environment reset."""
@@ -322,12 +309,12 @@ class TestComposedEnvironment:
         np.testing.assert_array_equal(obs["joint_position"], np.zeros(7))
         assert info["seed"] == 42
         assert info["task_info"] == "reset"
-        assert env.gs_scene.step.call_count == 10
+        assert env.scene_backend.step.call_count == 10
 
     def test_reset_stabilization_failure(self):
         """Test reset when stabilization fails."""
         env = self._make_env()
-        env.gs_scene.step.side_effect = RuntimeError("NaN")
+        env.scene_backend.step.side_effect = RuntimeError("NaN")
 
         with pytest.raises(RuntimeError):
             env.reset()
@@ -340,7 +327,7 @@ class TestComposedEnvironment:
         obs, reward, terminated, truncated, info = env.step(action)
 
         env.robot.apply_action.assert_called_once_with(action)
-        env.gs_scene.step.assert_called()
+        env.scene_backend.step.assert_called()
         assert env.step_count == 1
         assert reward == 1.0
         assert terminated is False
@@ -359,7 +346,7 @@ class TestComposedEnvironment:
         env = self._make_env()
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         env.robot.cameras["head_cam"] = MagicMock()
-        env.robot.cameras["head_cam"].render.return_value = [frame]
+        env.robot.cameras["head_cam"].render.return_value = frame
 
         result = env.render()
         np.testing.assert_array_equal(result, frame)
@@ -428,8 +415,8 @@ class TestGenesisGymEnv:
         task.reset.return_value = {}
         task.step.return_value = (0.0, False, False, {})
 
-        gs_scene = MagicMock()
-        return ComposedEnvironment(scene, robot, task, gs_scene)
+        scene_backend = MagicMock(spec=SceneBackend)
+        return ComposedEnvironment(scene, robot, task, scene_backend)
 
     @pytest.mark.skipif(GenesisGymEnv is None, reason="gymnasium not available")
     def test_gym_env_spaces(self):

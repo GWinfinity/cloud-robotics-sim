@@ -10,13 +10,17 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-import genesis as gs
 import numpy as np
 
+from cloud_robotics_sim.backend import (
+    BackendName,
+    SceneBackend,
+    ViewerOptions,
+    get_backend,
+)
 from cloud_robotics_sim.core.embodiment import RobotEmbodiment
 from cloud_robotics_sim.core.scene import Scene
 from cloud_robotics_sim.core.task import Task
-from cloud_robotics_sim.utils.genesis_compat import ensure_genesis_initialized
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +43,8 @@ class ComposerConfig:
     headless: bool = False
     resolution: tuple[int, int] = (640, 480)
     num_envs: int = 1
+    backend: BackendName | str = BackendName.GENESIS
+    device: str = "cuda"
     domain_randomization: dict = field(default_factory=dict)
 
 
@@ -62,15 +68,16 @@ class ComposedEnvironment:
         scene: Scene,
         robot: RobotEmbodiment,
         task: Task,
-        gs_scene: Any,
+        scene_backend: SceneBackend,
     ) -> None:
         self.scene = scene
         self.robot = robot
         self.task = task
-        self.gs_scene = gs_scene
+        self.scene_backend = scene_backend
 
         self.step_count: int = 0
         self.episode_reward: float = 0.0
+        self._rng: np.random.Generator = np.random.default_rng(0)
 
         # Callbacks for extensibility
         self.on_reset: Callable | None = None
@@ -93,7 +100,7 @@ class ComposedEnvironment:
         self.step_count = 0
         self.episode_reward = 0.0
 
-        np.random.seed(seed)
+        self._rng = np.random.default_rng(seed)
         self.scene.reset()
 
         # Reset robot and task state. The robot was already spawned at the
@@ -108,7 +115,7 @@ class ComposedEnvironment:
         # instead of an opaque NaN crash.
         try:
             for _ in range(10):
-                self.gs_scene.step()
+                self.scene_backend.step()
         except Exception as exc:
             logger.error(
                 "Simulation stabilization failed during reset: %s. "
@@ -136,7 +143,7 @@ class ComposedEnvironment:
             A tuple of (observation, reward, terminated, truncated, info).
         """
         self.robot.apply_action(action)
-        self.gs_scene.step()
+        self.scene_backend.step()
         self.step_count += 1
 
         reward, terminated, truncated, task_info = self.task.step(
@@ -166,7 +173,7 @@ class ComposedEnvironment:
         """Select a random spawn position for the robot."""
         spawn_points = self.scene.get_spawn_positions()
         if spawn_points:
-            idx = np.random.randint(len(spawn_points))
+            idx = self._rng.integers(len(spawn_points))
             return spawn_points[idx]
         return (0.0, 0.0, 0.1)
 
@@ -180,7 +187,12 @@ class ComposedEnvironment:
             Rendered frame as numpy array, or None if unavailable.
         """
         if mode == "rgb_array" and "head_cam" in self.robot.cameras:
-            return np.asarray(self.robot.cameras["head_cam"].render(rgb=True)[0])
+            camera = self.robot.cameras["head_cam"]
+            if camera is not None:
+                rendered = camera.render(rgb=True)
+                if isinstance(rendered, tuple):
+                    return np.asarray(rendered[0])
+                return np.asarray(rendered)
         return None
 
     def close(self) -> None:
@@ -254,40 +266,44 @@ class EnvironmentComposer:
         logger.info(f"  Task:  {task.config.name}")
         logger.info("=" * 60)
 
-        # Initialize Genesis physics engine
-        ensure_genesis_initialized(headless=self.config.headless)
+        # Resolve backend
+        backend_name = (
+            BackendName(self.config.backend)
+            if isinstance(self.config.backend, str)
+            else self.config.backend
+        )
+        backend = get_backend(backend_name)
+        backend.initialize(headless=self.config.headless, device=self.config.device)
 
-        # Create viewer if not headless
+        # Create viewer options if not headless
         viewer_options = None
         if not self.config.headless:
-            viewer_options = gs.options.ViewerOptions(
+            viewer_options = ViewerOptions(
                 camera_pos=scene.config.default_camera_pos,
                 camera_lookat=scene.config.default_camera_lookat,
-                res=self.config.resolution,
-                max_FPS=60,
+                resolution=self.config.resolution,
+                max_fps=60,
             )
 
-        # Create Genesis scene
-        gs_scene = gs.Scene(
+        # Create backend scene
+        scene_backend = backend.create_scene(
+            dt=self.config.dt,
+            substeps=self.config.substeps,
+            headless=self.config.headless,
             viewer_options=viewer_options,
-            sim_options=gs.options.SimOptions(
-                dt=self.config.dt,
-                substeps=self.config.substeps,
-            ),
-            show_viewer=not self.config.headless,
         )
 
         # Build scene and spawn robot
-        scene.build(gs_scene)
+        scene.build(scene_backend)
         spawn_pos = spawn_position or self._select_spawn_position(scene)
-        robot.spawn(gs_scene, position=spawn_pos)
-        gs_scene.build()
+        robot.spawn(scene_backend, position=spawn_pos)
+        scene_backend.build()
 
         env = ComposedEnvironment(
             scene=scene,
             robot=robot,
             task=task,
-            gs_scene=gs_scene,
+            scene_backend=scene_backend,
         )
 
         logger.info("Environment composition complete")
@@ -339,7 +355,7 @@ class EnvironmentComposer:
         """Select a default spawn position from the scene."""
         spawn_points = scene.get_spawn_positions()
         if spawn_points:
-            idx = np.random.randint(len(spawn_points))
+            idx = int(np.random.randint(len(spawn_points)))
             return spawn_points[idx]
         return (0.0, 0.0, 0.1)
 

@@ -14,7 +14,13 @@ from typing import Any
 import genesis as gs
 import numpy as np
 
+from cloud_robotics_sim.backend import ArticulationBackend, EntityBackend, SceneBackend
+from cloud_robotics_sim.utils.genesis_compat import is_genesis_scene
+
 logger = logging.getLogger(__name__)
+
+_is_genesis_scene = is_genesis_scene
+
 
 # Franka Panda dimensions
 _FRANKA_JOINTS = 7
@@ -98,8 +104,8 @@ class RobotEmbodiment(ABC):
 
     def __init__(self, config: EmbodimentConfig | None = None) -> None:
         self.config = config or EmbodimentConfig()
-        self.entity: Any = None
-        self.scene: Any = None
+        self.entity: EntityBackend | ArticulationBackend | Any | None = None
+        self.scene: SceneBackend | gs.Scene | None = None
         self.cameras: dict[str, Any] = {}
 
         self._obs_dim: int = 0
@@ -126,11 +132,15 @@ class RobotEmbodiment(ABC):
         }
 
     @abstractmethod
-    def spawn(self, scene: gs.Scene, position: tuple | None = None) -> RobotEmbodiment:
+    def spawn(
+        self,
+        scene: SceneBackend | gs.Scene,
+        position: tuple | None = None,
+    ) -> RobotEmbodiment:
         """Spawn the robot in the scene.
 
         Args:
-            scene: The Genesis scene.
+            scene: The backend scene or native Genesis gs.Scene.
             position: Optional override for spawn position.
 
         Returns:
@@ -188,7 +198,7 @@ class FrankaPanda(RobotEmbodiment):
 
     def spawn(
         self,
-        scene: gs.Scene,
+        scene: SceneBackend | gs.Scene,
         position: tuple | None = None,
     ) -> RobotEmbodiment:
         """Spawn Franka Panda in the scene."""
@@ -199,17 +209,25 @@ class FrankaPanda(RobotEmbodiment):
         # the Genesis built-in / current-directory lookup for backwards compatibility.
         model_path = self.config.urdf_path or "franka_emika_panda/panda.xml"
 
-        try:
-            self.entity = scene.add_entity(
-                morph=gs.morphs.MJCF(
-                    file=model_path,
-                    pos=pos,
-                ),
-            )
-        except Exception as e:
-            logger.warning(f"Failed to load MJCF Franka from '{model_path}': {e}")
-            # Fallback to procedural creation
-            self._create_procedural_franka(pos)
+        if _is_genesis_scene(scene):
+            try:
+                morph = gs.morphs.MJCF(file=model_path, pos=pos)
+                self.entity = scene.add_entity(morph)
+            except Exception as e:
+                logger.warning(f"Failed to load MJCF Franka from '{model_path}': {e}")
+                self._create_procedural_franka(pos)
+        else:
+            backend = scene.backend if hasattr(scene, "backend") else None
+            if backend is None:
+                raise RuntimeError("Scene backend is not available for spawning robots")
+
+            try:
+                self.entity = backend.load_mjcf(file=model_path, pos=pos)
+                scene.add_articulation(self.entity)
+            except Exception as e:
+                logger.warning(f"Failed to load MJCF Franka from '{model_path}': {e}")
+                # Fallback to procedural creation
+                self._create_procedural_franka(pos)
 
         self._initialize_cameras()
         logger.info(f"Franka Panda spawned at {pos}")
@@ -220,28 +238,35 @@ class FrankaPanda(RobotEmbodiment):
         # Simplified base representation. Mark it fixed so the placeholder
         # does not participate in unstable rigid-body contact dynamics when
         # the real MJCF asset is unavailable.
-        self.entity = self.scene.add_entity(
-            morph=gs.morphs.Box(
+        if self.scene is None:
+            raise RuntimeError("Scene backend is not available")
+
+        if _is_genesis_scene(self.scene):
+            morph = gs.morphs.Box(size=(0.2, 0.2, 0.1), pos=position)
+            self.entity = self.scene.add_entity(morph)
+        else:
+            backend = self.scene.backend if hasattr(self.scene, "backend") else None
+            if backend is None:
+                raise RuntimeError("Scene backend is not available")
+            self.entity = backend.create_box(
                 size=(0.2, 0.2, 0.1),
                 pos=position,
-                fixed=True,
-            ),
-        )
+                static=True,
+                name="procedural_franka",
+            )
+            self.scene.add_entity(self.entity)
 
     def reset(self) -> None:
         """Reset joint positions and velocities."""
-        if self.entity and hasattr(self.entity, "set_qpos"):
-            # Only attempt to set qpos if the entity actually has DOFs.
-            # Procedural/fixed placeholder entities report zero DOFs.
-            n_dofs = getattr(self.entity, "n_dofs", 0) or getattr(
-                self.entity, "n_qs", 0
-            )
-            if n_dofs > 0:
-                # Reset to home configuration. The MJCF Franka has two
-                # independent finger DOFs, so the qpos size must match the
-                # entity rather than the 8-dim action space.
-                home_qpos = np.zeros(n_dofs)
-                self.entity.set_qpos(home_qpos)
+        entity = self.entity
+        if entity is None:
+            return
+        if hasattr(entity, "n_qs") and entity.n_qs > 0 and hasattr(entity, "set_qpos"):
+            # Reset to home configuration. The MJCF Franka has two
+            # independent finger DOFs, so the qpos size must match the
+            # entity rather than the 8-dim action space.
+            home_qpos = np.zeros(entity.n_qs)
+            entity.set_qpos(home_qpos)
 
     def apply_action(self, action: np.ndarray) -> None:
         """Apply joint position targets.
@@ -249,21 +274,24 @@ class FrankaPanda(RobotEmbodiment):
         Args:
             action: 8-dimensional vector [7 joints, gripper].
         """
-        if self.entity and hasattr(self.entity, "control_dofs_position"):
-            n_dofs = getattr(self.entity, "n_dofs", 0) or getattr(
-                self.entity, "n_qs", 0
-            )
-            if n_dofs > 0:
-                scaled_action = action * self.config.action_scale
-                arm_targets = scaled_action[:_FRANKA_JOINTS]
-                gripper_target = scaled_action[_FRANKA_JOINTS]
-                # The real MJCF Franka exposes two finger DOFs driven by a
-                # single tendon. Expand the scalar gripper command to both.
-                if n_dofs == _FRANKA_ACTION_DIM + 1:
-                    targets = np.concatenate([arm_targets, np.full(2, gripper_target)])
-                else:
-                    targets = np.concatenate([arm_targets, np.array([gripper_target])])
-                self.entity.control_dofs_position(targets)
+        entity = self.entity
+        if (
+            entity is None
+            or not hasattr(entity, "n_dofs")
+            or entity.n_dofs <= 0
+            or not hasattr(entity, "control_dofs_position")
+        ):
+            return
+        scaled_action = action * self.config.action_scale
+        arm_targets = scaled_action[:_FRANKA_JOINTS]
+        gripper_target = scaled_action[_FRANKA_JOINTS]
+        # The real MJCF Franka exposes two finger DOFs driven by a
+        # single tendon. Expand the scalar gripper command to both.
+        if hasattr(entity, "n_qs") and entity.n_qs == _FRANKA_ACTION_DIM + 1:
+            targets = np.concatenate([arm_targets, np.full(2, gripper_target)])
+        else:
+            targets = np.concatenate([arm_targets, np.array([gripper_target])])
+        entity.control_dofs_position(targets)
 
     def get_observation(self) -> dict:
         """Get current robot state."""
@@ -274,11 +302,11 @@ class FrankaPanda(RobotEmbodiment):
             "target_joint_position": np.zeros(7),
         }
 
-        if self.entity:
-            if hasattr(self.entity, "get_qpos"):
-                obs["joint_position"] = self.entity.get_qpos()[:7]
-            if hasattr(self.entity, "get_qvel"):
-                obs["joint_velocity"] = self.entity.get_qvel()[:7]
+        entity = self.entity
+        if entity is not None and hasattr(entity, "get_qpos"):
+            obs["joint_position"] = entity.get_qpos()[:7]
+            if hasattr(entity, "get_qvel"):
+                obs["joint_velocity"] = entity.get_qvel()[:7]
 
         return obs
 
@@ -302,23 +330,32 @@ class UniversalRobotUR5(RobotEmbodiment):
 
     def spawn(
         self,
-        scene: gs.Scene,
+        scene: SceneBackend | gs.Scene,
         position: tuple | None = None,
     ) -> RobotEmbodiment:
         """Spawn UR5 in the scene."""
         self.scene = scene
         pos = position or self.config.base_position
+        model_path = self.config.urdf_path or "ur5/ur5.urdf"
 
-        try:
-            self.entity = scene.add_entity(
-                morph=gs.morphs.URDF(
-                    file="ur5/ur5.urdf",
-                    pos=pos,
-                ),
-            )
-        except Exception as e:
-            logger.warning(f"Failed to load URDF UR5: {e}")
-            self._create_procedural_ur5(pos)
+        if _is_genesis_scene(scene):
+            try:
+                morph = gs.morphs.URDF(file=model_path, pos=pos)
+                self.entity = scene.add_entity(morph)
+            except Exception as e:
+                logger.warning(f"Failed to load URDF UR5: {e}")
+                self._create_procedural_ur5(pos)
+        else:
+            backend = scene.backend if hasattr(scene, "backend") else None
+            if backend is None:
+                raise RuntimeError("Scene backend is not available for spawning robots")
+
+            try:
+                self.entity = backend.load_urdf(file=model_path, pos=pos)
+                scene.add_articulation(self.entity)
+            except Exception as e:
+                logger.warning(f"Failed to load URDF UR5: {e}")
+                self._create_procedural_ur5(pos)
 
         self._initialize_cameras()
         logger.info(f"UR5 spawned at {pos}")
@@ -326,31 +363,43 @@ class UniversalRobotUR5(RobotEmbodiment):
 
     def _create_procedural_ur5(self, position: tuple[float, float, float]) -> None:
         """Create simplified UR5 representation."""
-        self.entity = self.scene.add_entity(
-            morph=gs.morphs.Box(
+        if self.scene is None:
+            raise RuntimeError("Scene backend is not available")
+
+        if _is_genesis_scene(self.scene):
+            morph = gs.morphs.Box(size=(0.18, 0.18, 0.12), pos=position)
+            self.entity = self.scene.add_entity(morph)
+        else:
+            backend = self.scene.backend if hasattr(self.scene, "backend") else None
+            if backend is None:
+                raise RuntimeError("Scene backend is not available")
+            self.entity = backend.create_box(
                 size=(0.18, 0.18, 0.12),
                 pos=position,
-            ),
-        )
+                name="procedural_ur5",
+            )
+            self.scene.add_entity(self.entity)
 
     def reset(self) -> None:
         """Reset to home position."""
-        if self.entity and hasattr(self.entity, "set_qpos"):
-            n_dofs = getattr(self.entity, "n_dofs", 0) or getattr(
-                self.entity, "n_qs", 0
-            )
-            if n_dofs > 0:
-                self.entity.set_qpos(np.zeros(6))
+        entity = self.entity
+        if entity is None:
+            return
+        if hasattr(entity, "n_qs") and entity.n_qs > 0 and hasattr(entity, "set_qpos"):
+            entity.set_qpos(np.zeros(6))
 
     def apply_action(self, action: np.ndarray) -> None:
         """Apply joint position targets."""
-        if self.entity and hasattr(self.entity, "control_dofs_position"):
-            n_dofs = getattr(self.entity, "n_dofs", 0) or getattr(
-                self.entity, "n_qs", 0
-            )
-            if n_dofs > 0:
-                scaled_action = action * self.config.action_scale
-                self.entity.control_dofs_position(scaled_action)
+        entity = self.entity
+        if (
+            entity is None
+            or not hasattr(entity, "n_dofs")
+            or entity.n_dofs <= 0
+            or not hasattr(entity, "control_dofs_position")
+        ):
+            return
+        scaled_action = action * self.config.action_scale
+        entity.control_dofs_position(scaled_action)
 
     def get_observation(self) -> dict:
         """Get current robot state."""
@@ -360,11 +409,11 @@ class UniversalRobotUR5(RobotEmbodiment):
             "target_joint_position": np.zeros(6),
         }
 
-        if self.entity:
-            if hasattr(self.entity, "get_qpos"):
-                obs["joint_position"] = self.entity.get_qpos()[:6]
-            if hasattr(self.entity, "get_qvel"):
-                obs["joint_velocity"] = self.entity.get_qvel()[:6]
+        entity = self.entity
+        if entity is not None and hasattr(entity, "get_qpos"):
+            obs["joint_position"] = entity.get_qpos()[:6]
+            if hasattr(entity, "get_qvel"):
+                obs["joint_velocity"] = entity.get_qvel()[:6]
 
         return obs
 
@@ -394,20 +443,28 @@ class MobileManipulator(RobotEmbodiment):
 
     def spawn(
         self,
-        scene: gs.Scene,
+        scene: SceneBackend | gs.Scene,
         position: tuple | None = None,
     ) -> RobotEmbodiment:
         """Spawn mobile manipulator."""
         self.scene = scene
         pos = position or self.config.base_position
 
-        # Create mobile base
-        self.entity = scene.add_entity(
-            morph=gs.morphs.Box(
+        if _is_genesis_scene(scene):
+            morph = gs.morphs.Box(size=(0.6, 0.4, 0.2), pos=pos)
+            self.entity = scene.add_entity(morph)
+        else:
+            backend = scene.backend if hasattr(scene, "backend") else None
+            if backend is None:
+                raise RuntimeError("Scene backend is not available for spawning robots")
+
+            # Create mobile base
+            self.entity = backend.create_box(
                 size=(0.6, 0.4, 0.2),
                 pos=pos,
-            ),
-        )
+                name="mobile_base",
+            )
+            scene.add_entity(self.entity)
 
         logger.info(f"Mobile manipulator spawned at {pos}")
         return self

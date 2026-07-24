@@ -136,6 +136,7 @@ class ImprovementLoop:
         """Run the continuous improvement loop."""
         logger.info("Starting Genesis simulation improvement loop")
         best_config = self.baseline_config
+        iteration = 0
 
         for iteration in range(1, self.loop_config.max_iterations + 1):
             logger.info(

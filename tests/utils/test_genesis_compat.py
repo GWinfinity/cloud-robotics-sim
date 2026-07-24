@@ -276,7 +276,7 @@ class TestJointAndActorUtilities:
         assert genesis_compat.is_state_dict_consistent({})
 
     def test_check_actor_static_torch_tensors(self):
-        """check_actor_static should handle torch tensors."""
+        """check_actor_static should handle torch tensors and return bool."""
         import torch
 
         actor = SimpleNamespace(
@@ -284,8 +284,8 @@ class TestJointAndActorUtilities:
             angular_velocity=torch.zeros((1, 3)),
         )
         result = genesis_compat.check_actor_static(actor)
-        assert isinstance(result, torch.Tensor)
-        assert result.item() is True
+        assert isinstance(result, bool)
+        assert result is True
 
     def test_check_actor_static_missing_attrs(self):
         """check_actor_static should return True when velocity attrs are missing."""
@@ -495,7 +495,7 @@ class TestStateExtractionBranches:
             get_qpos=lambda: np.array([0.1, 0.2, 0.3]),
             get_qvel=lambda: np.array([0.01, 0.02, 0.03]),
         )
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match="max_dof"):
             genesis_compat.get_articulation_padded_state(articulation, max_dof=2)
 
 

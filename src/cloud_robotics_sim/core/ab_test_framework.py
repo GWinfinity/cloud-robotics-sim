@@ -1,3 +1,9 @@
+"""A/B Testing Framework for Plugin Migration.
+
+Supports comparing legacy vs plugin implementations with automatic
+metric collection and migration recommendations.
+"""
+
 from __future__ import annotations
 
 import json
@@ -12,43 +18,34 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-"""A/B Testing Framework for Plugin Migration.
-
-用于插件迁移的 A/B 测试框架，支持新旧实现对比测试。
-"""
-
 
 @dataclass
 class TestMetrics:
-    """测试指标"""
+    """Metrics collected from a single test run."""
 
-    # 性能指标
-    latency_ms: float = 0.0  # 执行延迟
-    memory_mb: float = 0.0  # 内存使用
+    latency_ms: float = 0.0
+    memory_mb: float = 0.0
 
-    # 功能指标
-    success: bool = True  # 是否成功
-    error_message: str = ""  # 错误信息
+    success: bool = True
+    error_message: str = ""
 
-    # 业务指标 (根据插件类型定制)
     custom_metrics: dict[str, float] = field(default_factory=dict)
 
-    # 时间戳
     timestamp: float = field(default_factory=time.time)
 
 
 @dataclass
 class ABTestResult:
-    """A/B 测试结果"""
+    """Aggregated A/B test results for two variants."""
 
-    variant_a: str  # A 版本名称 (通常是旧版)
-    variant_b: str  # B 版本名称 (通常是新版 plugin)
+    variant_a: str
+    variant_b: str
 
     metrics_a: list[TestMetrics] = field(default_factory=list)
     metrics_b: list[TestMetrics] = field(default_factory=list)
 
     def summary(self) -> dict[str, Any]:
-        """生成测试摘要"""
+        """Generate a summary dict of the A/B test results."""
 
         def _avg(metrics_list: list[TestMetrics], key: str):
             values = [
@@ -90,9 +87,10 @@ class ABTestResult:
 
 
 class ABTestRunner:
-    """A/B 测试运行器
+    """A/B test runner for comparing legacy vs plugin implementations.
 
-    支持新旧实现对比测试，自动收集指标，生成报告。
+    Automatically collects metrics, generates reports, and provides
+    migration recommendations.
 
     Usage:
         >>> runner = ABTestRunner(
@@ -120,12 +118,12 @@ class ABTestRunner:
         warmup_steps: int = 10,
     ):
         """Args:
-        variant_a_name: A 版本名称 (旧版)
-        variant_a_fn: A 版本函数
-        variant_b_name: B 版本名称 (新版 plugin)
-        variant_b_fn: B 版本函数
-        output_dir: 报告输出目录
-        warmup_steps: 预热步数 (不计入统计)
+        variant_a_name: Name for variant A (legacy).
+        variant_a_fn: Callable for variant A.
+        variant_b_name: Name for variant B (plugin).
+        variant_b_fn: Callable for variant B.
+        output_dir: Report output directory.
+        warmup_steps: Warmup steps excluded from statistics.
         """
         self.variant_a_name = variant_a_name
         self.variant_a_fn = variant_a_fn
@@ -147,35 +145,31 @@ class ABTestRunner:
 
     def run_single(
         self,
-        variant: str,  # 'a' or 'b'
+        variant: str,
         test_fn: Callable,
         collect_custom_metrics: Optional[Callable] = None,
     ) -> TestMetrics:
-        """运行单个测试
+        """Run a single test for one variant.
 
         Args:
-            variant: 'a' 或 'b'
-            test_fn: 测试函数，接收 variant_fn 作为参数
-            collect_custom_metrics: 可选的自定义指标收集函数
+            variant: 'a' or 'b'.
+            test_fn: Test function that receives the variant callable.
+            collect_custom_metrics: Optional function to collect custom metrics.
 
         Returns:
-            测试指标
+            Collected test metrics.
         """
         fn = self.variant_a_fn if variant == "a" else self.variant_b_fn
 
         metrics = TestMetrics()
 
         try:
-            # 记录开始时间
             start_time = time.perf_counter()
 
-            # 执行测试
             result = test_fn(fn)
 
-            # 记录延迟
             metrics.latency_ms = (time.perf_counter() - start_time) * 1000
 
-            # 收集自定义指标
             if collect_custom_metrics:
                 metrics.custom_metrics = collect_custom_metrics(result)
 
@@ -187,7 +181,7 @@ class ABTestRunner:
             if hasattr(e, "__traceback__"):
                 metrics.error_message += f"\n{traceback.format_exc()}"
 
-        # 记录结果 (如果不是预热阶段)
+        # Record result (skip during warmup phase)
         self.step_count += 1
         if variant == "a":
             self._step_count_a += 1
@@ -206,12 +200,12 @@ class ABTestRunner:
         collect_custom_metrics: Optional[Callable] = None,
         random_order: bool = True,
     ) -> dict[str, TestMetrics]:
-        """同时运行 A/B 两个版本
+        """Run both A and B variants.
 
         Args:
-            test_fn: 测试函数
-            collect_custom_metrics: 自定义指标收集函数
-            random_order: 是否随机执行顺序 (避免时间偏差)
+            test_fn: Test function.
+            collect_custom_metrics: Custom metrics collection function.
+            random_order: Randomize execution order to avoid time bias.
 
         Returns:
             {'a': metrics_a, 'b': metrics_b}
@@ -228,7 +222,7 @@ class ABTestRunner:
         return results
 
     def generate_report(self, detailed: bool = False) -> str:
-        """生成测试报告"""
+        """Generate a human-readable test report."""
         summary = self.results.summary()
 
         lines = [
@@ -256,7 +250,6 @@ class ABTestRunner:
             "",
         ]
 
-        # 失败案例分析
         if detailed:
             lines.extend(
                 [
@@ -283,7 +276,7 @@ class ABTestRunner:
         return "\n".join(lines)
 
     def save_report(self, filename: Optional[str] = None):
-        """保存报告到文件"""
+        """Save report to file."""
         if filename is None:
             timestamp = time.strftime("%Y%m%d_%H%M%S")
             filename = f"ab_test_report_{timestamp}.txt"
@@ -293,7 +286,6 @@ class ABTestRunner:
         with open(report_path, "w") as f:
             f.write(self.generate_report(detailed=True))
 
-        # 同时保存 JSON 数据
         json_path = report_path.with_suffix(".json")
         with open(json_path, "w") as f:
             json.dump(self.results.summary(), f, indent=2)
@@ -302,14 +294,14 @@ class ABTestRunner:
         return report_path
 
     def recommend_migration(self) -> dict[str, Any]:
-        """基于测试结果给出迁移建议
+        """Provide a migration recommendation based on test results.
 
         Returns:
             {
-                'recommend': bool,      # 是否建议迁移
-                'confidence': float,    # 置信度
-                'reason': str,          # 原因
-                'cautions': list[str]   # 注意事项
+                'recommend': bool,
+                'confidence': float,
+                'reason': str,
+                'cautions': list[str]
             }
         """
         summary = self.results.summary()
@@ -325,8 +317,7 @@ class ABTestRunner:
             "cautions": [],
         }
 
-        # 成功率检查
-        if b_success < a_success - 0.05:  # B 成功率低 5% 以上
+        if b_success < a_success - 0.05:
             recommendation["reason"] = (
                 f"Plugin success rate ({b_success:.1%}) is significantly lower than legacy ({a_success:.1%})"
             )
@@ -335,13 +326,11 @@ class ABTestRunner:
             )
             return recommendation
 
-        # 样本量检查
         if summary["variant_b"]["samples"] < 100:
             recommendation["cautions"].append(
                 "Sample size is small, consider more tests"
             )
 
-        # 推荐迁移
         recommendation["recommend"] = True
         recommendation["confidence"] = min(b_success / (a_success + 1e-6), 1.0)
 
@@ -354,7 +343,7 @@ class ABTestRunner:
                 f"Plugin performance is acceptable ({b_success:.1%} vs {a_success:.1%})"
             )
 
-        if latency_improvement < -20:  # 延迟增加超过 20%
+        if latency_improvement < -20:
             recommendation["cautions"].append(
                 f"Significant latency increase ({latency_improvement:+.1f}%), monitor performance"
             )
@@ -363,9 +352,10 @@ class ABTestRunner:
 
 
 class GradualMigration:
-    """渐进式迁移控制器
+    """Gradual migration controller for phased traffic shifting.
 
-    支持按流量比例逐步切换到新实现。
+    Supports incrementally shifting traffic from legacy to plugin
+    implementation based on success rate thresholds.
 
     Usage:
         >>> migration = GradualMigration(
@@ -379,7 +369,7 @@ class GradualMigration:
         ...     result = fn(obs)
         ...     migration.update_metrics(success=True)
         >>>
-        >>> migration.increase_plugin_ratio(0.1)  # 增加 10%
+        >>> migration.increase_plugin_ratio(0.1)
     """
 
     def __init__(
@@ -391,11 +381,11 @@ class GradualMigration:
         success_threshold: float = 0.95,
     ):
         """Args:
-        legacy_fn: 旧版实现
-        plugin_fn: 新版 plugin 实现
-        initial_plugin_ratio: 初始 plugin 流量比例 (0-1)
-        min_samples_before_increase: 增加比例前最小样本数
-        success_threshold: 成功率阈值
+        legacy_fn: Legacy implementation.
+        plugin_fn: Plugin implementation.
+        initial_plugin_ratio: Initial plugin traffic ratio (0-1).
+        min_samples_before_increase: Minimum samples before increasing ratio.
+        success_threshold: Success rate threshold for ratio increases.
         """
         self.legacy_fn = legacy_fn
         self.plugin_fn = plugin_fn
@@ -404,7 +394,6 @@ class GradualMigration:
         self.min_samples = min_samples_before_increase
         self.success_threshold = success_threshold
 
-        # 统计
         self.plugin_samples = 0
         self.plugin_successes = 0
         self.legacy_samples = 0
@@ -413,7 +402,7 @@ class GradualMigration:
         self.history: list[dict[str, Any]] = []
 
     def select_implementation(self) -> Callable:
-        """选择实现版本"""
+        """Select which implementation to use based on current ratio."""
         import random
 
         if random.random() < self.plugin_ratio:
@@ -422,7 +411,7 @@ class GradualMigration:
             return self.legacy_fn
 
     def update_metrics(self, is_plugin: bool, success: bool):
-        """更新指标"""
+        """Update metrics after an episode."""
         if is_plugin:
             self.plugin_samples += 1
             if success:
@@ -433,7 +422,7 @@ class GradualMigration:
                 self.legacy_successes += 1
 
     def can_increase_ratio(self, increase_amount: float = 0.1) -> bool:
-        """检查是否可以增加 plugin 比例"""
+        """Check if plugin ratio can be increased."""
         if self.plugin_ratio >= 1.0:
             return False
 
@@ -448,31 +437,33 @@ class GradualMigration:
         return True
 
     def increase_plugin_ratio(self, amount: float = 0.1):
-        """增加 plugin 流量比例"""
+        """Increase plugin traffic ratio."""
         if not self.can_increase_ratio(amount):
             logger.warning("Cannot increase plugin ratio yet.")
-            logger.warning("  Current ratio: %.1%%", self.plugin_ratio)
+            logger.warning("  Current ratio: %.1f%%", self.plugin_ratio * 100)
             logger.warning("  Plugin samples: %d", self.plugin_samples)
             logger.warning(
-                "  Plugin success rate: %.1%%",
-                self.plugin_successes / (self.plugin_samples + 1e-6),
+                "  Plugin success rate: %.1f%%",
+                self.plugin_successes / (self.plugin_samples + 1e-6) * 100,
             )
             return False
 
         old_ratio = self.plugin_ratio
         self.plugin_ratio = min(1.0, self.plugin_ratio + amount)
 
-        # 重置统计
+        # Reset statistics
         self.plugin_samples = 0
         self.plugin_successes = 0
 
         logger.info(
-            "Plugin ratio increased: %.1%% -> %.1%%", old_ratio, self.plugin_ratio
+            "Plugin ratio increased: %.1f%% -> %.1f%%",
+            old_ratio * 100,
+            self.plugin_ratio * 100,
         )
         return True
 
     def get_status(self) -> dict[str, Any]:
-        """获取当前状态"""
+        """Get current migration status."""
         return {
             "plugin_ratio": self.plugin_ratio,
             "legacy_ratio": 1.0 - self.plugin_ratio,

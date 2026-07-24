@@ -1,12 +1,18 @@
 """Tests for scene definitions and management."""
 
-from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
 
 from cloud_robotics_sim import ObjectLibrary, ObjectSpawn, SceneConfig
+from cloud_robotics_sim.backend import LightDescription, LightType
 from cloud_robotics_sim.core.scenes import EmptyRoom, Kitchen, LivingRoom, Office
+from tests.conftest import make_mock_scene_backend
+
+
+def _make_mock_scene_backend() -> MagicMock:
+    """Create a mock SceneBackend with a mock simulator backend."""
+    return make_mock_scene_backend()
 
 
 class TestSceneConfig:
@@ -58,76 +64,51 @@ class TestObjectSpawn:
         assert spawn.position == (1.0, 0.0, 0.5)
         assert spawn.static is False
 
-    def test_spawn_box_mocked(self, monkeypatch):
+    def test_spawn_box_mocked(self):
         """Test ObjectSpawn.spawn for box shape."""
-        scene = MagicMock()
+        scene_backend = _make_mock_scene_backend()
         entity = MagicMock()
-        scene.add_entity.return_value = entity
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(
-                Box=MagicMock(),
-                Sphere=MagicMock(),
-                Cylinder=MagicMock(),
-                Mesh=MagicMock(),
-            ),
-            surfaces=SimpleNamespace(Default=MagicMock()),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.scene.gs", gs)
+        scene_backend.backend.create_box.return_value = entity
 
         spawn = ObjectSpawn(name="box", shape_type="box", size=(1.0, 2.0, 3.0))
-        result = spawn.spawn(scene, prefix="room")
+        result = spawn.spawn(scene_backend, prefix="room")
 
         assert result is entity
-        gs.morphs.Box.assert_called_once_with(
+        scene_backend.backend.create_box.assert_called_once_with(
             size=(1.0, 2.0, 3.0),
             pos=(0.0, 0.0, 0.0),
             quat=(1.0, 0.0, 0.0, 0.0),
-        )
-        gs.surfaces.Default.assert_called_once_with(
             color=(0.8, 0.8, 0.8, 1.0),
-            roughness=0.8,
+            static=True,
+            friction=0.5,
+            name="room_box",
         )
+        scene_backend.add_entity.assert_called_once_with(entity)
 
-    def test_spawn_sphere(self, monkeypatch):
+    def test_spawn_sphere(self):
         """Test ObjectSpawn.spawn for sphere shape."""
-        scene = MagicMock()
-        scene.add_entity.return_value = MagicMock()
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(
-                Box=MagicMock(),
-                Sphere=MagicMock(),
-                Cylinder=MagicMock(),
-                Mesh=MagicMock(),
-            ),
-            surfaces=SimpleNamespace(Default=MagicMock()),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.scene.gs", gs)
+        scene_backend = _make_mock_scene_backend()
+        entity = MagicMock()
+        scene_backend.backend.create_sphere.return_value = entity
 
         spawn = ObjectSpawn(name="sphere", shape_type="sphere", size=(0.5,))
-        spawn.spawn(scene)
+        spawn.spawn(scene_backend)
 
-        gs.morphs.Sphere.assert_called_once_with(
+        scene_backend.backend.create_sphere.assert_called_once_with(
             radius=0.5,
             pos=(0.0, 0.0, 0.0),
+            quat=(1.0, 0.0, 0.0, 0.0),
+            color=(0.8, 0.8, 0.8, 1.0),
+            static=True,
+            friction=0.5,
+            name="sphere",
         )
 
-    def test_spawn_cylinder(self, monkeypatch):
+    def test_spawn_cylinder(self):
         """Test ObjectSpawn.spawn for cylinder shape."""
-        scene = MagicMock()
-        scene.add_entity.return_value = MagicMock()
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(
-                Box=MagicMock(),
-                Sphere=MagicMock(),
-                Cylinder=MagicMock(),
-                Mesh=MagicMock(),
-            ),
-            surfaces=SimpleNamespace(Default=MagicMock()),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.scene.gs", gs)
+        scene_backend = _make_mock_scene_backend()
+        entity = MagicMock()
+        scene_backend.backend.create_cylinder.return_value = entity
 
         spawn = ObjectSpawn(
             name="cylinder",
@@ -135,30 +116,24 @@ class TestObjectSpawn:
             size=(0.3, 1.0),
             position=(1.0, 1.0, 0.5),
         )
-        spawn.spawn(scene)
+        spawn.spawn(scene_backend)
 
-        gs.morphs.Cylinder.assert_called_once_with(
+        scene_backend.backend.create_cylinder.assert_called_once_with(
             radius=0.3,
             height=1.0,
             pos=(1.0, 1.0, 0.5),
             quat=(1.0, 0.0, 0.0, 0.0),
+            color=(0.8, 0.8, 0.8, 1.0),
+            static=True,
+            friction=0.5,
+            name="cylinder",
         )
 
-    def test_spawn_mesh(self, monkeypatch):
+    def test_spawn_mesh(self):
         """Test ObjectSpawn.spawn for mesh shape."""
-        scene = MagicMock()
-        scene.add_entity.return_value = MagicMock()
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(
-                Box=MagicMock(),
-                Sphere=MagicMock(),
-                Cylinder=MagicMock(),
-                Mesh=MagicMock(),
-            ),
-            surfaces=SimpleNamespace(Default=MagicMock()),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.scene.gs", gs)
+        scene_backend = _make_mock_scene_backend()
+        entity = MagicMock()
+        scene_backend.backend.create_mesh.return_value = entity
 
         spawn = ObjectSpawn(
             name="mesh_obj",
@@ -166,20 +141,24 @@ class TestObjectSpawn:
             size=(1.0, 1.0, 1.0),
             mesh_path="path/to/mesh.obj",
         )
-        spawn.spawn(scene)
+        spawn.spawn(scene_backend)
 
-        gs.morphs.Mesh.assert_called_once_with(
+        scene_backend.backend.create_mesh.assert_called_once_with(
             file="path/to/mesh.obj",
             pos=(0.0, 0.0, 0.0),
             quat=(1.0, 0.0, 0.0, 0.0),
             scale=(1.0, 1.0, 1.0),
+            color=(0.8, 0.8, 0.8, 1.0),
+            static=True,
+            friction=0.5,
+            name="mesh_obj",
         )
 
     def test_spawn_unsupported_shape(self):
         """Test ObjectSpawn.spawn raises ValueError for unsupported shapes."""
         spawn = ObjectSpawn(name="weird", shape_type="torus")
         with pytest.raises(ValueError, match="Unsupported shape type"):
-            spawn.spawn(MagicMock())
+            spawn.spawn(_make_mock_scene_backend())
 
 
 class TestSceneManagement:
@@ -209,7 +188,7 @@ class TestSceneManagement:
         scene = EmptyRoom()
         assert scene.get_objects_by_tag("nonexistent") == []
 
-    def test_build(self, monkeypatch):
+    def test_build(self):
         """Test Scene.build orchestrates construction."""
         scene = EmptyRoom()
         scene._build_room_structure = MagicMock()
@@ -217,27 +196,21 @@ class TestSceneManagement:
         scene._build_custom = MagicMock()
         scene._spawn_objects = MagicMock()
 
-        gs_scene = MagicMock()
-        result = scene.build(gs_scene)
+        scene_backend = _make_mock_scene_backend()
+        result = scene.build(scene_backend)
 
         assert result is scene
-        assert scene.scene is gs_scene
+        assert scene.scene is scene_backend
         scene._build_room_structure.assert_called_once()
         scene._setup_lighting.assert_called_once()
         scene._build_custom.assert_called_once()
         scene._spawn_objects.assert_called_once()
 
-    def test_build_room_structure(self, monkeypatch):
+    def test_build_room_structure(self):
         """Test room structure creation."""
         scene = EmptyRoom(size=(4.0, 6.0, 3.0))
-        gs_scene = MagicMock()
-        scene.scene = gs_scene
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(Box=MagicMock()),
-            surfaces=SimpleNamespace(Default=MagicMock()),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.scene.gs", gs)
+        scene_backend = _make_mock_scene_backend()
+        scene.scene = scene_backend
 
         scene._build_room_structure()
 
@@ -246,87 +219,46 @@ class TestSceneManagement:
         assert "wall_south" in scene.room_entities
         assert "wall_east" in scene.room_entities
         assert "wall_west" in scene.room_entities
-        assert gs_scene.add_entity.call_count == 5
+        assert scene_backend.backend.create_box.call_count == 5
+        assert scene_backend.add_entity.call_count == 5
 
-    def test_setup_lighting_with_gs_lights(self, monkeypatch):
-        """Test lighting setup when gs.lights is available."""
+    def test_setup_lighting(self):
+        """Test lighting setup dispatches LightDescription objects."""
         scene = EmptyRoom()
-        gs_scene = MagicMock()
-        scene.scene = gs_scene
-
-        lights = SimpleNamespace(
-            Ambient=MagicMock(),
-            Directional=MagicMock(),
-        )
-        monkeypatch.setattr(
-            "cloud_robotics_sim.core.scene.get_genesis_lights",
-            MagicMock(return_value=lights),
-        )
+        scene_backend = _make_mock_scene_backend()
+        scene.scene = scene_backend
 
         scene._setup_lighting()
 
-        assert gs_scene.add_light.call_count == 2
+        assert scene_backend.add_light.call_count == 2
+        calls = scene_backend.add_light.call_args_list
+        assert isinstance(calls[0].args[0], LightDescription)
+        assert calls[0].args[0].light_type == LightType.AMBIENT
+        assert isinstance(calls[1].args[0], LightDescription)
+        assert calls[1].args[0].light_type == LightType.DIRECTIONAL
 
-    def test_setup_lighting_without_gs_lights(self, monkeypatch):
-        """Test lighting setup skips when gs.lights unavailable."""
-        scene = EmptyRoom()
-        gs_scene = MagicMock()
-        scene.scene = gs_scene
-
-        monkeypatch.setattr(
-            "cloud_robotics_sim.core.scene.get_genesis_lights",
-            MagicMock(return_value=None),
-        )
-
-        scene._setup_lighting()
-
-        gs_scene.add_light.assert_not_called()
-
-    def test_setup_lighting_attribute_error(self, monkeypatch):
-        """Test lighting setup handles AttributeError."""
-        scene = EmptyRoom()
-        gs_scene = MagicMock()
-        scene.scene = gs_scene
-
-        lights = SimpleNamespace(
-            Ambient=MagicMock(side_effect=AttributeError("no ambient")),
-        )
-        monkeypatch.setattr(
-            "cloud_robotics_sim.core.scene.get_genesis_lights",
-            MagicMock(return_value=lights),
-        )
-
-        scene._setup_lighting()  # should not raise
-
-    def test_spawn_objects(self, monkeypatch):
+    def test_spawn_objects(self):
         """Test spawning configured objects."""
         scene = EmptyRoom()
         cube = ObjectLibrary.graspable_cube(name="cube")
         scene.add_object(cube)
 
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(
-                Box=MagicMock(),
-                Sphere=MagicMock(),
-                Cylinder=MagicMock(),
-                Mesh=MagicMock(),
-            ),
-            surfaces=SimpleNamespace(Default=MagicMock()),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.scene.gs", gs)
-
-        scene.scene = MagicMock()
+        scene_backend = _make_mock_scene_backend()
+        entity = MagicMock()
+        scene_backend.backend.create_box.return_value = entity
+        scene.scene = scene_backend
         scene._spawn_objects()
 
         assert "cube" in scene.entities
+        scene_backend.add_entity.assert_called_once_with(entity)
 
-    def test_spawn_objects_failure(self, monkeypatch):
+    def test_spawn_objects_failure(self):
         """Test failed object spawn is logged without raising."""
         scene = EmptyRoom()
         bad = ObjectSpawn(name="bad", shape_type="torus")
         scene.add_object(bad)
 
-        scene.scene = MagicMock()
+        scene.scene = _make_mock_scene_backend()
         scene._spawn_objects()  # should not raise
 
         assert "bad" not in scene.entities

@@ -13,9 +13,13 @@ from typing import Any
 
 import genesis as gs
 
-from cloud_robotics_sim.utils.genesis_compat import get_genesis_lights
+from cloud_robotics_sim.backend import SceneBackend
+from cloud_robotics_sim.backend.types import LightDescription, LightType
+from cloud_robotics_sim.utils.genesis_compat import get_genesis_lights, is_genesis_scene
 
 logger = logging.getLogger(__name__)
+
+_is_genesis_scene = is_genesis_scene
 
 
 @dataclass
@@ -65,22 +69,90 @@ class ObjectSpawn:
     tags: list[str] = field(default_factory=list)
     properties: dict = field(default_factory=dict)
 
-    def spawn(self, scene: Any, prefix: str = "") -> Any:
+    def spawn(self, scene: SceneBackend | gs.Scene, prefix: str = "") -> Any:
         """Instantiate this object in the given scene.
 
         Args:
-            scene: The Genesis scene to spawn into.
+            scene: The backend scene or a native Genesis gs.Scene to spawn into.
             prefix: Optional prefix for entity naming.
 
         Returns:
-            The created Genesis entity.
+            The created entity (Genesis entity or backend entity).
 
         Raises:
             ValueError: If shape_type is not supported.
         """
         entity_name = f"{prefix}_{self.name}" if prefix else self.name
 
-        # Create appropriate morph based on shape type
+        # Legacy path: native Genesis scene.
+        if _is_genesis_scene(scene):
+            return self._spawn_genesis(scene, entity_name)
+
+        # New path: backend-agnostic scene.
+        backend = scene.backend if hasattr(scene, "backend") else None
+        if backend is None:
+            raise RuntimeError("Scene backend is not available for spawning objects.")
+
+        # Normalize size to a 3-tuple for backend APIs.
+        size: tuple[float, float, float] = tuple(
+            float(v) for v in self.size[:3]
+        )  # type: ignore[assignment]
+
+        # Create entity through the backend factory.
+        match self.shape_type:
+            case "box":
+                entity = backend.create_box(
+                    size=size,
+                    pos=self.position,
+                    quat=self.orientation,
+                    color=self.color,
+                    static=self.static,
+                    friction=self.friction,
+                    name=entity_name,
+                )
+            case "sphere":
+                entity = backend.create_sphere(
+                    radius=self.size[0],
+                    pos=self.position,
+                    quat=self.orientation,
+                    color=self.color,
+                    static=self.static,
+                    friction=self.friction,
+                    name=entity_name,
+                )
+            case "cylinder":
+                entity = backend.create_cylinder(
+                    radius=self.size[0],
+                    height=self.size[1],
+                    pos=self.position,
+                    quat=self.orientation,
+                    color=self.color,
+                    static=self.static,
+                    friction=self.friction,
+                    name=entity_name,
+                )
+            case "mesh" if self.mesh_path:
+                entity = backend.create_mesh(
+                    file=self.mesh_path,
+                    pos=self.position,
+                    quat=self.orientation,
+                    scale=size,
+                    color=self.color,
+                    static=self.static,
+                    friction=self.friction,
+                    name=entity_name,
+                )
+            case _:
+                raise ValueError(f"Unsupported shape type: {self.shape_type}")
+
+        # Add entity to scene
+        scene.add_entity(entity)
+        logger.debug(f"Spawned '{entity_name}' at {self.position}")
+
+        return entity
+
+    def _spawn_genesis(self, scene: gs.Scene, entity_name: str) -> Any:
+        """Legacy Genesis spawn path using gs.morphs / gs.surfaces."""
         match self.shape_type:
             case "box":
                 morph = gs.morphs.Box(
@@ -110,16 +182,12 @@ class ObjectSpawn:
             case _:
                 raise ValueError(f"Unsupported shape type: {self.shape_type}")
 
-        # Create surface material
         surface = gs.surfaces.Default(
             color=self.color,
             roughness=0.8,
         )
-
-        # Spawn entity
         entity = scene.add_entity(morph=morph, surface=surface)
         logger.debug(f"Spawned '{entity_name}' at {self.position}")
-
         return entity
 
 
@@ -181,7 +249,7 @@ class Scene(ABC):
 
         self.object_spawns: list[ObjectSpawn] = []
         self.entities: dict[str, Any] = {}
-        self.room_entities: dict[str, gs.Entity] = {}
+        self.room_entities: dict[str, Any] = {}
 
         # Tag-based object indexing
         self._tag_index: dict[str, list[str]] = {}
@@ -222,16 +290,16 @@ class Scene(ABC):
         names = self._tag_index.get(tag, [])
         return [s for s in self.object_spawns if s.name in names]
 
-    def build(self, gs_scene: gs.Scene) -> Scene:
-        """Build the scene in Genesis.
+    def build(self, scene: SceneBackend | gs.Scene) -> Scene:
+        """Build the scene using the provided backend or native Genesis scene.
 
         Args:
-            gs_scene: The Genesis scene to build into.
+            scene: The backend scene or native Genesis gs.Scene to build into.
 
         Returns:
             Self for method chaining.
         """
-        self.scene = gs_scene
+        self.scene = scene
         logger.info(f"Building scene: {self.config.name}")
 
         self._build_room_structure()
@@ -247,7 +315,72 @@ class Scene(ABC):
         width, depth, height = self.config.size
         thickness = self.config.wall_thickness
 
+        # Legacy path: native Genesis scene.
+        if _is_genesis_scene(self.scene):
+            self._build_room_structure_genesis(width, depth, height, thickness)
+            return
+
+        # New path: backend-agnostic scene.
+        backend = self.scene.backend if hasattr(self.scene, "backend") else None
+        if backend is None:
+            raise RuntimeError(
+                "Scene backend is not available for building room structure"
+            )
+
         # Floor
+        floor = backend.create_box(
+            size=(width, depth, thickness),
+            pos=(0.0, 0.0, -thickness / 2),
+            color=(0.9, 0.9, 0.9, 1.0),
+            static=True,
+            name="floor",
+        )
+        self.scene.add_entity(floor)
+        self.room_entities["floor"] = floor
+
+        # Walls
+        wall_configs = [
+            (
+                "north",
+                (0.0, depth / 2 + thickness / 2, height / 2),
+                (width, thickness, height),
+            ),
+            (
+                "south",
+                (0.0, -depth / 2 - thickness / 2, height / 2),
+                (width, thickness, height),
+            ),
+            (
+                "east",
+                (width / 2 + thickness / 2, 0.0, height / 2),
+                (thickness, depth, height),
+            ),
+            (
+                "west",
+                (-width / 2 - thickness / 2, 0.0, height / 2),
+                (thickness, depth, height),
+            ),
+        ]
+
+        for name, pos, size in wall_configs:
+            wall = backend.create_box(
+                size=size,
+                pos=pos,
+                color=(0.95, 0.95, 0.95, 1.0),
+                static=True,
+                name=f"wall_{name}",
+            )
+            self.scene.add_entity(wall)
+            self.room_entities[f"wall_{name}"] = wall
+
+    def _build_room_structure_genesis(
+        self,
+        width: float,
+        depth: float,
+        height: float,
+        thickness: float,
+    ) -> None:
+        """Legacy Genesis room structure using gs.morphs / gs.surfaces."""
         floor = self.scene.add_entity(
             morph=gs.morphs.Box(
                 size=(width, depth, thickness),
@@ -258,7 +391,6 @@ class Scene(ABC):
         )
         self.room_entities["floor"] = floor
 
-        # Walls
         wall_configs = [
             (
                 "north",
@@ -290,16 +422,43 @@ class Scene(ABC):
             self.room_entities[f"wall_{name}"] = wall
 
     def _setup_lighting(self) -> None:
-        """Configure scene lighting."""
+        """Configure scene lighting (Genesis or backend-agnostic path)."""
+        # Legacy path: native Genesis scene with gs.lights if available.
+        if _is_genesis_scene(self.scene):
+            self._setup_lighting_genesis()
+            return
+
+        # New path: backend-agnostic scene.
+        # Ambient light
+        self.scene.add_light(
+            LightDescription(
+                light_type=LightType.AMBIENT,
+                color=(1.0, 1.0, 1.0),
+                intensity=self.config.ambient_light[0],
+            )
+        )
+
+        # Main directional light
+        main = self.config.main_light
+        self.scene.add_light(
+            LightDescription(
+                light_type=LightType.DIRECTIONAL,
+                pos=main["pos"],
+                direction=(0.0, 0.3, -1.0),
+                color=main["color"],
+                intensity=main["intensity"],
+                cast_shadow=True,
+            )
+        )
+
+    def _setup_lighting_genesis(self) -> None:
+        """Legacy Genesis lighting setup using gs.lights."""
         lights = get_genesis_lights()
         if lights is None:
-            # genesis-world 1.2+ does not expose gs.lights; the default Scene
-            # already provides lighting through VisOptions.
             logger.debug("Skipping explicit lighting setup (gs.lights unavailable)")
             return
 
         try:
-            # Ambient light
             self.scene.add_light(
                 lights.Ambient(
                     color=(1.0, 1.0, 1.0),
@@ -307,7 +466,6 @@ class Scene(ABC):
                 )
             )
 
-            # Main directional light
             main = self.config.main_light
             self.scene.add_light(
                 lights.Directional(

@@ -40,7 +40,7 @@ try:
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
-    np = None
+    np = None  # type: ignore[assignment]
 
 try:
     import torch
@@ -48,7 +48,7 @@ try:
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
-    torch = None
+    torch = None  # type: ignore[assignment]
 
 # Genesis imports
 try:
@@ -64,7 +64,7 @@ try:
     from .genesis_compat import GENESIS_RENDER_SYSTEM, Pose, matrix_to_quaternion
 except ImportError:
     # Fallback if not available
-    class Pose:
+    class Pose:  # type: ignore[no-redef]
         """Fallback pose container."""
 
         def __init__(self, raw_pose):
@@ -92,7 +92,7 @@ except ImportError:
                     p = [[0.0, 0.0, 0.0]]
                 if q is None:
                     q = [[1.0, 0.0, 0.0, 0.0]]
-                raw_pose = list(p) + list(q)
+                raw_pose = list(p) + list(q)  # type: ignore[assignment]
             return cls(raw_pose)
 
     def matrix_to_quaternion(matrix):
@@ -282,7 +282,7 @@ def compute_fovy(focal_length: float, sensor_height: float) -> float:
         Vertical FOV in degrees.
     """
     if HAS_NUMPY:
-        return 2 * np.arctan(sensor_height / (2 * focal_length)) * 180 / np.pi
+        return float(2 * np.arctan(sensor_height / (2 * focal_length)) * 180 / np.pi)
     else:
         import math
 

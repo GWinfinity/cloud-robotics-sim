@@ -138,37 +138,43 @@ class TestExperimentValidatorJudge:
         assert confidence > 0.0
         assert "reward" in reason
 
-    def test_fail_latency_regression(self):
-        validator = ExperimentValidator(make_env_fn=None, max_latency_regression=5.0)
-        baseline = self._make_summary(mean_latency_ms=10.0)
-        proposal = self._make_summary(mean_latency_ms=20.0)
+    @pytest.mark.parametrize(
+        "baseline_kwargs, proposal_kwargs, validator_kwargs, expected_fragment",
+        [
+            pytest.param(
+                {"mean_latency_ms": 10.0},
+                {"mean_latency_ms": 20.0},
+                {"max_latency_regression": 5.0},
+                "Latency regression",
+                id="latency_regression",
+            ),
+            pytest.param(
+                {"success_rate": 0.5, "mean_reward": 10.0},
+                {"success_rate": 0.51, "mean_reward": 11.0},
+                {},
+                "No significant improvement",
+                id="no_improvement",
+            ),
+            pytest.param(
+                {"mean_stability_score": 0.9},
+                {"success_rate": 0.9, "mean_reward": 20.0, "mean_stability_score": 0.8},
+                {},
+                "Stability decreased",
+                id="stability_decreased",
+            ),
+        ],
+    )
+    def test_fail_cases(
+        self, baseline_kwargs, proposal_kwargs, validator_kwargs, expected_fragment
+    ):
+        validator = ExperimentValidator(make_env_fn=None, **validator_kwargs)
+        baseline = self._make_summary(**baseline_kwargs)
+        proposal = self._make_summary(**proposal_kwargs)
         improvement = ExperimentValidator._compute_improvement(baseline, proposal)
         passed, confidence, reason = validator._judge(baseline, proposal, improvement)
         assert passed is False
         assert confidence == pytest.approx(0.0)
-        assert "Latency regression" in reason
-
-    def test_fail_no_improvement(self):
-        validator = ExperimentValidator(make_env_fn=None)
-        baseline = self._make_summary(success_rate=0.5, mean_reward=10.0)
-        proposal = self._make_summary(success_rate=0.51, mean_reward=11.0)
-        improvement = ExperimentValidator._compute_improvement(baseline, proposal)
-        passed, confidence, reason = validator._judge(baseline, proposal, improvement)
-        assert passed is False
-        assert confidence == pytest.approx(0.0)
-        assert "No significant improvement" in reason
-
-    def test_fail_stability_decreased(self):
-        validator = ExperimentValidator(make_env_fn=None)
-        baseline = self._make_summary(mean_stability_score=0.9)
-        proposal = self._make_summary(
-            success_rate=0.9, mean_reward=20.0, mean_stability_score=0.8
-        )
-        improvement = ExperimentValidator._compute_improvement(baseline, proposal)
-        passed, confidence, reason = validator._judge(baseline, proposal, improvement)
-        assert passed is False
-        assert confidence == pytest.approx(0.0)
-        assert "Stability decreased" in reason
+        assert expected_fragment in reason
 
 
 class TestExperimentValidatorValidate:

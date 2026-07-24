@@ -76,4 +76,4 @@ jobs:
           xvfb-run -a python -c "import cloud_robotics_sim; print(f'Version: {cloud_robotics_sim.__version__}')"
 
       - name: Test with pytest
-        run: xvfb-run -a pytest tests/ -v --tb=short
+        run: xvfb-run -a pytest tests/ -v --tb=short --cov=cloud_robotics_sim --cov-report=xml --cov-report=term-missing --cov-fail-under=70

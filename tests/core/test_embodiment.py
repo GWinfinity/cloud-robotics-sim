@@ -1,6 +1,5 @@
 """Tests for robot embodiment definitions."""
 
-from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -12,6 +11,23 @@ from cloud_robotics_sim import (
     UniversalRobotUR5,
 )
 from cloud_robotics_sim.core.embodiment import MobileManipulator
+from tests.conftest import MockArticulation, make_mock_scene_backend
+
+
+class MockEntity:
+    """Minimal entity that is NOT an EntityBackend, for fallback tests."""
+
+    def __init__(self) -> None:
+        pass
+
+    @property
+    def name(self) -> str | None:
+        return "mock_entity"
+
+
+def _make_mock_scene() -> MagicMock:
+    """Create a mock scene backend with a mock simulator backend."""
+    return make_mock_scene_backend()
 
 
 class TestSensorConfig:
@@ -112,96 +128,64 @@ class TestFrankaPanda:
         assert action_space["high"] == 1.0
         assert action_space["shape"] == (8,)
 
-    def test_spawn_mjcf_success(self, monkeypatch):
+    def test_spawn_mjcf_success(self):
         """Test Franka spawn with MJCF success path."""
-        scene = MagicMock()
-        entity = MagicMock()
-        scene.add_entity.return_value = entity
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(
-                MJCF=MagicMock(),
-                Box=MagicMock(),
-            ),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.embodiment.gs", gs)
+        scene = _make_mock_scene()
+        articulation = MockArticulation()
+        scene.backend.load_mjcf.return_value = articulation
 
         robot = FrankaPanda(EmbodimentConfig(base_position=(1.0, 0.0, 0.0)))
         result = robot.spawn(scene, position=(0.5, 0.0, 0.1))
 
         assert result is robot
         assert robot.scene is scene
-        assert robot.entity is entity
-        gs.morphs.MJCF.assert_called_once_with(
+        assert robot.entity is articulation
+        scene.backend.load_mjcf.assert_called_once_with(
             file="franka_emika_panda/panda.xml",
             pos=(0.5, 0.0, 0.1),
         )
-        scene.add_entity.assert_called_once()
+        scene.add_articulation.assert_called_once_with(articulation)
 
-    def test_spawn_mjcf_fallback(self, monkeypatch):
+    def test_spawn_mjcf_fallback(self):
         """Test Franka fallback to procedural box when MJCF fails."""
-        scene = MagicMock()
-        scene.add_entity.side_effect = [RuntimeError("load failed"), MagicMock()]
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(
-                MJCF=MagicMock(),
-                Box=MagicMock(),
-            ),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.embodiment.gs", gs)
+        scene = _make_mock_scene()
+        scene.backend.load_mjcf.side_effect = RuntimeError("load failed")
+        fallback_entity = MockEntity()
+        scene.backend.create_box.return_value = fallback_entity
 
         robot = FrankaPanda()
         robot.spawn(scene)
 
-        assert gs.morphs.Box.called
-        assert scene.add_entity.call_count == 2
+        assert scene.backend.create_box.called
+        assert scene.add_entity.call_count == 1
 
     def test_reset_with_dofs(self):
         """Test reset sets qpos when DOFs exist."""
         robot = FrankaPanda()
-        robot.entity = MagicMock()
-        robot.entity.n_dofs = 9
-        robot.entity.set_qpos = MagicMock()
-        robot.entity.get_qpos.return_value = np.zeros(9)
+        robot.entity = MockArticulation(n_dofs=9, n_qs=9)
 
         robot.reset()
-        robot.entity.set_qpos.assert_called_once()
-        np.testing.assert_array_equal(
-            robot.entity.set_qpos.call_args[0][0], np.zeros(9)
-        )
+        assert len(robot.entity.set_qpos_calls) == 1
+        np.testing.assert_array_equal(robot.entity.set_qpos_calls[0], np.zeros(9))
 
     def test_reset_no_dofs(self):
         """Test reset skips qpos when no DOFs."""
         robot = FrankaPanda()
-        robot.entity = MagicMock()
-        robot.entity.n_dofs = 0
-        robot.entity.n_qs = 0
-        robot.entity.set_qpos = MagicMock()
+        robot.entity = MockArticulation(n_dofs=0, n_qs=0)
 
         robot.reset()
-        robot.entity.set_qpos.assert_not_called()
-
-    def test_reset_no_set_qpos(self):
-        """Test reset handles missing set_qpos."""
-        robot = FrankaPanda()
-        robot.entity = MagicMock()
-        del robot.entity.set_qpos
-
-        robot.reset()  # should not raise
+        assert len(robot.entity.set_qpos_calls) == 0
 
     def test_apply_action_9_dofs(self):
         """Test apply_action expands gripper for 9-DOF Franka."""
         robot = FrankaPanda(EmbodimentConfig(action_scale=1.0))
-        robot.entity = MagicMock()
-        robot.entity.n_dofs = 9
-        robot.entity.control_dofs_position = MagicMock()
+        robot.entity = MockArticulation(n_dofs=9, n_qs=9)
 
         action = np.arange(8)
         robot.apply_action(action)
 
-        robot.entity.control_dofs_position.assert_called_once()
-        targets = robot.entity.control_dofs_position.call_args[0][0]
+        assert len(robot.entity.control_dofs_position_calls) == 1
+        targets = robot.entity.control_dofs_position_calls[0]
         assert len(targets) == 9
         np.testing.assert_array_equal(targets[:7], action[:7])
         assert targets[7] == action[7]
@@ -210,14 +194,12 @@ class TestFrankaPanda:
     def test_apply_action_8_dofs(self):
         """Test apply_action with 8-DOF Franka."""
         robot = FrankaPanda(EmbodimentConfig(action_scale=1.0))
-        robot.entity = MagicMock()
-        robot.entity.n_dofs = 8
-        robot.entity.control_dofs_position = MagicMock()
+        robot.entity = MockArticulation(n_dofs=8, n_qs=8)
 
         action = np.arange(8)
         robot.apply_action(action)
 
-        targets = robot.entity.control_dofs_position.call_args[0][0]
+        targets = robot.entity.control_dofs_position_calls[0]
         assert len(targets) == 8
         np.testing.assert_array_equal(targets[:7], action[:7])
         assert targets[7] == action[7]
@@ -225,13 +207,10 @@ class TestFrankaPanda:
     def test_apply_action_zero_dofs(self):
         """Test apply_action skips when no DOFs."""
         robot = FrankaPanda()
-        robot.entity = MagicMock()
-        robot.entity.n_dofs = 0
-        robot.entity.n_qs = 0
-        robot.entity.control_dofs_position = MagicMock()
+        robot.entity = MockArticulation(n_dofs=0, n_qs=0)
 
         robot.apply_action(np.zeros(8))
-        robot.entity.control_dofs_position.assert_not_called()
+        assert len(robot.entity.control_dofs_position_calls) == 0
 
     def test_apply_action_no_entity(self):
         """Test apply_action when entity is None."""
@@ -241,9 +220,9 @@ class TestFrankaPanda:
     def test_get_observation_with_entity(self):
         """Test get_observation reads entity state."""
         robot = FrankaPanda()
-        robot.entity = MagicMock()
-        robot.entity.get_qpos.return_value = np.ones(9)
-        robot.entity.get_qvel.return_value = np.ones(9) * 2
+        robot.entity = MockArticulation(n_dofs=9, n_qs=9)
+        robot.entity._qpos = np.ones(9)
+        robot.entity._qvel = np.ones(9) * 2
 
         obs = robot.get_observation()
         np.testing.assert_array_equal(obs["joint_position"], np.ones(7))
@@ -269,79 +248,60 @@ class TestUniversalRobotUR5:
         assert robot.action_dim == 6
         assert robot.obs_dim == 18  # 6*3
 
-    def test_spawn_urdf_success(self, monkeypatch):
+    def test_spawn_urdf_success(self):
         """Test UR5 spawn with URDF success path."""
-        scene = MagicMock()
-        entity = MagicMock()
-        scene.add_entity.return_value = entity
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(
-                URDF=MagicMock(),
-                Box=MagicMock(),
-            ),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.embodiment.gs", gs)
+        scene = _make_mock_scene()
+        articulation = MockArticulation(n_dofs=6, n_qs=6)
+        scene.backend.load_urdf.return_value = articulation
 
         robot = UniversalRobotUR5()
         robot.spawn(scene, position=(2.0, 0.0, 0.0))
 
-        gs.morphs.URDF.assert_called_once_with(
+        scene.backend.load_urdf.assert_called_once_with(
             file="ur5/ur5.urdf",
             pos=(2.0, 0.0, 0.0),
         )
+        scene.add_articulation.assert_called_once_with(articulation)
 
-    def test_spawn_urdf_fallback(self, monkeypatch):
+    def test_spawn_urdf_fallback(self):
         """Test UR5 fallback when URDF fails."""
-        scene = MagicMock()
-        scene.add_entity.side_effect = [RuntimeError("load failed"), MagicMock()]
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(
-                URDF=MagicMock(),
-                Box=MagicMock(),
-            ),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.embodiment.gs", gs)
+        scene = _make_mock_scene()
+        scene.backend.load_urdf.side_effect = RuntimeError("load failed")
+        fallback_entity = MockEntity()
+        scene.backend.create_box.return_value = fallback_entity
 
         robot = UniversalRobotUR5()
         robot.spawn(scene)
 
-        assert gs.morphs.Box.called
-        assert scene.add_entity.call_count == 2
+        assert scene.backend.create_box.called
+        assert scene.add_entity.call_count == 1
 
     def test_reset_with_dofs(self):
         """Test UR5 reset with DOFs."""
         robot = UniversalRobotUR5()
-        robot.entity = MagicMock()
-        robot.entity.n_dofs = 6
-        robot.entity.set_qpos = MagicMock()
+        robot.entity = MockArticulation(n_dofs=6, n_qs=6)
 
         robot.reset()
-        robot.entity.set_qpos.assert_called_once()
-        np.testing.assert_array_equal(
-            robot.entity.set_qpos.call_args[0][0], np.zeros(6)
-        )
+        assert len(robot.entity.set_qpos_calls) == 1
+        np.testing.assert_array_equal(robot.entity.set_qpos_calls[0], np.zeros(6))
 
     def test_apply_action(self):
         """Test UR5 apply_action."""
         robot = UniversalRobotUR5(EmbodimentConfig(action_scale=0.5))
-        robot.entity = MagicMock()
-        robot.entity.n_dofs = 6
-        robot.entity.control_dofs_position = MagicMock()
+        robot.entity = MockArticulation(n_dofs=6, n_qs=6)
 
         action = np.ones(6)
         robot.apply_action(action)
 
-        targets = robot.entity.control_dofs_position.call_args[0][0]
+        targets = robot.entity.control_dofs_position_calls[0]
         np.testing.assert_array_equal(targets, np.ones(6) * 0.5)
 
     def test_get_observation(self):
         """Test UR5 get_observation."""
         robot = UniversalRobotUR5()
-        robot.entity = MagicMock()
-        robot.entity.get_qpos.return_value = np.arange(6)
-        robot.entity.get_qvel.return_value = np.arange(6) * 2
+        robot.entity = MockArticulation(n_dofs=6, n_qs=6)
+        robot.entity._qpos = np.arange(6)
+        robot.entity._qvel = np.arange(6) * 2
 
         obs = robot.get_observation()
         np.testing.assert_array_equal(obs["joint_position"], np.arange(6))
@@ -366,24 +326,20 @@ class TestMobileManipulator:
         assert robot.base_type == "omni"
         assert robot.arm_type == "ur5"
 
-    def test_spawn(self, monkeypatch):
+    def test_spawn(self):
         """Test mobile manipulator spawn."""
-        scene = MagicMock()
-        entity = MagicMock()
-        scene.add_entity.return_value = entity
-
-        gs = SimpleNamespace(
-            morphs=SimpleNamespace(Box=MagicMock()),
-        )
-        monkeypatch.setattr("cloud_robotics_sim.core.embodiment.gs", gs)
+        scene = _make_mock_scene()
+        entity = MockEntity()
+        scene.backend.create_box.return_value = entity
 
         robot = MobileManipulator()
         robot.spawn(scene, position=(0.0, 0.0, 0.1))
 
         assert robot.entity is entity
-        gs.morphs.Box.assert_called_once_with(
+        scene.backend.create_box.assert_called_once_with(
             size=(0.6, 0.4, 0.2),
             pos=(0.0, 0.0, 0.1),
+            name="mobile_base",
         )
 
     def test_reset_apply_action_get_observation(self):

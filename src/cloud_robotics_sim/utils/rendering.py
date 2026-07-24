@@ -44,7 +44,7 @@ try:
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
-    np = None
+    np = None  # type: ignore[assignment]
 
 try:
     import torch
@@ -52,7 +52,7 @@ try:
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
-    torch = None
+    torch = None  # type: ignore[assignment]
 
 # Genesis imports
 try:
@@ -68,7 +68,7 @@ try:
     from .camera import hex2rgba, rgba2hex
 except ImportError:
     # Fallback implementations
-    def hex2rgba(h: str, correction: bool = True) -> list[float]:
+    def hex2rgba(h: str, correction: bool = True) -> list[float]:  # type: ignore[misc]
         """Convert a hex color string to normalized RGBA."""
         h = h.lstrip("#")
         r = int(h[0:2], 16) / 255
@@ -188,7 +188,7 @@ def set_entity_color(entity: Any, color: Union[str, list], recursive: bool = Tru
         recursive: Whether to apply to child entities.
     """
     if isinstance(color, str):
-        color = hex2rgba(color)
+        color = hex2rgba(color)  # type: ignore[assignment]
 
     # Try different methods to set color
     if hasattr(entity, "set_color"):
