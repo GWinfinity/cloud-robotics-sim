@@ -41,7 +41,9 @@ def _make_bridge(num_frames: int = 3) -> RobotwinBridge:
         fps=20.0,
         robot_urdf="robot.urdf",
         table_height=0.74,
-        object_assets={"can": ObjectAsset(name="can", asset_type="mesh", path="can.glb")},
+        object_assets={
+            "can": ObjectAsset(name="can", asset_type="mesh", path="can.glb")
+        },
         frames=frames,
     )
 
@@ -85,15 +87,15 @@ class TestRobotwinReplayTask:
 
         info = task.reset(scene, robot, seed=0)
 
-        np.testing.assert_array_equal(robot.entity.set_pos.call_args[0][0], [0.0, 0.0, 0.0])
+        np.testing.assert_array_equal(
+            robot.entity.set_pos.call_args[0][0], [0.0, 0.0, 0.0]
+        )
         robot.apply_action.assert_called_once()
         np.testing.assert_array_equal(
             robot.apply_action.call_args[0][0], np.arange(14, dtype=np.float64)
         )
         can = scene.entities["can"]
-        np.testing.assert_array_equal(
-            can.set_pos.call_args[0][0], [0.5, 0.0, 0.74]
-        )
+        np.testing.assert_array_equal(can.set_pos.call_args[0][0], [0.5, 0.0, 0.74])
         assert info["frame_index"] == 0
 
     def test_step_advances_frame(self, scene: MagicMock) -> None:
@@ -106,9 +108,7 @@ class TestRobotwinReplayTask:
         reward, terminated, truncated, info = task.step(scene, robot, np.zeros(14))
 
         can = scene.entities["can"]
-        np.testing.assert_array_equal(
-            can.set_pos.call_args[0][0], [0.5, 0.1, 0.74]
-        )
+        np.testing.assert_array_equal(can.set_pos.call_args[0][0], [0.5, 0.1, 0.74])
         np.testing.assert_array_equal(
             robot.entity.set_pos.call_args[0][0], [1.0, 0.0, 0.0]
         )

@@ -72,17 +72,27 @@ class RobotwinFrame:
     """
 
     timestamp: float
-    robot_command: np.ndarray = field(default_factory=lambda: np.zeros(14, dtype=np.float64))
-    robot_achieved_qpos: np.ndarray = field(default_factory=lambda: np.zeros(14, dtype=np.float64))
-    robot_base_pos: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=np.float64))
-    robot_base_quat: np.ndarray = field(default_factory=lambda: np.array([1.0, 0.0, 0.0, 0.0]))
+    robot_command: np.ndarray = field(
+        default_factory=lambda: np.zeros(14, dtype=np.float64)
+    )
+    robot_achieved_qpos: np.ndarray = field(
+        default_factory=lambda: np.zeros(14, dtype=np.float64)
+    )
+    robot_base_pos: np.ndarray = field(
+        default_factory=lambda: np.zeros(3, dtype=np.float64)
+    )
+    robot_base_quat: np.ndarray = field(
+        default_factory=lambda: np.array([1.0, 0.0, 0.0, 0.0])
+    )
     object_states: dict[str, dict[str, Any]] = field(default_factory=dict)
     camera_images: dict[str, np.ndarray] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Normalize numpy arrays to float64."""
         self.robot_command = np.asarray(self.robot_command, dtype=np.float64)
-        self.robot_achieved_qpos = np.asarray(self.robot_achieved_qpos, dtype=np.float64)
+        self.robot_achieved_qpos = np.asarray(
+            self.robot_achieved_qpos, dtype=np.float64
+        )
         self.robot_base_pos = np.asarray(self.robot_base_pos, dtype=np.float64)
         self.robot_base_quat = np.asarray(self.robot_base_quat, dtype=np.float64)
 

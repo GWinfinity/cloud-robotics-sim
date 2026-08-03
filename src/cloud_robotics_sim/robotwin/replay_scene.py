@@ -97,7 +97,9 @@ class RobotwinReplayScene(Scene):
         return self._articulations.get(name)
 
 
-def _normalize_scale(scale: tuple[float, float, float] | float) -> tuple[float, float, float]:
+def _normalize_scale(
+    scale: tuple[float, float, float] | float,
+) -> tuple[float, float, float]:
     """Normalize a uniform or per-axis scale to a 3-tuple."""
     if isinstance(scale, (int, float)):
         return (float(scale), float(scale), float(scale))

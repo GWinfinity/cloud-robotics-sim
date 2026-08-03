@@ -113,6 +113,4 @@ class TestRobotwinBridge:
             loader = RobotwinBridgeLoader(path)
 
         frame = loader[0]
-        np.testing.assert_array_equal(
-            frame.robot_achieved_qpos, np.arange(14) + 0.5
-        )
+        np.testing.assert_array_equal(frame.robot_achieved_qpos, np.arange(14) + 0.5)

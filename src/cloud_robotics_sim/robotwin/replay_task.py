@@ -68,7 +68,17 @@ class RobotwinReplayTask(Task):
         """
         self.step_count += 1
         if not self.bridge.frames:
-            return 0.0, True, False, {"frame_index": 0, "timestamp": 0.0, "step": self.step_count, "success": False}
+            return (
+                0.0,
+                True,
+                False,
+                {
+                    "frame_index": 0,
+                    "timestamp": 0.0,
+                    "step": self.step_count,
+                    "success": False,
+                },
+            )
 
         self._frame_index = min(self._frame_index + 1, len(self.bridge.frames) - 1)
 
@@ -87,7 +97,9 @@ class RobotwinReplayTask(Task):
         }
         return reward, terminated, truncated, info
 
-    def _apply_frame(self, scene: Scene, robot: RobotEmbodiment, frame: RobotwinFrame) -> None:
+    def _apply_frame(
+        self, scene: Scene, robot: RobotEmbodiment, frame: RobotwinFrame
+    ) -> None:
         """Apply a single bridge frame to the scene."""
         # Update robot base pose and joint configuration.
         entity = robot.entity

@@ -53,9 +53,7 @@ class FakeArticulation(ArticulationBackend):
     def set_color(self, color: tuple[float, float, float, float]) -> None:
         pass
 
-    def apply_force(
-        self, force: np.ndarray, pos: np.ndarray | None = None
-    ) -> None:
+    def apply_force(self, force: np.ndarray, pos: np.ndarray | None = None) -> None:
         pass
 
     def get_qpos(self) -> np.ndarray:
@@ -153,7 +151,9 @@ class TestAlohaAgileX:
     def robot(self) -> AlohaAgileX:
         """Create an embodiment with a fake articulation entity."""
         robot = AlohaAgileX(
-            AlohaAgileXConfig(urdf_path="assets/embodiments/aloha-agilex/urdf/robot.urdf")
+            AlohaAgileXConfig(
+                urdf_path="assets/embodiments/aloha-agilex/urdf/robot.urdf"
+            )
         )
         articulation = FakeArticulation(name="aloha_agilex", n_qs=38)
 
@@ -165,9 +165,7 @@ class TestAlohaAgileX:
             *AlohaAgileXConfig().right_gripper_joints,
         ]
         articulation._joint_names = joint_names
-        articulation._joint_dofs = {
-            name: [i] for i, name in enumerate(joint_names)
-        }
+        articulation._joint_dofs = {name: [i] for i, name in enumerate(joint_names)}
 
         robot.entity = articulation
         robot._build_joint_mapping()
@@ -222,9 +220,7 @@ class TestAlohaAgileX:
         obs = robot.get_observation()
         np.testing.assert_array_equal(obs["joint_position"][:6], np.arange(6))
         assert obs["joint_position"][6] == pytest.approx(0.5)
-        np.testing.assert_array_equal(
-            obs["joint_position"][7:13], np.arange(6) + 10
-        )
+        np.testing.assert_array_equal(obs["joint_position"][7:13], np.arange(6) + 10)
         assert obs["joint_position"][13] == pytest.approx(0.5)
 
     def test_reset_zeros_state(self, robot: AlohaAgileX) -> None:

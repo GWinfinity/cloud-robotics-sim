@@ -116,7 +116,9 @@ class AlohaAgileX(RobotEmbodiment):
         scene.add_articulation(self.entity)
         self._build_joint_mapping()
         self._initialize_cameras()
-        logger.info(f"AlohaAgileX spawned at {pos} with {len(self._dofs_idx_local)} driven DoFs")
+        logger.info(
+            f"AlohaAgileX spawned at {pos} with {len(self._dofs_idx_local)} driven DoFs"
+        )
         return self
 
     def _build_joint_mapping(self) -> None:
@@ -127,7 +129,9 @@ class AlohaAgileX(RobotEmbodiment):
 
         joint_names = entity.get_joint_names()
         if not joint_names:
-            logger.warning("Cannot inspect joints; falling back to identity action mapping")
+            logger.warning(
+                "Cannot inspect joints; falling back to identity action mapping"
+            )
             self._joint_name_to_action_index = {}
             return
 
@@ -140,7 +144,9 @@ class AlohaAgileX(RobotEmbodiment):
             # A gripper base + mimic share the same scalar action.
             for local_dof in dofs_idx:
                 driven_joint_order.append((joint_name, local_dof))
-                self._joint_name_to_action_index[f"{joint_name}_{local_dof}"] = action_index
+                self._joint_name_to_action_index[f"{joint_name}_{local_dof}"] = (
+                    action_index
+                )
 
         self._dofs_idx_local = [idx for _, idx in driven_joint_order]
         logger.debug(
@@ -181,7 +187,9 @@ class AlohaAgileX(RobotEmbodiment):
 
         action_arr = np.asarray(action, dtype=np.float64).flatten()
         if action_arr.shape != (_ACTION_DIM,):
-            raise ValueError(f"Expected action shape ({_ACTION_DIM},), got {action_arr.shape}")
+            raise ValueError(
+                f"Expected action shape ({_ACTION_DIM},), got {action_arr.shape}"
+            )
 
         self._last_action = action_arr.copy()
 

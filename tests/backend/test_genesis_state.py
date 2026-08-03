@@ -85,9 +85,7 @@ class TestGenesisSceneState:
         assert "franka" in entities
 
         np.testing.assert_array_equal(entities["box"]["pos"], [1.0, 2.0, 3.0])
-        np.testing.assert_array_equal(
-            entities["box"]["quat"], [0.0, 0.0, 0.0, 1.0]
-        )
+        np.testing.assert_array_equal(entities["box"]["quat"], [0.0, 0.0, 0.0, 1.0])
         np.testing.assert_array_equal(entities["franka"]["qpos"], np.arange(7))
         np.testing.assert_array_equal(entities["franka"]["qvel"], np.ones(7))
 
@@ -141,9 +139,7 @@ class TestGenesisArticulationState:
         self,
     ) -> None:
         """For floating-base robots, qpos is applied only to actuated joints."""
-        backend = GenesisArticulationBackend(
-            morph=MagicMock(), name="floating_robot"
-        )
+        backend = GenesisArticulationBackend(morph=MagicMock(), name="floating_robot")
         mock_entity = MagicMock()
 
         free_joint = MagicMock()
@@ -180,12 +176,12 @@ class TestGenesisArticulationState:
         backend.bind(mock_entity)
 
         backend.set_state_batch(
-            ArticulationState(qpos=np.arange(7, dtype=np.float64), qvel=None, pos=None, quat=None)
+            ArticulationState(
+                qpos=np.arange(7, dtype=np.float64), qvel=None, pos=None, quat=None
+            )
         )
 
         mock_entity.set_qpos.assert_called_once()
         call_args = mock_entity.set_qpos.call_args
-        np.testing.assert_array_equal(
-            call_args.args[0], np.arange(7, dtype=np.float64)
-        )
+        np.testing.assert_array_equal(call_args.args[0], np.arange(7, dtype=np.float64))
         assert call_args.kwargs.get("qs_idx_local") == list(range(7))

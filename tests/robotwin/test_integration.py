@@ -57,7 +57,10 @@ def _make_bridge(num_frames: int = 3) -> RobotwinBridge:
         object_assets={
             "can": ObjectAsset(name="can", asset_type="mesh", path="can.glb"),
             "drawer": ObjectAsset(
-                name="drawer", asset_type="urdf", path="drawer.urdf", is_articulation=True
+                name="drawer",
+                asset_type="urdf",
+                path="drawer.urdf",
+                is_articulation=True,
             ),
         },
         frames=frames,
@@ -69,7 +72,9 @@ def _make_mock_backend() -> MagicMock:
     backend = MagicMock()
     backend.create_box.return_value = MagicMock(name="box_entity")
     backend.create_mesh.return_value = MagicMock(name="mesh_entity")
-    backend.load_urdf.return_value = MagicMock(spec=ArticulationBackend, name="urdf_entity")
+    backend.load_urdf.return_value = MagicMock(
+        spec=ArticulationBackend, name="urdf_entity"
+    )
     return backend
 
 
@@ -95,7 +100,11 @@ class TestReplaySceneIntegration:
         scene.build(scene_backend)
 
         # Room structure creates 4 walls + floor; replay scene adds 1 table + 1 mesh object.
-        table_calls = [c for c in backend.create_box.call_args_list if c.kwargs.get("name", "").endswith("_table")]
+        table_calls = [
+            c
+            for c in backend.create_box.call_args_list
+            if c.kwargs.get("name", "").endswith("_table")
+        ]
         assert len(table_calls) == 1
         backend.create_mesh.assert_called_once()
         assert scene_backend.add_entity.call_count >= 2
@@ -137,7 +146,9 @@ class TestAlohaAgileXIntegration:
     def test_spawn_loads_urdf_and_adds_articulation(self) -> None:
         """AlohaAgileX.spawn loads the configured URDF through the backend."""
         robot = AlohaAgileX(
-            AlohaAgileXConfig(urdf_path="assets/embodiments/aloha-agilex/urdf/robot.urdf")
+            AlohaAgileXConfig(
+                urdf_path="assets/embodiments/aloha-agilex/urdf/robot.urdf"
+            )
         )
         backend = _make_mock_backend()
         scene_backend = _make_mock_scene_backend(backend)
@@ -183,7 +194,9 @@ class TestReplayTaskIntegration:
         scene.entities = {"can": can_entity, "drawer": drawer_entity}
         return scene
 
-    def test_reset_and_step_drive_robot_and_objects(self, scene: MagicMock, robot: MagicMock) -> None:
+    def test_reset_and_step_drive_robot_and_objects(
+        self, scene: MagicMock, robot: MagicMock
+    ) -> None:
         """The replay task applies frame states to robot and objects."""
         bridge = _make_bridge(num_frames=3)
         task = RobotwinReplayTask(bridge)
