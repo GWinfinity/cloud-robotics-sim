@@ -53,3 +53,6 @@ uv run python -m examples.hifiumi.replay_hifiumi --episode 7 --hand left --max-f
 
 结论：在机械臂可达范围内，重定向偏差 < 1mm，远优于 HiFi-UMI 的 3mm 采集精度；
 误差主要来自人体大幅度动作超出固定基座机械臂工作空间（可达率指标即为该场景设计）。
+
+两条工程经验（工作空间可达率优先于跟踪精度、偏差度量须用运动学重定向）的详细记录见
+[LESSONS.md](./LESSONS.md)。
