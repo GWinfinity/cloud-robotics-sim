@@ -4,9 +4,9 @@ Mobile manipulation task - navigate and manipulate.
 Robot must navigate to target location and perform manipulation.
 Combines locomotion and manipulation skills.
 """
+from __future__ import annotations
 
 import torch
-from __future__ import annotations
 
 import numpy as np
 

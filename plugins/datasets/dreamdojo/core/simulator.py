@@ -57,6 +57,13 @@ except ImportError:
     Scene = None
     RigidEntity = None
 
+# Project compatibility helper (backend selection with CPU fallback).
+# Optional so the plugin stays importable outside the monorepo.
+try:
+    from cloud_robotics_sim.utils.genesis_compat import genesis_init
+except ImportError:
+    genesis_init = None
+
 
 class GenesisRobotType(Enum):
     """Supported robot types in Genesis."""
@@ -133,12 +140,16 @@ class GenesisSimulator:
         if self._initialized:
             return
             
-        # Initialize Genesis
-        backend = gs.gpu if self.config.device == "cuda" else gs.cpu
-        gs.init(backend=backend)
+        # Initialize Genesis (compat helper handles CUDA -> CPU fallback)
+        if genesis_init is not None:
+            genesis_init(headless=self.config.headless, device=self.config.device)
+        else:
+            backend = gs.gpu if self.config.device == "cuda" else gs.cpu
+            gs.init(backend=backend)
         
-        # Create scene
-        self.scene = gs.Scene(**self.config.scene_config)
+        # Create scene (genesis-world >= 1.0 requires typed option objects,
+        # not plain dicts)
+        self.scene = gs.Scene(**self._scene_kwargs())
         
         # Add ground plane
         self.scene.add_entity(
@@ -174,32 +185,47 @@ class GenesisSimulator:
         self.scene.build()
         self._initialized = True
         
+    # Dict-valued scene_config keys that must be wrapped in typed options.
+    _OPTION_CLASS_NAMES = {
+        "sim_options": "SimOptions",
+        "viewer_options": "ViewerOptions",
+        "vis_options": "VisOptions",
+    }
+
+    def _scene_kwargs(self) -> dict:
+        """Convert dict-valued options in scene_config to typed objects."""
+        kwargs: dict = {}
+        for key, value in (self.config.scene_config or {}).items():
+            cls_name = self._OPTION_CLASS_NAMES.get(key)
+            option_cls = getattr(gs.options, cls_name, None) if cls_name else None
+            if option_cls is not None and isinstance(value, dict):
+                kwargs[key] = option_cls(**value)
+            else:
+                kwargs[key] = value
+        return kwargs
+
     def _add_humanoid(self) -> RigidEntity:
-        """Add humanoid robot to scene."""
+        """Add humanoid robot to scene (bundled with genesis-world 1.2.x)."""
         return self.scene.add_entity(
             gs.morphs.MJCF(
-                file="xml/humanoid/humanoid.xml",
+                file="xml/humanoid.xml",
                 pos=(0.0, 0.0, 1.0),
             ),
         )
     
     def _add_ur5(self) -> RigidEntity:
-        """Add UR5 robot arm to scene."""
+        """Add UR5e robot arm (bundled as MJCF in genesis-world 1.2.x)."""
         return self.scene.add_entity(
-            gs.morphs.URDF(
-                file="urdf/robots/ur5/ur5.urdf",
-                pos=(0.0, 0.0, 0.0),
-                euler=(0, 0, 0),
+            gs.morphs.MJCF(
+                file="xml/universal_robots_ur5e/ur5e.xml",
             ),
         )
     
     def _add_franka(self) -> RigidEntity:
-        """Add Franka Emika Panda robot to scene."""
+        """Add Franka Emika Panda (bundled as MJCF in genesis-world 1.2.x)."""
         return self.scene.add_entity(
-            gs.morphs.URDF(
-                file="urdf/robots/franka_emika_panda/panda.urdf",
-                pos=(0.0, 0.0, 0.0),
-                euler=(0, 0, 0),
+            gs.morphs.MJCF(
+                file="xml/franka_emika_panda/panda.xml",
             ),
         )
     

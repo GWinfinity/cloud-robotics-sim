@@ -1,0 +1,5 @@
+# Rasterizer tier (doc section 6.1): highest throughput.
+# Use for: seed search, RL, large-scale rollouts.
+mode: rasterizer
+resolution: [640, 480]
+fov: 60.0

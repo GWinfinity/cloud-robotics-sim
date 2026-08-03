@@ -1,0 +1,28 @@
+# VR Bridge 主配置。mapping 路径相对于本文件所在目录解析。
+network:
+  host: 0.0.0.0        # 监听地址；仅本机调试可改 127.0.0.1
+  state_port: 5555     # UDP 状态流
+  control_port: 5556   # TCP 控制通道
+
+mapping: mappings/franka_single.yaml
+
+filter:
+  min_cutoff: 1.0      # One Euro 最小截止频率 (Hz)，调小更平滑
+  beta: 0.02           # 速度系数，调大高速时延迟更低
+
+safety:
+  workspace_center: [0.0, 0.0, 0.35]
+  workspace_radius: 0.8
+  max_ee_speed: 1.0    # m/s，限制单步末端目标速度，防 IK 跳变
+  freeze_timeout_ms: 100
+  disconnect_timeout_ms: 1000
+
+# 数据录制（M2 数据闭环）
+recording:
+  # B 键（record_toggle）停止录制时，把这一段 episode 自动追加写入该 HDF5
+  # 文件（dreamdojo 兼容布局：episode_N/observations uint8 视频 +
+  # episode_N/actions float32 关节目标，多次录制按 episode_0/1/2... 累加）。
+  # 需要 step(dt, rgb=...) 提供相机帧；留空或删除本段则禁用自动保存
+  # （仍可在代码里手动调 recorder.save_npz / save_hdf5 导出）。
+  # 相对路径相对本配置文件所在目录解析（与 mapping 一致）。
+  output: ../../../../data/trajectories/teleop_franka.h5

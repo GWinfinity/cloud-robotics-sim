@@ -1,10 +1,10 @@
 """
 Transform utilities.
 """
+from __future__ import annotations
 
 import math
 import numpy as np
-from __future__ import annotations
 
 import torch
 

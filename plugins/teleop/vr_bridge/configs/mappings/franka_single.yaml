@@ -1,0 +1,22 @@
+# Franka 单臂映射表：右手柄 -> 末端位姿（离合增量），扳机 -> 夹爪。
+# dofs 为机器人局部关节索引（Franka: 0-6 臂, 7-8 夹爪）。
+arms:
+  - name: right_arm
+    source: right
+    ee_link: hand
+    dofs: [0, 1, 2, 3, 4, 5, 6]
+    pos_scale: 1.0
+
+grippers:
+  - name: gripper
+    source: right
+    dofs: [7, 8]
+    open_value: 0.04
+    close_value: 0.0
+
+grip_threshold: 0.5
+
+buttons:
+  a: reset_episode
+  b: record_toggle
+  menu: emergency_stop

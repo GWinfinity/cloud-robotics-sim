@@ -319,8 +319,8 @@ def main():
     pdf.ln(10)
     pdf.set_font("CN", "", 10)
     pdf.set_text_color(100, 100, 100)
-    pdf.cell(0, 8, "版本：v1.1（已融合2026专项行动政策解读）", align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 8, "日期：2026年6月12日", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 8, "版本：v1.2（新增动作规划引擎模块）", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 8, "日期：2026年8月2日", align="C", new_x="LMARGIN", new_y="NEXT")
 
     # 正文
     pdf.add_page()

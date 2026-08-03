@@ -1,0 +1,36 @@
+name: vr_bridge
+version: 0.1.0
+description: >
+  VR teleoperation bridge for genesis-cloud-sim. Receives 6DoF controller
+  state from a headset client (PICO / any OpenXR device) over a versioned
+  UDP+TCP protocol, maps it through a YAML-driven semantic layer with
+  clutch-based incremental retargeting and a safety supervisor, and drives
+  robot arms via IK + position control. Ships a mock client so the full
+  pipeline runs without hardware.
+
+category: teleop
+source_project: https://github.com/githbi/genesis-cloud-sim
+
+author:
+  name: genesis-cloud-sim community
+  email: ""
+
+dependencies:
+  - numpy>=1.20
+  - pyyaml>=5.4
+
+exports:
+  - VRBridge
+  - BridgeConfig
+  - ClutchRetargeter
+  - SemanticMapper
+  - SafetySupervisor
+  - TeleopRecorder
+
+tags:
+  - teleoperation
+  - vr
+  - pico
+  - openxr
+  - imitation_learning
+  - data_collection

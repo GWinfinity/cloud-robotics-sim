@@ -131,6 +131,11 @@ class MTLambdaBackend(GenesisBackend):
         substeps: int,
         headless: bool = True,
         viewer_options: ViewerOptions | None = None,
+        fem_options: Any | None = None,
+        pbd_options: Any | None = None,
+        sph_options: Any | None = None,
+        mpm_options: Any | None = None,
+        sf_options: Any | None = None,
     ) -> SceneBackend:
         """Create a Genesis scene.
 
@@ -143,4 +148,9 @@ class MTLambdaBackend(GenesisBackend):
             substeps=substeps,
             headless=headless,
             viewer_options=viewer_options,
+            fem_options=fem_options,
+            pbd_options=pbd_options,
+            sph_options=sph_options,
+            mpm_options=mpm_options,
+            sf_options=sf_options,
         )

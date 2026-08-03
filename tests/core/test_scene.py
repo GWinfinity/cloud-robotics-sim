@@ -138,7 +138,7 @@ class TestObjectSpawn:
         spawn = ObjectSpawn(
             name="mesh_obj",
             shape_type="mesh",
-            size=(1.0, 1.0, 1.0),
+            scale=(2.0, 2.0, 2.0),
             mesh_path="path/to/mesh.obj",
         )
         spawn.spawn(scene_backend)
@@ -147,7 +147,7 @@ class TestObjectSpawn:
             file="path/to/mesh.obj",
             pos=(0.0, 0.0, 0.0),
             quat=(1.0, 0.0, 0.0, 0.0),
-            scale=(1.0, 1.0, 1.0),
+            scale=(2.0, 2.0, 2.0),
             color=(0.8, 0.8, 0.8, 1.0),
             static=True,
             friction=0.5,

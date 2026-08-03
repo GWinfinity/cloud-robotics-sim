@@ -1,0 +1,31 @@
+# 双 Franka 映射表：左右手柄各控一臂，扳机各控对应夹爪。
+arms:
+  - name: left_arm
+    source: left
+    ee_link: left_hand
+    dofs: [0, 1, 2, 3, 4, 5, 6]
+    pos_scale: 1.0
+  - name: right_arm
+    source: right
+    ee_link: right_hand
+    dofs: [7, 8, 9, 10, 11, 12, 13]
+    pos_scale: 1.0
+
+grippers:
+  - name: left_gripper
+    source: left
+    dofs: [14, 15]
+    open_value: 0.04
+    close_value: 0.0
+  - name: right_gripper
+    source: right
+    dofs: [16, 17]
+    open_value: 0.04
+    close_value: 0.0
+
+grip_threshold: 0.5
+
+buttons:
+  a: reset_episode
+  b: record_toggle
+  menu: emergency_stop

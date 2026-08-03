@@ -6,9 +6,9 @@ Examples:
 - Place cap on bottle
 - Put block into container
 """
+from __future__ import annotations
 
 import torch
-from __future__ import annotations
 
 import numpy as np
 

@@ -271,6 +271,46 @@ def spherical_to_cartesian(
         return [x + target[0], y + target[1], z + target[2]]
 
 
+def intrinsics_from_fov(
+    width: int,
+    height: int,
+    fov_deg: float,
+) -> "np.ndarray":
+    """Derive a pinhole intrinsic matrix from resolution and vertical FOV.
+
+    Genesis cameras interpret ``fov`` as the *vertical* field of view and
+    derive the focal length from the image height:
+    ``fx = fy = H / (2 * tan(fov / 2))``, principal point at the image
+    center. This matches ``Camera.intrinsics`` of a built Genesis camera
+    exactly (verified against Genesis 1.2.2 with 1e-6 tolerance).
+
+    Note: the RoboTwin migration doc (section 7) states a width-based
+    formula; that formula differs from Genesis by exactly the aspect ratio.
+    The height-based form above is the Genesis-consistent convention.
+
+    Args:
+        width: Image width in pixels.
+        height: Image height in pixels.
+        fov_deg: Vertical field of view in degrees.
+
+    Returns:
+        3x3 intrinsic matrix as float64 numpy array.
+    """
+    if not HAS_NUMPY:
+        raise RuntimeError("intrinsics_from_fov requires numpy")
+    import math
+
+    f = height / (2.0 * math.tan(math.radians(fov_deg) / 2.0))
+    return np.array(
+        [
+            [f, 0.0, width / 2.0],
+            [0.0, f, height / 2.0],
+            [0.0, 0.0, 1.0],
+        ],
+        dtype=np.float64,
+    )
+
+
 def compute_fovy(focal_length: float, sensor_height: float) -> float:
     """Compute vertical field of view from focal length.
 
@@ -416,6 +456,7 @@ __all__ = [
     "rgba2hex",
     # Camera parameters
     "compute_fovy",
+    "intrinsics_from_fov",
     "get_camera_rays",
     # Viewer
     "create_viewer",

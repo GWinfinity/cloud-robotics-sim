@@ -8,8 +8,9 @@ Stages:
 4. Transfer to bowl/plate
 """
 
-import torch
 from __future__ import annotations
+
+import torch
 
 import numpy as np
 

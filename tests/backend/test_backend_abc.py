@@ -11,6 +11,7 @@ import pytest
 from cloud_robotics_sim.backend import (
     ArticulationBackend,
     BackendName,
+    DeformableEntityBackend,
     EntityBackend,
     LightDescription,
     LightType,
@@ -21,7 +22,8 @@ from cloud_robotics_sim.backend import (
     available_backends,
     get_backend,
 )
-from tests.conftest import MockArticulation, MockEntity
+from cloud_robotics_sim.backend.types import DeformableConfig
+from tests.conftest import MockArticulation, MockDeformableEntity, MockEntity
 
 
 class MockRenderer(RendererBackend):
@@ -169,6 +171,22 @@ class MockBackend(SimulatorBackend):
     ) -> EntityBackend:
         return MockEntity(name=kwargs.get("name"))
 
+    def create_deformable(
+        self,
+        config: DeformableConfig,
+        shape: str,
+        *,
+        size: tuple[float, float, float] | None = None,
+        radius: float | None = None,
+        file: str | None = None,
+        scale: tuple[float, float, float] | None = None,
+        pos: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        quat: tuple[float, float, float, float] | None = None,
+        color: tuple[float, float, float, float] | None = None,
+        name: str | None = None,
+    ) -> DeformableEntityBackend:
+        return MockDeformableEntity(name=name, config=config)
+
     def load_mjcf(
         self,
         file: str,
@@ -235,6 +253,48 @@ def test_articulation_batch_interface() -> None:
     state = robot.get_state_batch()
     assert state.qpos is not None
     assert state.qpos.shape == (7,)
+
+
+def test_deformable_backend_workflow() -> None:
+    """Exercise the deformable entity workflow with a mock backend."""
+    backend = MockBackend()
+    backend.initialize(headless=True, device="cpu")
+    scene = backend.create_scene(dt=0.01, substeps=10)
+
+    config = DeformableConfig(resolution_level=3)
+    soft_body = backend.create_deformable(
+        config=config,
+        shape="box",
+        size=(0.1, 0.1, 0.1),
+        pos=(0.5, 0.0, 0.05),
+        name="test_soft_cube",
+    )
+    assert isinstance(soft_body, DeformableEntityBackend)
+    assert soft_body.config.resolution_level == 3
+
+    scene.add_entity(soft_body)
+    assert len(scene.entities) == 1
+
+    state = soft_body.get_deformable_state()
+    assert isinstance(state.positions, np.ndarray)
+
+
+def test_deformable_vertex_constraints() -> None:
+    """Verify vertex constraint bookkeeping on the mock deformable backend."""
+    backend = MockBackend()
+    soft_body = backend.create_deformable(
+        DeformableConfig(),
+        shape="box",
+        size=(0.1, 0.1, 0.1),
+        name="constrained_body",
+    )
+    indices = np.array([0, 1], dtype=np.int32)
+    positions = np.array([[0.0, 0.0, 0.0], [0.1, 0.0, 0.0]], dtype=np.float64)
+    soft_body.set_vertex_constraints(indices, positions, soft=True, stiffness=1e3)
+
+    state = soft_body.get_deformable_state()
+    np.testing.assert_array_equal(state.constrained_indices, indices)
+    np.testing.assert_array_equal(state.constrained_positions, positions)
 
 
 @pytest.mark.parametrize(

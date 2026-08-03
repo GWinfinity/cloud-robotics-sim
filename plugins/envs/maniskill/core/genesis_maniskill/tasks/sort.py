@@ -6,9 +6,9 @@ Examples:
 - Arrange objects by size
 - Group similar items together
 """
+from __future__ import annotations
 
 import torch
-from __future__ import annotations
 
 import numpy as np
 

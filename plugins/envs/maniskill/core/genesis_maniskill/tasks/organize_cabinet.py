@@ -4,9 +4,9 @@ Organize cabinet task - arrange items in cabinet.
 Robot must open cabinet, pick up items, and place them
 in proper positions inside the cabinet.
 """
+from __future__ import annotations
 
 import torch
-from __future__ import annotations
 
 import numpy as np
 

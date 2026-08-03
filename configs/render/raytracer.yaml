@@ -1,0 +1,11 @@
+# Raytracer tier (LuisaRender path tracing, doc section 6.1): highest fidelity,
+# closest to SAPIEN RT (32spp + OIDN). Use for: final training data generation
+# and vision-fidelity-sensitive tasks. Requires GPU for practical throughput.
+mode: raytracer
+resolution: [640, 480]
+fov: 60.0
+spp: 32
+denoise: true
+# Extra gs.renderers.RayTracer options (calibrated once, shared by all tasks,
+# doc section 6.2). Keep empty until the GPU calibration milestone (M4).
+raytracer_options: {}

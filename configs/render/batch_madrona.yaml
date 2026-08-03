@@ -1,0 +1,7 @@
+# Batch tier (Madrona BatchRenderer, doc section 6.1): high throughput at
+# medium fidelity. Use for: parallel policy evaluation and DR sweeps.
+# Requires `pip install gs-madrona`; recommended 256x256 with 128-256 envs.
+mode: batch
+resolution: [256, 256]
+fov: 60.0
+batch_use_rasterizer: true

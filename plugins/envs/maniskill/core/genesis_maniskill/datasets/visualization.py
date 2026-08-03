@@ -3,9 +3,9 @@ Visualization tools for trajectory datasets.
 
 Provides tools to visualize and debug trajectory data.
 """
+from __future__ import annotations
 
 from pathlib import Path
-from __future__ import annotations
 
 import numpy as np
 import matplotlib.pyplot as plt

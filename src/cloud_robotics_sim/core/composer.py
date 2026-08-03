@@ -46,6 +46,12 @@ class ComposerConfig:
     backend: BackendName | str = BackendName.GENESIS
     device: str = "cuda"
     domain_randomization: dict = field(default_factory=dict)
+    # Optional solver configurations for deformable/fluid simulation.
+    fem_options: Any | None = None
+    pbd_options: Any | None = None
+    sph_options: Any | None = None
+    mpm_options: Any | None = None
+    sf_options: Any | None = None
 
 
 class ComposedEnvironment:
@@ -291,6 +297,11 @@ class EnvironmentComposer:
             substeps=self.config.substeps,
             headless=self.config.headless,
             viewer_options=viewer_options,
+            fem_options=self.config.fem_options,
+            pbd_options=self.config.pbd_options,
+            sph_options=self.config.sph_options,
+            mpm_options=self.config.mpm_options,
+            sf_options=self.config.sf_options,
         )
 
         # Build scene and spawn robot

@@ -1,0 +1,37 @@
+# 人形机器人 + 移动底盘映射示例。
+# 底盘速度/转向来自摇杆；手臂为离合增量控制；灵巧手手势 retargeting
+# 属于协议 v1.1（hand_joints 字段），此处以扳机二值开合占位。
+arms:
+  - name: left_arm
+    source: left
+    ee_link: left_ee
+    dofs: [0, 1, 2, 3, 4, 5, 6]
+    pos_scale: 1.0
+  - name: right_arm
+    source: right
+    ee_link: right_ee
+    dofs: [7, 8, 9, 10, 11, 12, 13]
+    pos_scale: 1.0
+
+grippers:
+  - name: left_hand
+    source: left
+    dofs: [14, 15, 16, 17, 18, 19]
+    open_value: 0.0
+    close_value: 1.0
+  - name: right_hand
+    source: right
+    dofs: [20, 21, 22, 23, 24, 25]
+    open_value: 0.0
+    close_value: 1.0
+
+base:
+  planar_velocity: {source: left, scale: 0.5}
+  yaw: {source: right, scale: 1.0}
+
+grip_threshold: 0.5
+
+buttons:
+  a: reset_episode
+  b: record_toggle
+  menu: emergency_stop

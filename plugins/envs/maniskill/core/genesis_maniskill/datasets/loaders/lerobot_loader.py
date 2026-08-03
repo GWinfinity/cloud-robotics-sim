@@ -6,9 +6,9 @@ LeRobot format is becoming a standard for robot learning.
 
 Reference: https://github.com/huggingface/lerobot
 """
+from __future__ import annotations
 
 from pathlib import Path
-from __future__ import annotations
 
 from typing import Union
 import numpy as np

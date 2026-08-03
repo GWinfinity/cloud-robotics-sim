@@ -7,6 +7,7 @@ Welcome to the Cloud Robotics Simulation Platform documentation.
 - [Installation Guide](guides/installation.md)
 - [Getting Started](guides/quickstart.md)
 - [Configuration](guides/configuration.md)
+- [RoboTwin Replay in Genesis](guides/robotwin_replay.md)
 
 ## Architecture
 

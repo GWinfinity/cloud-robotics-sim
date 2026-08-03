@@ -1,0 +1,114 @@
+{
+  "protocol_version": 1,
+  "coordinate_frame": {
+    "handedness": "right",
+    "up_axis": "z",
+    "unit": "meter",
+    "quaternion_order": "wxyz"
+  },
+  "channels": {
+    "state": {"transport": "udp", "default_port": 5555, "rate_hz": [60, 90]},
+    "control": {"transport": "tcp", "default_port": 5556, "framing": "ndjson"}
+  },
+  "messages": {
+    "client_to_server": {
+      "hello": {
+        "channel": "control",
+        "fields": {
+          "type": {"const": "hello"},
+          "protocol_version": {"type": "int", "required": true},
+          "device": {"type": "string", "required": true},
+          "client_time_ms": {"type": "int", "required": true}
+        }
+      },
+      "ping": {
+        "channel": "control",
+        "fields": {
+          "type": {"const": "ping"},
+          "client_time_ms": {"type": "int", "required": true}
+        }
+      },
+      "event": {
+        "channel": "control",
+        "fields": {
+          "type": {"const": "event"},
+          "event": {
+            "type": "string",
+            "enum": ["a", "b", "x", "y", "menu", "grip_left", "grip_right"],
+            "required": true
+          },
+          "pressed": {"type": "bool", "required": true},
+          "client_time_ms": {"type": "int", "required": true}
+        }
+      },
+      "bye": {
+        "channel": "control",
+        "fields": {"type": {"const": "bye"}}
+      },
+      "state": {
+        "channel": "state",
+        "fields": {
+          "type": {"const": "state"},
+          "seq": {"type": "int", "required": true},
+          "client_time_ms": {"type": "int", "required": true},
+          "head": {"$ref": "pose_stamped", "required": false},
+          "left": {"$ref": "hand_state", "required": true},
+          "right": {"$ref": "hand_state", "required": true}
+        }
+      }
+    },
+    "server_to_client": {
+      "welcome": {
+        "channel": "control",
+        "fields": {
+          "type": {"const": "welcome"},
+          "protocol_version": {"type": "int"},
+          "session_id": {"type": "string"},
+          "server_time_ms": {"type": "int"}
+        }
+      },
+      "error": {
+        "channel": "control",
+        "fields": {
+          "type": {"const": "error"},
+          "code": {
+            "type": "string",
+            "enum": ["PROTOCOL_MISMATCH", "SESSION_BUSY", "BAD_MESSAGE", "INTERNAL"]
+          },
+          "message": {"type": "string"}
+        }
+      },
+      "pong": {
+        "channel": "control",
+        "fields": {
+          "type": {"const": "pong"},
+          "client_time_ms": {"type": "int"},
+          "server_time_ms": {"type": "int"}
+        }
+      },
+      "estop_ack": {
+        "channel": "control",
+        "fields": {
+          "type": {"const": "estop_ack"},
+          "server_time_ms": {"type": "int"}
+        }
+      }
+    }
+  },
+  "definitions": {
+    "pose_stamped": {
+      "fields": {
+        "pos": {"type": "array", "items": "float", "len": 3},
+        "quat": {"type": "array", "items": "float", "len": 4, "order": "wxyz"}
+      }
+    },
+    "hand_state": {
+      "extends": "pose_stamped",
+      "fields": {
+        "trigger": {"type": "float", "range": [0.0, 1.0]},
+        "grip": {"type": "float", "range": [0.0, 1.0]},
+        "thumbstick": {"type": "array", "items": "float", "len": 2, "range": [-1.0, 1.0]}
+      }
+    }
+  }
+}

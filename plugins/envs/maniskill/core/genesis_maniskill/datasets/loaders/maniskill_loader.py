@@ -3,9 +3,9 @@ ManiSkill dataset loader.
 
 Loads data from ManiSkill's format (HDF5 or pickled trajectories) and converts to unified format.
 """
+from __future__ import annotations
 
 from pathlib import Path
-from __future__ import annotations
 
 from typing import Union
 import numpy as np

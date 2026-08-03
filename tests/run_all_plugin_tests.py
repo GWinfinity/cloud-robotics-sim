@@ -23,6 +23,7 @@ PLUGINS = [
     ("sim2real/sim2real_dexterous", "Sim2Real Dexterous"),
     ("datasets/dreamdojo", "DreamDojo Dataset"),
     ("scenes/art_scenes", "ART Scenes"),
+    ("teleop/vr_bridge", "VR Bridge Teleop"),
 ]
 
 
@@ -59,6 +60,8 @@ def run_plugin_test(plugin_path: str, name: str) -> dict:
             cmd,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",  # tolerate non-locale bytes on Windows consoles
             timeout=120,
         )
         output = proc.stdout + proc.stderr

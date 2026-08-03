@@ -4,9 +4,9 @@ Cleanup task - clean up cluttered items.
 Robot must pick up items from one location and place them
 in their proper storage locations.
 """
+from __future__ import annotations
 
 import torch
-from __future__ import annotations
 
 import numpy as np
 

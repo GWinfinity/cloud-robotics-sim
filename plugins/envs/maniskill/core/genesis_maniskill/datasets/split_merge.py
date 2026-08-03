@@ -7,9 +7,9 @@ Provides tools to:
 - Balance datasets by task
 - Filter datasets
 """
+from __future__ import annotations
 
 from pathlib import Path
-from __future__ import annotations
 
 from typing import Union
 import numpy as np

@@ -3,9 +3,9 @@ Replay trajectories in Genesis environments.
 
 Allows visualizing and validating converted trajectories by replaying them.
 """
+from __future__ import annotations
 
 from pathlib import Path
-from __future__ import annotations
 
 import numpy as np
 import time

@@ -11,15 +11,15 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
 
-import genesis as gs
-
 from cloud_robotics_sim.backend import SceneBackend
-from cloud_robotics_sim.backend.types import LightDescription, LightType
-from cloud_robotics_sim.utils.genesis_compat import get_genesis_lights, is_genesis_scene
+from cloud_robotics_sim.backend.types import (
+    DeformableConfig,
+    DeformableMaterialType,
+    LightDescription,
+    LightType,
+)
 
 logger = logging.getLogger(__name__)
-
-_is_genesis_scene = is_genesis_scene
 
 
 @dataclass
@@ -58,6 +58,7 @@ class ObjectSpawn:
     name: str
     shape_type: str = "box"
     size: tuple[float, ...] = (1.0, 1.0, 1.0)
+    scale: tuple[float, float, float] | float = (1.0, 1.0, 1.0)
     mesh_path: str | None = None
     position: tuple[float, float, float] = (0.0, 0.0, 0.0)
     orientation: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
@@ -68,27 +69,23 @@ class ObjectSpawn:
     color: tuple[float, float, float, float] = (0.8, 0.8, 0.8, 1.0)
     tags: list[str] = field(default_factory=list)
     properties: dict = field(default_factory=dict)
+    deformable_config: DeformableConfig | None = None
 
-    def spawn(self, scene: SceneBackend | gs.Scene, prefix: str = "") -> Any:
-        """Instantiate this object in the given scene.
+    def spawn(self, scene: SceneBackend, prefix: str = "") -> Any:
+        """Instantiate this object in the given scene backend.
 
         Args:
-            scene: The backend scene or a native Genesis gs.Scene to spawn into.
+            scene: The backend scene to spawn into.
             prefix: Optional prefix for entity naming.
 
         Returns:
-            The created entity (Genesis entity or backend entity).
+            The created backend entity.
 
         Raises:
             ValueError: If shape_type is not supported.
         """
         entity_name = f"{prefix}_{self.name}" if prefix else self.name
 
-        # Legacy path: native Genesis scene.
-        if _is_genesis_scene(scene):
-            return self._spawn_genesis(scene, entity_name)
-
-        # New path: backend-agnostic scene.
         backend = scene.backend if hasattr(scene, "backend") else None
         if backend is None:
             raise RuntimeError("Scene backend is not available for spawning objects.")
@@ -97,6 +94,9 @@ class ObjectSpawn:
         size: tuple[float, float, float] = tuple(
             float(v) for v in self.size[:3]
         )  # type: ignore[assignment]
+
+        # Normalize scale to a 3-tuple for mesh / deformable assets.
+        scale = _normalize_scale(self.scale)
 
         # Create entity through the backend factory.
         match self.shape_type:
@@ -136,10 +136,28 @@ class ObjectSpawn:
                     file=self.mesh_path,
                     pos=self.position,
                     quat=self.orientation,
-                    scale=size,
+                    scale=scale,
                     color=self.color,
                     static=self.static,
                     friction=self.friction,
+                    name=entity_name,
+                )
+            case "deformable":
+                if self.deformable_config is None:
+                    raise ValueError(
+                        f"ObjectSpawn '{entity_name}' has shape_type='deformable' "
+                        "but no deformable_config"
+                    )
+                entity = backend.create_deformable(
+                    config=self.deformable_config,
+                    shape=self._deformable_shape(),
+                    size=size,
+                    radius=self.size[0] if self.size else None,
+                    file=self.mesh_path,
+                    scale=scale,
+                    pos=self.position,
+                    quat=self.orientation,
+                    color=self.color,
                     name=entity_name,
                 )
             case _:
@@ -151,44 +169,24 @@ class ObjectSpawn:
 
         return entity
 
-    def _spawn_genesis(self, scene: gs.Scene, entity_name: str) -> Any:
-        """Legacy Genesis spawn path using gs.morphs / gs.surfaces."""
-        match self.shape_type:
-            case "box":
-                morph = gs.morphs.Box(
-                    size=self.size,
-                    pos=self.position,
-                    quat=self.orientation,
-                )
-            case "sphere":
-                morph = gs.morphs.Sphere(
-                    radius=self.size[0],
-                    pos=self.position,
-                )
-            case "cylinder":
-                morph = gs.morphs.Cylinder(
-                    radius=self.size[0],
-                    height=self.size[1],
-                    pos=self.position,
-                    quat=self.orientation,
-                )
-            case "mesh" if self.mesh_path:
-                morph = gs.morphs.Mesh(
-                    file=self.mesh_path,
-                    pos=self.position,
-                    quat=self.orientation,
-                    scale=self.size,
-                )
-            case _:
-                raise ValueError(f"Unsupported shape type: {self.shape_type}")
+    def _deformable_shape(self) -> str:
+        """Infer the underlying primitive shape for a deformable entity."""
+        if self.mesh_path:
+            return "mesh"
+        shape_hint = str(self.properties.get("deformable_shape", "box"))
+        if shape_hint in {"box", "sphere", "mesh"}:
+            return shape_hint
+        return "box"
 
-        surface = gs.surfaces.Default(
-            color=self.color,
-            roughness=0.8,
-        )
-        entity = scene.add_entity(morph=morph, surface=surface)
-        logger.debug(f"Spawned '{entity_name}' at {self.position}")
-        return entity
+
+def _normalize_scale(scale: tuple[float, float, float] | float) -> tuple[float, float, float]:
+    """Normalize a uniform or per-axis scale to a 3-tuple."""
+    if isinstance(scale, (int, float)):
+        return (float(scale), float(scale), float(scale))
+    values = [float(v) for v in scale]
+    while len(values) < 3:
+        values.append(values[-1] if values else 1.0)
+    return (values[0], values[1], values[2])
 
 
 @dataclass
@@ -290,11 +288,11 @@ class Scene(ABC):
         names = self._tag_index.get(tag, [])
         return [s for s in self.object_spawns if s.name in names]
 
-    def build(self, scene: SceneBackend | gs.Scene) -> Scene:
-        """Build the scene using the provided backend or native Genesis scene.
+    def build(self, scene: SceneBackend) -> Scene:
+        """Build the scene using the provided backend scene.
 
         Args:
-            scene: The backend scene or native Genesis gs.Scene to build into.
+            scene: The backend scene to build into.
 
         Returns:
             Self for method chaining.
@@ -315,12 +313,6 @@ class Scene(ABC):
         width, depth, height = self.config.size
         thickness = self.config.wall_thickness
 
-        # Legacy path: native Genesis scene.
-        if _is_genesis_scene(self.scene):
-            self._build_room_structure_genesis(width, depth, height, thickness)
-            return
-
-        # New path: backend-agnostic scene.
         backend = self.scene.backend if hasattr(self.scene, "backend") else None
         if backend is None:
             raise RuntimeError(
@@ -373,62 +365,8 @@ class Scene(ABC):
             self.scene.add_entity(wall)
             self.room_entities[f"wall_{name}"] = wall
 
-    def _build_room_structure_genesis(
-        self,
-        width: float,
-        depth: float,
-        height: float,
-        thickness: float,
-    ) -> None:
-        """Legacy Genesis room structure using gs.morphs / gs.surfaces."""
-        floor = self.scene.add_entity(
-            morph=gs.morphs.Box(
-                size=(width, depth, thickness),
-                pos=(0.0, 0.0, -thickness / 2),
-                fixed=True,
-            ),
-            surface=gs.surfaces.Default(color=(0.9, 0.9, 0.9, 1.0)),
-        )
-        self.room_entities["floor"] = floor
-
-        wall_configs = [
-            (
-                "north",
-                (0.0, depth / 2 + thickness / 2, height / 2),
-                (width, thickness, height),
-            ),
-            (
-                "south",
-                (0.0, -depth / 2 - thickness / 2, height / 2),
-                (width, thickness, height),
-            ),
-            (
-                "east",
-                (width / 2 + thickness / 2, 0.0, height / 2),
-                (thickness, depth, height),
-            ),
-            (
-                "west",
-                (-width / 2 - thickness / 2, 0.0, height / 2),
-                (thickness, depth, height),
-            ),
-        ]
-
-        for name, pos, size in wall_configs:
-            wall = self.scene.add_entity(
-                morph=gs.morphs.Box(size=size, pos=pos, fixed=True),
-                surface=gs.surfaces.Default(color=(0.95, 0.95, 0.95, 1.0)),
-            )
-            self.room_entities[f"wall_{name}"] = wall
-
     def _setup_lighting(self) -> None:
-        """Configure scene lighting (Genesis or backend-agnostic path)."""
-        # Legacy path: native Genesis scene with gs.lights if available.
-        if _is_genesis_scene(self.scene):
-            self._setup_lighting_genesis()
-            return
-
-        # New path: backend-agnostic scene.
+        """Configure scene lighting through the backend."""
         # Ambient light
         self.scene.add_light(
             LightDescription(
@@ -450,34 +388,6 @@ class Scene(ABC):
                 cast_shadow=True,
             )
         )
-
-    def _setup_lighting_genesis(self) -> None:
-        """Legacy Genesis lighting setup using gs.lights."""
-        lights = get_genesis_lights()
-        if lights is None:
-            logger.debug("Skipping explicit lighting setup (gs.lights unavailable)")
-            return
-
-        try:
-            self.scene.add_light(
-                lights.Ambient(
-                    color=(1.0, 1.0, 1.0),
-                    intensity=self.config.ambient_light[0],
-                )
-            )
-
-            main = self.config.main_light
-            self.scene.add_light(
-                lights.Directional(
-                    pos=main["pos"],
-                    direction=(0.0, 0.3, -1.0),
-                    color=main["color"],
-                    intensity=main["intensity"],
-                    cast_shadow=True,
-                )
-            )
-        except AttributeError:
-            logger.debug("Skipping legacy lighting setup for this Genesis version")
 
     def _spawn_objects(self) -> None:
         """Instantiate all configured objects."""
@@ -597,6 +507,43 @@ class ObjectLibrary:
             mass=mass,
             color=color,
             tags=["graspable", "cube", "manipulable"],
+        )
+
+    @staticmethod
+    def deformable_soft_cube(
+        name: str = "soft_cube",
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        size: float = 0.08,
+        color: tuple[float, float, float, float] = (0.2, 0.7, 0.3, 1.0),
+        deformable_config: DeformableConfig | None = None,
+    ) -> ObjectSpawn:
+        """A deformable soft cube for grasping experiments.
+
+        Args:
+            name: Object identifier.
+            position: Initial position.
+            size: Cube side length in meters.
+            color: RGBA color tuple.
+            deformable_config: Optional deformable material configuration.
+                Defaults to a soft FEM elastic material.
+        """
+        config = deformable_config or DeformableConfig(
+            material=DeformableMaterialType.FEM_ELASTIC,
+            youngs_modulus=1.0e4,
+            poisson_ratio=0.45,
+            density=1000.0,
+            resolution_level=2,
+        )
+        return ObjectSpawn(
+            name=name,
+            shape_type="deformable",
+            size=(size, size, size),
+            position=position,
+            static=False,
+            mass=0.1,
+            color=color,
+            tags=["graspable", "soft_body", "manipulable"],
+            deformable_config=config,
         )
 
     @staticmethod

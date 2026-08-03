@@ -6,9 +6,9 @@ Examples:
 - Assemble toy parts
 - Build simple structures
 """
+from __future__ import annotations
 
 import torch
-from __future__ import annotations
 
 import numpy as np
 

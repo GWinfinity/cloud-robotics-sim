@@ -3,9 +3,9 @@ RoboCasa dataset loader.
 
 Loads data from RoboCasa's HDF5 format and converts to unified trajectory format.
 """
+from __future__ import annotations
 
 from pathlib import Path
-from __future__ import annotations
 
 from typing import Union
 import numpy as np

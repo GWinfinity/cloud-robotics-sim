@@ -9,10 +9,12 @@ import numpy as np
 from cloud_robotics_sim.backend import (
     ArticulationBackend,
     ArticulationState,
+    DeformableEntityBackend,
     EntityBackend,
     Pose,
     SceneBackend,
 )
+from cloud_robotics_sim.backend.types import DeformableConfig, DeformableState
 
 # ---------------------------------------------------------------------------
 # Shared mock classes
@@ -52,6 +54,69 @@ class MockEntity(EntityBackend):
         pos: np.ndarray | None = None,
     ) -> None:
         pass
+
+
+class MockDeformableEntity(MockEntity, DeformableEntityBackend):
+    """Minimal deformable entity backend for unit tests."""
+
+    def __init__(
+        self,
+        name: str | None = None,
+        config: DeformableConfig | None = None,
+    ) -> None:
+        super().__init__(name)
+        self.config = config or DeformableConfig()
+        self._positions = np.zeros((0, 3), dtype=np.float64)
+        self._velocities: np.ndarray | None = None
+        self._constrained_indices: np.ndarray | None = None
+        self._constrained_positions: np.ndarray | None = None
+
+    def get_particle_positions(self) -> np.ndarray:
+        return self._positions.copy()
+
+    def get_particle_velocities(self) -> np.ndarray | None:
+        return self._velocities.copy() if self._velocities is not None else None
+
+    def set_vertex_constraints(
+        self,
+        indices: np.ndarray,
+        positions: np.ndarray,
+        *,
+        soft: bool = False,
+        stiffness: float = 1.0e4,
+    ) -> None:
+        self._constrained_indices = np.asarray(indices, dtype=np.int32)
+        self._constrained_positions = np.asarray(positions, dtype=np.float64)
+
+    def update_constraint_targets(
+        self,
+        indices: np.ndarray,
+        positions: np.ndarray,
+    ) -> None:
+        self._constrained_indices = np.asarray(indices, dtype=np.int32)
+        self._constrained_positions = np.asarray(positions, dtype=np.float64)
+
+    def get_deformable_state(self) -> DeformableState:
+        return DeformableState(
+            positions=self.get_particle_positions(),
+            velocities=self.get_particle_velocities(),
+            constrained_indices=self._constrained_indices,
+            constrained_positions=self._constrained_positions,
+        )
+
+    def set_deformable_state(self, state: DeformableState) -> None:
+        if state.positions is not None:
+            self._positions = np.asarray(state.positions, dtype=np.float64)
+        if state.velocities is not None:
+            self._velocities = np.asarray(state.velocities, dtype=np.float64)
+        if state.constrained_indices is not None:
+            self._constrained_indices = np.asarray(
+                state.constrained_indices, dtype=np.int32
+            )
+        if state.constrained_positions is not None:
+            self._constrained_positions = np.asarray(
+                state.constrained_positions, dtype=np.float64
+            )
 
 
 class MockArticulation(MockEntity, ArticulationBackend):
@@ -150,6 +215,23 @@ class MockArticulation(MockEntity, ArticulationBackend):
 
     def get_end_effector_pose(self) -> Pose:
         return Pose(pos=self.get_pos(), quat=self.get_quat())
+
+    def get_joint_names(self) -> list[str]:
+        return [f"joint_{i}" for i in range(self._n_dofs)]
+
+    def get_joint_dofs_idx_local(self, joint_name: str) -> list[int]:
+        if joint_name.startswith("joint_"):
+            try:
+                return [int(joint_name.split("_", 1)[1])]
+            except ValueError:
+                return []
+        return []
+
+    def get_joint_qs_idx_local(self, joint_name: str) -> list[int]:
+        return self.get_joint_dofs_idx_local(joint_name)
+
+    def is_fixed_base(self) -> bool:
+        return True
 
 
 # ---------------------------------------------------------------------------

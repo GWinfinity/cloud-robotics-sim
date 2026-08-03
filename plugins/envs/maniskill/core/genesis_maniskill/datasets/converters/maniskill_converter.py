@@ -3,9 +3,9 @@ ManiSkill to Genesis ManiSkill converter.
 
 Converts ManiSkill datasets to the unified Genesis ManiSkill format.
 """
+from __future__ import annotations
 
 from pathlib import Path
-from __future__ import annotations
 
 from typing import Union
 import numpy as np

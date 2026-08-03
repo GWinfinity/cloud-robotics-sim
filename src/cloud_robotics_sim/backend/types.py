@@ -31,6 +31,22 @@ class ShapeType(Enum):
     CAPSULE = auto()
 
 
+class DeformableMaterialType(str, Enum):
+    """Supported deformable material models.
+
+    These map to Genesis material families (FEM, PBD, SPH, MPM). Only a subset
+    is exposed initially; backends may raise NotImplementedError for unsupported
+    variants.
+    """
+
+    FEM_ELASTIC = "fem_elastic"
+    FEM_CLOTH = "fem_cloth"
+    PBD_ELASTIC = "pbd_elastic"
+    PBD_CLOTH = "pbd_cloth"
+    PBD_LIQUID = "pbd_liquid"
+    SPH_LIQUID = "sph_liquid"
+
+
 class LightType(Enum):
     """Supported light types."""
 
@@ -104,3 +120,51 @@ class LightDescription:
     color: tuple[float, float, float] = (1.0, 1.0, 1.0)
     intensity: float = 1.0
     cast_shadow: bool = False
+
+
+@dataclass
+class DeformableConfig:
+    """Configuration for a deformable entity (soft body / fluid / cloth).
+
+    Attributes:
+        material: Deformable material model (e.g. FEM_ELASTIC).
+        youngs_modulus: Young's modulus E (Pa). Used by elastic materials.
+        poisson_ratio: Poisson's ratio nu. Used by elastic materials.
+        density: Mass density (kg/m^3).
+        resolution_level: Discretization level (1=coarse, 2=medium, 3=fine).
+            Backends translate this into particle size, tetrahedral maxvolume,
+            or solver iterations.
+        solver_iterations: Optional override for solver iterations.
+        region_of_interest: Optional (center, radius) describing the local
+            high-detail zone. Used by multiscale error indicators to allocate
+            resolution non-uniformly.
+        fixed: If True, the entity is pinned in place (e.g. a fixed cloth).
+    """
+
+    material: DeformableMaterialType = DeformableMaterialType.FEM_ELASTIC
+    youngs_modulus: float = 1.0e4
+    poisson_ratio: float = 0.45
+    density: float = 1000.0
+    resolution_level: int = 2
+    solver_iterations: int | None = None
+    region_of_interest: tuple[tuple[float, float, float], float] | None = None
+    fixed: bool = False
+
+
+@dataclass
+class DeformableState:
+    """Backend-agnostic snapshot of a deformable entity.
+
+    Attributes:
+        positions: Vertex/particle positions as (N, 3) array.
+        velocities: Vertex/particle velocities as (N, 3) array, if available.
+        constrained_indices: Indices of constrained vertices, if any.
+        constrained_positions: Target positions for constrained vertices.
+    """
+
+    positions: np.ndarray = field(
+        default_factory=lambda: np.zeros((0, 3), dtype=np.float64)
+    )
+    velocities: np.ndarray | None = None
+    constrained_indices: np.ndarray | None = None
+    constrained_positions: np.ndarray | None = None
