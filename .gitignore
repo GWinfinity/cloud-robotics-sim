@@ -183,4 +183,11 @@ check_taichi_internals.py
 plugins/do_as_i_do/assets/sharpa-urdf-usd-xml-main/
 plugins/do_as_i_do/assets/sharpa-urdf-usd-xml.zip
 plugins/do_as_i_do/assets/robots/*.urdf
+
+# RoboTwin 2.0 assets (~4GB, downloaded from HuggingFace TianxingChen/RoboTwin2.0)
+assets/robotwin/
+assets_genesis/
 !plugins/do_as_i_do/assets/robots/.gitkeep
+
+# HiFi-UMI-2K downloaded shards (large parquet, fetch from HF)
+data/hifiumi/
