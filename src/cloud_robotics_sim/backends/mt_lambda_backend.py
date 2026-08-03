@@ -136,6 +136,7 @@ class MTLambdaBackend(GenesisBackend):
         sph_options: Any | None = None,
         mpm_options: Any | None = None,
         sf_options: Any | None = None,
+        renderer: Any | None = None,
     ) -> SceneBackend:
         """Create a Genesis scene.
 
@@ -153,4 +154,5 @@ class MTLambdaBackend(GenesisBackend):
             sph_options=sph_options,
             mpm_options=mpm_options,
             sf_options=sf_options,
+            renderer=renderer,
         )

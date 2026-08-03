@@ -274,7 +274,7 @@ class EpisodeRecorder:
             frames = np.clip(frames, 0, 255).astype(np.uint8)
         with imageio.get_writer(path, fps=fps or self.fps) as writer:
             for frame in frames:
-                writer.append_data(frame)
+                writer.append_data(frame)  # type: ignore[attr-defined]
         return path
 
     def save_all_per_env(
