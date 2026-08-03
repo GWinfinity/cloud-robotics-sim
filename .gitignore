@@ -191,3 +191,7 @@ assets_genesis/
 
 # HiFi-UMI-2K downloaded shards (large parquet, fetch from HF)
 data/hifiumi/
+
+# Business plan docs (keep local only)
+BUSINESS_PLAN_mt-embodied-sim*.md
+BUSINESS_PLAN_mt-embodied-sim*.pdf
