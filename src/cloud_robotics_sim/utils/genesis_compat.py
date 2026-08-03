@@ -139,8 +139,18 @@ def genesis_init(
         """Expose backend enum members as module attributes and in gs.init globals."""
         _enum = getattr(_mod, "_gs_backend", None)
         if _enum is None:
+            # Some genesis-world installs do not re-export the backend enum on
+            # the top-level module; import it directly from genesis.constants.
+            try:
+                from genesis.constants import backend as _imported_enum
+
+                _enum = _imported_enum
+            except Exception:
+                return
+        _members = getattr(_enum, "__members__", {})
+        if not _members:
             return
-        for _name, _member in _enum.__members__.items():
+        for _name, _member in _members.items():
             if not hasattr(_mod, _name):
                 try:
                     setattr(_mod, _name, _member)
@@ -148,8 +158,22 @@ def genesis_init(
                     pass
         _init_fn = getattr(_mod, "init", None)
         if callable(_init_fn):
-            for _name, _member in _enum.__members__.items():
-                _init_fn.__globals__[_name] = _member
+            _globals = getattr(_init_fn, "__globals__", None)
+            if not _globals:
+                return
+            for _name, _member in _members.items():
+                _globals[_name] = _member
+            # gs.init() references backend names via ``gs.cpu`` etc., where the
+            # ``gs`` global may point at a stale genesis module object (e.g.
+            # left over from a failed first import) that never received the
+            # backend attributes. Inject the names there as well.
+            _stale = _globals.get("gs")
+            if _stale is not None and _stale is not _mod:
+                for _name, _member in _members.items():
+                    try:
+                        setattr(_stale, _name, _member)
+                    except Exception:
+                        pass
 
     is_real_genesis = gs is sys.modules.get("genesis")
     if is_real_genesis:
@@ -202,11 +226,15 @@ def genesis_init(
     try:
         gs.init(backend=backend, **kwargs)
     except AttributeError as exc:
-        # Some genesis-world Linux wheels crash inside get_device() because
-        # gs.gpu is not available during initialization. Retry without an
-        # explicit backend to let Genesis auto-detect.
-        if "gpu" in str(exc).lower():
-            logger.debug("gs.init backend parameter incompatible; auto-detecting")
+        # Some genesis-world installs crash inside gs.init() because the ``gs``
+        # global it references lacks the backend attributes (cpu/gpu/...).
+        # Re-inject the names and retry with auto-detection.
+        if any(
+            name in str(exc).lower()
+            for name in ("cpu", "gpu", "cuda", "metal", "amdgpu")
+        ):
+            logger.debug("gs.init backend attribute missing; re-injecting and auto-detecting")
+            _inject_backend_names(sys.modules.get("genesis") or gs)
             gs.init(**kwargs)
             return
         raise
