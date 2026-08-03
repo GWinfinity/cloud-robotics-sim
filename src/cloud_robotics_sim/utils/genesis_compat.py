@@ -233,7 +233,9 @@ def genesis_init(
             name in str(exc).lower()
             for name in ("cpu", "gpu", "cuda", "metal", "amdgpu")
         ):
-            logger.debug("gs.init backend attribute missing; re-injecting and auto-detecting")
+            logger.debug(
+                "gs.init backend attribute missing; re-injecting and auto-detecting"
+            )
             _inject_backend_names(sys.modules.get("genesis") or gs)
             gs.init(**kwargs)
             return
