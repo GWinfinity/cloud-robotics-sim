@@ -1,0 +1,194 @@
+# 重点类高保真升级清单（按"物品收纳进收纳盒"场景组织）
+#
+# 自建参数化资产（121-173）定位为物理代理：凸包碰撞、尺寸/质量分布正确，
+# 但外观仅达"类别可辨认"。演示出图 / 视频 / 视觉策略训练需要更高保真度。
+# 本清单按收纳场景（容器 ↔ 内容物必然同框）筛选升级对象与优先级：
+# 同框时观众注意力落在最粗糙的件上，故按场景成组升级，而非零散替换。
+#
+# 升级路径（均走既有工作流，不改加载链路）：
+#   objaverse        Objaverse CC0 子集筛选 -> tools/import_generated_objects.py
+#                    追加为新实例（自建实例保留，继续作碰撞/物理代理）
+#                    ⚠ 2026-08 起本机不可达（HF 被墙、S3 bucket 已删），
+#                    刚性类实际执行走 poly_pizza 路径
+#   poly_pizza       Poly Pizza CC0/CC-BY 低模 -> tools/fetch_polypizza_assets.py
+#                    检索-验许可-下载-导入一条龙，溯源登记方式相同
+#   partnet_mobility PartNet-Mobility 关节家具 -> mobility.urdf 布局追加实例
+#                    （冰箱/衣柜/柜凳类，object_library.py URDF 分支已支持）
+#                    ⚠ 下载需 sapien.ucsd.edu 注册 token，U1 关节 3 类暂缓
+#
+# 升级档位：
+#   U1 演示必同框且当前明显粗糙 —— 优先升级
+#   U2 同框但自建已可辨认 —— 有余力再升
+#   U3 保留自建（物理代理够用，或上游 RoboTwin 资产已是高保真）
+#
+# 校验：tests/data/test_asset_upgrade_list.py
+
+version: 1
+name: asset-upgrade-list
+description: 自建资产高保真升级清单（收纳场景同框组织，Poly Pizza/PartNet 路径）
+object_library: assets/robotwin/objects/objects
+
+tiers:
+  U1: 演示必同框且当前明显粗糙（优先）
+  U2: 同框但自建可辨认（次优）
+  U3: 保留自建/上游已有高保真（不升级）
+
+upgrade_paths: [objaverse, poly_pizza, partnet_mobility]
+
+scenes:
+  # ---------------- 玄关 ----------------
+  - id: entryway_pegboard
+    zone: 玄关
+    related_task: item_return
+    container: {class: 152_pegboard, tier: U2, path: objaverse, note: 板体结构简单，IKEA SKÅDIS 类源充足}
+    contents:
+      - {class: 169_key_ring, tier: U1, path: poly_pizza, note: 已升级：钥匙+吊牌/钥匙 2 实例（CC0）}
+      - {class: 168_handbag, tier: U1, path: poly_pizza, note: 已升级：Bag 2 实例（Quaternius/Kenney，CC0）}
+      - {class: 157_umbrella_set, tier: U2, path: objaverse, note: 伞桶可留自建，折叠伞升级}
+  - id: entryway_key_tray
+    zone: 玄关
+    related_task: item_return
+    container: {class: 008_tray, tier: U3, path: objaverse, note: 上游高保真，不动}
+    contents:
+      - {class: 169_key_ring, tier: U1, path: poly_pizza, note: 同上进重复用}
+      - {class: 167_glasses, tier: U2, path: objaverse, note: 线框结构已对，镜片/材质靠升级}
+
+  # ---------------- 厨房 ----------------
+  - id: kitchen_fridge_fill
+    zone: 厨房
+    related_task: cabinet_tidy
+    container: {class: 125_fridge, tier: U1, path: partnet_mobility, note: 演示主角大家电，纯盒体+接缝过不了特写（暂缓：待 SAPIEN 注册 token）}
+    contents:
+      - {class: 166_egg_set, tier: U2, path: objaverse, note: 蛋形已可，蛋壳材质/蛋盒纹理靠升级}
+      - {class: 062_plasticbox, tier: U3, path: objaverse, note: 上游保鲜盒占位可用}
+      - {class: 038_milk-box, tier: U3, path: objaverse, note: 上游高保真，不动}
+  - id: kitchen_pot_rack
+    zone: 厨房
+    related_task: cabinet_tidy
+    container: {class: 135_pot_rack, tier: U2, path: objaverse, note: 架体线框可辨认}
+    contents:
+      - {class: 060_kitchenpot, tier: U3, path: partnet_mobility, note: 上游 PartNet 关节锅，已是高保真}
+      - {class: 170_pot_lid, tier: U2, path: objaverse, note: 碟形正确，玻璃盖/钢圈质感靠升级}
+  - id: kitchen_utensil_rail
+    zone: 厨房
+    related_task: cabinet_tidy
+    container: {class: 139_wall_rack_kitchen, tier: U2, path: objaverse, note: 挂杆+S 钩结构清楚}
+    contents:
+      - {class: 149_kitchen_utensil_set, tier: U1, path: poly_pizza, note: 已升级：锅铲/汤勺/打蛋器 3 实例（Kenney/MilkAndBanana，CC0）}
+      - {class: 034_knife, tier: U3, path: objaverse, note: 上游高保真，不动（挂 150 磁吸架）}
+  - id: kitchen_spice_turntable
+    zone: 厨房
+    related_task: cabinet_tidy
+    container: {class: 161_rotating_spice_tray, tier: U2, path: objaverse, note: 底座+转盘机构正确}
+    contents:
+      - {class: 065_soy-sauce, tier: U3, path: objaverse, note: 上游调味瓶高保真（066/029/031/105 同）}
+  - id: kitchen_drawer
+    zone: 厨房
+    related_task: cabinet_tidy
+    container: {class: 131_drawer_dividers, tier: U3, path: objaverse, note: 平板件，自建已够用}
+    contents:
+      - {class: 164_chopsticks, tier: U2, path: objaverse, note: 双杆形态对，纹理/筷头细节靠升级}
+      - {class: 173_spoon, tier: U2, path: objaverse, note: 同上}
+      - {class: 033_fork, tier: U3, path: objaverse, note: 上游高保真，不动}
+
+  # ---------------- 客厅 ----------------
+  - id: living_remote_caddy
+    zone: 客厅
+    related_task: item_return
+    container: {class: 136_remote_caddy, tier: U2, path: objaverse, note: 三格盒结构清楚}
+    contents:
+      - {class: 079_remotecontrol, tier: U3, path: objaverse, note: 上游高保真，不动}
+  - id: living_ottoman
+    zone: 客厅
+    related_task: declutter_storage
+    container: {class: 163_storage_ottoman, tier: U1, path: partnet_mobility, note: 客厅中央大家具，纯盒体（暂缓：待 SAPIEN 注册 token）}
+    contents:
+      - {class: 094_rest, tier: U3, path: objaverse, note: 抱枕占位（软体挂起，先用上游件）}
+  - id: living_side_table
+    zone: 客厅
+    related_task: item_return
+    container: {class: 162_side_table_cabinet, tier: U2, path: partnet_mobility, note: 带抽屉，结构可对}
+    contents:
+      - {class: 023_tissue-box, tier: U3, path: objaverse, note: 上游高保真，不动}
+      - {class: 133_medicine_box, tier: U2, path: objaverse, note: 盒体可对，提手/卡扣细节靠升级}
+
+  # ---------------- 卧室 ----------------
+  - id: bedroom_wardrobe
+    zone: 卧室
+    related_task: declutter_storage
+    container: {class: 126_wardrobe, tier: U1, path: partnet_mobility, note: 双开门大家具，演示高频（暂缓：待 SAPIEN 注册 token）}
+    contents:
+      - {class: 121_clothes_hanger, tier: U2, path: objaverse, note: 线框正确，绒面/塑料质感靠升级}
+      - {class: 134_pants_hanger, tier: U2, path: objaverse, note: 同上}
+      - {class: 140_wardrobe_dividers, tier: U3, path: objaverse, note: 平板件，自建够用}
+  - id: bedroom_bedside_shelf
+    zone: 卧室
+    related_task: item_return
+    container: {class: 144_bedside_wall_shelf, tier: U3, path: objaverse, note: 单板件，自建够用}
+    contents:
+      - {class: 077_phone, tier: U3, path: objaverse, note: 上游高保真，不动}
+      - {class: 167_glasses, tier: U2, path: objaverse, note: 与玄关场景共用升级}
+      - {class: 043_book, tier: U3, path: objaverse, note: 上游高保真，不动}
+  - id: bedroom_cosmetic
+    zone: 卧室
+    related_task: item_return
+    container: {class: 130_cosmetic_organizer, tier: U1, path: poly_pizza, note: Poly Pizza 无阶梯收纳盒模型，本轮暂缓（自建保留）}
+    contents:
+      - {class: 115_perfume, tier: U3, path: objaverse, note: 上游高保真，不动（109 同）}
+  - id: bedroom_jewelry
+    zone: 卧室
+    related_task: item_return
+    container: {class: 159_jewelry_box, tier: U2, path: objaverse, note: 翻盖机构正确，绒布内衬靠升级}
+    contents: []  # 首饰为微小件，声明不入库
+
+  # ---------------- 卫浴 ----------------
+  - id: bathroom_shelf_scene
+    zone: 卫生间
+    related_task: item_return
+    container: {class: 127_bathroom_shelf, tier: U2, path: objaverse, note: 三层架结构清楚}
+    contents:
+      - {class: 049_shampoo, tier: U3, path: objaverse, note: 上游高保真，不动（096/107/028 同）}
+  - id: bathroom_toothbrush
+    zone: 卫生间
+    related_task: item_return
+    container: {class: 154_toothbrush_set, tier: U2, path: objaverse, note: 架+刷结构对，刷毛细节靠升级}
+    contents: []
+  - id: bathroom_hairdryer
+    zone: 卫生间
+    related_task: item_return
+    container: {class: 148_hairdryer_set, tier: U1, path: poly_pizza, note: 已升级：吹风机（CC0）+ 梳子（CC-BY-3.0 Google Poly）实例}
+    contents: []
+  - id: bathroom_over_toilet
+    zone: 卫生间
+    related_task: item_return
+    container: {class: 151_over_toilet_shelf, tier: U2, path: objaverse, note: 高框架结构对}
+    contents:
+      - {class: 028_roll-paper, tier: U3, path: objaverse, note: 上游高保真，不动}
+
+  # ---------------- 书房 ----------------
+  - id: study_desk_cart
+    zone: 书房儿童
+    related_task: item_return
+    container: {class: 158_desk_cart, tier: U2, path: partnet_mobility, note: 带轮推车，结构可对}
+    contents:
+      - {class: 092_notebook, tier: U3, path: objaverse, note: 上游高保真，不动（010/048/058 同）}
+  - id: study_file_box
+    zone: 书房儿童
+    related_task: item_return
+    container: {class: 132_file_box, tier: U2, path: objaverse, note: 半高前门结构对}
+    contents:
+      - {class: 043_book, tier: U3, path: objaverse, note: 上游高保真，不动}
+  - id: study_picture_books
+    zone: 书房儿童
+    related_task: item_return
+    container: {class: 153_picture_book_rack, tier: U2, path: objaverse, note: 斜面层架结构对}
+    contents:
+      - {class: 043_book, tier: U3, path: objaverse, note: 上游高保真，不动}
+
+  # ---------------- 阳台储物 ----------------
+  - id: balcony_cleaning_tools
+    zone: 阳台储物
+    related_task: countertop_cleaning
+    container: {class: 123_mop_holder, tier: U3, path: objaverse, note: 小挂架，自建够用}
+    contents:
+      - {class: 122_mop_broom_set, tier: U2, path: objaverse, note: 长柄工具在清扫演示中全身出镜}

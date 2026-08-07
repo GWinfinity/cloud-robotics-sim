@@ -1,0 +1,23 @@
+# 家庭 5S 任务套件（Track B · MT Lambda-Sim 家庭服务机器人场景补齐）
+#
+# 汇总 5S 任务映射、资产库、许可清单与验证入口，作为设计书 §9.3
+# 「家庭 5S 可交互资产库与任务套件」交付物的索引文件。
+
+version: 1
+name: home-5s
+description: 家庭 5S 隐形家务任务套件（整理/整顿/清扫/清洁/素养）
+
+recipes:
+  - ../recipes/home_5s.yaml
+  - ../recipes/asset_gap_list.yaml  # 收纳资产缺口登记（补库路线图）
+  - ../recipes/asset_upgrade_list.yaml  # 高保真升级清单（场景同框组织）
+
+assets:
+  object_library: assets/robotwin/objects/objects
+  manifest: assets/robotwin/objects/asset_manifest.json  # tools/build_asset_manifest.py 生成
+  expansion_workflow: scripts/expand_object_library.py   # 外部生成网格 -> 可抓取资产
+
+validation:
+  benchmark_runner: scripts/grasp_all_objects.py   # 全物体抓取基准（FR3 吸盘 + 层级规划）
+  license_gate: tools/build_asset_manifest.py --check
+  mapping_test: tests/data/test_home_5s_recipes.py

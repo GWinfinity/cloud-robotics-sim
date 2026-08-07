@@ -1,0 +1,299 @@
+# 资产缺口清单（家庭 5S · 收纳专项）
+#
+# 依据用户提供的《小户型精简版收纳清单》（60㎡ 以下，玄关/厨房/客厅/卧室/
+# 卫生间/阳台储物/书房儿童/通用 8 区），逐项对照 RoboTwin-OD 物体库
+# （120 类）登记覆盖状态、仿真可行性与补进路径。
+#
+# 优先级沿用清单的采购建议：
+#   P1 = 入住即买（没有会乱，5S 任务最高频）
+#   P2 = 1-3 个月补齐（刚需默认档）
+#   P3 = 按需升级（进阶神器默认档）
+#
+# status:
+#   covered         库中已有可直接使用的类
+#   covered_partial 库中有近似类可替代/占位（建议补风格实例）
+#   gap             纯缺口，需经 scripts/expand_object_library.py 补进
+#
+# feasibility（仿真可行性/路径）:
+#   rigid           刚性小物件 → Objaverse 许可子集导入（workflow 已就绪）
+#   articulated     关节体（门/抽屉/轮/翻盖）→ PartNet-Mobility 布局
+#                   （object_library.py 的 mobility.urdf 分支已支持）
+#   soft_body       布料/软体 → 需 Genesis 布料求解器，列为后续增强
+#   static_fixture  壁挂/固定件 → 场景静态陈设，操作简单，真实感收益为主
+#   out_of_scope    电子/智能/耗材类，不适合或无需进入仿真资产库
+#
+# 校验：tests/data/test_asset_gap_list.py
+
+version: 1
+name: asset-gap-list
+description: 家庭 5S 收纳资产缺口登记（对照小户型收纳清单 × RoboTwin-OD 120 类）
+object_library: assets/robotwin/objects/objects
+related_recipes: data/recipes/home_5s.yaml
+
+priority_tiers:
+  P1: 入住即买（高频刚需，5S 任务优先验证对象）
+  P2: 入住 1-3 个月补齐（刚需默认档）
+  P3: 按需升级（进阶默认档）
+
+feasibility_kinds: [rigid, articulated, soft_body, static_fixture, out_of_scope]
+
+items:
+  # ---------------- 玄关 ----------------
+  - {id: flip_shoe_box, name_zh: 翻盖透明鞋盒, zone: 玄关, priority: P1,
+     feasibility: rigid, status: covered_partial, covered_by: [007_shoe-box],
+     related_tasks: [declutter_storage],
+     source: objaverse, note: 补透明可叠放风格实例；换季鞋盒同款}
+  - {id: slim_cabinet, name_zh: 夹缝窄柜（15-20cm）, zone: 玄关, priority: P2,
+     feasibility: articulated, status: covered, covered_by: [143_slim_cabinet],
+     related_tasks: [declutter_storage],
+     source: self_built, note: 已补：双抽屉参数化 URDF（prismatic 关节）}
+  - {id: pegboard, name_zh: 壁挂洞洞板, zone: 玄关, priority: P3,
+     feasibility: static_fixture, status: covered, covered_by: [152_pegboard],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：6x4 挂钉洞洞板参数化模型；钥匙串 169 已有，包/帽仍缺}
+  - {id: wall_hooks, name_zh: 免打孔挂钩/门后挂钩, zone: 玄关, priority: P2,
+     feasibility: static_fixture, status: covered, covered_by: [138_wall_hooks],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：四 J 钩挂排参数化模型；全屋通用}
+  - {id: key_tray, name_zh: 钥匙收纳盒/壁挂小托盘, zone: 玄关, priority: P2,
+     feasibility: rigid, status: covered_partial, covered_by: [008_tray],
+     related_tasks: [item_return],
+     source: objaverse, note: 008_tray 可占位，补浅口小托盘风格}
+  - {id: hanging_storage_bag, name_zh: 壁挂收纳挂袋, zone: 玄关, priority: P3,
+     feasibility: soft_body, status: gap, covered_by: [],
+     related_tasks: [declutter_storage],
+     source: cloth_sim, note: 布料挂袋，软体仿真后续增强}
+  - {id: umbrella_stand, name_zh: 雨伞沥水收纳桶, zone: 玄关, priority: P3,
+     feasibility: rigid, status: covered, covered_by: [157_umbrella_set],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：沥水筒+折叠伞双实例}
+
+  # ---------------- 厨房 ----------------
+  - {id: corner_shelf, name_zh: 台面转角架, zone: 厨房, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [129_corner_shelf],
+     related_tasks: [cabinet_tidy],
+     source: self_built, note: 已补：双层转角架参数化模型}
+  - {id: pullout_slim_rack, name_zh: 抽拉式夹缝架, zone: 厨房, priority: P2,
+     feasibility: articulated, status: covered, covered_by: [141_pullout_slim_rack],
+     related_tasks: [cabinet_tidy],
+     source: self_built, note: 已补：抽拉篮参数化 URDF（prismatic 关节）}
+  - {id: wall_rack_kitchen, name_zh: 墙面壁挂架（挂锅铲汤勺）, zone: 厨房, priority: P2,
+     feasibility: static_fixture, status: covered, covered_by: [139_wall_rack_kitchen],
+     related_tasks: [cabinet_tidy],
+     source: self_built, note: 已补：挂杆+3 S 钩参数化模型；锅铲/汤勺/打蛋器挂件同为缺口}
+  - {id: pot_rack, name_zh: 锅具立式收纳架, zone: 厨房, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [135_pot_rack],
+     related_tasks: [cabinet_tidy],
+     source: self_built, note: 已补：五槽立式锅架参数化模型；内容物锅具/锅盖已有（060/106/170）}
+  - {id: sealed_jar_set, name_zh: 密封杂粮罐（统一规格）, zone: 厨房, priority: P1,
+     feasibility: rigid, status: covered_partial, covered_by: [031_jam-jar, 025_chips-tub],
+     related_tasks: [cabinet_tidy],
+     source: objaverse, note: 补 4-6 个统一规格密封罐风格实例}
+  - {id: fresh_keep_box_set, name_zh: 冰箱保鲜盒套装, zone: 厨房, priority: P1,
+     feasibility: rigid, status: covered_partial, covered_by: [062_plasticbox],
+     related_tasks: [cabinet_tidy],
+     source: objaverse, note: 补统一尺寸可叠放风格实例}
+  - {id: seal_bag_clips, name_zh: 食品密封袋+封口夹, zone: 厨房, priority: P3,
+     feasibility: soft_body, status: gap, covered_by: [],
+     related_tasks: [cabinet_tidy],
+     source: cloth_sim, note: 袋体软体；封口夹为微小件，仿真收益低}
+  - {id: drawer_dividers, name_zh: 抽屉分隔板, zone: 厨房, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [131_drawer_dividers],
+     related_tasks: [cabinet_tidy, declutter_storage],
+     source: self_built, note: 已补：40/25cm 双规格隔板；内容物筷/勺/刀叉已有（164/173/033/034）}
+  - {id: rotating_spice_tray, name_zh: 旋转调料托盘, zone: 厨房, priority: P3,
+     feasibility: articulated, status: covered, covered_by: [161_rotating_spice_tray],
+     related_tasks: [cabinet_tidy],
+     source: self_built, note: 已补：旋转托盘参数化 URDF（continuous 关节）；内容物调味品库已有}
+  - {id: fridge, name_zh: 冰箱（场景依赖）, zone: 厨房, priority: P1,
+     feasibility: articulated, status: covered, covered_by: [125_fridge],
+     related_tasks: [cabinet_tidy],
+     source: self_built, note: 已补：单开门参数化 URDF；鸡蛋/蛋盒 166 已有，鲜肉仍缺；后续可换 PartNet 高保真模型}
+  - {id: fridge_side_rack, name_zh: 冰箱侧壁挂架, zone: 厨房, priority: P3,
+     feasibility: static_fixture, status: covered, covered_by: [147_fridge_side_rack],
+     related_tasks: [cabinet_tidy],
+     source: self_built, note: 已补：双层挂架参数化模型；依赖 fridge(125 已建）；挂 028_roll-paper}
+  - {id: magnetic_knife_rack, name_zh: 磁吸刀架, zone: 厨房, priority: P3,
+     feasibility: static_fixture, status: covered, covered_by: [150_magnetic_knife_rack],
+     related_tasks: [cabinet_tidy],
+     source: self_built, note: 已补：磁吸刀架条参数化模型；内容物 034_knife 已有}
+  - {id: oil_dispenser, name_zh: 自动开合油壶套装, zone: 厨房, priority: P3,
+     feasibility: rigid, status: covered_partial, covered_by: [029_olive-oil],
+     related_tasks: [cabinet_tidy],
+     source: objaverse, note: 补油壶风格实例即可}
+  - {id: trash_bag_dispenser, name_zh: 垃圾袋收纳盒, zone: 厨房, priority: P3,
+     feasibility: rigid, status: covered, covered_by: [155_trash_bag_dispenser],
+     related_tasks: [countertop_cleaning],
+     source: self_built, note: 已补：带抽取缝收纳盒参数化模型}
+
+  # ---------------- 客厅 ----------------
+  - {id: fabric_basket, name_zh: 布艺收纳筐（带标签位）, zone: 客厅, priority: P1,
+     feasibility: soft_body, status: covered_partial, covered_by: [110_basket],
+     related_tasks: [declutter_storage, item_return],
+     source: cloth_sim, note: 110_basket 刚性占位；布艺版列软体增强}
+  - {id: remote_caddy, name_zh: 遥控器收纳盒, zone: 客厅, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [136_remote_caddy],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：三格遥控器盒参数化模型；内容物 079_remotecontrol 已有}
+  - {id: cable_box, name_zh: 数据线/充电线整理盒, zone: 客厅, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [128_cable_box],
+     related_tasks: [item_return, declutter_storage],
+     source: self_built, note: 已补：带盖理线盒参数化模型；插线板 171 已有；线缆为绳索变形体，不建}
+  - {id: storage_ottoman, name_zh: 收纳式沙发凳, zone: 客厅, priority: P3,
+     feasibility: articulated, status: covered, covered_by: [163_storage_ottoman],
+     related_tasks: [declutter_storage],
+     source: self_built, note: 已补：翻盖沙发凳参数化 URDF（revolute 盖关节）}
+  - {id: side_table_cabinet, name_zh: 边几收纳柜, zone: 客厅, priority: P3,
+     feasibility: articulated, status: covered, covered_by: [162_side_table_cabinet],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：单抽边几参数化 URDF（prismatic 关节）}
+  - {id: medicine_box, name_zh: 药箱（带分格）, zone: 客厅, priority: P2,
+     feasibility: rigid, status: covered_partial, covered_by: [080_pillbottle, 133_medicine_box],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：带提手分格药箱盒体（133)；080 为药瓶内容物}
+  - {id: toy_bin, name_zh: 玩具收纳箱（可叠放）, zone: 客厅, priority: P2,
+     feasibility: rigid, status: covered_partial, covered_by: [062_plasticbox],
+     related_tasks: [declutter_storage],
+     source: objaverse, note: 内容物 057_toycar/086_woodenblock/073_rubikscube 已有}
+
+  # ---------------- 卧室 ----------------
+  - {id: clothes_hanger, name_zh: 衣架（统一规格）, zone: 卧室, priority: P1,
+     feasibility: rigid, status: covered, covered_by: [121_clothes_hanger],
+     related_tasks: [declutter_storage],
+     source: self_built, note: 已补：tools/build_p1_assets.py 参数化双实例；植绒超薄款为 P3 风格变体}
+  - {id: pants_hanger, name_zh: 多层裤架, zone: 卧室, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [134_pants_hanger],
+     related_tasks: [declutter_storage],
+     source: self_built, note: 已补：五杆多层裤架参数化模型}
+  - {id: underwear_grid_box, name_zh: 抽屉内衣收纳格, zone: 卧室, priority: P1,
+     feasibility: rigid, status: covered, covered_by: [124_underwear_grid_box],
+     related_tasks: [declutter_storage],
+     source: self_built, note: 已补：3x2/2x2 双实例；蜂窝分格为 P3 变体；内容物袜子/内衣属软体暂不建}
+  - {id: vacuum_bag, name_zh: 棉被真空压缩袋, zone: 卧室, priority: P2,
+     feasibility: soft_body, status: gap, covered_by: [],
+     related_tasks: [bed_making, declutter_storage],
+     source: cloth_sim, note: 软体+抽气形变，仿真难度最高档，列后续}
+  - {id: underbed_box, name_zh: 床下扁平收纳箱（带轮）, zone: 卧室, priority: P2,
+     feasibility: rigid, status: covered_partial, covered_by: [062_plasticbox],
+     related_tasks: [declutter_storage],
+     source: objaverse, note: 补扁平带轮风格；液压升降款为 P3 且偏机电，不建}
+  - {id: wardrobe, name_zh: 衣柜（场景依赖）, zone: 卧室, priority: P1,
+     feasibility: articulated, status: covered, covered_by: [126_wardrobe],
+     related_tasks: [declutter_storage],
+     source: self_built, note: 已补：双开门参数化 URDF；后续可换 PartNet-Mobility 高保真模型}
+  - {id: wardrobe_dividers, name_zh: 衣柜分隔板, zone: 卧室, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [140_wardrobe_dividers],
+     related_tasks: [declutter_storage],
+     source: self_built, note: 已补：立板+层板双实例；依赖 wardrobe(126 已建）}
+  - {id: garment_cover, name_zh: 衣服防尘罩, zone: 卧室, priority: P3,
+     feasibility: soft_body, status: gap, covered_by: [],
+     related_tasks: [declutter_storage],
+     source: cloth_sim, note: 无纺布罩，软体后续}
+  - {id: cosmetic_organizer, name_zh: 化妆品分格收纳盒, zone: 卧室, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [130_cosmetic_organizer],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：三排阶梯收纳盒参数化模型；内容物 115/109/049 已有}
+  - {id: rotating_desk_tray, name_zh: 旋转桌面收纳盘, zone: 卧室, priority: P3,
+     feasibility: articulated, status: covered, covered_by: [160_rotating_desk_tray],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：旋转桌面盘参数化 URDF；与调料盘同机构}
+  - {id: bedside_wall_shelf, name_zh: 床头壁挂置物架, zone: 卧室, priority: P3,
+     feasibility: static_fixture, status: covered, covered_by: [144_bedside_wall_shelf],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：带挡边床头搁板参数化模型；眼镜 167 已有}
+  - {id: jewelry_box, name_zh: 首饰收纳盒, zone: 卧室, priority: P3,
+     feasibility: articulated, status: covered, covered_by: [159_jewelry_box],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：翻盖首饰盒参数化 URDF}
+  - {id: storage_chest, name_zh: 百纳箱, zone: 卧室, priority: P3,
+     feasibility: rigid, status: covered_partial, covered_by: [037_box, 042_wooden_box],
+     related_tasks: [declutter_storage],
+     source: objaverse, note: 补钢架布艺风格实例}
+  - {id: wardrobe_led, name_zh: 衣柜感应灯条, zone: 卧室, priority: P3,
+     feasibility: out_of_scope, status: gap, covered_by: [],
+     related_tasks: [],
+     source: none, note: 电子件，不进仿真资产库}
+
+  # ---------------- 卫生间 ----------------
+  - {id: bathroom_shelf, name_zh: 多层置物架（免打孔）, zone: 卫生间, priority: P2,
+     feasibility: static_fixture, status: covered, covered_by: [127_bathroom_shelf],
+     related_tasks: [item_return, countertop_cleaning],
+     source: self_built, note: 已补：三层置物架参数化模型；内容物 049/096/107 已有}
+  - {id: over_toilet_shelf, name_zh: 马桶上方置物架, zone: 卫生间, priority: P3,
+     feasibility: static_fixture, status: covered, covered_by: [151_over_toilet_shelf],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：马桶上方双层架参数化模型（1.5m 高，keep_scale）；马桶本体仍为场景缺口}
+  - {id: toothbrush_holder, name_zh: 牙刷壁挂架, zone: 卫生间, priority: P3,
+     feasibility: rigid, status: covered, covered_by: [154_toothbrush_set],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：壁挂架+牙刷双实例；紫外线消毒款电子部分不建}
+  - {id: tube_organizer, name_zh: 管状护肤品竖立收纳盒, zone: 卫生间, priority: P3,
+     feasibility: rigid, status: covered, covered_by: [156_tube_organizer],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：三格竖立盒参数化模型；内容物 118/109 已有}
+  - {id: laundry_basket, name_zh: 脏衣篮（可折叠）, zone: 卫生间, priority: P1,
+     feasibility: rigid, status: covered_partial, covered_by: [110_basket],
+     related_tasks: [declutter_storage],
+     source: objaverse, note: 补高身脏衣篮风格；折叠/壁挂软袋款列软体}
+  - {id: rolling_slim_cart, name_zh: 夹缝收纳柜（带轮）, zone: 卫生间, priority: P2,
+     feasibility: articulated, status: covered, covered_by: [142_rolling_slim_cart],
+     related_tasks: [declutter_storage],
+     source: self_built, note: 已补：四轮推车参数化 URDF（continuous 轮关节）}
+  - {id: toilet_brush, name_zh: 马桶刷, zone: 卫生间, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [137_toilet_brush],
+     related_tasks: [countertop_cleaning],
+     source: self_built, note: 已补：马桶刷+刷筒双实例；一次性款耗材不建}
+  - {id: hairdryer_holder, name_zh: 吹风机壁挂架, zone: 卫生间, priority: P3,
+     feasibility: static_fixture, status: covered, covered_by: [148_hairdryer_set],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：挂环架+吹风机双实例}
+
+  # ---------------- 阳台/储物间 ----------------
+  - {id: mop_holder, name_zh: 拖把收纳架/挂钩（壁挂）, zone: 阳台储物, priority: P1,
+     feasibility: static_fixture, status: covered, covered_by: [123_mop_holder],
+     related_tasks: [countertop_cleaning],
+     source: self_built, note: 已补：三夹位壁挂架参数化模型}
+  - {id: mop_broom_set, name_zh: 拖把+扫帚+水桶（内容物）, zone: 阳台储物, priority: P1,
+     feasibility: rigid, status: covered, covered_by: [122_mop_broom_set],
+     related_tasks: [countertop_cleaning],
+     source: self_built, note: 已补：拖把/扫帚/水桶三实例（长柄工具 keep_scale）}
+  - {id: detergent_caddy, name_zh: 洗衣液收纳筐/壁挂架, zone: 阳台储物, priority: P3,
+     feasibility: rigid, status: covered, covered_by: [146_detergent_caddy],
+     related_tasks: [countertop_cleaning],
+     source: self_built, note: 已补：带提手收纳筐参数化模型；内容物 096_cleaner 已有}
+  - {id: folding_crate, name_zh: 大型折叠收纳箱, zone: 阳台储物, priority: P3,
+     feasibility: articulated, status: covered_partial, covered_by: [037_box],
+     related_tasks: [declutter_storage],
+     source: objaverse, note: 折叠关节可选做；刚性箱 037 已占位}
+  - {id: storage_shelf, name_zh: 重型储物货架, zone: 阳台储物, priority: P2,
+     feasibility: rigid, status: covered_partial, covered_by: [040_rack],
+     related_tasks: [declutter_storage],
+     source: objaverse, note: 040_rack 已覆盖基本形态}
+
+  # ---------------- 书房/儿童房 ----------------
+  - {id: file_box, name_zh: 文件收纳盒/文件夹, zone: 书房儿童, priority: P2,
+     feasibility: rigid, status: covered, covered_by: [132_file_box],
+     related_tasks: [item_return, declutter_storage],
+     source: self_built, note: 已补：半高前门文件盒参数化模型；多层文件架为 P3 变体}
+  - {id: bookend_stand, name_zh: 书本立架, zone: 书房儿童, priority: P3,
+     feasibility: rigid, status: covered, covered_by: [145_bookend_stand],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：L 型书立左右对实例；旋转书架为后续变体}
+  - {id: picture_book_rack, name_zh: 前展示绘本架, zone: 书房儿童, priority: P3,
+     feasibility: rigid, status: covered, covered_by: [153_picture_book_rack],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：前展示三层绘本架参数化模型；014 立式书架保留}
+  - {id: desk_cart, name_zh: 桌面收纳推车, zone: 书房儿童, priority: P3,
+     feasibility: articulated, status: covered, covered_by: [158_desk_cart],
+     related_tasks: [item_return],
+     source: self_built, note: 已补：四轮桌面推车参数化 URDF（continuous 轮关节）}
+
+  # ---------------- 全屋通用 ----------------
+  - {id: label_stickers, name_zh: 标签贴/标签机, zone: 通用, priority: P2,
+     feasibility: out_of_scope, status: gap, covered_by: [],
+     related_tasks: [],
+     source: none, note: 视觉贴花/耗材，可作为纹理处理，不建独立资产}
+  - {id: cable_ties, name_zh: 理线器/扎带, zone: 通用, priority: P3,
+     feasibility: out_of_scope, status: gap, covered_by: [],
+     related_tasks: [],
+     source: none, note: 微小耗材，仿真收益极低}

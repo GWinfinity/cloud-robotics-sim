@@ -1,0 +1,162 @@
+# 家庭 5S 隐形家务任务 → 资产映射
+#
+# Track B 移植方案设计书 §9.3「家庭 5S 可交互资产库与任务套件」的数据落地：
+# 将设计书 §1.1 列举的隐形家务任务绑定到 RoboTwin-OD 物体库
+# （assets/robotwin/objects/objects/）中真实存在的 NNN_name 物体类。
+#
+# 校验：tests/data/test_home_5s_recipes.py 保证本文件引用的每个物体类
+# 都存在于物体库中；asset_gaps 记录当前库缺失、需经
+# scripts/expand_object_library.py 扩充补进的资产。
+
+version: 1
+name: home-5s-tasks
+description: 家庭 5S（整理/整顿/清扫/清洁/素养）隐形家务任务与物体资产映射
+object_library: assets/robotwin/objects/objects
+
+s5_categories: [整理, 整顿, 清扫, 清洁, 素养]
+
+tasks:
+  - id: item_return
+    name_zh: 物品归位
+    s5_category: 整理
+    description: 将散落在桌面的日常物品拾取并放回对应容器/位置
+    object_classes:
+      - 021_cup
+      - 039_mug
+      - 043_book
+      - 010_pen
+      - 058_markpen
+      - 079_remotecontrol
+      - 047_mouse
+      - 077_phone
+      - 035_apple
+      - 075_bread
+      - 169_key_ring  # 钥匙串（内容物批已补）
+      - 167_glasses  # 眼镜（内容物批已补）
+      - 172_scissors  # 剪刀（内容物批已补）
+      - 165_comb  # 梳子（内容物批已补）
+      - 168_handbag  # 手提包（内容物批已补）
+      - 171_power_strip  # 插线板（内容物批已补）
+    target_classes:
+      - 008_tray
+      - 059_pencup
+      - 014_bookcase
+      - 110_basket
+      - 019_coaster
+      - 136_remote_caddy  # 遥控器收纳盒（P2 已补）
+      - 132_file_box  # 文件收纳盒（P2 已补）
+      - 130_cosmetic_organizer  # 化妆品分格盒（P2 已补）
+      - 133_medicine_box  # 药箱（P2 已补）
+      - 127_bathroom_shelf  # 卫浴置物架（P2 已补）
+      - 159_jewelry_box  # 首饰盒（P3 已补）
+      - 160_rotating_desk_tray  # 旋转桌面盘（P3 已补）
+      - 144_bedside_wall_shelf  # 床头搁板（P3 已补）
+      - 154_toothbrush_set  # 牙刷架+牙刷（P3 已补）
+      - 145_bookend_stand  # 书立（P3 已补）
+      - 157_umbrella_set  # 伞桶+折叠伞（P3 已补）
+    asset_gaps: []
+
+  - id: declutter_storage
+    name_zh: 收纳整理
+    s5_category: 整顿
+    description: 将杂物分类装入收纳箱/鞋盒，并摆入柜架固定位置
+    object_classes:
+      - 037_box
+      - 062_plasticbox
+      - 042_wooden_box
+      - 007_shoe-box
+      - 041_shoe
+      - 073_rubikscube
+      - 057_toycar
+      - 081_playingcards
+      - 061_battery
+      - 100_seal
+    target_classes:
+      - 036_cabinet
+      - 040_rack
+      - 110_basket
+      - 126_wardrobe  # 衣柜（P1 已补）
+      - 134_pants_hanger  # 多层裤架（P2 已补）
+      - 140_wardrobe_dividers  # 衣柜分隔板（P2 已补）
+      - 143_slim_cabinet  # 夹缝窄柜（P2 已补）
+      - 142_rolling_slim_cart  # 带轮夹缝推车（P2 已补）
+      - 158_desk_cart  # 桌面推车（P3 已补）
+      - 163_storage_ottoman  # 收纳沙发凳（P3 已补）
+      - 162_side_table_cabinet  # 边几柜（P3 已补）
+      - 152_pegboard  # 洞洞板（P3 已补）
+    asset_gaps: []
+
+  - id: countertop_cleaning
+    name_zh: 台面清洁
+    s5_category: 清扫
+    description: 使用刷具/清洁剂清理台面，碎屑入桌面垃圾桶
+    object_classes:
+      - 083_brush
+      - 096_cleaner
+      - 107_soap
+      - 023_tissue-box
+      - 028_roll-paper
+      - 117_whiteboard-eraser
+      - 082_smallshovel
+      - 122_mop_broom_set  # 拖把/扫帚/水桶（P1 已补）
+      - 137_toilet_brush  # 马桶刷（P2 已补）
+    target_classes:
+      - 063_tabletrashbin
+      - 011_dustbin
+      - 123_mop_holder  # 拖把壁挂架（P1 已补）
+    asset_gaps:
+      - sponge  # 海绵擦
+      - rag     # 抹布
+
+  - id: bed_making
+    name_zh: 床品整理
+    s5_category: 清洁
+    description: 枕头归位、被褥铺平（当前库缺床品类软体资产，先以靠垫类占位验证流程）
+    object_classes:
+      - 094_rest
+    target_classes: []
+    asset_gaps:
+      - pillow    # 枕头
+      - quilt     # 被褥（软体，需布料仿真支持）
+      - bedsheet  # 床单（软体，需布料仿真支持）
+
+  - id: cabinet_tidy
+    name_zh: 橱柜归整
+    s5_category: 素养
+    description: 餐具/调味品/锅具按类别归位到橱柜与厨电固定位置
+    object_classes:
+      - 001_bottle
+      - 002_bowl
+      - 003_plate
+      - 033_fork
+      - 034_knife
+      - 009_kettle
+      - 060_kitchenpot
+      - 031_jam-jar
+      - 065_soy-sauce
+      - 066_vinegar
+      - 029_olive-oil
+      - 105_sauce-can
+      - 067_steamer
+      - 106_skillet
+      - 071_can
+      - 038_milk-box
+      - 068_boxdrink
+      - 149_kitchen_utensil_set  # 锅铲/汤勺/打蛋器（P3 已补）
+      - 164_chopsticks  # 筷子（内容物批已补）
+      - 173_spoon  # 勺子（内容物批已补）
+      - 170_pot_lid  # 锅盖（内容物批已补）
+      - 166_egg_set  # 鸡蛋+蛋盒（内容物批已补）
+    target_classes:
+      - 036_cabinet
+      - 016_oven
+      - 044_microwave
+      - 125_fridge  # 冰箱（P1 已补）
+      - 135_pot_rack  # 立式锅架（P2 已补）
+      - 129_corner_shelf  # 台面转角架（P2 已补）
+      - 131_drawer_dividers  # 抽屉分隔板（P2 已补）
+      - 141_pullout_slim_rack  # 抽拉夹缝架（P2 已补）
+      - 161_rotating_spice_tray  # 旋转调料盘（P3 已补）
+      - 150_magnetic_knife_rack  # 磁吸刀架（P3 已补）
+      - 147_fridge_side_rack  # 冰箱侧挂架（P3 已补）
+    asset_gaps: []
