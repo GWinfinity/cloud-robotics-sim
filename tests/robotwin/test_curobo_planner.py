@@ -85,13 +85,19 @@ class TestAvailability:
     """Graceful behavior when the external package is missing."""
 
     def test_package_missing_in_this_env(self) -> None:
-        # CI has no curobo_hierarchical_planner installed.
+        # Envs WITHOUT curobo_hierarchical_planner: availability is False.
+        # When it is installed (e.g. a grasping workstation), there is
+        # nothing to assert here.
+        if is_curobo_planner_available():
+            pytest.skip("curobo_hierarchical_planner is installed in this env")
         assert is_curobo_planner_available() is False
 
     def test_build_raises_unavailable(self, tmp_path) -> None:
         planner = HierarchicalCuRoboPlanner(_make_config(tmp_path))
         assert planner.is_built is False
-        with pytest.raises(CuRoboPlannerUnavailableError, match="pip install"):
+        # Message differs: package missing entirely ("pip install...") vs
+        # installed but cuRobo/CUDA backend unusable ("Failed to build...").
+        with pytest.raises(CuRoboPlannerUnavailableError):
             planner._build()
 
 

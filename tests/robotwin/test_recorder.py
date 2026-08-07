@@ -172,3 +172,26 @@ class TestSaveMp4:
         rec.capture(0, rgb={"head": np.full((1, 8, 8, 3), 300.0)})
         path = rec.save_mp4(tmp_path / "v.mp4", camera="head")
         assert path.exists()
+
+
+def test_capture_extra_fields_roundtrip(tmp_path) -> None:
+    """Custom per-frame vectors (object pose, phase, action) under /extra/."""
+    rec = EpisodeRecorder(task_name="extra_test", fps=30.0)
+    for i in range(3):
+        rec.capture(
+            i,
+            qpos=np.zeros(7),
+            endpose=np.zeros(7),
+            extra={
+                "obj_pose": np.full(7, float(i)),
+                "phase": np.array([float(i)]),
+                "action": np.ones(7),
+            },
+        )
+    path = rec.save_hdf5(tmp_path / "extra.hdf5")
+    import h5py
+
+    with h5py.File(path, "r") as f:
+        assert f["extra/obj_pose"].shape == (3, 7)
+        assert f["extra/phase"].shape == (3, 1)
+        np.testing.assert_allclose(f["extra/obj_pose"][2], np.full(7, 2.0))

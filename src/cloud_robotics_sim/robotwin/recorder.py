@@ -105,6 +105,7 @@ class EpisodeRecorder:
         segmentation: dict[str, Any] | None = None,
         qpos: Any | None = None,
         endpose: Any | None = None,
+        extra: dict[str, Any] | None = None,
     ) -> None:
         """Capture one simulation step.
 
@@ -116,6 +117,9 @@ class EpisodeRecorder:
             qpos: Joint positions ``(n_envs, D)`` or ``(D,)``.
             endpose: End-effector pose(s) ``(n_envs, 7)`` or ``(7,)`` as
                 ``[x, y, z, qw, qx, qy, qz]``.
+            extra: Optional mapping of custom per-frame vector names to
+                arrays ``(n_envs, D)`` or ``(D,)`` (e.g. object pose, phase
+                label, commanded action). Stored under ``/extra/<name>``.
         """
         frame: dict[str, Any] = {"step": int(step)}
         if rgb:
@@ -137,6 +141,11 @@ class EpisodeRecorder:
             frame["qpos"] = _ensure_env_dim(_to_numpy(qpos), sample_ndim=1)
         if endpose is not None:
             frame["endpose"] = _ensure_env_dim(_to_numpy(endpose), sample_ndim=1)
+        if extra:
+            frame["extra"] = {
+                name: _ensure_env_dim(_to_numpy(vec), sample_ndim=1)
+                for name, vec in extra.items()
+            }
         self._frames.append(frame)
 
     def clear(self) -> None:
@@ -203,6 +212,12 @@ class EpisodeRecorder:
                 if isinstance(stacked, np.ndarray):
                     f.create_dataset(key, data=stacked)
 
+            extra = self._stack("extra", env_idx)
+            if isinstance(extra, dict):
+                group = f.create_group("extra")
+                for name, data in extra.items():
+                    group.create_dataset(name, data=data)
+
             cameras = f.create_group("cameras")
             for cam, (intrinsic, extrinsic) in self._camera_params.items():
                 node = cameras.create_group(cam)
@@ -247,6 +262,11 @@ class EpisodeRecorder:
             stacked = self._stack(key, env_idx)
             if isinstance(stacked, np.ndarray):
                 root.create_array(key, data=stacked)
+        extra = self._stack("extra", env_idx)
+        if isinstance(extra, dict):
+            group = root.require_group("extra")
+            for name, data in extra.items():
+                group.create_array(name, data=data)
         cameras = root.require_group("cameras")
         for cam, (intrinsic, extrinsic) in self._camera_params.items():
             node = cameras.require_group(cam)
