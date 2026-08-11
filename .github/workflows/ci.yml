@@ -55,8 +55,15 @@ jobs:
           docker-images: true
           swap-storage: true
 
-      - name: Debug disk space
-        run: df -h
+      - name: Aggressive disk cleanup
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /usr/share/swift
+          sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/haskell
+          sudo rm -rf /usr/local/share/powershell /usr/local/share/chromium
+          sudo rm -rf /usr/local/share/boost /opt/hostedtoolcache
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+          df -h
 
       - name: Install system dependencies
         run: |
