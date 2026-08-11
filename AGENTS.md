@@ -25,7 +25,7 @@ On Windows, the venv interpreter is at `.venv/Scripts/python.exe`. Avoid using t
 
 ## Genesis Version
 
-The project targets `genesis-world>=1.2.2,<1.3.0`. Do not use Genesis 0.4.x APIs.
+The project pins `genesis-world==1.3.2` (chosen for its deterministic CPU/GPU simulation, improved ill-conditioned mass-matrix robustness, and islands support). Do not use Genesis 0.4.x APIs.
 Use the compatibility helpers in `src/cloud_robotics_sim/utils/genesis_compat.py` for backend selection and light creation.
 
 ## Quality Gates

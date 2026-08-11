@@ -57,12 +57,12 @@ def load_episode(path: str | Path) -> EpisodeData:
     with h5py.File(path, "r") as f:
         extras: dict[str, np.ndarray] = {}
         if "extra" in f:
-            for name in f["extra"]:  # type: ignore[union-attr]
-                extras[name] = np.asarray(f["extra"][name])  # type: ignore[index]
+            for name in f["extra"]:
+                extras[name] = np.asarray(f["extra"][name])
         attrs = {k: v for k, v in f.attrs.items()}
         return EpisodeData(
-            qpos=np.asarray(f["qpos"]),  # type: ignore[arg-type]
-            endpose=np.asarray(f["endpose"]),  # type: ignore[arg-type]
+            qpos=np.asarray(f["qpos"]),
+            endpose=np.asarray(f["endpose"]),
             extras=extras,
             attrs=attrs,
         )

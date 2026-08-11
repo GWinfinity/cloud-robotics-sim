@@ -37,7 +37,7 @@ classifiers = [
 
 dependencies = [
     # Core physics
-    "genesis-world>=1.2.2,<1.3.0",
+    "genesis-world==1.3.2",
     "taichi>=1.7.0",
     
     # Geometry & mesh processing
@@ -86,7 +86,9 @@ dev = [
     "ruff>=0.4.0",
     "mypy>=1.9.0",
     "pre-commit>=3.7.0",
-    "zarr>=2.16,<3.0",
+    "zarr>=2.16,<3.0; python_version<'3.11'",
+    "zarr>=3.0.8; python_version>='3.11' and python_version<'3.12'",
+    "zarr>=3.2.1; python_version>='3.12'",
 ]
 
 docs = [
@@ -163,6 +165,12 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+ignore_missing_imports = true
+
+# zarr 3.x / tifffile ship PEP 695 (py3.12+) syntax in their sources; skip them.
+[[tool.mypy.overrides]]
+module = ["zarr.*", "tifffile.*"]
+follow_imports = "skip"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

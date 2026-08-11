@@ -234,7 +234,7 @@ class RoboTwinObjectLibrary:
 
         inst = self.get_instance(class_name, index)
         if inst.kind == "urdf":
-            scale = inst.scale[0]
+            urdf_scale = float(inst.scale[0])
             bbox_path = inst.asset_path.parent / "bounding_box.json"
             if bbox_path.is_file():
                 try:
@@ -242,14 +242,16 @@ class RoboTwinObjectLibrary:
                     dims = [
                         float(hi) - float(lo) for lo, hi in zip(bb["min"], bb["max"])
                     ]
-                    scale = normalize_scale(max(dims), (scale, scale, scale))[0]
+                    urdf_scale = normalize_scale(
+                        max(dims), (urdf_scale, urdf_scale, urdf_scale)
+                    )[0]
                 except Exception:  # noqa: BLE001 - keep original scale
                     pass
             entity = scene.add_entity(
                 gs.morphs.URDF(
                     file=str(inst.asset_path),
                     pos=pos,
-                    scale=scale,
+                    scale=urdf_scale,
                     fixed=False,
                 ),
                 surface=gs.surfaces.Default(roughness=0.6),

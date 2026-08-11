@@ -1,6 +1,6 @@
 """Grasp every RoboTwin object with the FR3 arm (suction) + hierarchical planner.
 
-One Genesis scene is built once: FR3 (MJCF), a table, a target marker, and
+One Genesis scene is built once: FR3 (URDF), a table, a target marker, and
 all object instances parked in a row outside the workspace. Each class is
 then evaluated by teleporting its object onto the table and running::
 
@@ -56,10 +56,8 @@ from cloud_robotics_sim.robotwin.suction_grasp import (  # noqa: E402
 
 logger = logging.getLogger("grasp_all")
 
-FR3_MJCF = Path(
-    r"D:\githbi\awesome-robot-descriptions-main\robot_descriptions"
-    r"\Arms\franka_fr3_v2\fr3v2.xml"
-)
+# In-repo URDF (converted from the franka_fr3_v2 MJCF via
+# tools/convert_fr3_mjcf_to_urdf.py); portable across machines.
 FR3_URDF = REPO_ROOT / "assets_genesis" / "embodiments" / "franka-fr3-v2" / "fr3v2.urdf"
 
 TABLE_Z = 0.40  # table top height
@@ -68,6 +66,16 @@ TABLE_SIZE = (0.70, 1.00, TABLE_Z)
 SPAWN_XY = (0.42, 0.18)  # object spawn on table
 TARGET_XY = (0.55, -0.25)  # place target on table
 EE_LINK = "fr3v2_link8"
+
+# PD gains / joint dynamics from the original franka_fr3_v2 MJCF (fr3v2.xml).
+# Genesis reads these from MJCF actuators/joint attributes, but URDF has no
+# actuator concept, so they must be set explicitly when loading the URDF.
+FR3_KP = np.array([4500.0, 4500.0, 3500.0, 3500.0, 2000.0, 2000.0, 2000.0])
+FR3_KV = np.array([450.0, 450.0, 350.0, 350.0, 200.0, 200.0, 200.0])
+# class default overwritten in joints 5-7 (see fr3v2.xml defaults)
+FR3_DAMPING = np.array([0.21, 0.21, 0.21, 0.21, 0.003, 0.003, 0.003])
+FR3_FRICTIONLOSS = np.array([1.137, 1.137, 1.137, 1.137, 0.2, 0.2, 0.2])
+FR3_ARMATURE = np.full(7, 0.195)
 
 
 # ----------------------------------------------------------------------
@@ -580,7 +588,15 @@ def run_single_scene(args: argparse.Namespace) -> None:
     )
     # NOTE: no visible target marker — a fixed marker at the target point
     # would collide with the placed object (headless run, coords suffice).
-    robot = scene.add_entity(gs.morphs.MJCF(file=str(FR3_MJCF)))
+    # links_to_keep: Genesis merges fixed-joint links by default, which would
+    # drop the flange link ``fr3v2_link8`` (fixed-attached to link7).
+    robot = scene.add_entity(
+        gs.morphs.URDF(
+            file=str(FR3_URDF),
+            fixed=True,
+            links_to_keep=[EE_LINK],
+        )
+    )
 
     obj_entities: dict[str, object] = {}
     park_positions: dict[str, tuple[float, float, float]] = {}
@@ -602,6 +618,14 @@ def run_single_scene(args: argparse.Namespace) -> None:
     t0 = time.time()
     scene.build()
     logger.info("scene built in %.1f s", time.time() - t0)
+
+    # Restore the MJCF's actuator gains / joint dynamics (URDF carries none).
+    dofs7 = list(range(7))
+    robot.set_dofs_kp(FR3_KP, dofs_idx_local=dofs7)
+    robot.set_dofs_kv(FR3_KV, dofs_idx_local=dofs7)
+    robot.set_dofs_damping(FR3_DAMPING, dofs_idx_local=dofs7)
+    robot.set_dofs_frictionloss(FR3_FRICTIONLOSS, dofs_idx_local=dofs7)
+    robot.set_dofs_armature(FR3_ARMATURE, dofs_idx_local=dofs7)
 
     router = PlannerRouter(args.planner)
     rng = np.random.default_rng(args.seed)
