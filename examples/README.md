@@ -2,7 +2,7 @@
 
 Runnable demos and examples, grouped by topic. Status legend:
 **current** = maintained and CI-covered · **experimental** = prototype, may
-need specific assets/backends · **legacy** = kept for reference, superseded.
+need specific assets/backends.
 
 ## RoboTwin (`robotwin/`)
 
@@ -32,8 +32,3 @@ Electromagnetic/thermal motor physics demos (`demo_01`–`demo_04`, or
 | `costream/` | current | Co-streaming insertion demos (see its own README). |
 | `hifiumi/` | current | HiFi-UMI-2K dataset loader + replay CLI (see its README/LESSONS). |
 | `migration/` | current | DreamDojo / ManiSkill migration examples. |
-
-## Legacy (`legacy/`)
-
-`run_apartment.py` and `run_single_scene.py` — the original apartment video
-demos. Superseded by `robotwin/home_demo.py`; kept for reference only.
