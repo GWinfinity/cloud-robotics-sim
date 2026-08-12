@@ -1,22 +1,30 @@
 # syntax=docker/dockerfile:1
 
 # Dockerfile for genesis-cloud-sim
-# Supports both CPU-only and CUDA backends via build arguments.
+# Supports CPU, CUDA, and MUSA (Moore Threads) backends via build arguments.
 #
 # Build CPU image:
 #   docker build -t genesis-cloud-sim:cpu .
 #
 # Build GPU image:
 #   docker build --build-arg BASE_IMAGE=nvidia/cuda:12.1.0-runtime-ubuntu22.04 \
-#                --build-arg PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cu121 \
+#                --build-arg TORCH_BACKEND=cuda \
 #                -t genesis-cloud-sim:gpu .
+#
+# Build in mainland China (Aliyun mirrors for PyTorch wheels and PyPI):
+#   docker build --build-arg CHINA_MIRROR=aliyun -t genesis-cloud-sim:cpu .
+#
+# Build for Moore Threads MUSA (installs torch_musa):
+#   docker build --build-arg TORCH_BACKEND=musa -t genesis-cloud-sim:musa .
 #
 # Run:
 #   docker run -it --rm genesis-cloud-sim:cpu
 #   docker run -it --rm --gpus all genesis-cloud-sim:gpu
 
 ARG BASE_IMAGE=ubuntu:22.04
-ARG PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cpu
+ARG TORCH_BACKEND=auto
+ARG CHINA_MIRROR=auto
+ARG PYTORCH_INDEX_URL=
 ARG PYTHON_VERSION=3.11
 
 FROM ${BASE_IMAGE}
@@ -28,6 +36,8 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # Build arguments (must be re-declared after FROM)
+ARG TORCH_BACKEND
+ARG CHINA_MIRROR
 ARG PYTORCH_INDEX_URL
 ARG PYTHON_VERSION
 
@@ -66,12 +76,15 @@ RUN groupadd --gid ${USER_GID} ${USERNAME} \
 
 WORKDIR /workspace
 
-# Install PyTorch with the requested backend first so the correct wheel is used.
-# genesis-world and the rest of the project dependencies are installed afterwards.
-RUN python -m pip install --no-cache-dir \
-    torch \
-    torchvision \
-    --index-url ${PYTORCH_INDEX_URL}
+# Install PyTorch with the requested backend first so the correct wheel is
+# used. tools/install_torch.py auto-detects MUSA/CUDA hardware and switches to
+# Aliyun mirrors when the official PyTorch index is unreachable (mainland
+# China). Set PYTORCH_INDEX_URL to pin an explicit wheel index.
+COPY tools/install_torch.py /tmp/install_torch.py
+RUN python /tmp/install_torch.py \
+    --backend ${TORCH_BACKEND} \
+    --mirror ${CHINA_MIRROR} \
+    ${PYTORCH_INDEX_URL:+--index-url ${PYTORCH_INDEX_URL}}
 
 # Copy the project and install it in editable mode with dev dependencies
 COPY --chown=${USERNAME}:${USERNAME} . /workspace

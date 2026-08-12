@@ -5,7 +5,8 @@ services:
       dockerfile: Dockerfile
       args:
         BASE_IMAGE: ubuntu:22.04
-        PYTORCH_INDEX_URL: https://download.pytorch.org/whl/cpu
+        TORCH_BACKEND: cpu
+        CHINA_MIRROR: auto
     image: genesis-cloud-sim:cpu
     container_name: genesis-cloud-sim-cpu
     environment:

@@ -48,6 +48,43 @@ docker exec -it genesis-cloud-sim-gpu bash
 See the full [Docker Usage Guide](./docker.md) for manual builds, GUI forwarding,
 and troubleshooting.
 
+## PyTorch Wheel Selection (Mirror & MUSA)
+
+`tools/install_torch.py` installs the correct PyTorch wheels for the
+deployment machine. It makes two decisions automatically:
+
+1. **Compute backend** — Moore Threads MUSA hardware (via `mthreads-gmi`,
+   `/dev/mtgpu*`, or `lspci`) selects `torch_musa`; NVIDIA GPUs select the
+   CUDA wheels; everything else gets the CPU wheels.
+2. **Package mirror** — when the official PyTorch index is unreachable
+   (typical in mainland China), it switches to the Aliyun mirrors
+   (`mirrors.aliyun.com/pytorch-wheels` and `mirrors.aliyun.com/pypi/simple`).
+
+```bash
+# Auto-detect backend and mirror
+python tools/install_torch.py
+
+# Preview what would be installed
+python tools/install_torch.py --dry-run
+
+# Force Moore Threads MUSA with Aliyun mirrors
+python tools/install_torch.py --backend musa --mirror aliyun
+```
+
+Both decisions can also be pinned with environment variables:
+
+| Variable | Values | Description |
+|----------|--------|-------------|
+| `CRS_TORCH_BACKEND` | `cpu` / `cuda` / `musa` | Force the compute backend |
+| `CRS_PIP_MIRROR` | `official` / `aliyun` | Force the package mirror |
+| `CRS_PYTORCH_INDEX_URL` | URL | Explicit wheel index overriding mirror selection |
+
+The same logic runs inside Docker builds via the `TORCH_BACKEND` and
+`CHINA_MIRROR` build arguments (see the [Docker Usage Guide](./docker.md)).
+
+Run this script **before** `pip install -e .` so the project resolves against
+the already-installed torch build.
+
 ## GPU Setup
 
 ### CUDA Installation

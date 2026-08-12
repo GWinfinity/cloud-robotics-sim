@@ -65,9 +65,34 @@ docker build -t genesis-cloud-sim:cpu .
 ```bash
 docker build \
   --build-arg BASE_IMAGE=nvidia/cuda:12.1.0-runtime-ubuntu22.04 \
-  --build-arg PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cu121 \
+  --build-arg TORCH_BACKEND=cuda \
   -t genesis-cloud-sim:gpu .
 ```
+
+### Mainland China builds (Aliyun mirrors)
+
+```bash
+docker build --build-arg CHINA_MIRROR=aliyun -t genesis-cloud-sim:cpu .
+```
+
+### Moore Threads MUSA image
+
+```bash
+docker build --build-arg TORCH_BACKEND=musa -t genesis-cloud-sim:musa .
+```
+
+### Build arguments
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `BASE_IMAGE` | `ubuntu:22.04` | Base image (use `nvidia/cuda:...` for GPU builds) |
+| `TORCH_BACKEND` | `auto` | `cpu`, `cuda`, `musa`, or `auto` (detect hardware) |
+| `CHINA_MIRROR` | `auto` | `official`, `aliyun`, or `auto` (probe connectivity) |
+| `PYTORCH_INDEX_URL` | *(empty)* | Explicit wheel index overriding mirror selection |
+| `PYTHON_VERSION` | `3.11` | Python version to install |
+
+The PyTorch installation is handled by `tools/install_torch.py` (see the
+[Installation Guide](./installation.md#pytorch-wheel-selection-mirror--musa)).
 
 ### Run interactively
 
