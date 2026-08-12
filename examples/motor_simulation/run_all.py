@@ -14,7 +14,7 @@ demos = [
     ("demo_04_motor_performance.py", "电机性能曲线仿真"),
 ]
 
-out_dir = Path("demos/motor_simulation")
+out_dir = Path("examples/motor_simulation")
 out_dir.mkdir(parents=True, exist_ok=True)
 
 print("=" * 60)

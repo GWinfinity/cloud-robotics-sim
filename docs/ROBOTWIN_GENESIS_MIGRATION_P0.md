@@ -18,7 +18,7 @@
 | §5.2 规划器 | OMPL 默认 + `hierarchical_cuRobo_planner` 兜底路由（替代 cuRobo 桥接） | ✅（端到端待 CUDA/MUSA） |
 | §6 渲染三档 | `configs/render/` 三档配置 + renderer 接线 + PSNR/MAE 对齐基准 | ✅（LPIPS/tone mapping 待 GPU） |
 | §7 数据格式 | EpisodeRecorder（HDF5 + MP4 + Zarr）、内外参 1e-6 对齐实测通过 | ✅ |
-| §10 代码骨架 | `examples/genesis_aloha_demo.py` 端到端可运行 | ✅ |
+| §10 代码骨架 | `examples/robotwin/aloha_demo.py` 端到端可运行 | ✅ |
 
 ---
 
@@ -44,7 +44,7 @@
 - mimic 关节展开（Genesis issue #678）+ fixed-base / inertial / mesh 引用 checklist
 - 标注文件原样拷贝（§4.2）、`--smoke-test` Genesis 加载验证、`conversion_report.json`
 
-**示例（§10）** — `examples/genesis_aloha_demo.py`：URDF(fixed=True) → IK → plan_path → 录制 HDF5，无资产时用合成双臂跑通
+**示例（§10）** — `examples/robotwin/aloha_demo.py`：URDF(fixed=True) → IK → plan_path → 录制 HDF5，无资产时用合成双臂跑通
 
 **依赖**：`h5py>=3.8` 加入 pyproject 并 `uv lock` 同步
 
@@ -122,7 +122,7 @@
 - `src/cloud_robotics_sim/robotwin/render_config.py`（渲染三档）
 - `src/cloud_robotics_sim/robotwin/seed_search.py`（并行种子搜索）
 - `tools/convert_assets.py` + `tools/__init__.py`（资产转换工具链，含 `--mesh-smoke` GLB 物体库模式与 `package://` URI 重写）
-- `examples/genesis_aloha_demo.py`（§10 端到端骨架）
+- `examples/robotwin/aloha_demo.py`（§10 端到端骨架）
 - `configs/render/{rasterizer,raytracer,batch_madrona}.yaml`
 - 测试：`tests/backend/test_backend_ik_plan.py`、`test_genesis_batched.py`、`tests/robotwin/test_recorder.py`、`test_embodiment_config.py`、`test_curobo_planner.py`、`test_render_config.py`、`test_seed_search.py`、`test_genesis_aloha_demo.py`、`tests/tools/test_convert_assets.py`
 

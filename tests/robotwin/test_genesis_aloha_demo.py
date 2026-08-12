@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from examples.genesis_aloha_demo import (
+from examples.robotwin.aloha_demo import (
     SYNTHETIC_ARM_URDF,
     _write_synthetic_arm,
     main,
@@ -48,7 +48,7 @@ def main_for(argv: list[str]) -> int:
     """Run the example's main() with a custom argv."""
     old_argv = sys.argv
     try:
-        sys.argv = ["genesis_aloha_demo.py", *argv]
+        sys.argv = ["aloha_demo.py", *argv]
         return main()
     finally:
         sys.argv = old_argv

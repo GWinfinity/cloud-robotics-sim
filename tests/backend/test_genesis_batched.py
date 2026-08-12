@@ -12,7 +12,7 @@ import pytest
 
 from cloud_robotics_sim.robotwin.recorder import EpisodeRecorder
 from cloud_robotics_sim.utils.camera import intrinsics_from_fov
-from examples.genesis_aloha_demo import _write_synthetic_arm
+from examples.robotwin.aloha_demo import _write_synthetic_arm
 
 pytestmark = pytest.mark.slow
 

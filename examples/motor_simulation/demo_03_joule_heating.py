@@ -254,7 +254,7 @@ ax6.legend(fontsize=9)
 ax6.grid(True, alpha=0.3, axis='y')
 
 plt.tight_layout()
-out_dir = Path('demos/motor_simulation')
+out_dir = Path('examples/motor_simulation')
 out_dir.mkdir(parents=True, exist_ok=True)
 plt.savefig(str(out_dir / 'demo_03_joule_heating.png'), dpi=150, bbox_inches='tight')
 plt.close()

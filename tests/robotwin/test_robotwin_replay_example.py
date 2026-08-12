@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from examples.robotwin_replay import _load_or_make_bridge, _make_synthetic_bridge
+from examples.robotwin.replay import _load_or_make_bridge, _make_synthetic_bridge
 
 
 class TestSyntheticBridge:

@@ -12,8 +12,8 @@ OMPL ``plan_path`` (same routing policy as ``robotwin.curobo_planner``).
 
 Usage::
 
-    uv run python scripts/grasp_all_objects.py --max-classes 3   # smoke
-    uv run python scripts/grasp_all_objects.py                   # full run
+    uv run python examples/grasp/grasp_all_objects.py --max-classes 3   # smoke
+    uv run python examples/grasp/grasp_all_objects.py                   # full run
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ from pathlib import Path
 
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from cloud_robotics_sim.robotwin.curobo_planner import (  # noqa: E402

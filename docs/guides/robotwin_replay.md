@@ -54,7 +54,7 @@ print(bridge.summary())
 The fastest way to see the pipeline is:
 
 ```bash
-uv run python examples/robotwin_replay.py \
+uv run python examples/robotwin/replay.py \
     --bridge data/trajectories/episode_0.bridge \
     --headless \
     --output-video outputs/robotwin_replay.mp4

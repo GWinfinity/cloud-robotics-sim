@@ -58,7 +58,7 @@ from tools.import_generated_objects import (  # noqa: E402
 logger = logging.getLogger("expand_object_library")
 
 SMOKE_SCRIPT = REPO_ROOT / "scripts" / "smoke_imported_objects.py"
-GRASP_SCRIPT = REPO_ROOT / "scripts" / "grasp_all_objects.py"
+GRASP_SCRIPT = REPO_ROOT / "examples" / "grasp" / "grasp_all_objects.py"
 
 _SMOKE_LINE_RE = re.compile(r"instance (\d+): z=(\S+) finite=(\w+) -> (OK|FAIL)")
 

@@ -6,8 +6,8 @@ and plays back the recorded trajectory frame by frame. Optionally renders a
 video from a fixed camera.
 
 Usage:
-    uv run python examples/robotwin_replay.py --bridge data/trajectories/episode_0.bridge
-    uv run python examples/robotwin_replay.py --headless --output-video outputs/robotwin_replay.mp4
+    uv run python examples/robotwin/replay.py --bridge data/trajectories/episode_0.bridge
+    uv run python examples/robotwin/replay.py --headless --output-video outputs/robotwin_replay.mp4
 """
 
 from __future__ import annotations
@@ -70,7 +70,9 @@ def _make_synthetic_bridge(num_frames: int = 60) -> RobotwinBridge:
         robot_urdf="assets/embodiments/aloha-agilex/urdf/robot.urdf",
         table_height=0.74,
         object_assets={
-            "can": ObjectAsset(name="can", asset_type="mesh", path="assets/objects/can.glb")
+            "can": ObjectAsset(
+                name="can", asset_type="mesh", path="assets/objects/can.glb"
+            )
         },
         frames=frames,
     )

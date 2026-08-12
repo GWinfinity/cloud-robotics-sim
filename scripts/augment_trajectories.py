@@ -1,7 +1,7 @@
 """Augment recorded grasp trajectories (offline, kinematically consistent).
 
 Reads RoboTwin-format HDF5 episodes (produced by
-``scripts/grasp_all_objects.py --record``) and writes N augmented copies per
+``examples/grasp/grasp_all_objects.py --record``) and writes N augmented copies per
 episode (observation noise + time warp + subsampling).
 
 For spatial diversity (new spawn/target poses) use the runner's online
@@ -41,7 +41,9 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
+    )
     files = sorted(args.episodes_dir.glob("*.hdf5"))
     if not files:
         logger.error("no .hdf5 episodes in %s", args.episodes_dir)
@@ -58,7 +60,9 @@ def main() -> None:
         )
         total += len(written)
         logger.info("%s -> %d augmented copies", path.name, len(written))
-    logger.info("DONE: %d episodes -> %d augmented files in %s", len(files), total, args.out)
+    logger.info(
+        "DONE: %d episodes -> %d augmented files in %s", len(files), total, args.out
+    )
 
 
 if __name__ == "__main__":

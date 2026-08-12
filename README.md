@@ -116,7 +116,7 @@ cloud-robotics-sim/
 │       └── learning/           # RL/IL frameworks
 ├── configs/                    # Configuration files
 ├── tests/                      # Test suite
-├── examples/                   # Example scripts
+├── examples/                   # Example scripts (see examples/README.md index)
 └── docs/                       # Documentation
 ```
 

@@ -4,7 +4,7 @@ Re-record of the apartment demo videos with the demo-quality fixes:
 
 1. **Real tasks** — each room runs a full pick-and-place driven by the
    hierarchical cuRobo planner with Genesis OMPL fallback (same routing as
-   ``scripts/grasp_all_objects.py``); outcomes are judged and reported via
+   ``examples/grasp/grasp_all_objects.py``); outcomes are judged and reported via
    ``robotwin.grasp_report`` and shown as an end-of-video banner.
 2. **Real assets** — room anchors, pick objects, and target containers come
    from the RoboTwin-OD object library (incl. the self-built parametric
@@ -24,11 +24,11 @@ isolates CUDA crashes; per-room ``record_<room>.json`` files are merged into
 Usage::
 
     # smoke: one room, CPU, small frames
-    uv run python scripts/run_home_demo.py --room kitchen --quick --backend cpu \
+    uv run python examples/robotwin/home_demo.py --room kitchen --quick --backend cpu \
         --planner ompl --resolution 640x360
 
     # full run on the 24G server
-    uv run python scripts/run_home_demo.py --out outputs/home_demo
+    uv run python examples/robotwin/home_demo.py --out outputs/home_demo
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ from pathlib import Path
 
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
@@ -65,7 +65,7 @@ from cloud_robotics_sim.robotwin.suction_grasp import (  # noqa: E402
     follow_path,
     goto_joints,
 )
-from scripts.grasp_all_objects import (  # noqa: E402
+from examples.grasp.grasp_all_objects import (  # noqa: E402
     EE_LINK,
     FR3_ARMATURE,
     FR3_DAMPING,

@@ -11,10 +11,10 @@ Demonstrates the P0 migration deliverables end to end on the Genesis backend:
 
 Usage:
     # Synthetic arm (no assets required, runs on CPU):
-    uv run python examples/genesis_aloha_demo.py --out outputs/genesis_aloha_demo
+    uv run python examples/robotwin/aloha_demo.py --out outputs/genesis_aloha_demo
 
     # Converted aloha-agilex URDF (after tools/convert_assets.py):
-    uv run python examples/genesis_aloha_demo.py \
+    uv run python examples/robotwin/aloha_demo.py \
         --urdf assets_genesis/embodiments/aloha-agilex/robot.urdf \
         --left-ee left_gripper_base --right-ee right_gripper_base \
         --render --out outputs/genesis_aloha_demo

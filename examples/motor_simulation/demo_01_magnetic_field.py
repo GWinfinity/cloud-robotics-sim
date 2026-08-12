@@ -265,7 +265,7 @@ ax4.set_xlabel('x [m]')
 ax4.set_ylabel('y [m]')
 
 plt.tight_layout()
-out_dir = Path('demos/motor_simulation')
+out_dir = Path('examples/motor_simulation')
 out_dir.mkdir(parents=True, exist_ok=True)
 plt.savefig(str(out_dir / 'demo_01_magnetic_field.png'), dpi=150, bbox_inches='tight')
 plt.close()

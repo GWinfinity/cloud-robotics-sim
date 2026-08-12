@@ -18,6 +18,6 @@ assets:
   expansion_workflow: scripts/expand_object_library.py   # 外部生成网格 -> 可抓取资产
 
 validation:
-  benchmark_runner: scripts/grasp_all_objects.py   # 全物体抓取基准（FR3 吸盘 + 层级规划）
+  benchmark_runner: examples/grasp/grasp_all_objects.py   # 全物体抓取基准（FR3 吸盘 + 层级规划）
   license_gate: tools/build_asset_manifest.py --check
   mapping_test: tests/data/test_home_5s_recipes.py

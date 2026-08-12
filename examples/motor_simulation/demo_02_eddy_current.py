@@ -204,7 +204,7 @@ ax6.set_ylim(-0.2, 1)
 ax6.axis('off')
 
 plt.tight_layout()
-out_dir = Path('demos/motor_simulation')
+out_dir = Path('examples/motor_simulation')
 out_dir.mkdir(parents=True, exist_ok=True)
 plt.savefig(str(out_dir / 'demo_02_eddy_current.png'), dpi=150, bbox_inches='tight')
 plt.close()

@@ -100,7 +100,7 @@ class TestRealGenesisSeedSearch:
     def test_seed_search_on_batched_scene(self, tmp_path) -> None:
         pytest.importorskip("genesis")
         from cloud_robotics_sim.backends.genesis_backend import GenesisBackend
-        from examples.genesis_aloha_demo import _write_synthetic_arm
+        from examples.robotwin.aloha_demo import _write_synthetic_arm
 
         n_envs = 3
         urdf = _write_synthetic_arm(tmp_path)
