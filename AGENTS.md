@@ -39,5 +39,7 @@ CI treats all of these as blocking.
 
 ## Notes
 
+- Deployment installs should use `tools/install_torch.py` to pick the right PyTorch wheels: it auto-detects Moore Threads MUSA hardware (installs `torch_musa`), CUDA, or CPU, and switches to Aliyun mirrors when the official PyTorch index is unreachable (mainland China). Docker builds expose this via the `TORCH_BACKEND` and `CHINA_MIRROR` build arguments.
+- RoboTwin 2.0 assets (~4GB, gitignored under `assets/robotwin/`) are checked and downloaded automatically on first use via `src/cloud_robotics_sim/robotwin/assets.py` (HF `TianxingChen/RoboTwin2.0`). Prefetch with `python -m cloud_robotics_sim.robotwin.assets`; set `CRS_ROBOTWIN_AUTO_DOWNLOAD=0` to disable and `HF_ENDPOINT=https://hf-mirror.com` for the China mirror. Tests that hit the network are not allowed — mock `download_component`/`ensure_for_path` instead.
 - `plugins/envs/sky/core/genesis/` is a vendored old Genesis 0.3.11 copy. Do not import it from core code.
 - Keep `uv.lock` in sync with `pyproject.toml` by running `uv lock` after dependency changes.

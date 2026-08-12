@@ -148,6 +148,21 @@ of it.
 
 ## Limitations
 
+- **Asset download**: The repository does not include the RoboTwin 2.0 assets
+  (~4 GB). They are checked and downloaded automatically from Hugging Face
+  (`TianxingChen/RoboTwin2.0`) the first time the object library or an
+  embodiment config is used. To prefetch manually or control the behaviour:
+
+  ```bash
+  python -m cloud_robotics_sim.robotwin.assets              # download all
+  python -m cloud_robotics_sim.robotwin.assets --check-only # report missing
+  # Mainland China: use the HF mirror
+  HF_ENDPOINT=https://hf-mirror.com python -m cloud_robotics_sim.robotwin.assets
+  ```
+
+  Environment variables: `CRS_ROBOTWIN_ASSETS` (asset root override),
+  `CRS_ROBOTWIN_AUTO_DOWNLOAD=0` (disable auto-download, missing assets then
+  raise `FileNotFoundError`), `HF_ENDPOINT` (HF mirror endpoint).
 - **Genesis control**: Genesis currently supports `position` and `force`
   control, but not independent velocity targets. Replay uses position targets.
 - **Complex URDFs**: ALOHA-AgileX and similar complex URDFs may need empty
@@ -156,8 +171,7 @@ of it.
   trained on SAPIEN images may need domain randomization or adaptation when
   transferred to Genesis renders.
 - **Assets**: The example requires the real ALOHA-AgileX URDF and object meshes.
-  The repository does not include these assets; they must be obtained from the
-  RoboTwin dataset or the robot description package.
+  These are fetched automatically on first use (see **Asset download** above).
 
 ## Exporting Your Own Bridge
 

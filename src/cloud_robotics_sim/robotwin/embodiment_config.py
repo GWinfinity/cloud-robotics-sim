@@ -34,6 +34,7 @@ the mimic relations live in ``gripper_name`` only.
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -42,6 +43,9 @@ import numpy as np
 import yaml
 
 from cloud_robotics_sim.backend.base import ArticulationBackend
+from cloud_robotics_sim.robotwin.assets import ensure_for_path
+
+logger = logging.getLogger(__name__)
 
 __all__ = ["RobotwinEmbodimentConfig", "MimicJoint", "MimicJointMapper"]
 
@@ -129,6 +133,8 @@ class RobotwinEmbodimentConfig:
                 takes precedence over inline ``mimic_joints``.
         """
         path = Path(path)
+        if not path.is_file() and ensure_for_path("embodiments", path):
+            logger.info("RoboTwin embodiments auto-downloaded for %s", path)
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         if not isinstance(data, dict):
             raise TypeError(f"Embodiment config must be a mapping: {path}")

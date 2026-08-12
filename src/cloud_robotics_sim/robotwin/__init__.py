@@ -4,6 +4,10 @@ This package provides utilities for replaying RoboTwin demonstrations
 inside the Genesis-backed simulation environment.
 """
 
+from cloud_robotics_sim.robotwin.assets import (
+    default_asset_root,
+    ensure_robotwin_assets,
+)
 from cloud_robotics_sim.robotwin.bridge import (
     CameraConfig,
     ObjectAsset,
@@ -70,4 +74,6 @@ __all__ = [
     "EpisodeRecorder",
     "RobotwinReplayScene",
     "RobotwinReplayTask",
+    "default_asset_root",
+    "ensure_robotwin_assets",
 ]

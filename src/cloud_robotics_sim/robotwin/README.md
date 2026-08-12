@@ -54,6 +54,8 @@ The RoboTwin->Genesis migration P0 skeleton lives in:
   (URDF -> IK -> plan_path -> record HDF5).
 
 ```bash
+# Assets: auto-downloaded on first use; or prefetch manually (HF mirror for China)
+python -m cloud_robotics_sim.robotwin.assets
 # Embodiments (URDF): copy tree, rewrite URDFs, Genesis load smoke test
 uv run python tools/convert_assets.py assets/robotwin/embodiments/embodiments assets_genesis/embodiments --smoke-test
 # RoboTwin-OD objects (GLB, no URDF): mesh load smoke test, no tree copy

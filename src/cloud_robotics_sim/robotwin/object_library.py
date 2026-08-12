@@ -30,10 +30,15 @@ an :class:`ObjectInstance` whose ``kind`` field is ``"glb"`` or ``"urdf"``.
 from __future__ import annotations
 
 import json
+import logging
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+from cloud_robotics_sim.robotwin.assets import ensure_for_path
+
+logger = logging.getLogger(__name__)
 
 __all__ = ["ObjectInstance", "RoboTwinObjectLibrary", "normalize_scale"]
 
@@ -86,6 +91,10 @@ class RoboTwinObjectLibrary:
 
     def __init__(self, objects_dir: str | Path) -> None:
         self.objects_dir = Path(objects_dir)
+        if not self.objects_dir.is_dir() and ensure_for_path(
+            "objects", self.objects_dir
+        ):
+            logger.info("RoboTwin objects auto-downloaded to %s", self.objects_dir)
         if not self.objects_dir.is_dir():
             raise FileNotFoundError(f"objects dir not found: {self.objects_dir}")
 
