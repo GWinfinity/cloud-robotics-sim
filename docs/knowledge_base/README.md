@@ -79,6 +79,21 @@
 
 ---
 
+### 6. Thermal Solver 可微热源耦合迁移
+**文件**: `06_thermal_solver_musa_autodiff.md`
+
+**来源项目**: `genesis-cloud-sim` (plugins/solvers/thermal)
+
+**核心内容**:
+- MUSA / Quadrants autodiff 对 source-coupling kernel 的限制
+- 当前 straight-through 行为与重新启用条件
+- 后端迁移 TODO 清单（atomic_add、in-place field、break、cast）
+- 验证测试模板与质量门禁
+
+**适用场景**: Thermal solver 后续可微性增强、MUSA/Quadrants autodiff 迁移
+
+---
+
 ## 快速参考
 
 ### 按任务类型选择文档
@@ -91,6 +106,7 @@
 | 抓取放置 | 04_generalized_manipulation_reward.md |
 | Sim-to-Real | 02_residual_rl.md + 04_generalized_manipulation_reward.md |
 | 高速预测 | 05_dual_predictor_architecture.md |
+| 热求解器可微迁移 | 06_thermal_solver_musa_autodiff.md |
 
 ### 关键技术栈
 
@@ -121,6 +137,7 @@
    - 新手: 04 → 02 → 01
    - 球类运动: 03 → 05
    - 全身控制: 01 → 02
+   - 热求解器可微增强: 06
 
 2. **代码迁移**:
    - 每个文档包含完整可运行的代码示例
@@ -137,7 +154,7 @@
 
 如需添加新的知识模块:
 
-1. 创建新的 markdown 文件 (`06_xxx.md`)
+1. 创建新的 markdown 文件 (`07_xxx.md`)
 2. 遵循统一的文档结构:
    - 算法原理 (论文引用 + 核心思想)
    - 使用场景 (适用任务 + 限制)
@@ -155,4 +172,4 @@
 
 ---
 
-*最后更新: 2026-03-13*
+*最后更新: 2026-08-14*
