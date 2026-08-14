@@ -5,7 +5,6 @@
 
 __version__ = "0.1.0"
 
-# Import from genesis_compat (core utilities)
 # Import from camera module
 from .camera import (
     compute_fovy,
@@ -46,8 +45,16 @@ from .genesis_compat import (
     matrix_to_quaternion,
     parse_urdf_config,
 )
-
-# Import from rendering module
+from .motor_catalog import (
+    estimate_joule_power,
+    estimate_resistance_from_motor,
+    get_catalog,
+    get_category,
+    get_motor,
+    get_thermal_defaults,
+    list_categories,
+    list_motors,
+)
 from .rendering import (
     ShaderConfig,
     configure_rendering,
@@ -105,6 +112,15 @@ __all__ = [
     "save_screenshot",
     "start_recording",
     "stop_recording",
+    # Motor catalog
+    "get_catalog",
+    "list_categories",
+    "list_motors",
+    "get_motor",
+    "get_category",
+    "get_thermal_defaults",
+    "estimate_joule_power",
+    "estimate_resistance_from_motor",
 ]
 
 

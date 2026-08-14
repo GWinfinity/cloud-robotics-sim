@@ -1,0 +1,213 @@
+# Typical robot motor parameters for simulation.
+# Values are representative; consult manufacturer datasheets for exact specs.
+
+metadata:
+  description: "Catalog of typical robot motor voltage/current/thermal parameters."
+  source: "public datasheets and industry surveys"
+  last_updated: "2026-08-14"
+  notes: "All values are typical ranges. Use them as initial guesses for simulation."
+
+categories:
+  humanoid_joint:
+    description: "Humanoid robot joint actuators"
+    entries:
+      - name: "wrist/hand_small"
+        voltage_v: [24, 48]
+        current_a: [1, 10]
+        power_w: [10, 100]
+        torque_nm: [0.1, 2]
+        notes: "hollow-cup or micro BLDC, compact size"
+      - name: "ankle/neck/shoulder"
+        voltage_v: [24, 48]
+        current_a: [3, 30]
+        power_w: [100, 300]
+        torque_nm: [5, 30]
+        notes: "frameless torque motor + harmonic reducer"
+      - name: "elbow"
+        voltage_v: [24, 48]
+        current_a: [10, 50]
+        power_w: [1000, 2000]
+        torque_nm: [20, 80]
+        notes: "high thermal demand"
+      - name: "hip/knee_large"
+        voltage_v: [24, 48]
+        current_a: [50, 150]
+        power_w: [2500, 5000]
+        torque_nm: [80, 300]
+        notes: "peak torque >100 Nm, often paralleled FETs"
+    references:
+      - "Tesla Optimus"
+      - "Unitree H1/G1"
+      - "Figure 02"
+
+  cobot_joint:
+    description: "Collaborative robot arm joints"
+    entries:
+      - name: "universal_robots_joint"
+        voltage_v: [24, 48]
+        current_a: [1, 5]
+        power_w: [50, 200]
+        torque_nm: [2, 20]
+        notes: "modular hollow BLDC"
+      - name: "franka_emika_joint"
+        voltage_v: [24]
+        current_a: [1, 3]
+        power_w: [20, 100]
+        torque_nm: [1, 10]
+        notes: "torque-sensor-based safe joint"
+      - name: "abb_yumi_joint"
+        voltage_v: [24, 48]
+        current_a: [1, 5]
+        power_w: [20, 150]
+        torque_nm: [0.5, 5]
+        notes: "BLDC with current-based collision detection"
+      - name: "domestic_integrated_joint"
+        voltage_v: [36, 48]
+        current_a: [1.9, 33.7]
+        power_w: [75, 1000]
+        torque_nm: [3, 50]
+        notes: "post-reduction torque"
+
+  industrial_servo:
+    description: "Industrial robotic arm servo motors"
+    entries:
+      - name: "yaskawa_sgm7g_13apk"
+        voltage_v: [200]
+        current_a: [13.8]
+        power_w: [1300]
+        torque_nm: [8.34]
+        notes: "1.3 kW AC servo"
+      - name: "yaskawa_sgm7g_55apk"
+        voltage_v: [200]
+        current_a: [28.3]
+        power_w: [5500]
+        torque_nm: [35]
+        notes: "5.5 kW AC servo"
+      - name: "abb_kuka_fanuc_servo"
+        voltage_v: [200, 400]
+        current_a: [2, 50]
+        power_w: [400, 10000]
+        torque_nm: [2, 200]
+        notes: "three-phase AC servo, model dependent"
+
+  quadruped:
+    description: "Quadruped / legged robot actuators"
+    entries:
+      - name: "mit_cheetah_actuator"
+        voltage_v: [24, 48]
+        current_a: [10, 80]
+        power_w: [200, 1000]
+        torque_nm: [10, 100]
+        notes: "high-dynamic BLDC"
+      - name: "unitree_a1_joint"
+        voltage_v: [24]
+        current_a: [3, 20]
+        power_w: [100, 300]
+        torque_nm: [5, 20]
+        notes: "outer-rotor BLDC joint"
+      - name: "unitree_go1_go2_joint"
+        voltage_v: [24]
+        current_a: [3, 30]
+        power_w: [100, 400]
+        torque_nm: [10, 30]
+        notes: "12-DOF quadruped"
+      - name: "unitree_b2_joint"
+        voltage_v: [50.4]
+        current_a: [20, 120]
+        power_w: [500, 2000]
+        torque_nm: [30, 150]
+        notes: "industrial-grade, 45 Ah battery"
+      - name: "snh60_80_module"
+        voltage_v: [24, 48]
+        current_a: [3.6]
+        power_w: [300]
+        torque_nm: [33, 48]
+        notes: "reduction ratios 51/81/101/121"
+
+  drone:
+    description: "Drone / multirotor BLDC motors"
+    entries:
+      - name: "micro_toy"
+        voltage_v: [3.7, 7.4]
+        current_a: [1, 5]
+        power_w: [5, 20]
+        notes: "1S-2S LiPo"
+      - name: "consumer_aerial"
+        voltage_v: [11.1, 14.8]
+        current_a: [10, 20]
+        power_w: [100, 300]
+        notes: "3S-4S LiPo, e.g. DJI Mavic class"
+      - name: "racing_fpv"
+        voltage_v: [14.8, 22.2]
+        current_a: [20, 60]
+        power_w: [200, 1000]
+        notes: "4S-6S LiPo, high KV"
+      - name: "agricultural_payload"
+        voltage_v: [22.2, 44.4]
+        current_a: [30, 100]
+        power_w: [1000, 5000]
+        notes: "6S-12S LiPo, large prop"
+
+  agv:
+    description: "AGV / mobile robot motors"
+    entries:
+      - name: "hub_motor"
+        voltage_v: [24, 48]
+        current_a: [5, 50]
+        power_w: [200, 2000]
+        torque_nm: [2, 50]
+        notes: "differential or steering wheel drive"
+      - name: "steering_servo"
+        voltage_v: [24, 48]
+        current_a: [3, 15]
+        power_w: [100, 500]
+        torque_nm: [1, 10]
+        notes: "steering control"
+      - name: "lift_motor"
+        voltage_v: [24, 48]
+        current_a: [10, 60]
+        power_w: [500, 3000]
+        torque_nm: [5, 50]
+        notes: "hydraulic pump replacement"
+
+  dexterous_hand:
+    description: "Dexterous hand / micro joints"
+    entries:
+      - name: "coreless_motor"
+        voltage_v: [3.7, 12]
+        current_a: [0.1, 2]
+        power_w: [1, 20]
+        torque_nm: [0.01, 0.5]
+        notes: "high response, used in fingers"
+      - name: "micro_servo"
+        voltage_v: [5, 7.4]
+        current_a: [0.5, 3]
+        power_w: [5, 20]
+        torque_nm: [0.05, 0.5]
+        notes: "model/educational robots"
+      - name: "integrated_coreless_module"
+        voltage_v: [5, 48]
+        current_a: [0.5, 5]
+        power_w: [1, 50]
+        torque_nm: [0.05, 1]
+        notes: "trend for dexterous hands"
+
+thermal_defaults:
+  description: "Default thermal material properties for motor simulation"
+  copper:
+    conductivity_s_per_m: 5.8e+7
+    thermal_conductivity_w_per_m_k: 400
+    density_kg_per_m3: 8960
+    specific_heat_j_per_kg_k: 385
+  steel:
+    thermal_conductivity_w_per_m_k: 50
+    density_kg_per_m3: 7850
+    specific_heat_j_per_kg_k: 460
+  insulation:
+    thermal_conductivity_w_per_m_k: 0.3
+    density_kg_per_m3: 1200
+    specific_heat_j_per_kg_k: 1500
+  air_natural_convection:
+    heat_transfer_coefficient_w_per_m2_k: 10
+  forced_convection:
+    heat_transfer_coefficient_w_per_m2_k: 100
