@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoboTwin→Genesis 迁移 P0 实施总结 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/ROBOTWIN_GENESIS_MIGRATION_P0.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">RoboTwin→Genesis 迁移 P0 实施总结</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ROBOTWIN_GENESIS_MIGRATION_P0.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="robotwingenesis-p0">
+<h1>RoboTwin→Genesis 迁移 P0 实施总结<a class="headerlink" href="#robotwingenesis-p0" title="Link to this heading"></a></h1>
+<blockquote>
+<div><p>日期：2026-07-28 ｜ 依据文档：《RoboTwin 2.0 迁移至 Genesis World 仿真器技术方案》v1.0
+范围：P0 基础骨架（§3.1 / §4 / §5 / §6 配置层 / §7 / §10）
+质量门禁：<strong>517 tests passed</strong>、ruff 全绿、新增/改动文件 black 全净</p>
+</div></blockquote>
+<hr class="docutils" />
+<section id="id1">
+<h2>1. 总览<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>按迁移文档的 P0 范围，在本仓库（genesis-cloud-sim）现有 backend 抽象与 <code class="docutils literal notranslate"><span class="pre">robotwin</span></code> 包基础上，分四批完成了迁移骨架的全部可在无 GPU/无真实资产环境下落地的交付物，并接入了本地 <code class="docutils literal notranslate"><span class="pre">hierarchical_cuRobo_planner</span></code> 项目替代原方案的 cuRobo 桥接。</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>文档章节</p></th>
+<th class="head"><p>交付物</p></th>
+<th class="head"><p>状态</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>§3.1 SimBackend</p></td>
+<td><p>IK / 多链路 IK / OMPL plan_path / PD 增益 / DR / 相机内外参 / <code class="docutils literal notranslate"><span class="pre">build(n_envs)</span></code> / renderer 选择</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-odd"><td><p>§4 资产转换</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tools/convert_assets.py</span></code>（mimic 展开、<code class="docutils literal notranslate"><span class="pre">package://</span></code> 重写、checklist、Genesis smoke test、GLB <code class="docutils literal notranslate"><span class="pre">--mesh-smoke</span></code>、报告）</p></td>
+<td><p>✅ 真实资产已验证（§3.1）</p></td>
+</tr>
+<tr class="row-even"><td><p>§5.1 并行种子搜索</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">batched_seed_search</span></code>（per-env mask、早停）</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-odd"><td><p>§5.2 规划器</p></td>
+<td><p>OMPL 默认 + <code class="docutils literal notranslate"><span class="pre">hierarchical_cuRobo_planner</span></code> 兜底路由（替代 cuRobo 桥接）</p></td>
+<td><p>✅（端到端待 CUDA/MUSA）</p></td>
+</tr>
+<tr class="row-even"><td><p>§6 渲染三档</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">configs/render/</span></code> 三档配置 + renderer 接线 + PSNR/MAE 对齐基准</p></td>
+<td><p>✅（LPIPS/tone mapping 待 GPU）</p></td>
+</tr>
+<tr class="row-odd"><td><p>§7 数据格式</p></td>
+<td><p>EpisodeRecorder（HDF5 + MP4 + Zarr）、内外参 1e-6 对齐实测通过</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-even"><td><p>§10 代码骨架</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">examples/robotwin/aloha_demo.py</span></code> 端到端可运行</p></td>
+<td><p>✅</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="id2">
+<h2>2. 分批交付明细<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="p0">
+<h3>批次一：P0 基础骨架<a class="headerlink" href="#p0" title="Link to this heading"></a></h3>
+<p><strong>Backend 接口扩展（§3.1）</strong> — <code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/backend/base.py</span></code></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ArticulationBackend</span></code> 新增（非 abstract，默认 <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>，不破坏现有 mock/MTLambda 子类）：</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">set_dofs_gains(kp,</span> <span class="pre">kv,</span> <span class="pre">force_range,</span> <span class="pre">armature)</span></code> —— config.yml stiffness/damping 批量映射（§2）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inverse_kinematics</span></code> / <code class="docutils literal notranslate"><span class="pre">inverse_kinematics_multilink</span></code>（双臂 aloha，§4.1）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plan_path</span></code>（OMPL，替换 mplib RRT，§5.2）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_link_pose</span></code></p></li>
+<li><p>DR 三件套：<code class="docutils literal notranslate"><span class="pre">set_friction_ratio</span></code> / <code class="docutils literal notranslate"><span class="pre">set_mass_shift</span></code> / <code class="docutils literal notranslate"><span class="pre">set_com_shift</span></code></p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CameraBackend.get_camera_params()</span></code> → <code class="docutils literal notranslate"><span class="pre">(intrinsic,</span> <span class="pre">extrinsic</span> <span class="pre">camera-to-world)</span></code>（§7 关键）</p></li>
+<li><p><strong>已按 venv 内 Genesis 1.2.2 真实签名逐一核对实现</strong>（<code class="docutils literal notranslate"><span class="pre">backends/genesis_backend.py</span></code>）</p></li>
+</ul>
+<p><strong>数据层（§7/§10）</strong> — <code class="docutils literal notranslate"><span class="pre">robotwin/recorder.py</span></code></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">EpisodeRecorder</span></code>：RoboTwin 格式 HDF5（<code class="docutils literal notranslate"><span class="pre">/obs/rgb|depth|segmentation/&lt;cam&gt;</span></code>、<code class="docutils literal notranslate"><span class="pre">/qpos</span></code>、<code class="docutils literal notranslate"><span class="pre">/endpose</span></code>、相机内外参 attrs）+ MP4（imageio）+ 批量采集按 env 拆 episode</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">utils/camera.py</span></code> 新增 <code class="docutils literal notranslate"><span class="pre">intrinsics_from_fov</span></code></p></li>
+</ul>
+<p><strong>资产转换工具（§4）</strong> — <code class="docutils literal notranslate"><span class="pre">tools/convert_assets.py</span></code></p>
+<ul class="simple">
+<li><p>mimic 关节展开（Genesis issue #678）+ fixed-base / inertial / mesh 引用 checklist</p></li>
+<li><p>标注文件原样拷贝（§4.2）、<code class="docutils literal notranslate"><span class="pre">--smoke-test</span></code> Genesis 加载验证、<code class="docutils literal notranslate"><span class="pre">conversion_report.json</span></code></p></li>
+</ul>
+<p><strong>示例（§10）</strong> — <code class="docutils literal notranslate"><span class="pre">examples/robotwin/aloha_demo.py</span></code>：URDF(fixed=True) → IK → plan_path → 录制 HDF5，无资产时用合成双臂跑通</p>
+<p><strong>依赖</strong>：<code class="docutils literal notranslate"><span class="pre">h5py&gt;=3.8</span></code> 加入 pyproject 并 <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">lock</span></code> 同步</p>
+</section>
+<section id="zarr">
+<h3>批次二：控制层 + Zarr + 批量基础<a class="headerlink" href="#zarr" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SceneBackend.build(n_envs=1,</span> <span class="pre">env_spacing=None)</span></code>（§3.1/§5.1 批量底座，向后兼容）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">robotwin/embodiment_config.py</span></code>：</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">RobotwinEmbodimentConfig.from_yaml()</span></code> 容错解析 config.yml（多别名），合并 <code class="docutils literal notranslate"><span class="pre">conversion_report.json</span></code> 的 mimic 映射</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">apply_pd_gains()</span></code> 一键下发 PD 增益</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MimicJointMapper</span></code>：控制层按 <code class="docutils literal notranslate"><span class="pre">master×multiplier+offset</span></code> 复制 mimic 目标值（#678 完整闭环）</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">EpisodeRecorder.save_zarr()</span></code>（§7，DP/DP3 消费，与 HDF5 同 schema，兼容 zarr v3 API）；zarr 加入 dev extra</p></li>
+<li><p>真实 Genesis 验证：相机内外参对齐（1e-6）、n_envs=2 批量录制拆分/DR（<code class="docutils literal notranslate"><span class="pre">tests/backend/test_genesis_batched.py</span></code>）</p></li>
+</ul>
+</section>
+<section id="hierarchical-curobo-planner-curobo-5-2">
+<h3>批次三：hierarchical_cuRobo_planner 替代 cuRobo 桥接（§5.2）<a class="headerlink" href="#hierarchical-curobo-planner-curobo-5-2" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>新模块 <code class="docutils literal notranslate"><span class="pre">robotwin/curobo_planner.py</span></code>：</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">CuRoboPlannerConfig</span></code>：URDF/base_link/ee_link + 工作空间 AABB、体素、障碍物列表（A* 避障为 OMPL 不具备的能力）、CUDA/MUSA auto 检测</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HierarchicalCuRoboPlanner</span></code>：包装外部 <code class="docutils literal notranslate"><span class="pre">HierarchicalPlanner</span></code>（工作空间 A* → 批量 cuRobo IK → 轨迹优化），<strong>懒构建</strong>，无 CUDA 环境 import 零成本</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plan_with_fallback(robot,</span> <span class="pre">goal_pos,</span> <span class="pre">...)</span></code>：cuRobo 优先、OMPL 兜底的路由（§5.2 决策），返回 <code class="docutils literal notranslate"><span class="pre">(trajectory,</span> <span class="pre">planner_name)</span></code></p></li>
+<li><p>分层异常：<code class="docutils literal notranslate"><span class="pre">CuRoboPlannerUnavailableError</span></code>（未安装，含安装提示）/ <code class="docutils literal notranslate"><span class="pre">PlannerError</span></code>（规划失败）</p></li>
+</ul>
+</li>
+<li><p><strong>不引入硬依赖</strong>（本机无 CUDA/cuRobo）；安装：<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">D:\githbi\hierarchical_cuRobo_planner</span></code></p></li>
+<li><p>demo 新增 <code class="docutils literal notranslate"><span class="pre">--planner</span> <span class="pre">{auto,ompl,curobo}</span></code> 三模式（curobo 严格模式退出码 3）</p></li>
+<li><p>与外部项目 API 按源码核实：<code class="docutils literal notranslate"><span class="pre">PlanRequest</span></code> / <code class="docutils literal notranslate"><span class="pre">PlanResult.trajectory</span></code> / <code class="docutils literal notranslate"><span class="pre">RobotModelConfig</span></code> / <code class="docutils literal notranslate"><span class="pre">PlanningConfig</span></code></p></li>
+</ul>
+</section>
+<section id="m4-5-1">
+<h3>批次四：M4 渲染三档 + §5.1 并行种子搜索<a class="headerlink" href="#m4-5-1" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SimulatorBackend.create_scene(...,</span> <span class="pre">renderer=None)</span></code> 接口扩展，Genesis 透传 <code class="docutils literal notranslate"><span class="pre">gs.Scene(renderer=...)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">robotwin/render_config.py</span></code>：<code class="docutils literal notranslate"><span class="pre">RenderConfig</span></code> + YAML 加载 + <code class="docutils literal notranslate"><span class="pre">make_genesis_renderer</span></code> + <code class="docutils literal notranslate"><span class="pre">compare_render_pair</span></code>（PSNR/MAE）</p></li>
+<li><p>三档配置 <code class="docutils literal notranslate"><span class="pre">configs/render/</span></code>（§6.1 用途对应）：</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">rasterizer.yaml</span></code> —— 种子搜索/RL（最高吞吐）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">raytracer.yaml</span></code> —— LuisaRender，spp=32+denoise 对齐 SAPIEN RT（训练数据）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">batch_madrona.yaml</span></code> —— Madrona 256×256（并行评测/DR 扫描）</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">robotwin/seed_search.py</span></code>：<code class="docutils literal notranslate"><span class="pre">batched_seed_search</span></code>（§5.1）—— 每 env 一个随机初始化 → 批量 rollout → per-env 成功 mask → 达标早停；真实 Genesis <code class="docutils literal notranslate"><span class="pre">n_envs=3</span></code> 全链路验证通过</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id3">
+<h2>3. 实测发现（已修正并写入代码注释/文档）<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>文档 §7 内参公式有误</strong>：<code class="docutils literal notranslate"><span class="pre">fx=fy=W/(2·tan(fov/2))</span></code> 与 Genesis 真实行为相差正好是宽高比（640×480&#64;60°：554.26 vs 415.69）。Genesis 的 fov 为<strong>垂直</strong>视场角，正确公式为 <strong><code class="docutils literal notranslate"><span class="pre">f</span> <span class="pre">=</span> <span class="pre">H/(2·tan(fov/2))</span></code></strong>。<code class="docutils literal notranslate"><span class="pre">intrinsics_from_fov</span></code> 已按 Genesis 修正并与 <code class="docutils literal notranslate"><span class="pre">Camera.intrinsics</span></code> 实测对齐（1e-6）。</p></li>
+<li><p><strong>Genesis 合并 fixed joint 子 link</strong>：<code class="docutils literal notranslate"><span class="pre">ee_link</span></code>（fixed 关节连接）被并入父 link，IK 目标须用未合并的 link 名——迁移 aloha URDF 时需注意 ee 命名。</p></li>
+<li><p><strong>批量场景外参含 env 网格偏移</strong>：<code class="docutils literal notranslate"><span class="pre">n_envs&gt;1</span></code> 时 <code class="docutils literal notranslate"><span class="pre">cam.transform</span></code> 为全局帧（env0 偏移 <code class="docutils literal notranslate"><span class="pre">-env_spacing/2</span></code>）；单 env 数据采集无影响，已写入 <code class="docutils literal notranslate"><span class="pre">get_camera_params</span></code> docstring。</p></li>
+<li><p><strong>合成 URDF 的 <code class="docutils literal notranslate"><span class="pre">&lt;inertial&gt;</span></code> 必须含 <code class="docutils literal notranslate"><span class="pre">&lt;inertia&gt;</span></code> 子元素</strong>，否则 Genesis urdfpy 解析崩溃（转换 checklist 的 inertial 检测因此更有必要）。</p></li>
+<li><p><strong>真实 <code class="docutils literal notranslate"><span class="pre">config.yml</span></code> 格式与文档假设不同</strong>（M2 下载 RoboTwin2.0 资产后实测）：<code class="docutils literal notranslate"><span class="pre">joint_stiffness</span></code>/<code class="docutils literal notranslate"><span class="pre">joint_damping</span></code> 是<strong>标量</strong>（需广播到全部 DoF）；ee link 在 <code class="docutils literal notranslate"><span class="pre">move_group</span></code> 字段；mimic 关系在 <code class="docutils literal notranslate"><span class="pre">gripper_name:</span> <span class="pre">[{base,</span> <span class="pre">mimic:</span> <span class="pre">[[slave,</span> <span class="pre">mult,</span> <span class="pre">offset]]}]</span></code> 中；franka-panda 有拼写错误 <code class="docutils literal notranslate"><span class="pre">gripper_stiffnes</span></code>（少 s）。<code class="docutils literal notranslate"><span class="pre">RobotwinEmbodimentConfig</span></code> 已全部兼容（别名 + 广播 + gripper_name 解析）。</p></li>
+<li><p><strong>真实 URDF 中没有生效的 <code class="docutils literal notranslate"><span class="pre">&lt;mimic&gt;</span></code> 元素</strong>——franka <code class="docutils literal notranslate"><span class="pre">panda.urdf</span></code> 的 mimic 被 XML 注释掉，其余 4 个本体本来就没有；mimic 关系只存在于 config.yml 的 <code class="docutils literal notranslate"><span class="pre">gripper_name</span></code>。因此 URDF 级 mimic 展开对这批资产是 no-op，<strong>控制层 <code class="docutils literal notranslate"><span class="pre">MimicJointMapper</span></code> 是必须的</strong>（SAPIEN 侧也是靠代码按 config 复制 master 目标驱动从动指）。</p></li>
+<li><p><strong>ROS <code class="docutils literal notranslate"><span class="pre">package://</span></code> mesh URI 需重写</strong>：piper 的附属 URDF（moveit/v00/no_gripper 变体）引用 <code class="docutils literal notranslate"><span class="pre">package://piper_description/meshes/...</span></code>，而网格实际在 <code class="docutils literal notranslate"><span class="pre">piper/meshes/</span></code>。<code class="docutils literal notranslate"><span class="pre">convert_assets.py</span></code> 现按路径尾匹配解析并重写为相对路径（报告 <code class="docutils literal notranslate"><span class="pre">package_uri_rewrites</span></code>），解析失败的仍计入 <code class="docutils literal notranslate"><span class="pre">missing_meshes</span></code>。</p></li>
+<li><p><strong>aloha <code class="docutils literal notranslate"><span class="pre">.dae</span></code> 纹理告警无害</strong>：Genesis 提示 “Texture given but asset missing uv info”（Collada uv 缺失），不影响加载与物理。</p></li>
+<li><p><strong>CoACD 凸分解在密集 visual 网格上过慢甚至崩溃</strong>：<code class="docutils literal notranslate"><span class="pre">gs.morphs.Mesh</span></code> 默认 <code class="docutils literal notranslate"><span class="pre">convexify=True</span></code>，对 RoboTwin-OD 视觉网格（如 <code class="docutils literal notranslate"><span class="pre">002_bowl/visual/base1.glb</span></code>）凸分解单网格耗时 100+s 且进程最终崩溃。<code class="docutils literal notranslate"><span class="pre">--mesh-smoke</span></code> 改用 <code class="docutils literal notranslate"><span class="pre">convexify=False</span></code>（同网格 12.6s 加载成功）。<strong>运行时如需物体碰撞，应直接用资产自带的 <code class="docutils literal notranslate"><span class="pre">collision/*.glb</span></code>（RoboTwin 已提供简化碰撞网格），不要对 visual 网格做凸分解。</strong></p></li>
+<li><p><strong>Genesis <code class="docutils literal notranslate"><span class="pre">scene.build()</span></code> 是 mesh smoke 的主要开销</strong>（CPU ~50s/次，网格解析仅 1-9s，但 textured visual GLB 的解析可达 ~90s）：<code class="docutils literal notranslate"><span class="pre">--mesh-smoke</span></code> 因此（a）批量构建场景（<code class="docutils literal notranslate"><span class="pre">--batch-size</span></code>，默认 16/批）摊销 build；（b）每批 checkpoint 写入报告（<code class="docutils literal notranslate"><span class="pre">complete</span></code> 字段标记是否跑完）；（c）支持 <code class="docutils literal notranslate"><span class="pre">--visual-sample</span> <span class="pre">N</span></code> 只对前 N 类采样 visual 网格。</p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="m2-2026-07-28">
+<h2>3.1 M2 真实资产转换结果（2026-07-28）<a class="headerlink" href="#m2-2026-07-28" title="Link to this heading"></a></h2>
+<p>资产来源：HuggingFace <code class="docutils literal notranslate"><span class="pre">TianxingChen/RoboTwin2.0</span></code>（经 hf-mirror.com 下载），存于 <code class="docutils literal notranslate"><span class="pre">assets/robotwin/</span></code>（已加入 .gitignore）：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">embodiments/</span></code>：aloha-agilex、ARX-X5、franka-panda、piper、ur5-wsg 五个本体（URDF + config.yml + 网格）。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">objects/</span></code>：RoboTwin-OD 物体库，<strong>129 类</strong>（非文档所述 147 类），每类 <code class="docutils literal notranslate"><span class="pre">collision/*.glb</span></code> + <code class="docutils literal notranslate"><span class="pre">visual/*.glb</span></code> + <code class="docutils literal notranslate"><span class="pre">model_dataN.json</span></code>（center/extents/scale/target_pose/points）+ <code class="docutils literal notranslate"><span class="pre">points_info.json</span></code>。物体为纯 GLB 网格（无 URDF），运行时按 model_data 的 scale 加载。</p></li>
+</ul>
+<p><strong>Embodiments 转换</strong>（<code class="docutils literal notranslate"><span class="pre">assets_genesis/embodiments/</span></code>，日志 <code class="docutils literal notranslate"><span class="pre">outputs/convert_embodiments.log</span></code>）：</p>
+<ul class="simple">
+<li><p>10 个 URDF（5 个 config 引用 + 5 个 piper 附属变体）全部转换，<strong>smoke test 10/10 通过</strong>（Genesis CPU 加载成功），0 缺失网格引用，0 需展开的 mimic。</p></li>
+<li><p>piper 附属 URDF 的 <code class="docutils literal notranslate"><span class="pre">package://</span></code> URI 已自动重写（发现 #7）。</p></li>
+<li><p>各 URDF 的 <code class="docutils literal notranslate"><span class="pre">missing_inertial</span></code> 列表已记录在 <code class="docutils literal notranslate"><span class="pre">conversion_report.json</span></code>（如 franka 12 个 link 无 inertial，Genesis 用默认惯性仍可加载）。</p></li>
+</ul>
+<p><strong>Objects 网格 smoke</strong>（<code class="docutils literal notranslate"><span class="pre">--mesh-smoke</span> <span class="pre">--batch-size</span> <span class="pre">32</span> <span class="pre">--visual-sample</span> <span class="pre">20</span></code>，报告 <code class="docutils literal notranslate"><span class="pre">assets_genesis/objects/conversion_report.json</span></code>，日志 <code class="docutils literal notranslate"><span class="pre">outputs/mesh_smoke_objects.log</span></code>）：129 类每类的首个 collision GLB 全量 + 前 20 类的首个 visual GLB 采样，在 Genesis CPU 批量加载验证——结果见报告（n_ok/n_assets）。</p>
+<p>5 个真实 config.yml 的解析已固化为集成测试（<code class="docutils literal notranslate"><span class="pre">tests/robotwin/test_embodiment_config.py::TestRealEmbodimentConfigs</span></code>，资产缺失时自动 skip）。</p>
+</section>
+<hr class="docutils" />
+<section id="id4">
+<h2>4. 文件清单<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<p><strong>新增</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/recorder.py</span></code>（HDF5/MP4/Zarr 录制）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/embodiment_config.py</span></code>（config.yml + MimicJointMapper）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/curobo_planner.py</span></code>（分层规划器适配）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/render_config.py</span></code>（渲染三档）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/seed_search.py</span></code>（并行种子搜索）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tools/convert_assets.py</span></code> + <code class="docutils literal notranslate"><span class="pre">tools/__init__.py</span></code>（资产转换工具链，含 <code class="docutils literal notranslate"><span class="pre">--mesh-smoke</span></code> GLB 物体库模式与 <code class="docutils literal notranslate"><span class="pre">package://</span></code> URI 重写）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/robotwin/aloha_demo.py</span></code>（§10 端到端骨架）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">configs/render/{rasterizer,raytracer,batch_madrona}.yaml</span></code></p></li>
+<li><p>测试：<code class="docutils literal notranslate"><span class="pre">tests/backend/test_backend_ik_plan.py</span></code>、<code class="docutils literal notranslate"><span class="pre">test_genesis_batched.py</span></code>、<code class="docutils literal notranslate"><span class="pre">tests/robotwin/test_recorder.py</span></code>、<code class="docutils literal notranslate"><span class="pre">test_embodiment_config.py</span></code>、<code class="docutils literal notranslate"><span class="pre">test_curobo_planner.py</span></code>、<code class="docutils literal notranslate"><span class="pre">test_render_config.py</span></code>、<code class="docutils literal notranslate"><span class="pre">test_seed_search.py</span></code>、<code class="docutils literal notranslate"><span class="pre">test_genesis_aloha_demo.py</span></code>、<code class="docutils literal notranslate"><span class="pre">tests/tools/test_convert_assets.py</span></code></p></li>
+</ul>
+<p><strong>修改</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/backend/base.py</span></code>（接口扩展）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/backends/genesis_backend.py</span></code>（Genesis 实现）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/utils/camera.py</span></code>（<code class="docutils literal notranslate"><span class="pre">intrinsics_from_fov</span></code>）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/__init__.py</span></code>、<code class="docutils literal notranslate"><span class="pre">README.md</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> + <code class="docutils literal notranslate"><span class="pre">uv.lock</span></code>（h5py、zarr）</p></li>
+</ul>
+<p><strong>测试</strong>：107+ 个新增用例（mock 单测 + 真实 Genesis CPU 集成测试，slow 标记 + 真实资产解析集成测试）；全套 526 passed（516 + 10 slow）。</p>
+</section>
+<hr class="docutils" />
+<section id="id5">
+<h2>5. 剩余项（均依赖外部条件）<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>项</p></th>
+<th class="head"><p>阻塞条件</p></th>
+<th class="head"><p>就绪动作</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>~~M2 真实资产转换~~</p></td>
+<td><p>✅ 已完成（见 §3.1）</p></td>
+<td><p>embodiments 10/10、objects 网格 smoke 均通过</p></td>
+</tr>
+<tr class="row-odd"><td><p>M4 渲染标定</p></td>
+<td><p>GPU</p></td>
+<td><p>固定场景渲染 SAPIEN RT vs Raytracer 图像对，LPIPS&lt;0.15 门禁 + tone mapping 写入 <code class="docutils literal notranslate"><span class="pre">configs/render/</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>cuRobo 端到端</p></td>
+<td><p>CUDA/MUSA + cuRobo</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--planner</span> <span class="pre">curobo</span></code> 跑 M3 双臂回归（对比 OMPL 成功率，阈值 −5pp）</p></td>
+</tr>
+<tr class="row-odd"><td><p>M5 50 任务回归</p></td>
+<td><p>上述全部</p></td>
+<td><p>seed 级轨迹一致性 + 成功率 regression</p></td>
+</tr>
+<tr class="row-even"><td><p>M6 性能调优</p></td>
+<td><p>GPU</p></td>
+<td><p>n_envs 扫描、Madrona 接入、采集吞吐报告（目标 ≥5× 含渲染）</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

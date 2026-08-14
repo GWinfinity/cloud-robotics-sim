@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thermal Solver 可微热源耦合迁移备忘录 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/knowledge_base/06_thermal_solver_musa_autodiff.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Thermal Solver 可微热源耦合迁移备忘录</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/knowledge_base/06_thermal_solver_musa_autodiff.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="thermal-solver">
+<h1>Thermal Solver 可微热源耦合迁移备忘录<a class="headerlink" href="#thermal-solver" title="Link to this heading"></a></h1>
+<blockquote>
+<div><p>状态: <strong>待后端支持后启用</strong><br />
+涉及后端: MUSA / Quadrants (LLVM) autodiff<br />
+影响范围: <code class="docutils literal notranslate"><span class="pre">plugins/solvers/thermal/core/thermal_solver.py</span></code><br />
+最后更新: 2026-08-14</p>
+</div></blockquote>
+<hr class="docutils" />
+<section id="id1">
+<h2>1. 背景<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">plugins/solvers/thermal</span></code> 已实现显式 FTCS 热扩散 + 热源双向耦合求解器，支持：</p>
+<ul class="simple">
+<li><p>单场景 / <code class="docutils literal notranslate"><span class="pre">n_envs</span></code> batch 仿真</p></li>
+<li><p>build 前后及 <code class="docutils literal notranslate"><span class="pre">scene.step()</span></code> 后动态添加热源 (<code class="docutils literal notranslate"><span class="pre">add_source</span></code>)</p></li>
+<li><p>重叠热源的全局能量守恒修正（绝对误差 ~1e-7）</p></li>
+<li><p>初始温度场、扩散过程的反向梯度</p></li>
+</ul>
+<p>但<strong>热源参数（body temperature / position / radius / rate / capacity）的梯度</strong>当前被主动跳过，原因是 Quadrants/Taichi autodiff 后端尚无法编译 source-coupling 相关 kernel 的 <code class="docutils literal notranslate"><span class="pre">.grad()</span></code>。</p>
+</section>
+<hr class="docutils" />
+<section id="id2">
+<h2>2. 当前行为与限制<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="id3">
+<h3>2.1 已启用的梯度<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ThermalSource.temperature</span></code> / 初始温度场 → 通过扩散 kernel 的反向传播完整可微。</p></li>
+<li><p>扩散系数、边界条件（Dirichlet/Neumann）→ 已包含在 <code class="docutils literal notranslate"><span class="pre">substep_pre_coupling_grad</span></code> 的反向路径中。</p></li>
+</ul>
+</section>
+<section id="id4">
+<h3>2.2 暂不可微的部分<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数</p></th>
+<th class="head"><p>当前行为</p></th>
+<th class="head"><p>目标</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">source.temperature</span></code></p></td>
+<td><p>straight-through（视为常量）</p></td>
+<td><p>应参与反向传播</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">source.position</span></code></p></td>
+<td><p>straight-through</p></td>
+<td><p>应参与反向传播</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">source.radius</span></code></p></td>
+<td><p>straight-through</p></td>
+<td><p>应参与反向传播</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">source.rate</span></code></p></td>
+<td><p>straight-through</p></td>
+<td><p>应参与反向传播</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">source.capacity</span></code></p></td>
+<td><p>straight-through</p></td>
+<td><p>应参与反向传播</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id5">
+<h3>2.3 后端报错<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<p>对以下 kernel 调用 <code class="docutils literal notranslate"><span class="pre">.grad()</span></code> 时，Quadrants 1.2.0 (LLVM backend) 抛出：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">RuntimeError</span><span class="p">:</span> <span class="p">[</span><span class="n">quadrants</span><span class="o">/</span><span class="n">transforms</span><span class="o">/</span><span class="n">auto_diff</span><span class="o">/</span><span class="n">auto_diff_common</span><span class="o">.</span><span class="n">h</span><span class="p">:</span><span class="o">...</span><span class="p">]</span> <span class="n">Not</span> <span class="n">supported</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>涉及的 kernel：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_compute_source_equilibrium_2d</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_compute_source_equilibrium_3d</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_apply_energy_correction_2d</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_apply_energy_correction_3d</span></code></p></li>
+</ul>
+<p>相关代码位置：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># plugins/solvers/thermal/core/thermal_solver.py</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">substep_pre_coupling_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">has_sources</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_source_cells_2d</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="c1"># TODO: 待 MUSA/Quadrants autodiff 支持后重新启用：</span>
+            <span class="c1"># self._compute_source_equilibrium_2d.grad(f)</span>
+            <span class="c1"># self._apply_energy_correction_2d.grad(f)</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id6">
+<h2>3. 根因分析<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<p>source-coupling kernel 中使用了 Quadrants autodiff 当前不支持的多种模式：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Kernel 代码模式</p></th>
+<th class="head"><p>对 autodiff 的影响</p></th>
+<th class="head"><p>当前处理</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ti.atomic_add</span></code> 在循环内累加能量</p></td>
+<td><p>reverse-mode 尚未支持原子加梯度</p></td>
+<td><p>保留原实现，仅跳过 <code class="docutils literal notranslate"><span class="pre">.grad()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>in-place field 写入（更新 <code class="docutils literal notranslate"><span class="pre">_T</span></code>、<code class="docutils literal notranslate"><span class="pre">_source_temperatures</span></code>）</p></td>
+<td><p>需要 alias-free 或显式 adjoint 处理</p></td>
+<td><p>保留原实现，仅跳过 <code class="docutils literal notranslate"><span class="pre">.grad()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>循环中 <code class="docutils literal notranslate"><span class="pre">break</span></code>（跳出 cell 搜索）</p></td>
+<td><p>control-flow 反向支持不完整</p></td>
+<td><p>保留原实现，仅跳过 <code class="docutils literal notranslate"><span class="pre">.grad()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">int</span></code> ↔ <code class="docutils literal notranslate"><span class="pre">float</span></code> 混合 cast</p></td>
+<td><p>某些组合会触发 <code class="docutils literal notranslate"><span class="pre">Not</span> <span class="pre">supported</span></code></p></td>
+<td><p>已尽量避免，但搜索/索引逻辑仍无法完全消除</p></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<div><p>注：扩散 kernel（<code class="docutils literal notranslate"><span class="pre">_step_transient_2d_interior</span></code> 等）未使用上述模式，因此反向传播正常。</p>
+</div></blockquote>
+</section>
+<hr class="docutils" />
+<section id="musa-quadrants-todo">
+<h2>4. MUSA / Quadrants 后端迁移 TODO<a class="headerlink" href="#musa-quadrants-todo" title="Link to this heading"></a></h2>
+<p>完成以下后端能力补齐后，即可重新启用 source-coupling 梯度：</p>
+<section id="source">
+<h3>4.1 必备项（启用 source 参数梯度）<a class="headerlink" href="#source" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>[ ] <strong>Reverse-mode <code class="docutils literal notranslate"><span class="pre">atomic_add</span></code></strong>：支持在 <code class="docutils literal notranslate"><span class="pre">ti.kernel</span></code> 内对 <code class="docutils literal notranslate"><span class="pre">qd.field</span></code> 进行 <code class="docutils literal notranslate"><span class="pre">ti.atomic_add</span></code> 的反向梯度生成。</p></li>
+<li><p>[ ] <strong>In-place field 写入的 adjoint</strong>：允许 kernel 在正向过程中修改 field 元素，并在 <code class="docutils literal notranslate"><span class="pre">.grad()</span></code> 时正确传播 adjoint，不触发 alias 错误。</p></li>
+<li><p>[ ] <strong>循环 <code class="docutils literal notranslate"><span class="pre">break</span></code> 的 control-flow 反向</strong>：支持带 <code class="docutils literal notranslate"><span class="pre">break</span></code> 的动态循环在 autodiff 中的正确转换。</p></li>
+<li><p>[ ] <strong><code class="docutils literal notranslate"><span class="pre">int→float</span> <span class="pre">cast</span></code> 在 autodiff 路径中的鲁棒性</strong>：确保索引/掩码计算中的 cast 不触发 <code class="docutils literal notranslate"><span class="pre">Not</span> <span class="pre">supported</span></code>。</p></li>
+</ul>
+</section>
+<section id="id7">
+<h3>4.2 推荐项（提升可维护性）<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>[ ] 提供 autodiff 报错诊断工具：当 kernel 包含不支持的代码模式时，输出具体 kernel 名与行号。</p></li>
+<li><p>[ ] 文档化 Quadrants/MUSA autodiff 的白名单/黑名单代码模式，便于后续 kernel 设计时规避。</p></li>
+</ul>
+</section>
+<section id="id8">
+<h3>4.3 完整端到端可微（超出本次范围）<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>[ ] <strong>跨求解器梯度</strong>：热损失 → 刚体自由度（temperature → rigid-body DOF）。需要 Genesis 暴露求解器间梯度通道，目前不在本次任务范围。</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id9">
+<h2>5. 重新启用条件与检查清单<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<p>当 MUSA/Quadrants 后端支持上述必备项后，按以下步骤启用 source-coupling 梯度：</p>
+<section id="kernel">
+<h3>5.1 取消 kernel 调用的注释<a class="headerlink" href="#kernel" title="Link to this heading"></a></h3>
+<p>在 <code class="docutils literal notranslate"><span class="pre">thermal_solver.py</span></code> 的 <code class="docutils literal notranslate"><span class="pre">substep_pre_coupling_grad</span></code> 中：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">has_sources</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_update_source_cells_2d</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_compute_source_equilibrium_2d</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>   <span class="c1"># 取消注释</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_apply_energy_correction_2d</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>      <span class="c1"># 取消注释</span>
+</pre></div>
+</div>
+<p>3D 版本同理。</p>
+</section>
+<section id="straight-through">
+<h3>5.2 移除 straight-through 说明<a class="headerlink" href="#straight-through" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>更新 <code class="docutils literal notranslate"><span class="pre">plugins/solvers/thermal/README.md</span></code> 中的 Differentiability 章节。</p></li>
+<li><p>删除或更新本备忘录第 2.2 节中的限制说明。</p></li>
+</ul>
+</section>
+<section id="id10">
+<h3>5.3 验证测试<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<p>运行已有测试：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>plugins/solvers/thermal/tests/test_thermal.py<span class="w"> </span>-v
+</pre></div>
+</div>
+<p>新增/启用以下梯度测试：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">test_gradient_flows_to_source_temperature</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_gradient_flows_to_source_position</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_gradient_flows_to_source_radius</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_gradient_flows_to_source_rate</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_gradient_flows_to_source_capacity</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_gradient_flows_to_initial_temperature_with_sources</span></code>（已存在，需确认 source 参数也参与梯度）</p></li>
+</ul>
+<p>最小验证示例（可作为新增测试模板）：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">test_gradient_flows_to_source_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">scene</span><span class="p">,</span> <span class="n">thermal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_scene</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">thermal</span><span class="o">.</span><span class="n">add_source</span><span class="p">(</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>
+        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+        <span class="n">radius</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">capacity</span><span class="o">=</span><span class="mf">1e6</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">thermal</span><span class="o">.</span><span class="n">_T</span><span class="o">.</span><span class="n">from_torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">thermal</span><span class="o">.</span><span class="n">_T</span><span class="o">.</span><span class="n">to_torch</span><span class="p">()))</span>
+    <span class="n">thermal</span><span class="o">.</span><span class="n">_T</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">from_torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">thermal</span><span class="o">.</span><span class="n">_T</span><span class="o">.</span><span class="n">to_torch</span><span class="p">()))</span>
+
+    <span class="n">scene</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">grad_temperature</span>
+    <span class="k">assert</span> <span class="n">grad</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">grad</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>5.4 质量门禁<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">python</span> <span class="pre">-m</span> <span class="pre">ruff</span> <span class="pre">check</span> <span class="pre">src/</span> <span class="pre">tests/</span> <span class="pre">plugins/solvers/thermal</span></code></p></li>
+<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">python</span> <span class="pre">-m</span> <span class="pre">black</span> <span class="pre">--check</span> <span class="pre">src/</span> <span class="pre">tests/</span> <span class="pre">plugins/solvers/thermal</span></code></p></li>
+<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pytest</span> <span class="pre">plugins/solvers/thermal/tests/test_thermal.py</span> <span class="pre">-v</span></code> 全部通过</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id12">
+<h2>6. 相关文件索引<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>文件</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">plugins/solvers/thermal/core/thermal_solver.py</span></code></p></td>
+<td><p>求解器主代码，包含 TODO 注释</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">plugins/solvers/thermal/tests/test_thermal.py</span></code></p></td>
+<td><p>测试集，含现有梯度测试</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">plugins/solvers/thermal/README.md</span></code></p></td>
+<td><p>用户文档，含 Differentiability 说明</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/utils/genesis_compat.py</span></code></p></td>
+<td><p>Genesis/Quadrants 兼容性辅助</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="id13">
+<h2>7. 已知环境噪音<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Windows pyglet offscreen context 在连续创建多个 <code class="docutils literal notranslate"><span class="pre">gs.Scene</span></code> 时偶发 fatal exception / access violation，与本次代码无关，重跑即可恢复。</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id14">
+<h2>8. 参考<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Genesis Cloud Sim <code class="docutils literal notranslate"><span class="pre">AGENTS.md</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plugins/solvers/thermal/README.md</span></code></p></li>
+<li><p>Quadrants 1.2.0 LLVM backend autodiff 实现：<code class="docutils literal notranslate"><span class="pre">quadrants/transforms/auto_diff/</span></code></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

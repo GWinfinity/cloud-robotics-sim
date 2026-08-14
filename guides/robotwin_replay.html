@@ -1,0 +1,331 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoboTwin Trajectory Replay in Genesis &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/guides/robotwin_replay.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">RoboTwin Trajectory Replay in Genesis</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guides/robotwin_replay.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="robotwin-trajectory-replay-in-genesis">
+<h1>RoboTwin Trajectory Replay in Genesis<a class="headerlink" href="#robotwin-trajectory-replay-in-genesis" title="Link to this heading"></a></h1>
+<p>This guide explains how to replay demonstrations collected with the
+<a class="reference external" href="https://github.com/TianxingChen/RoboTwin">RoboTwin</a> benchmark (built on
+SAPIEN 3.0.0b1) inside the Genesis-backed simulation environment.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The migration uses a <strong>Bridge pattern</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Collect</strong> demonstrations in the original RoboTwin/SAPIEN environment.</p></li>
+<li><p><strong>Export</strong> each episode to a simulator-agnostic <code class="docutils literal notranslate"><span class="pre">RobotwinBridge</span></code> pickle file.</p></li>
+<li><p><strong>Replay</strong> the episode in this project using <code class="docutils literal notranslate"><span class="pre">RobotwinReplayScene</span></code>,
+<code class="docutils literal notranslate"><span class="pre">AlohaAgileX</span></code>, and <code class="docutils literal notranslate"><span class="pre">RobotwinReplayTask</span></code>.</p></li>
+</ol>
+<p>This avoids rewriting the 50+ RoboTwin tasks in Genesis all at once, while
+allowing policies to be trained and evaluated in Genesis.</p>
+</section>
+<section id="the-bridge-format">
+<h2>The Bridge Format<a class="headerlink" href="#the-bridge-format" title="Link to this heading"></a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">RobotwinBridge</span></code> contains:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">task_name</span></code></p></td>
+<td><p>RoboTwin task identifier, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;move_can_pot&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
+<td><p>Random seed used during collection.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fps</span></code></p></td>
+<td><p>Playback frequency.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">robot_urdf</span></code></p></td>
+<td><p>Path to the robot URDF used in the episode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">table_height</span></code></p></td>
+<td><p>Table surface z-coordinate.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">object_assets</span></code></p></td>
+<td><p>Map from object name to <code class="docutils literal notranslate"><span class="pre">ObjectAsset</span></code> (<code class="docutils literal notranslate"><span class="pre">mesh</span></code> or <code class="docutils literal notranslate"><span class="pre">urdf</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cameras</span></code></p></td>
+<td><p>List of <code class="docutils literal notranslate"><span class="pre">CameraConfig</span></code> recordings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">frames</span></code></p></td>
+<td><p>List of <code class="docutils literal notranslate"><span class="pre">RobotwinFrame</span></code> states.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Each <code class="docutils literal notranslate"><span class="pre">RobotwinFrame</span></code> stores:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">robot_command</span></code>: 14-D target joint position
+<code class="docutils literal notranslate"><span class="pre">[L_arm(6),</span> <span class="pre">L_grip,</span> <span class="pre">R_arm(6),</span> <span class="pre">R_grip]</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">robot_achieved_qpos</span></code>: Actual generalized positions from SAPIEN.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">robot_base_pos</span></code> / <code class="docutils literal notranslate"><span class="pre">robot_base_quat</span></code>: Robot base pose.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">object_states</span></code>: Per-object pose and optional joint state.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">camera_images</span></code>: Optional recorded camera images.</p></li>
+</ul>
+<p>Load a bridge in Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.robotwin</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotwinBridge</span>
+
+<span class="n">bridge</span> <span class="o">=</span> <span class="n">RobotwinBridge</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;data/trajectories/episode_0.bridge&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="running-the-replay-example">
+<h2>Running the Replay Example<a class="headerlink" href="#running-the-replay-example" title="Link to this heading"></a></h2>
+<p>The fastest way to see the pipeline is:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>examples/robotwin/replay.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bridge<span class="w"> </span>data/trajectories/episode_0.bridge<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--headless<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output-video<span class="w"> </span>outputs/robotwin_replay.mp4
+</pre></div>
+</div>
+<p>Command-line options:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Flag</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--bridge</span> <span class="pre">PATH</span></code></p></td>
+<td><p>Path to a <code class="docutils literal notranslate"><span class="pre">.bridge</span></code> pickle file. If omitted, a synthetic bridge is used.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--headless</span></code></p></td>
+<td><p>Run without the interactive viewer.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--output-video</span> <span class="pre">PATH</span></code></p></td>
+<td><p>Render frames to a video file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--camera-pos</span> <span class="pre">x</span> <span class="pre">y</span> <span class="pre">z</span></code></p></td>
+<td><p>Camera position for rendering.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--camera-lookat</span> <span class="pre">x</span> <span class="pre">y</span> <span class="pre">z</span></code></p></td>
+<td><p>Camera look-at point for rendering.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--dt</span></code></p></td>
+<td><p>Simulation timestep (default <code class="docutils literal notranslate"><span class="pre">0.01</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--substeps</span></code></p></td>
+<td><p>Physics substeps per step (default <code class="docutils literal notranslate"><span class="pre">10</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--device</span> <span class="pre">cuda|cpu</span></code></p></td>
+<td><p>Taichi device.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="composing-a-replay-environment-programmatically">
+<h2>Composing a Replay Environment Programmatically<a class="headerlink" href="#composing-a-replay-environment-programmatically" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">ComposerConfig</span><span class="p">,</span> <span class="n">EnvironmentComposer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.robotwin</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotwinBridge</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.robotwin.dual_arm_embodiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlohaAgileX</span><span class="p">,</span> <span class="n">AlohaAgileXConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.robotwin.replay_scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotwinReplayScene</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.robotwin.replay_task</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotwinReplayTask</span>
+
+<span class="n">bridge</span> <span class="o">=</span> <span class="n">RobotwinBridge</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;data/trajectories/episode_0.bridge&quot;</span><span class="p">)</span>
+
+<span class="n">composer</span> <span class="o">=</span> <span class="n">EnvironmentComposer</span><span class="p">(</span><span class="n">ComposerConfig</span><span class="p">(</span><span class="n">headless</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">scene</span> <span class="o">=</span> <span class="n">RobotwinReplayScene</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+<span class="n">robot</span> <span class="o">=</span> <span class="n">AlohaAgileX</span><span class="p">(</span><span class="n">AlohaAgileXConfig</span><span class="p">(</span><span class="n">urdf_path</span><span class="o">=</span><span class="n">bridge</span><span class="o">.</span><span class="n">robot_urdf</span><span class="p">))</span>
+<span class="n">task</span> <span class="o">=</span> <span class="n">RobotwinReplayTask</span><span class="p">(</span><span class="n">bridge</span><span class="p">)</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">composer</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+<span class="n">obs</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">bridge</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span>
+        <span class="n">action</span><span class="o">=</span><span class="n">bridge</span><span class="o">.</span><span class="n">frames</span><span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;frame_index&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">robot_command</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+        <span class="k">break</span>
+
+<span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="robot-aloha-agilex">
+<h2>Robot: ALOHA-AgileX<a class="headerlink" href="#robot-aloha-agilex" title="Link to this heading"></a></h2>
+<p>The ALOHA-AgileX embodiment maps the RoboTwin 14-D action space to the
+16 driven DoFs in the URDF (left/right arm 6 + 2 gripper fingers each):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.robotwin.dual_arm_embodiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlohaAgileX</span><span class="p">,</span> <span class="n">AlohaAgileXConfig</span>
+
+<span class="n">robot</span> <span class="o">=</span> <span class="n">AlohaAgileX</span><span class="p">(</span>
+    <span class="n">AlohaAgileXConfig</span><span class="p">(</span>
+        <span class="n">urdf_path</span><span class="o">=</span><span class="s2">&quot;assets/embodiments/aloha-agilex/urdf/robot.urdf&quot;</span><span class="p">,</span>
+        <span class="n">left_arm_joints</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;fl_joint</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">)],</span>
+        <span class="n">right_arm_joints</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;fr_joint</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">)],</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The full URDF exposes 38 DoFs (arms, grippers, passive wheels/suspension/mast).
+Only the 16 driven joints are written by <code class="docutils literal notranslate"><span class="pre">apply_action</span></code> via
+<code class="docutils literal notranslate"><span class="pre">control_dofs_position(...,</span> <span class="pre">dofs_idx_local=...)</span></code>.</p>
+</section>
+<section id="scene-robotwinreplayscene">
+<h2>Scene: RobotwinReplayScene<a class="headerlink" href="#scene-robotwinreplayscene" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">RobotwinReplayScene</span></code> reconstructs the tabletop environment from the bridge:</p>
+<ul class="simple">
+<li><p>Adds a table surface at <code class="docutils literal notranslate"><span class="pre">table_height</span></code>.</p></li>
+<li><p>Spawns <code class="docutils literal notranslate"><span class="pre">mesh</span></code> objects through the backend.</p></li>
+<li><p>Loads <code class="docutils literal notranslate"><span class="pre">urdf</span></code> objects as articulated objects.</p></li>
+</ul>
+<p>Object poses are overwritten on every frame by <code class="docutils literal notranslate"><span class="pre">RobotwinReplayTask</span></code>, so the
+initial spawn pose is only a placeholder.</p>
+</section>
+<section id="task-robotwinreplaytask">
+<h2>Task: RobotwinReplayTask<a class="headerlink" href="#task-robotwinreplaytask" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">RobotwinReplayTask</span></code> performs open-loop kinematic replay:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">reset()</span></code> applies the first bridge frame.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">step()</span></code> advances to the next frame and applies recorded states.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">action</span></code> argument is ignored; states come directly from the bridge.</p></li>
+</ul>
+<p>This task is intentionally <strong>not</strong> a learning task. It is used to verify that
+Genesis can reproduce the recorded kinematics before training policies on top
+of it.</p>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading"></a></h2>
+<ul>
+<li><p><strong>Asset download</strong>: The repository does not include the RoboTwin 2.0 assets
+(~4 GB). They are checked and downloaded automatically from Hugging Face
+(<code class="docutils literal notranslate"><span class="pre">TianxingChen/RoboTwin2.0</span></code>) the first time the object library or an
+embodiment config is used. To prefetch manually or control the behaviour:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim.robotwin.assets<span class="w">              </span><span class="c1"># download all</span>
+python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim.robotwin.assets<span class="w"> </span>--check-only<span class="w"> </span><span class="c1"># report missing</span>
+<span class="c1"># Mainland China: use the HF mirror</span>
+<span class="nv">HF_ENDPOINT</span><span class="o">=</span>https://hf-mirror.com<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim.robotwin.assets
+</pre></div>
+</div>
+<p>Environment variables: <code class="docutils literal notranslate"><span class="pre">CRS_ROBOTWIN_ASSETS</span></code> (asset root override),
+<code class="docutils literal notranslate"><span class="pre">CRS_ROBOTWIN_AUTO_DOWNLOAD=0</span></code> (disable auto-download, missing assets then
+raise <code class="docutils literal notranslate"><span class="pre">FileNotFoundError</span></code>), <code class="docutils literal notranslate"><span class="pre">HF_ENDPOINT</span></code> (HF mirror endpoint).</p>
+</li>
+<li><p><strong>Genesis control</strong>: Genesis currently supports <code class="docutils literal notranslate"><span class="pre">position</span></code> and <code class="docutils literal notranslate"><span class="pre">force</span></code>
+control, but not independent velocity targets. Replay uses position targets.</p></li>
+<li><p><strong>Complex URDFs</strong>: ALOHA-AgileX and similar complex URDFs may need empty
+<code class="docutils literal notranslate"><span class="pre">&lt;collision&gt;</span></code> nodes cleaned before Genesis can load them.</p></li>
+<li><p><strong>Rendering gap</strong>: Genesis and SAPIEN use different renderers. Visual policies
+trained on SAPIEN images may need domain randomization or adaptation when
+transferred to Genesis renders.</p></li>
+<li><p><strong>Assets</strong>: The example requires the real ALOHA-AgileX URDF and object meshes.
+These are fetched automatically on first use (see <strong>Asset download</strong> above).</p></li>
+</ul>
+</section>
+<section id="exporting-your-own-bridge">
+<h2>Exporting Your Own Bridge<a class="headerlink" href="#exporting-your-own-bridge" title="Link to this heading"></a></h2>
+<p>To export a bridge from RoboTwin, instrument the SAPIEN environment to build a
+<code class="docutils literal notranslate"><span class="pre">RobotwinBridge</span></code> object and call <code class="docutils literal notranslate"><span class="pre">bridge.save(path)</span></code> after each episode. A
+helper module can be added to the RoboTwin side (in its own SAPIEN environment)
+that converts native SAPIEN state dictionaries into <code class="docutils literal notranslate"><span class="pre">RobotwinFrame</span></code> instances.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

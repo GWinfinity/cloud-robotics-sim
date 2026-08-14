@@ -1,0 +1,1136 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>双预测器架构 (Dual Predictor Architecture) &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/knowledge_base/05_dual_predictor_architecture.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">双预测器架构 (Dual Predictor Architecture)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/knowledge_base/05_dual_predictor_architecture.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="dual-predictor-architecture">
+<h1>双预测器架构 (Dual Predictor Architecture)<a class="headerlink" href="#dual-predictor-architecture" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>1. 算法原理<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3>1.1 论文引用<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p><strong>核心论文</strong>: “Towards Versatile Humanoid Table Tennis: Unified RL with Prediction Augmentation” (2024)</p>
+<p><strong>相关论文</strong>:</p>
+<ul class="simple">
+<li><p>“FIFA: Future-aware Inverse Dynamics for Long-horizon Prediction”</p></li>
+<li><p>“Deep Learning for Real-time Physical Prediction”</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>1.2 核心思想<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<section id="id4">
+<h4>问题背景<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<p>单预测器系统面临的问题：</p>
+<ul class="simple">
+<li><p><strong>纯学习预测器</strong>: 对分布外数据泛化差，但计算快</p></li>
+<li><p><strong>纯物理预测器</strong>: 精确但需要完整状态，计算慢</p></li>
+<li><p><strong>单一预测器</strong>: 难以同时满足精度和速度要求</p></li>
+</ul>
+</section>
+<section id="id5">
+<h4>双预测器设计理念<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────┐
+│                    双预测器设计原则                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  学习预测器 (Learned Predictor)                              │
+│  ├── 用途: 策略观测增强                                     │
+│  ├── 输入: 历史轨迹 (部分观测)                               │
+│  ├── 输出: 快速未来估计                                     │
+│  └── 特点: 鲁棒、快速、端到端                               │
+│                                                             │
+│  物理预测器 (Physics Predictor)                              │
+│  ├── 用途: 奖励计算                                         │
+│  ├── 输入: 完整状态 + 物理模型                               │
+│  ├── 输出: 精确轨迹                                         │
+│  └── 特点: 精确、可解释、一致                               │
+│                                                             │
+│  核心洞见:                                                  │
+│  - 策略不需要完美的预测，只需要有用的预测                     │
+│  - 奖励计算需要精确的预测来提供可靠的信号                     │
+│  - 两者解耦可以分别优化                                      │
+└─────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h4>数学形式<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">学习预测器</span> <span class="p">(</span><span class="n">快速</span><span class="o">/</span><span class="n">鲁棒</span><span class="p">):</span>
+<span class="n">ẑ_</span><span class="p">{</span><span class="n">t</span><span class="o">+</span><span class="n">k</span><span class="p">}</span> <span class="o">=</span> <span class="n">f_θ</span><span class="p">(</span><span class="n">z_t</span><span class="p">,</span> <span class="n">z_</span><span class="p">{</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="o">...</span><span class="p">,</span> <span class="n">z_</span><span class="p">{</span><span class="n">t</span><span class="o">-</span><span class="n">H</span><span class="p">})</span>
+<span class="n">其中</span> <span class="n">z_t</span> <span class="n">是历史观测特征</span>
+
+<span class="n">物理预测器</span> <span class="p">(</span><span class="n">精确</span><span class="o">/</span><span class="n">一致</span><span class="p">):</span>
+<span class="n">ŝ_</span><span class="p">{</span><span class="n">t</span><span class="o">+</span><span class="n">k</span><span class="p">}</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">s_t</span><span class="p">,</span> <span class="n">a_t</span><span class="p">,</span> <span class="n">a_</span><span class="p">{</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">},</span> <span class="o">...</span><span class="p">,</span> <span class="n">a_</span><span class="p">{</span><span class="n">t</span><span class="o">+</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">};</span> <span class="n">Φ</span><span class="p">)</span>
+<span class="n">其中</span> <span class="n">s_t</span> <span class="n">是完整物理状态</span><span class="p">,</span> <span class="n">Φ</span> <span class="n">是物理参数</span>
+
+<span class="n">组合</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">Policy</span> <span class="n">输入</span><span class="p">:</span> <span class="p">[</span><span class="n">obs_t</span><span class="p">,</span> <span class="n">ẑ_</span><span class="p">{</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">},</span> <span class="o">...</span><span class="p">,</span> <span class="n">ẑ_</span><span class="p">{</span><span class="n">t</span><span class="o">+</span><span class="n">K</span><span class="p">}]</span>
+<span class="o">-</span> <span class="n">奖励计算</span><span class="p">:</span> <span class="n">r_t</span> <span class="o">=</span> <span class="n">h</span><span class="p">(</span><span class="n">ŝ_</span><span class="p">{</span><span class="n">t</span><span class="o">+</span><span class="mi">1</span><span class="p">},</span> <span class="o">...</span><span class="p">,</span> <span class="n">ŝ_</span><span class="p">{</span><span class="n">t</span><span class="o">+</span><span class="n">K</span><span class="p">},</span> <span class="n">goal</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id7">
+<h3>1.3 架构详解<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<section id="id8">
+<h4>学习预测器<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">LearnedPredictor</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    学习预测器</span>
+<span class="sd">    </span>
+<span class="sd">    输入: 历史轨迹 (位置序列)</span>
+<span class="sd">    输出: 多步未来预测</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        
+        <span class="c1"># LSTM 编码历史</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span>
+            <span class="n">input_size</span><span class="o">=</span><span class="n">input_dim</span><span class="p">,</span>
+            <span class="n">hidden_size</span><span class="o">=</span><span class="n">hidden_size</span><span class="p">,</span>
+            <span class="n">num_layers</span><span class="o">=</span><span class="n">num_layers</span><span class="p">,</span>
+            <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># MLP 解码未来</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">horizon</span> <span class="o">*</span> <span class="n">input_dim</span><span class="p">)</span>  <span class="c1"># 预测未来 K 步</span>
+        <span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectory_history</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            trajectory_history: [B, H, 3] 历史位置序列</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            predictions: [B, K, 3] 未来 K 步预测</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># LSTM 编码</span>
+        <span class="n">lstm_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">trajectory_history</span><span class="p">)</span>
+        <span class="n">hidden</span> <span class="o">=</span> <span class="n">lstm_out</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># 取最后时刻</span>
+        
+        <span class="c1"># 解码预测</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">hidden</span><span class="p">)</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">predictions</span>
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h4>物理预测器<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PhysicsPredictor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    物理预测器</span>
+<span class="sd">    </span>
+<span class="sd">    使用数值积分模拟未来轨迹</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="n">horizon</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">,</span> <span class="n">policy_actions</span><span class="p">,</span> <span class="n">physics_model</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        使用物理模型预测轨迹</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            initial_state: 初始状态 (位置、速度、旋转等)</span>
+<span class="sd">            policy_actions: 策略动作序列 [horizon, action_dim]</span>
+<span class="sd">            physics_model: 物理模型 (重力、阻力、碰撞等)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            trajectory: 预测的完整状态序列</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_state</span><span class="p">]</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">initial_state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">policy_actions</span><span class="p">:</span>
+            <span class="c1"># 应用动作 (如机器人击球)</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_action</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+            
+            <span class="c1"># 物理仿真步</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">physics_model</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+            
+            <span class="n">states</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_prediction_for_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ball_state</span><span class="p">,</span> <span class="n">robot_state</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        为奖励计算生成预测</span>
+<span class="sd">        </span>
+<span class="sd">        预测球轨迹并计算关键指标:</span>
+<span class="sd">        - 击球概率</span>
+<span class="sd">        - 最佳击球点</span>
+<span class="sd">        - 落点预测</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 数值积分预测球轨迹</span>
+        <span class="n">trajectory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_ball_trajectory</span><span class="p">(</span><span class="n">ball_state</span><span class="p">)</span>
+        
+        <span class="c1"># 计算机器人可到达区域</span>
+        <span class="n">reachable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_reachable_region</span><span class="p">(</span><span class="n">robot_state</span><span class="p">)</span>
+        
+        <span class="c1"># 找到最佳击球点</span>
+        <span class="n">hit_point</span><span class="p">,</span> <span class="n">hit_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_optimal_hit_point</span><span class="p">(</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">reachable</span><span class="p">)</span>
+        
+        <span class="c1"># 预测落点</span>
+        <span class="n">landing_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_landing</span><span class="p">(</span><span class="n">trajectory</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;hit_probability&#39;</span><span class="p">:</span> <span class="n">hit_prob</span><span class="p">,</span>
+            <span class="s1">&#39;contact_point&#39;</span><span class="p">:</span> <span class="n">hit_point</span><span class="p">,</span>
+            <span class="s1">&#39;landing_point&#39;</span><span class="p">:</span> <span class="n">landing_point</span><span class="p">,</span>
+            <span class="s1">&#39;trajectory&#39;</span><span class="p">:</span> <span class="n">trajectory</span>
+        <span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id10">
+<h3>1.4 完整系统架构<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────────────┐
+│                        训练时 (Training)                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   环境状态 s_t                                                      │
+│        │                                                            │
+│        ├──→ [学习预测器] ──→ ẑ_{t+1:t+K} ──→ 策略观测 (Policy Input) │
+│        │                  (快速、鲁棒)                                │
+│        │                                                            │
+│        └──→ [物理预测器] ──→ ŝ_{t+1:t+K} ──→ 奖励计算 (Reward)      │
+│                       (精确、一致)                                    │
+│                                                                     │
+│   奖励设计:                                                         │
+│   - 击球概率奖励: 基于物理预测的 hit_probability                    │
+│   - 步法奖励: 基于 contact_point 计算距离                           │
+│   - 落点奖励: 基于 landing_point 计算精度                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                        推理时 (Inference)                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   环境状态 s_t                                                      │
+│        │                                                            │
+│        └──→ [学习预测器] ──→ ẑ_{t+1:t+K}                            │
+│                          (快速推理，&lt; 1ms)                            │
+│                             ↓                                       │
+│                        策略网络                                      │
+│                             ↓                                       │
+│                        动作 a_t                                      │
+│                                                                     │
+│   注意: 推理时不需要物理预测器，保证实时性                            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id11">
+<h2>2. 使用场景<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<section id="id12">
+<h3>2.1 适用任务<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>任务类型</p></th>
+<th class="head"><p>适用性</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>乒乓球对打</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>原始设计目标，高速球预测</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>羽毛球击打</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>复杂空气动力学，需要精确预测</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>棒球击打</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>高速投球，反应时间短</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>足球守门</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>需要预测射门方向</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>避障移动</strong></p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>预测动态障碍物轨迹</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>多智能体</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>预测其他智能体行为</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id13">
+<h3>2.2 应用条件<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<section id="id14">
+<h4>需要满足的条件<a class="headerlink" href="#id14" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p><strong>可预测的动力学</strong>: 物体运动遵循物理规律</p></li>
+<li><p><strong>部分可观测</strong>: 系统无法直接获取完整状态</p></li>
+<li><p><strong>快速推理需求</strong>: 策略需要实时决策</p></li>
+<li><p><strong>精确评估需求</strong>: 奖励计算需要可靠的未来信息</p></li>
+</ol>
+</section>
+<section id="id15">
+<h4>不适用场景<a class="headerlink" href="#id15" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>纯随机系统 (无法预测)</p></li>
+<li><p>观测质量极差 (学习预测器无法工作)</p></li>
+<li><p>物理模型未知且复杂 (物理预测器难以建模)</p></li>
+</ul>
+</section>
+</section>
+<section id="id16">
+<h3>2.3 与其他预测方法对比<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>方法</p></th>
+<th class="head"><p>推理速度</p></th>
+<th class="head"><p>预测精度</p></th>
+<th class="head"><p>泛化能力</p></th>
+<th class="head"><p>适用场景</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>双预测器</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>需要精度和速度兼顾</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>纯学习</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>⭐⭐</p></td>
+<td><p>观测质量高</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>纯物理</strong></p></td>
+<td><p>⭐⭐</p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>状态完全可观测</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>无预测</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>-</p></td>
+<td><p>-</p></td>
+<td><p>简单任务</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id17">
+<h2>3. 代码示例<a class="headerlink" href="#id17" title="Link to this heading"></a></h2>
+<section id="id18">
+<h3>3.1 最小可运行示例<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">genesis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gs</span>
+
+<span class="c1"># ==================== 学习预测器 ====================</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LearnedTrajectoryPredictor</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    学习轨迹预测器</span>
+<span class="sd">    </span>
+<span class="sd">    基于历史观测预测未来轨迹</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>      <span class="c1"># 位置 (x, y, z)</span>
+        <span class="n">hidden_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+        <span class="n">num_layers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">history_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>    <span class="c1"># 历史长度</span>
+        <span class="n">prediction_horizon</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># 预测步数</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span> <span class="o">=</span> <span class="n">input_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_len</span> <span class="o">=</span> <span class="n">history_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prediction_horizon</span> <span class="o">=</span> <span class="n">prediction_horizon</span>
+        
+        <span class="c1"># LSTM 编码器</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span>
+            <span class="n">input_size</span><span class="o">=</span><span class="n">input_dim</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># 位置 + 速度</span>
+            <span class="n">hidden_size</span><span class="o">=</span><span class="n">hidden_dim</span><span class="p">,</span>
+            <span class="n">num_layers</span><span class="o">=</span><span class="n">num_layers</span><span class="p">,</span>
+            <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># 预测头</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predictor</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">prediction_horizon</span> <span class="o">*</span> <span class="n">input_dim</span><span class="p">)</span>
+        <span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history_positions</span><span class="p">,</span> <span class="n">history_velocities</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        预测未来轨迹</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            history_positions: [B, H, 3] 历史位置</span>
+<span class="sd">            history_velocities: [B, H, 3] 历史速度 (可选)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            predictions: [B, K, 3] 预测的未来位置</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history_positions</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="k">if</span> <span class="n">history_velocities</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># 计算数值速度</span>
+            <span class="n">history_velocities</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">history_positions</span><span class="p">)</span>
+            <span class="n">history_velocities</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">history_positions</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">history_positions</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="c1"># 拼接特征</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">history_positions</span><span class="p">,</span> <span class="n">history_velocities</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="c1"># LSTM 编码</span>
+        <span class="n">lstm_out</span><span class="p">,</span> <span class="p">(</span><span class="n">hidden</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+        
+        <span class="c1"># 使用最后时刻的隐藏状态</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">hidden</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># [B, hidden_dim]</span>
+        
+        <span class="c1"># 预测未来</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predictor</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_horizon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span><span class="p">)</span>
+        
+        <span class="c1"># 残差连接: 假设匀速运动</span>
+        <span class="n">last_pos</span> <span class="o">=</span> <span class="n">history_positions</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>  <span class="c1"># [B, 1, 3]</span>
+        <span class="n">last_vel</span> <span class="o">=</span> <span class="n">history_velocities</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>  <span class="c1"># [B, 1, 3]</span>
+        
+        <span class="n">time_steps</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_horizon</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> 
+                                   <span class="n">device</span><span class="o">=</span><span class="n">pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">time_steps</span> <span class="o">=</span> <span class="n">time_steps</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># [1, K, 1]</span>
+        
+        <span class="c1"># 基础预测: p_t = p_0 + v * t</span>
+        <span class="n">baseline</span> <span class="o">=</span> <span class="n">last_pos</span> <span class="o">+</span> <span class="n">last_vel</span> <span class="o">*</span> <span class="n">time_steps</span>
+        
+        <span class="c1"># 学习残差</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="n">baseline</span> <span class="o">+</span> <span class="n">pred</span>
+        
+        <span class="k">return</span> <span class="n">predictions</span>
+
+
+<span class="c1"># ==================== 物理预测器 ====================</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BallPhysicsPredictor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    物理球体预测器</span>
+<span class="sd">    </span>
+<span class="sd">    使用数值积分精确模拟球轨迹</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">gravity</span><span class="o">=-</span><span class="mf">9.81</span><span class="p">,</span> <span class="n">drag_coeff</span><span class="o">=</span><span class="mf">0.4</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gravity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">gravity</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drag_coeff</span> <span class="o">=</span> <span class="n">drag_coeff</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_trajectory</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">initial_position</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">initial_velocity</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">horizon</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        预测球轨迹</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            initial_position: [3] 初始位置</span>
+<span class="sd">            initial_velocity: [3] 初始速度</span>
+<span class="sd">            horizon: 预测步数</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            trajectory: [horizon+1, 3] 预测轨迹 (包含初始点)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_position</span><span class="o">.</span><span class="n">copy</span><span class="p">()]</span>
+        <span class="n">velocities</span> <span class="o">=</span> <span class="p">[</span><span class="n">initial_velocity</span><span class="o">.</span><span class="n">copy</span><span class="p">()]</span>
+        
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">initial_position</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">vel</span> <span class="o">=</span> <span class="n">initial_velocity</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">horizon</span><span class="p">):</span>
+            <span class="c1"># 计算加速度</span>
+            <span class="n">speed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vel</span><span class="p">)</span>
+            <span class="n">drag</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">drag_coeff</span> <span class="o">*</span> <span class="n">speed</span> <span class="o">*</span> <span class="n">vel</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gravity</span> <span class="o">+</span> <span class="n">drag</span>
+            
+            <span class="c1"># 欧拉积分</span>
+            <span class="n">vel</span> <span class="o">=</span> <span class="n">vel</span> <span class="o">+</span> <span class="n">acc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">vel</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+            
+            <span class="c1"># 地面碰撞检测</span>
+            <span class="k">if</span> <span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">vel</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">vel</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.8</span>  <span class="c1"># 反弹系数</span>
+            
+            <span class="n">positions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="n">velocities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vel</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">positions</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">velocities</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_prediction_for_reward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ball_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">robot_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">court_bounds</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        为奖励计算生成预测信息</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            ball_state: {&#39;position&#39;: [...], &#39;velocity&#39;: [...]}</span>
+<span class="sd">            robot_state: {&#39;position&#39;: [...], &#39;joint_angles&#39;: [...]}</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict with keys:</span>
+<span class="sd">                - &#39;hit_probability&#39;: 机器人能击中的概率</span>
+<span class="sd">                - &#39;contact_point&#39;: 最佳击球点</span>
+<span class="sd">                - &#39;time_to_contact&#39;: 到击球的时间</span>
+<span class="sd">                - &#39;landing_point&#39;: 预测落点</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 预测球轨迹</span>
+        <span class="n">trajectory</span><span class="p">,</span> <span class="n">velocities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_trajectory</span><span class="p">(</span>
+            <span class="n">ball_state</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">],</span>
+            <span class="n">ball_state</span><span class="p">[</span><span class="s1">&#39;velocity&#39;</span><span class="p">],</span>
+            <span class="n">horizon</span><span class="o">=</span><span class="mi">100</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># 计算机器人可到达区域</span>
+        <span class="n">robot_pos</span> <span class="o">=</span> <span class="n">robot_state</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span>
+        <span class="n">max_reach</span> <span class="o">=</span> <span class="mf">1.5</span>  <span class="c1"># 最大到达距离</span>
+        <span class="n">max_height</span> <span class="o">=</span> <span class="mf">2.5</span>  <span class="c1"># 最大高度</span>
+        
+        <span class="c1"># 找到可击中的点</span>
+        <span class="n">reachable_points</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">vel</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">velocities</span><span class="p">)):</span>
+            <span class="c1"># 距离检查</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pos</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">robot_pos</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="n">max_reach</span> <span class="ow">and</span> <span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_height</span><span class="p">:</span>
+                <span class="c1"># 球应该朝向机器人或处于可击范围</span>
+                <span class="k">if</span> <span class="n">vel</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>  <span class="c1"># 水平速度不太大</span>
+                    <span class="n">reachable_points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">vel</span><span class="p">))</span>
+        
+        <span class="c1"># 计算击球概率和最佳点</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reachable_points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># 选择距离最近的点作为最佳击球点</span>
+            <span class="n">distances</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">robot_pos</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span> 
+                        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">reachable_points</span><span class="p">]</span>
+            <span class="n">best_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+            
+            <span class="n">hit_point</span> <span class="o">=</span> <span class="n">reachable_points</span><span class="p">[</span><span class="n">best_idx</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">time_to_hit</span> <span class="o">=</span> <span class="n">reachable_points</span><span class="p">[</span><span class="n">best_idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+            <span class="n">hit_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">distances</span><span class="p">[</span><span class="n">best_idx</span><span class="p">]</span> <span class="o">/</span> <span class="n">max_reach</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hit_point</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">time_to_hit</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">hit_prob</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># 预测落点</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trajectory</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>  <span class="c1"># 接近地面</span>
+                <span class="n">landing_point</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">landing_point</span> <span class="o">=</span> <span class="n">trajectory</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;hit_probability&#39;</span><span class="p">:</span> <span class="n">hit_prob</span><span class="p">,</span>
+            <span class="s1">&#39;contact_point&#39;</span><span class="p">:</span> <span class="n">hit_point</span><span class="p">,</span>
+            <span class="s1">&#39;time_to_contact&#39;</span><span class="p">:</span> <span class="n">time_to_hit</span><span class="p">,</span>
+            <span class="s1">&#39;landing_point&#39;</span><span class="p">:</span> <span class="n">landing_point</span><span class="p">,</span>
+            <span class="s1">&#39;trajectory&#39;</span><span class="p">:</span> <span class="n">trajectory</span>
+        <span class="p">}</span>
+
+
+<span class="c1"># ==================== 双预测器环境 ====================</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DualPredictorEnv</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    使用双预测器架构的环境</span>
+<span class="sd">    </span>
+<span class="sd">    - 学习预测器: 为策略提供观测增强</span>
+<span class="sd">    - 物理预测器: 为奖励计算提供精确预测</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">use_learned_predictor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">use_physics_predictor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">history_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">prediction_horizon</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_learned</span> <span class="o">=</span> <span class="n">use_learned_predictor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_physics</span> <span class="o">=</span> <span class="n">use_physics_predictor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_len</span> <span class="o">=</span> <span class="n">history_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prediction_horizon</span> <span class="o">=</span> <span class="n">prediction_horizon</span>
+        
+        <span class="c1"># 初始化 Genesis</span>
+        <span class="n">gs</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">cuda</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">Scene</span><span class="p">()</span>
+        
+        <span class="c1"># 创建机器人和球</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_entity</span><span class="p">(</span>
+            <span class="n">gs</span><span class="o">.</span><span class="n">morphs</span><span class="o">.</span><span class="n">MJCF</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;xml/humanoid/humanoid.xml&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ball</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_entity</span><span class="p">(</span><span class="n">gs</span><span class="o">.</span><span class="n">morphs</span><span class="o">.</span><span class="n">Sphere</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="mf">0.02</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        
+        <span class="c1"># 初始化预测器</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_learned</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">learned_predictor</span> <span class="o">=</span> <span class="n">LearnedTrajectoryPredictor</span><span class="p">(</span>
+                <span class="n">history_len</span><span class="o">=</span><span class="n">history_len</span><span class="p">,</span>
+                <span class="n">prediction_horizon</span><span class="o">=</span><span class="n">prediction_horizon</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">learned_predictor</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_physics</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">physics_predictor</span> <span class="o">=</span> <span class="n">BallPhysicsPredictor</span><span class="p">()</span>
+        
+        <span class="c1"># 历史缓冲区</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ball_history</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_observation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;获取观测 (包含学习预测器的输出)&quot;&quot;&quot;</span>
+        <span class="c1"># 基础观测</span>
+        <span class="n">robot_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_robot_obs</span><span class="p">()</span>
+        <span class="n">ball_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ball_obs</span><span class="p">()</span>
+        
+        <span class="n">obs_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;robot&#39;</span><span class="p">:</span> <span class="n">robot_obs</span><span class="p">,</span>
+            <span class="s1">&#39;ball&#39;</span><span class="p">:</span> <span class="n">ball_obs</span>
+        <span class="p">}</span>
+        
+        <span class="c1"># 学习预测器增强</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_learned</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ball_history</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history_len</span><span class="p">:</span>
+            <span class="c1"># 准备历史</span>
+            <span class="n">history</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ball_history</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">history_len</span><span class="p">:])</span>
+            <span class="n">history_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">history</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learned_predictor</span><span class="p">(</span><span class="n">history_tensor</span><span class="p">)</span>
+            
+            <span class="c1"># 添加到观测</span>
+            <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;ball_predictions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 预测不可用，用零填充</span>
+            <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;ball_predictions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction_horizon</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="p">)</span>
+        
+        <span class="c1"># 展平为向量 (用于 RL)</span>
+        <span class="n">obs_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_obs</span><span class="p">(</span><span class="n">obs_dict</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">obs_vector</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;计算奖励 (使用物理预测器)&quot;&quot;&quot;</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_physics</span><span class="p">:</span>
+            <span class="c1"># 获取当前状态</span>
+            <span class="n">ball_state</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ball</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+                <span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ball</span><span class="o">.</span><span class="n">get_vel</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="n">robot_state</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="p">}</span>
+            
+            <span class="c1"># 物理预测</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physics_predictor</span><span class="o">.</span><span class="n">get_prediction_for_reward</span><span class="p">(</span>
+                <span class="n">ball_state</span><span class="p">,</span> <span class="n">robot_state</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># 预测增强奖励</span>
+            <span class="c1"># 1. 击球概率奖励</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">pred</span><span class="p">[</span><span class="s1">&#39;hit_probability&#39;</span><span class="p">]</span>
+            
+            <span class="c1"># 2. 步法奖励 (如果知道击球点)</span>
+            <span class="k">if</span> <span class="n">pred</span><span class="p">[</span><span class="s1">&#39;contact_point&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">robot_pos</span> <span class="o">=</span> <span class="n">robot_state</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                    <span class="n">pred</span><span class="p">[</span><span class="s1">&#39;contact_point&#39;</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">robot_pos</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">footwork_reward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">distance</span><span class="p">)</span>
+                <span class="n">reward</span> <span class="o">+=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="n">footwork_reward</span>
+            
+            <span class="c1"># 3. 落点奖励</span>
+            <span class="n">target_landing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>  <span class="c1"># 对方场地中心</span>
+            <span class="n">landing_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                <span class="n">pred</span><span class="p">[</span><span class="s1">&#39;landing_point&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">target_landing</span>
+            <span class="p">)</span>
+            <span class="n">landing_reward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">landing_dist</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="mf">5.0</span> <span class="o">*</span> <span class="n">landing_reward</span>
+        
+        <span class="c1"># 基础奖励</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_base_reward</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">reward</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;环境步进&quot;&quot;&quot;</span>
+        <span class="c1"># 执行动作</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">control_dofs_position</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        
+        <span class="c1"># 更新历史</span>
+        <span class="n">ball_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ball</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ball_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ball_pos</span><span class="p">)</span>
+        
+        <span class="c1"># 限制历史长度</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ball_history</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ball_history</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># 获取观测和奖励</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_observation</span><span class="p">()</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_reward</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_done</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="p">{}</span>
+
+
+<span class="c1"># ==================== 训练学习预测器 ====================</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train_learned_predictor</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;训练学习预测器&quot;&quot;&quot;</span>
+    
+    <span class="c1"># 创建数据集 (使用物理模拟生成)</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">TrajectoryDataset</span><span class="p">(</span>
+        <span class="n">num_sequences</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+        <span class="n">history_len</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">prediction_horizon</span><span class="o">=</span><span class="mi">10</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 初始化预测器</span>
+    <span class="n">predictor</span> <span class="o">=</span> <span class="n">LearnedTrajectoryPredictor</span><span class="p">(</span>
+        <span class="n">history_len</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">prediction_horizon</span><span class="o">=</span><span class="mi">10</span>
+    <span class="p">)</span>
+    
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">predictor</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+    
+    <span class="c1"># 训练循环</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+        <span class="n">total_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">history</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;history&#39;</span><span class="p">]</span>  <span class="c1"># [B, H, 3]</span>
+            <span class="n">target_future</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;future&#39;</span><span class="p">]</span>  <span class="c1"># [B, K, 3]</span>
+            
+            <span class="c1"># 预测</span>
+            <span class="n">pred_future</span> <span class="o">=</span> <span class="n">predictor</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+            
+            <span class="c1"># MSE 损失</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()(</span><span class="n">pred_future</span><span class="p">,</span> <span class="n">target_future</span><span class="p">)</span>
+            
+            <span class="c1"># 优化</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            
+            <span class="n">total_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">, Loss: </span><span class="si">{</span><span class="n">total_loss</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># 保存</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">predictor</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="s1">&#39;learned_predictor.pt&#39;</span><span class="p">)</span>
+
+
+<span class="c1"># ==================== 完整训练流程 ====================</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train_with_dual_predictor</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;使用双预测器架构训练 RL 策略&quot;&quot;&quot;</span>
+    
+    <span class="c1"># 创建环境</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">DualPredictorEnv</span><span class="p">(</span>
+        <span class="n">use_learned_predictor</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">use_physics_predictor</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 创建策略 (观测包含预测信息)</span>
+    <span class="n">obs_dim</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">obs_dim</span>  <span class="c1"># 包含 ball_predictions</span>
+    <span class="n">policy</span> <span class="o">=</span> <span class="n">PPO</span><span class="p">(</span><span class="n">obs_dim</span><span class="o">=</span><span class="n">obs_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_dim</span><span class="p">)</span>
+    
+    <span class="c1"># 训练循环</span>
+    <span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2000</span><span class="p">):</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="n">episode_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">select_action</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+            <span class="n">next_obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            
+            <span class="n">policy</span><span class="o">.</span><span class="n">store_transition</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">next_obs</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
+            
+            <span class="n">episode_reward</span> <span class="o">+=</span> <span class="n">reward</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="n">next_obs</span>
+            
+            <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+                <span class="k">break</span>
+        
+        <span class="n">policy</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">episode</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Episode </span><span class="si">{</span><span class="n">episode</span><span class="si">}</span><span class="s2">, Reward: </span><span class="si">{</span><span class="n">episode_reward</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id19">
+<h2>4. 超参数指南<a class="headerlink" href="#id19" title="Link to this heading"></a></h2>
+<section id="id20">
+<h3>4.1 学习预测器参数<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数</p></th>
+<th class="head"><p>推荐值</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">history_len</span></code></p></td>
+<td><p>5-10</p></td>
+<td><p>历史序列长度</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">prediction_horizon</span></code></p></td>
+<td><p>10-20</p></td>
+<td><p>预测步数 (100-200ms)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">hidden_dim</span></code></p></td>
+<td><p>128-256</p></td>
+<td><p>LSTM 隐藏层维度</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">num_layers</span></code></p></td>
+<td><p>2</p></td>
+<td><p>LSTM 层数</p></td>
+</tr>
+</tbody>
+</table>
+<section id="id21">
+<h4>预测范围选择<a class="headerlink" href="#id21" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 根据任务选择预测范围</span>
+<span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s1">&#39;table_tennis&#39;</span><span class="p">:</span>
+    <span class="c1"># 乒乓球速度快，需要短期精确预测</span>
+    <span class="n">history_len</span> <span class="o">=</span> <span class="mi">5</span>      <span class="c1"># 50ms 历史</span>
+    <span class="n">prediction_horizon</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># 100ms 预测</span>
+    
+<span class="k">elif</span> <span class="n">task</span> <span class="o">==</span> <span class="s1">&#39;badminton&#39;</span><span class="p">:</span>
+    <span class="c1"># 羽毛球速度慢但轨迹复杂，需要中长期预测</span>
+    <span class="n">history_len</span> <span class="o">=</span> <span class="mi">8</span>      <span class="c1"># 80ms 历史</span>
+    <span class="n">prediction_horizon</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># 200ms 预测</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id22">
+<h3>4.2 物理预测器参数<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数</p></th>
+<th class="head"><p>推荐值</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dt</span></code></p></td>
+<td><p>0.001-0.01s</p></td>
+<td><p>仿真步长 (越小越精确)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gravity</span></code></p></td>
+<td><p>-9.81</p></td>
+<td><p>重力加速度</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">drag_coeff</span></code></p></td>
+<td><p>0.3-0.8</p></td>
+<td><p>阻力系数 (球类特定)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">restitution</span></code></p></td>
+<td><p>0.6-0.9</p></td>
+<td><p>反弹系数</p></td>
+</tr>
+</tbody>
+</table>
+<section id="id23">
+<h4>球类特定参数<a class="headerlink" href="#id23" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 乒乓球</span>
+<span class="n">pingpong_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="mf">0.0027</span><span class="p">,</span>  <span class="c1"># kg</span>
+    <span class="s1">&#39;radius&#39;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>  <span class="c1"># m</span>
+    <span class="s1">&#39;drag_coeff&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+    <span class="s1">&#39;restitution&#39;</span><span class="p">:</span> <span class="mf">0.8</span>
+<span class="p">}</span>
+
+<span class="c1"># 羽毛球</span>
+<span class="n">badminton_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;mass&#39;</span><span class="p">:</span> <span class="mf">0.005</span><span class="p">,</span>  <span class="c1"># kg</span>
+    <span class="s1">&#39;drag_coeff_high&#39;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span>   <span class="c1"># 高速</span>
+    <span class="s1">&#39;drag_coeff_low&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>     <span class="c1"># 低速</span>
+    <span class="s1">&#39;flip_speed&#39;</span><span class="p">:</span> <span class="mf">5.0</span>          <span class="c1"># 翻转速度阈值</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id24">
+<h3>4.3 奖励权重<a class="headerlink" href="#id24" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 预测增强奖励权重</span>
+<span class="n">reward_weights</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;hit_probability&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>     <span class="c1"># 击球概率奖励</span>
+    <span class="s1">&#39;footwork&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>            <span class="c1"># 步法到位奖励</span>
+    <span class="s1">&#39;landing&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>             <span class="c1"># 落点精度奖励 (通常最高)</span>
+    <span class="s1">&#39;base&#39;</span><span class="p">:</span> <span class="mf">1.0</span>                 <span class="c1"># 基础奖励</span>
+<span class="p">}</span>
+
+<span class="c1"># 预测置信度阈值</span>
+<span class="n">confidence_threshold</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># 预测置信度低时减小奖励</span>
+</pre></div>
+</div>
+</section>
+<section id="id25">
+<h3>4.4 训练技巧<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 学习预测器预训练</span>
+<span class="n">pretrain_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;epochs&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="s1">&#39;lr&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
+    <span class="s1">&#39;weight_decay&#39;</span><span class="p">:</span> <span class="mf">1e-5</span>
+<span class="p">}</span>
+
+<span class="c1"># 预测器微调</span>
+<span class="n">finetune_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;finetune_freq&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>  <span class="c1"># 每1000个episode微调一次</span>
+    <span class="s1">&#39;finetune_steps&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s1">&#39;lr&#39;</span><span class="p">:</span> <span class="mf">1e-4</span>  <span class="c1"># 更低的学习率</span>
+<span class="p">}</span>
+
+<span class="c1"># 在线适应</span>
+<span class="n">online_adaptation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;adaptation_rate&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>  <span class="c1"># 在线适应速率</span>
+    <span class="s1">&#39;buffer_size&#39;</span><span class="p">:</span> <span class="mi">1000</span>       <span class="c1"># 在线数据缓冲区</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id26">
+<h3>4.5 故障排查<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>现象</p></th>
+<th class="head"><p>可能原因</p></th>
+<th class="head"><p>解决方案</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>学习预测器误差大</strong></p></td>
+<td><p>历史太短或网络容量不够</p></td>
+<td><p>增加 history_len，增大 hidden_dim</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>物理预测器与实际不符</strong></p></td>
+<td><p>物理参数错误</p></td>
+<td><p>校准阻力系数、反弹系数</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>奖励信号弱</strong></p></td>
+<td><p>预测范围太长</p></td>
+<td><p>缩短 prediction_horizon</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>策略过度依赖预测</strong></p></td>
+<td><p>预测噪声大</p></td>
+<td><p>添加预测不确定性估计，使用 dropout</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>训练不稳定</strong></p></td>
+<td><p>两个预测器输出不一致</p></td>
+<td><p>确保物理预测器使用 ground truth 初始化</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id27">
+<h2>5. 进阶技巧<a class="headerlink" href="#id27" title="Link to this heading"></a></h2>
+<section id="id28">
+<h3>5.1 不确定性估计<a class="headerlink" href="#id28" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">UncertaintyAwarePredictor</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;输出预测和不确定性&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+        
+        <span class="c1"># 预测均值</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_head</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+        
+        <span class="c1"># 预测方差 (不确定性)</span>
+        <span class="n">log_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_head</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_var</span><span class="p">)</span>
+
+<span class="c1"># 在观测中使用不确定性</span>
+<span class="n">obs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">predictions</span><span class="p">,</span> <span class="n">uncertainties</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id29">
+<h3>5.2 多模态预测<a class="headerlink" href="#id29" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MultiModalPredictor</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;预测多种可能的未来&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_modes</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode_heads</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">PredictorHead</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_modes</span><span class="p">)</span>
+        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode_weights</span> <span class="o">=</span> <span class="n">ModeSelector</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
+        <span class="c1"># 为每种模式生成预测</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span><span class="n">head</span><span class="p">(</span><span class="n">history</span><span class="p">)</span> <span class="k">for</span> <span class="n">head</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode_heads</span><span class="p">]</span>
+        
+        <span class="c1"># 模式权重</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode_weights</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">weights</span>
+</pre></div>
+</div>
+</section>
+<section id="id30">
+<h3>5.3 注意力机制<a class="headerlink" href="#id30" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">AttentionPredictor</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;使用注意力关注重要的历史帧&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attention</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MultiheadAttention</span><span class="p">(</span>
+            <span class="n">embed_dim</span><span class="o">=</span><span class="n">hidden_dim</span><span class="p">,</span>
+            <span class="n">num_heads</span><span class="o">=</span><span class="mi">4</span>
+        <span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
+        <span class="c1"># 自注意力</span>
+        <span class="n">attended</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attention</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">history</span><span class="p">)</span>
+        
+        <span class="c1"># 使用注意力权重进行预测</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">attended</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">prediction</span><span class="p">,</span> <span class="n">weights</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

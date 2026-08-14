@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning Framework &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/architecture/learning.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Core API Reference" href="../api/core.html" />
+    <link rel="prev" title="Runtime Architecture" href="runtime.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Learning Framework</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reinforcement-learning">Reinforcement Learning</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ppo-proximal-policy-optimization">PPO (Proximal Policy Optimization)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sac-soft-actor-critic">SAC (Soft Actor-Critic)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#imitation-learning">Imitation Learning</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#behavior-cloning">Behavior Cloning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dagger-dataset-aggregation">DAgger (Dataset Aggregation)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation">Evaluation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#policy-evaluation">Policy Evaluation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#benchmarking">Benchmarking</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#training-with-vectorized-environments">Training with Vectorized Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#checkpointing">Checkpointing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tensorboard-integration">TensorBoard Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Learning Framework</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/architecture/learning.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="learning-framework">
+<h1>Learning Framework<a class="headerlink" href="#learning-framework" title="Link to this heading"></a></h1>
+<p>The Learning Layer provides reinforcement learning (RL) and imitation learning (IL) capabilities for training robot policies.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────┐
+│                  Learning Layer                      │
+├─────────────────────────────────────────────────────┤
+│  ┌─────────────────┐  ┌─────────────────────────┐  │
+│  │   RL Algorithms │  │  Imitation Learning     │  │
+│  │   ├─ PPO        │  │  ├─ Behavior Cloning   │  │
+│  │   ├─ SAC        │  │  ├─ DAgger             │  │
+│  │   └─ TD3        │  │  └─ Diffusion Policy   │  │
+│  └────────┬────────┘  └────────────┬────────────┘  │
+│           │                        │               │
+│           └────────┬───────────────┘               │
+│                    │                               │
+│             ┌──────▼──────┐                        │
+│             │  Evaluator  │                        │
+│             └─────────────┘                        │
+└─────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="reinforcement-learning">
+<h2>Reinforcement Learning<a class="headerlink" href="#reinforcement-learning" title="Link to this heading"></a></h2>
+<section id="ppo-proximal-policy-optimization">
+<h3>PPO (Proximal Policy Optimization)<a class="headerlink" href="#ppo-proximal-policy-optimization" title="Link to this heading"></a></h3>
+<p>The default RL algorithm for continuous control tasks.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.learning.rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">PPO</span>
+
+<span class="n">ppo</span> <span class="o">=</span> <span class="n">PPO</span><span class="p">(</span>
+    <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span>
+    <span class="n">n_steps</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ppo</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="n">total_timesteps</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="sac-soft-actor-critic">
+<h3>SAC (Soft Actor-Critic)<a class="headerlink" href="#sac-soft-actor-critic" title="Link to this heading"></a></h3>
+<p>Better for sample efficiency and continuous action spaces.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.learning.rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">SAC</span>
+
+<span class="n">sac</span> <span class="o">=</span> <span class="n">SAC</span><span class="p">(</span>
+    <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span>
+    <span class="n">buffer_size</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">,</span>
+    <span class="n">learning_starts</span><span class="o">=</span><span class="mi">10_000</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">sac</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="n">total_timesteps</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="imitation-learning">
+<h2>Imitation Learning<a class="headerlink" href="#imitation-learning" title="Link to this heading"></a></h2>
+<section id="behavior-cloning">
+<h3>Behavior Cloning<a class="headerlink" href="#behavior-cloning" title="Link to this heading"></a></h3>
+<p>Supervised learning from demonstrations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.learning.il</span><span class="w"> </span><span class="kn">import</span> <span class="n">BehaviorCloning</span>
+
+<span class="n">bc</span> <span class="o">=</span> <span class="n">BehaviorCloning</span><span class="p">(</span>
+    <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+    <span class="n">demonstrations</span><span class="o">=</span><span class="s2">&quot;demos/pick_place.pkl&quot;</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">bc</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="dagger-dataset-aggregation">
+<h3>DAgger (Dataset Aggregation)<a class="headerlink" href="#dagger-dataset-aggregation" title="Link to this heading"></a></h3>
+<p>Interactive imitation learning with expert feedback.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.learning.il</span><span class="w"> </span><span class="kn">import</span> <span class="n">DAgger</span>
+
+<span class="n">dagger</span> <span class="o">=</span> <span class="n">DAgger</span><span class="p">(</span>
+    <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+    <span class="n">expert_policy</span><span class="o">=</span><span class="n">expert</span><span class="p">,</span>
+    <span class="n">initial_demos</span><span class="o">=</span><span class="s2">&quot;demos/initial.pkl&quot;</span><span class="p">,</span>
+    <span class="n">n_iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">dagger</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="evaluation">
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Link to this heading"></a></h2>
+<section id="policy-evaluation">
+<h3>Policy Evaluation<a class="headerlink" href="#policy-evaluation" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">Evaluator</span>
+
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">Evaluator</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">policy</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+    <span class="n">num_episodes</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">save_video</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Success rate: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;success_rate&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Average reward: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;mean_reward&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="benchmarking">
+<h3>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.learning</span><span class="w"> </span><span class="kn">import</span> <span class="n">Benchmark</span>
+
+<span class="n">benchmark</span> <span class="o">=</span> <span class="n">Benchmark</span><span class="p">([</span>
+    <span class="p">(</span><span class="s2">&quot;PPO&quot;</span><span class="p">,</span> <span class="n">ppo_policy</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;SAC&quot;</span><span class="p">,</span> <span class="n">sac_policy</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;BC&quot;</span><span class="p">,</span> <span class="n">bc_policy</span><span class="p">),</span>
+<span class="p">])</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">env_suite</span><span class="p">)</span>
+<span class="n">benchmark</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="s2">&quot;results.html&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="training-with-vectorized-environments">
+<h2>Training with Vectorized Environments<a class="headerlink" href="#training-with-vectorized-environments" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim</span><span class="w"> </span><span class="kn">import</span> <span class="n">VecEnvConfig</span><span class="p">,</span> <span class="n">GenesisVectorizedEnv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.learning.rl</span><span class="w"> </span><span class="kn">import</span> <span class="n">PPO</span>
+
+<span class="c1"># Create vectorized environment</span>
+<span class="n">vec_env</span> <span class="o">=</span> <span class="n">GenesisVectorizedEnv</span><span class="p">(</span><span class="n">VecEnvConfig</span><span class="p">(</span><span class="n">num_envs</span><span class="o">=</span><span class="mi">128</span><span class="p">))</span>
+
+<span class="c1"># Train with massive parallelization</span>
+<span class="n">ppo</span> <span class="o">=</span> <span class="n">PPO</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">vec_env</span><span class="p">)</span>
+<span class="n">ppo</span><span class="o">.</span><span class="n">learn</span><span class="p">(</span><span class="n">total_timesteps</span><span class="o">=</span><span class="mi">10_000_000</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="checkpointing">
+<h2>Checkpointing<a class="headerlink" href="#checkpointing" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save checkpoint</span>
+<span class="n">policy</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;checkpoints/policy.pt&quot;</span><span class="p">)</span>
+
+<span class="c1"># Load checkpoint</span>
+<span class="n">policy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;checkpoints/policy.pt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="tensorboard-integration">
+<h2>TensorBoard Integration<a class="headerlink" href="#tensorboard-integration" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Training metrics are automatically logged</span>
+<span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="o">./</span><span class="n">runs</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="runtime.html" class="btn btn-neutral float-left" title="Runtime Architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../api/core.html" class="btn btn-neutral float-right" title="Core API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,932 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>通用操作奖励函数 (Generalized Manipulation Reward) &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/knowledge_base/04_generalized_manipulation_reward.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">通用操作奖励函数 (Generalized Manipulation Reward)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/knowledge_base/04_generalized_manipulation_reward.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="generalized-manipulation-reward">
+<h1>通用操作奖励函数 (Generalized Manipulation Reward)<a class="headerlink" href="#generalized-manipulation-reward" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>1. 算法原理<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3>1.1 论文引用<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p><strong>核心论文</strong>: “Sim-to-Real Reinforcement Learning for Vision-Based Dexterous Manipulation on Humanoids” (2024)</p>
+<p><strong>相关论文</strong>:</p>
+<ul class="simple">
+<li><p>“Learning Dexterous Manipulation from Exemplar Videos” (Hand-Object Interaction)</p></li>
+<li><p>“Generalized Robot Manipulation through Contact-Aware Rewards”</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>1.2 核心思想<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<section id="id4">
+<h4>问题背景<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<p>传统操作任务奖励设计的问题：</p>
+<ul class="simple">
+<li><p><strong>任务特定</strong>: 每个任务需要单独设计奖励函数</p></li>
+<li><p><strong>调参困难</strong>: 需要大量试错调整权重</p></li>
+<li><p><strong>迁移性差</strong>: 在新任务上需要重新设计</p></li>
+</ul>
+</section>
+<section id="id5">
+<h4>通用奖励公式<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">通用奖励</span> <span class="o">=</span> <span class="n">接触奖励</span> <span class="o">+</span> <span class="n">物体目标奖励</span> <span class="o">+</span> <span class="n">手部目标奖励</span> <span class="o">+</span> <span class="n">正则化项</span>
+
+<span class="n">R</span> <span class="o">=</span> <span class="n">w_contact</span> <span class="o">*</span> <span class="n">R_contact</span> <span class="o">+</span> <span class="n">w_object</span> <span class="o">*</span> <span class="n">R_object</span> <span class="o">+</span> <span class="n">w_hand</span> <span class="o">*</span> <span class="n">R_hand</span> <span class="o">+</span> <span class="n">R_regularization</span>
+</pre></div>
+</div>
+<p><strong>设计原则</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>接触中心</strong>: 鼓励稳定的多点接触</p></li>
+<li><p><strong>目标导向</strong>: 基于物体目标状态的稀疏奖励</p></li>
+<li><p><strong>手部引导</strong>: 引导手部到达合适位置</p></li>
+<li><p><strong>物理可行</strong>: 考虑能量、平滑性等约束</p></li>
+</ol>
+</section>
+</section>
+<section id="id6">
+<h3>1.3 奖励组件详解<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<section id="contact-reward">
+<h4>1. 接触奖励 (Contact Reward)<a class="headerlink" href="#contact-reward" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ContactReward</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    接触奖励设计</span>
+<span class="sd">    </span>
+<span class="sd">    核心思想: 鼓励手掌和手指与物体接触</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># 手掌接触奖励</span>
+        <span class="k">for</span> <span class="n">hand</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
+            <span class="n">palm_force</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">hand</span><span class="si">}</span><span class="s1">_palm_contact_force&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">palm_force</span> <span class="o">&gt;</span> <span class="n">threshold_palm</span><span class="p">:</span>
+                <span class="n">reward</span> <span class="o">+=</span> <span class="mf">0.5</span>  <span class="c1"># 手掌接触基础奖励</span>
+            
+            <span class="c1"># 手指接触奖励</span>
+            <span class="n">finger_forces</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">hand</span><span class="si">}</span><span class="s1">_finger_contact_forces&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">force</span> <span class="ow">in</span> <span class="n">finger_forces</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">force</span> <span class="o">&gt;</span> <span class="n">threshold_finger</span><span class="p">:</span>
+                    <span class="n">reward</span> <span class="o">+=</span> <span class="mf">0.1</span>  <span class="c1"># 每个手指接触奖励</span>
+            
+            <span class="c1"># 稳定抓取奖励 (多手指同时接触)</span>
+            <span class="n">num_touching</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">f</span> <span class="o">&gt;</span> <span class="n">threshold_finger</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">finger_forces</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">num_touching</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># 至少3个手指</span>
+                <span class="n">reward</span> <span class="o">+=</span> <span class="n">stable_grasp_bonus</span>
+        
+        <span class="k">return</span> <span class="n">reward</span>
+</pre></div>
+</div>
+</section>
+<section id="object-goal-reward">
+<h4>2. 物体目标奖励 (Object Goal Reward)<a class="headerlink" href="#object-goal-reward" title="Link to this heading"></a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>任务类型:
+├── Grasp-and-Reach: 抓取物体并移动到目标位置
+├── Box Lift: 提升箱子到指定高度
+├── Bimanual Handover: 双手交接物体
+└── In-Hand Rotation: 手中旋转物体
+
+通用接口:
+R_object = task.compute_object_reward(state, goal)
+</pre></div>
+</div>
+</section>
+<section id="hand-goal-reward">
+<h4>3. 手部目标奖励 (Hand Goal Reward)<a class="headerlink" href="#hand-goal-reward" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_hand_goal_reward</span><span class="p">(</span><span class="n">hand_pos</span><span class="p">,</span> <span class="n">object_pos</span><span class="p">,</span> <span class="n">target_offset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    手部目标奖励</span>
+<span class="sd">    </span>
+<span class="sd">    鼓励手部到达物体周围合适位置</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 手到物体的距离</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">hand_pos</span> <span class="o">-</span> <span class="n">object_pos</span><span class="p">)</span>
+    
+    <span class="c1"># 接近奖励 (指数衰减)</span>
+    <span class="n">approach_reward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">distance</span> <span class="o">*</span> <span class="n">k_approach</span><span class="p">)</span>
+    
+    <span class="c1"># 到达奖励 (稀疏)</span>
+    <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="n">position_threshold</span><span class="p">:</span>
+        <span class="n">reach_reward</span> <span class="o">=</span> <span class="n">reach_bonus</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">reach_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+    
+    <span class="k">return</span> <span class="n">approach_reward</span> <span class="o">+</span> <span class="n">reach_reward</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id7">
+<h3>1.4 架构设计<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────┐
+│                  通用奖励函数系统                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  传感器输入                                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ - 接触力传感器 (手掌、手指)                           │   │
+│  │ - 物体位姿 (位置、姿态)                               │   │
+│  │ - 手部位姿                                            │   │
+│  │ - 关节状态                                            │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                         ↓                                   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 接触奖励计算                                          │   │
+│  │ - 手掌接触检测                                        │   │
+│  │ - 手指接触计数                                        │   │
+│  │ - 稳定抓取判断                                        │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                         ↓                                   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 任务特定奖励 (可配置)                                  │   │
+│  │ - Grasp-and-Reach: 物体到目标距离                     │   │
+│  │ - Box Lift: 提升高度                                  │   │
+│  │ - Handover: 交接点到达                                │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                         ↓                                   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 手部引导奖励                                          │   │
+│  │ - 手到物体距离                                        │   │
+│  │ - 手到目标位置                                        │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                         ↓                                   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 正则化项                                              │   │
+│  │ - 能量消耗                                            │   │
+│  │ - 动作平滑性                                          │   │
+│  │ - 关节极限                                            │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                         ↓                                   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 加权求和 → 最终奖励                                   │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id8">
+<h2>2. 使用场景<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<section id="id9">
+<h3>2.1 适用任务<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>任务类型</p></th>
+<th class="head"><p>适用性</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>抓取放置</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>最基础应用</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>双手交接</strong></p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>需要协调双手接触</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>箱体提升</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>需要保持物体稳定</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>插销装配</strong></p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>需要精确接触</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>开门抽屉</strong></p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>需要考虑 articulation</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>柔性物体</strong></p></td>
+<td><p>⭐⭐</p></td>
+<td><p>需要变形建模</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id10">
+<h3>2.2 任务配置示例<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Grasp-and-Reach 配置</span>
+<span class="n">grasp_reach_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;task_type&#39;</span><span class="p">:</span> <span class="s1">&#39;grasp_and_reach&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;success_threshold&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>  <span class="c1"># 5cm 精度</span>
+    <span class="s1">&#39;target_position&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+    <span class="s1">&#39;rewards&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;contact&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">},</span>
+        <span class="s1">&#39;object_goal&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">},</span>
+        <span class="s1">&#39;hand_goal&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># Box Lift 配置</span>
+<span class="n">box_lift_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;task_type&#39;</span><span class="p">:</span> <span class="s1">&#39;box_lift&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;lift_height_threshold&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>  <span class="c1"># 提升 30cm</span>
+    <span class="s1">&#39;stability_threshold&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>    <span class="c1"># 速度阈值</span>
+    <span class="s1">&#39;rewards&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;contact&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">},</span>
+        <span class="s1">&#39;object_goal&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">},</span>
+        <span class="s1">&#39;hand_goal&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># Bimanual Handover 配置</span>
+<span class="n">handover_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;task_type&#39;</span><span class="p">:</span> <span class="s1">&#39;bimanual_handover&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;handover_position&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span>
+    <span class="s1">&#39;release_threshold&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>      <span class="c1"># 释放接触力阈值</span>
+    <span class="s1">&#39;rewards&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;contact&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">},</span>
+        <span class="s1">&#39;object_goal&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">},</span>
+        <span class="s1">&#39;hand_goal&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>2.3 限制与注意事项<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<section id="id12">
+<h4>接触检测精度<a class="headerlink" href="#id12" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>需要精确的接触力传感器或碰撞检测</p></li>
+<li><p>接触力阈值需要根据任务调整</p></li>
+<li><p>传感器噪声会影响奖励稳定性</p></li>
+</ul>
+</section>
+<section id="id13">
+<h4>物体建模要求<a class="headerlink" href="#id13" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>需要准确的物体质量和惯性参数</p></li>
+<li><p>摩擦系数影响抓取稳定性</p></li>
+<li><p>对于未知物体需要在线估计</p></li>
+</ul>
+</section>
+<section id="id14">
+<h4>奖励稀疏性<a class="headerlink" href="#id14" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>早期训练可能难以获得正奖励</p></li>
+<li><p>建议结合课程学习或 shaping</p></li>
+<li><p>可能需要预训练接触策略</p></li>
+</ul>
+</section>
+</section>
+<section id="id15">
+<h3>2.4 与其他奖励设计对比<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>方法</p></th>
+<th class="head"><p>设计难度</p></th>
+<th class="head"><p>迁移性</p></th>
+<th class="head"><p>最终性能</p></th>
+<th class="head"><p>适用场景</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>通用奖励</strong></p></td>
+<td><p>中</p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>⭐⭐⭐⭐</p></td>
+<td><p>多种操作任务</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>特定奖励</strong></p></td>
+<td><p>高</p></td>
+<td><p>⭐</p></td>
+<td><p>⭐⭐⭐⭐⭐</p></td>
+<td><p>单一复杂任务</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>稀疏奖励</strong></p></td>
+<td><p>低</p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>⭐⭐</p></td>
+<td><p>简单任务</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>演示奖励</strong></p></td>
+<td><p>低</p></td>
+<td><p>⭐⭐</p></td>
+<td><p>⭐⭐⭐</p></td>
+<td><p>有专家演示</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id16">
+<h2>3. 代码示例<a class="headerlink" href="#id16" title="Link to this heading"></a></h2>
+<section id="id17">
+<h3>3.1 最小可运行示例<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">genesis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="c1"># ==================== 通用奖励函数 ====================</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GeneralizedRewardFunction</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    通用操作奖励函数</span>
+<span class="sd">    </span>
+<span class="sd">    适用于多种操作任务的核心奖励计算</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;task_type&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># 奖励权重</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_weight</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;contact&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object_goal_weight</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;object_goal&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hand_goal_weight</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;hand_goal&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+        
+        <span class="c1"># 正则化权重</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy_penalty</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;energy_penalty&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.001</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_smoothness</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;action_smoothness&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">joint_limit_penalty</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;joint_limit_penalty&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">)</span>
+        
+        <span class="c1"># 任务特定配置</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_reward_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_task_reward_fn</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_task_reward_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;获取任务特定的奖励函数&quot;&quot;&quot;</span>
+        <span class="n">task_fns</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;grasp_and_reach&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_grasp_reach_reward</span><span class="p">,</span>
+            <span class="s1">&#39;box_lift&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_box_lift_reward</span><span class="p">,</span>
+            <span class="s1">&#39;bimanual_handover&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_handover_reward</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">task_fns</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_reward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+        <span class="n">action</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">last_action</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        计算通用奖励</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            state: 环境状态字典</span>
+<span class="sd">            action: 当前动作</span>
+<span class="sd">            last_action: 上一帧动作 (用于平滑性计算)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            标量奖励值</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># 1. 接触奖励</span>
+        <span class="n">contact_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_contact_reward</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contact_weight</span> <span class="o">*</span> <span class="n">contact_reward</span>
+        
+        <span class="c1"># 2. 物体目标奖励 (任务特定)</span>
+        <span class="n">object_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_reward_fn</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_goal_weight</span> <span class="o">*</span> <span class="n">object_reward</span>
+        
+        <span class="c1"># 3. 手部目标奖励</span>
+        <span class="n">hand_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_hand_goal_reward</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hand_goal_weight</span> <span class="o">*</span> <span class="n">hand_reward</span>
+        
+        <span class="c1"># 4. 正则化项</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy_penalty</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">action</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">last_action</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">action_diff</span> <span class="o">=</span> <span class="n">action</span> <span class="o">-</span> <span class="n">last_action</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_smoothness</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">action_diff</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">reward</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_contact_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        接触奖励</span>
+<span class="sd">        </span>
+<span class="sd">        鼓励手掌和手指与物体接触</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="n">palm_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;contact&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;palm_threshold&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">finger_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;contact&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;finger_threshold&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">stable_bonus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;contact&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stable_bonus&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">hand</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
+            <span class="c1"># 手掌接触</span>
+            <span class="n">palm_force</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">hand</span><span class="si">}</span><span class="s1">_palm_contact_force&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">palm_force</span> <span class="o">&gt;</span> <span class="n">palm_threshold</span><span class="p">:</span>
+                <span class="n">reward</span> <span class="o">+=</span> <span class="mf">0.5</span>
+            
+            <span class="c1"># 手指接触</span>
+            <span class="n">finger_forces</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">hand</span><span class="si">}</span><span class="s1">_finger_contact_forces&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="n">num_touching</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">force</span> <span class="ow">in</span> <span class="n">finger_forces</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">force</span> <span class="o">&gt;</span> <span class="n">finger_threshold</span><span class="p">:</span>
+                    <span class="n">reward</span> <span class="o">+=</span> <span class="mf">0.1</span>
+                    <span class="n">num_touching</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="c1"># 稳定抓取奖励 (至少3个手指)</span>
+            <span class="k">if</span> <span class="n">num_touching</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">reward</span> <span class="o">+=</span> <span class="n">stable_bonus</span>
+        
+        <span class="k">return</span> <span class="n">reward</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_grasp_reach_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Grasp-and-Reach 任务奖励&quot;&quot;&quot;</span>
+        <span class="n">obj_pos</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;object_position&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">target_pos</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;target_position&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        
+        <span class="c1"># 物体到目标的距离</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">obj_pos</span> <span class="o">-</span> <span class="n">target_pos</span><span class="p">)</span>
+        
+        <span class="c1"># 距离奖励 (指数衰减)</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">distance</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+        
+        <span class="c1"># 成功奖励</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;success_threshold&#39;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="mf">10.0</span>
+        
+        <span class="k">return</span> <span class="n">reward</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_box_lift_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Box Lift 任务奖励&quot;&quot;&quot;</span>
+        <span class="n">obj_pos</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;object_position&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">obj_vel</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;object_velocity&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">obj_height</span> <span class="o">=</span> <span class="n">obj_pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        
+        <span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lift_height_threshold&#39;</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+        
+        <span class="c1"># 提升高度奖励 (归一化)</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">obj_height</span> <span class="o">/</span> <span class="n">threshold</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        
+        <span class="c1"># 成功奖励</span>
+        <span class="k">if</span> <span class="n">obj_height</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="mf">5.0</span>
+            
+            <span class="c1"># 稳定性奖励 (速度小)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">obj_vel</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
+                <span class="n">reward</span> <span class="o">+=</span> <span class="mf">5.0</span>
+        
+        <span class="k">return</span> <span class="n">reward</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_handover_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bimanual Handover 任务奖励&quot;&quot;&quot;</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="n">obj_pos</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;object_position&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">handover_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;handover_position&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]))</span>
+        
+        <span class="c1"># 物体接近交接点</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">obj_pos</span> <span class="o">-</span> <span class="n">handover_pos</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">distance</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+        
+        <span class="c1"># 左手释放</span>
+        <span class="n">left_contact</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;left_palm_contact_force&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">left_contact</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="mf">2.0</span>
+        
+        <span class="c1"># 右手抓取</span>
+        <span class="n">right_contact</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;right_palm_contact_force&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">right_contact</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="mf">2.0</span>
+        
+        <span class="c1"># 物体稳定</span>
+        <span class="n">obj_vel</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;object_velocity&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">obj_vel</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span> <span class="ow">and</span> <span class="n">right_contact</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="mf">5.0</span>
+        
+        <span class="k">return</span> <span class="n">reward</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_hand_goal_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;手部目标奖励&quot;&quot;&quot;</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="n">obj_pos</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;object_position&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">position_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;hand_goal_threshold&#39;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">hand</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
+            <span class="n">hand_pos</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">hand</span><span class="si">}</span><span class="s1">_hand_position&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+            <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">hand_pos</span> <span class="o">-</span> <span class="n">obj_pos</span><span class="p">)</span>
+            
+            <span class="c1"># 接近奖励</span>
+            <span class="n">reward</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">distance</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+            
+            <span class="c1"># 到达奖励</span>
+            <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="n">position_threshold</span><span class="p">:</span>
+                <span class="n">reward</span> <span class="o">+=</span> <span class="mf">1.0</span>
+        
+        <span class="k">return</span> <span class="n">reward</span>
+
+
+<span class="c1"># ==================== Genesis 环境集成 ====================</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ManipulationEnv</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    使用通用奖励的操作环境</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_config</span><span class="p">):</span>
+        <span class="c1"># 初始化 Genesis</span>
+        <span class="n">gs</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">cuda</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">Scene</span><span class="p">()</span>
+        
+        <span class="c1"># 添加机器人和物体</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_entity</span><span class="p">(</span>
+            <span class="n">gs</span><span class="o">.</span><span class="n">morphs</span><span class="o">.</span><span class="n">MJCF</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;xml/franka/panda.xml&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_entity</span><span class="p">(</span>
+            <span class="n">gs</span><span class="o">.</span><span class="n">morphs</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">))</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        
+        <span class="c1"># 初始化奖励函数</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span> <span class="o">=</span> <span class="n">GeneralizedRewardFunction</span><span class="p">(</span><span class="n">task_config</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_action</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;获取环境状态&quot;&quot;&quot;</span>
+        <span class="c1"># 获取接触力 (需要传感器)</span>
+        <span class="n">left_palm_force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_contact_force</span><span class="p">(</span><span class="s1">&#39;left_palm&#39;</span><span class="p">)</span>
+        <span class="n">left_finger_forces</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_contact_force</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;left_finger_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span>
+        
+        <span class="n">right_palm_force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_contact_force</span><span class="p">(</span><span class="s1">&#39;right_palm&#39;</span><span class="p">)</span>
+        <span class="n">right_finger_forces</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_contact_force</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;right_finger_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span>
+        
+        <span class="c1"># 获取位姿</span>
+        <span class="n">object_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">left_hand_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">get_link</span><span class="p">(</span><span class="s1">&#39;left_hand&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">right_hand_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">get_link</span><span class="p">(</span><span class="s1">&#39;right_hand&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;left_palm_contact_force&#39;</span><span class="p">:</span> <span class="n">left_palm_force</span><span class="p">,</span>
+            <span class="s1">&#39;left_finger_contact_forces&#39;</span><span class="p">:</span> <span class="n">left_finger_forces</span><span class="p">,</span>
+            <span class="s1">&#39;right_palm_contact_force&#39;</span><span class="p">:</span> <span class="n">right_palm_force</span><span class="p">,</span>
+            <span class="s1">&#39;right_finger_contact_forces&#39;</span><span class="p">:</span> <span class="n">right_finger_forces</span><span class="p">,</span>
+            <span class="s1">&#39;object_position&#39;</span><span class="p">:</span> <span class="n">object_pos</span><span class="p">,</span>
+            <span class="s1">&#39;object_velocity&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">get_vel</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+            <span class="s1">&#39;left_hand_position&#39;</span><span class="p">:</span> <span class="n">left_hand_pos</span><span class="p">,</span>
+            <span class="s1">&#39;right_hand_position&#39;</span><span class="p">:</span> <span class="n">right_hand_pos</span><span class="p">,</span>
+            <span class="s1">&#39;target_position&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_position</span>
+        <span class="p">}</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;环境步进&quot;&quot;&quot;</span>
+        <span class="c1"># 应用动作</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">control_dofs_position</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        
+        <span class="c1"># 获取状态和奖励</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span><span class="o">.</span><span class="n">compute_reward</span><span class="p">(</span>
+            <span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_action</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_action</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="c1"># 检查成功</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_success</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="p">{}</span>
+
+
+<span class="c1"># ==================== 多任务训练示例 ====================</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train_multi_task</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;多任务训练示例&quot;&quot;&quot;</span>
+    
+    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;task_type&#39;</span><span class="p">:</span> <span class="s1">&#39;grasp_and_reach&#39;</span><span class="p">,</span> <span class="s1">&#39;target_position&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]},</span>
+        <span class="p">{</span><span class="s1">&#39;task_type&#39;</span><span class="p">:</span> <span class="s1">&#39;box_lift&#39;</span><span class="p">,</span> <span class="s1">&#39;lift_height_threshold&#39;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;task_type&#39;</span><span class="p">:</span> <span class="s1">&#39;bimanual_handover&#39;</span><span class="p">,</span> <span class="s1">&#39;handover_position&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]}</span>
+    <span class="p">]</span>
+    
+    <span class="c1"># 使用相同的网络架构，不同的奖励函数</span>
+    <span class="n">policy</span> <span class="o">=</span> <span class="n">PPO</span><span class="p">(</span><span class="n">obs_dim</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">action_dim</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">task_config</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+        <span class="c1"># 为每个任务创建环境</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">ManipulationEnv</span><span class="p">(</span><span class="n">task_config</span><span class="p">)</span>
+        
+        <span class="c1"># 训练</span>
+        <span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="n">episode_reward</span> <span class="o">=</span> <span class="mi">0</span>
+            
+            <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">):</span>
+                <span class="n">action</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">select_action</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
+                <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+                <span class="n">episode_reward</span> <span class="o">+=</span> <span class="n">reward</span>
+                
+                <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+                    <span class="k">break</span>
+            
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task: </span><span class="si">{</span><span class="n">task_config</span><span class="p">[</span><span class="s1">&#39;task_type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+                  <span class="sa">f</span><span class="s2">&quot;Episode: </span><span class="si">{</span><span class="n">episode</span><span class="si">}</span><span class="s2">, Reward: </span><span class="si">{</span><span class="n">episode_reward</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id18">
+<h2>4. 超参数指南<a class="headerlink" href="#id18" title="Link to this heading"></a></h2>
+<section id="id19">
+<h3>4.1 奖励权重配置<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数</p></th>
+<th class="head"><p>推荐值</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">contact_weight</span></code></p></td>
+<td><p>2.0</p></td>
+<td><p>接触奖励权重</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">object_goal_weight</span></code></p></td>
+<td><p>3.0</p></td>
+<td><p>物体目标权重 (通常最高)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">hand_goal_weight</span></code></p></td>
+<td><p>1.5</p></td>
+<td><p>手部引导权重</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">energy_penalty</span></code></p></td>
+<td><p>-0.001</p></td>
+<td><p>能量惩罚系数</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">action_smoothness</span></code></p></td>
+<td><p>-0.01</p></td>
+<td><p>动作平滑性系数</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id20">
+<h3>4.2 接触阈值<a class="headerlink" href="#id20" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 接触力阈值 (需要根据传感器调整)</span>
+<span class="n">contact_thresholds</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;palm_threshold&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>      <span class="c1"># 手掌接触阈值 (牛顿)</span>
+    <span class="s1">&#39;finger_threshold&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>    <span class="c1"># 手指接触阈值 (牛顿)</span>
+    <span class="s1">&#39;stable_grasp_threshold&#39;</span><span class="p">:</span> <span class="mi">3</span>  <span class="c1"># 稳定抓取所需手指数</span>
+<span class="p">}</span>
+
+<span class="c1"># 距离阈值</span>
+<span class="n">distance_thresholds</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;success_distance&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>    <span class="c1"># 任务成功距离 (5cm)</span>
+    <span class="s1">&#39;hand_goal_distance&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>  <span class="c1"># 手部到达距离</span>
+    <span class="s1">&#39;approach_decay&#39;</span><span class="p">:</span> <span class="mf">3.0</span>        <span class="c1"># 接近奖励衰减系数</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="id21">
+<h3>4.3 任务特定参数<a class="headerlink" href="#id21" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>任务</p></th>
+<th class="head"><p>关键参数</p></th>
+<th class="head"><p>推荐值</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Grasp-and-Reach</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">success_threshold</span></code></p></td>
+<td><p>0.05 m</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Box Lift</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lift_height_threshold</span></code></p></td>
+<td><p>0.3 m</p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">stability_threshold</span></code></p></td>
+<td><p>0.1 m/s</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Handover</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">release_threshold</span></code></p></td>
+<td><p>0.5 N</p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">grasp_threshold</span></code></p></td>
+<td><p>1.0 N</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id22">
+<h3>4.4 训练技巧<a class="headerlink" href="#id22" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 课程学习配置</span>
+<span class="n">curriculum</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;stage1&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;contact_weight&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span>  <span class="c1"># 早期侧重接触学习</span>
+        <span class="s1">&#39;object_goal_weight&#39;</span><span class="p">:</span> <span class="mf">1.0</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;stage2&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;contact_weight&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>  <span class="c1"># 后期侧重任务完成</span>
+        <span class="s1">&#39;object_goal_weight&#39;</span><span class="p">:</span> <span class="mf">3.0</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># 奖励缩放</span>
+<span class="n">reward_scale</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># 防止Q值爆炸</span>
+</pre></div>
+</div>
+</section>
+<section id="id23">
+<h3>4.5 故障排查<a class="headerlink" href="#id23" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>现象</p></th>
+<th class="head"><p>可能原因</p></th>
+<th class="head"><p>解决方案</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>从不接触物体</strong></p></td>
+<td><p>接触奖励权重太低或手部引导不够</p></td>
+<td><p>增大 contact_weight 和 hand_goal_weight</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>接触但不移动</strong></p></td>
+<td><p>物体目标奖励未激活</p></td>
+<td><p>检查物体状态计算，增大 object_goal_weight</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>动作抖动</strong></p></td>
+<td><p>平滑性惩罚不够</p></td>
+<td><p>增大 action_smoothness 惩罚</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>能量消耗过大</strong></p></td>
+<td><p>能量惩罚不够</p></td>
+<td><p>增大 energy_penalty</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>训练不稳定</strong></p></td>
+<td><p>奖励值太大</p></td>
+<td><p>使用 reward_scale 缩放</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id24">
+<h2>5. 进阶技巧<a class="headerlink" href="#id24" title="Link to this heading"></a></h2>
+<section id="id25">
+<h3>5.1 自适应权重<a class="headerlink" href="#id25" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">AdaptiveRewardWeights</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;根据训练进度自适应调整权重&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">,</span> <span class="n">success_rate</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">success_rate</span> <span class="o">&lt;</span> <span class="mf">0.3</span><span class="p">:</span>
+            <span class="c1"># 早期: 侧重接触</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contact_weight</span> <span class="o">=</span> <span class="mf">5.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">object_goal_weight</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">elif</span> <span class="n">success_rate</span> <span class="o">&lt;</span> <span class="mf">0.7</span><span class="p">:</span>
+            <span class="c1"># 中期: 平衡</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contact_weight</span> <span class="o">=</span> <span class="mf">2.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">object_goal_weight</span> <span class="o">=</span> <span class="mf">2.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 后期: 侧重任务</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contact_weight</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">object_goal_weight</span> <span class="o">=</span> <span class="mf">4.0</span>
+</pre></div>
+</div>
+</section>
+<section id="id26">
+<h3>5.2 多物体支持<a class="headerlink" href="#id26" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MultiObjectReward</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;支持多物体的奖励计算&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">total_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="k">for</span> <span class="n">obj_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_ids</span><span class="p">:</span>
+            <span class="n">obj_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_object_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+            <span class="n">obj_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_object_reward</span><span class="p">(</span><span class="n">obj_state</span><span class="p">)</span>
+            <span class="n">total_reward</span> <span class="o">+=</span> <span class="n">obj_reward</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_weights</span><span class="p">[</span><span class="n">obj_id</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">total_reward</span>
+</pre></div>
+</div>
+</section>
+<section id="id27">
+<h3>5.3 奖励塑形<a class="headerlink" href="#id27" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">potential_based_shaping</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    基于势能的奖励塑形</span>
+<span class="sd">    保证最优策略不变</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">potential</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;object_position&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;target_position&#39;</span><span class="p">])</span>
+    <span class="n">next_potential</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">next_state</span><span class="p">[</span><span class="s1">&#39;object_position&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">next_state</span><span class="p">[</span><span class="s1">&#39;target_position&#39;</span><span class="p">])</span>
+    
+    <span class="n">shaping</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">next_potential</span> <span class="o">-</span> <span class="n">potential</span>
+    <span class="k">return</span> <span class="n">shaping</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

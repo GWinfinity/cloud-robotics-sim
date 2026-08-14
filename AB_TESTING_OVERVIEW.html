@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A/B Testing Migration Strategy &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/AB_TESTING_OVERVIEW.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">A/B Testing Migration Strategy</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/AB_TESTING_OVERVIEW.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="a-b-testing-migration-strategy">
+<h1>A/B Testing Migration Strategy<a class="headerlink" href="#a-b-testing-migration-strategy" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>方案概览<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>使用 A/B 测试框架实现渐进式 Plugin 迁移，确保：</p>
+<ul class="simple">
+<li><p>✅ 低风险：新旧实现并行运行</p></li>
+<li><p>✅ 可回滚：随时切回旧版</p></li>
+<li><p>✅ 数据驱动：基于指标决策</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>核心组件<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="abtestrunner-a-b">
+<h3>1. ABTestRunner - A/B 测试运行器<a class="headerlink" href="#abtestrunner-a-b" title="Link to this heading"></a></h3>
+<p>对比新旧实现的核心工具。</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.core.ab_test_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABTestRunner</span>
+
+<span class="n">runner</span> <span class="o">=</span> <span class="n">ABTestRunner</span><span class="p">(</span>
+    <span class="n">variant_a_name</span><span class="o">=</span><span class="s2">&quot;legacy&quot;</span><span class="p">,</span>      <span class="c1"># 旧版</span>
+    <span class="n">variant_a_fn</span><span class="o">=</span><span class="n">old_controller</span><span class="p">,</span>
+    <span class="n">variant_b_name</span><span class="o">=</span><span class="s2">&quot;plugin&quot;</span><span class="p">,</span>      <span class="c1"># 新版</span>
+    <span class="n">variant_b_fn</span><span class="o">=</span><span class="n">new_controller</span><span class="p">,</span>
+    <span class="n">warmup_steps</span><span class="o">=</span><span class="mi">10</span>
+<span class="p">)</span>
+
+<span class="c1"># 同时运行两个版本</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_both</span><span class="p">(</span>
+        <span class="n">test_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">fn</span><span class="p">:</span> <span class="n">fn</span><span class="p">(</span><span class="n">state</span><span class="p">),</span>
+        <span class="n">collect_custom_metrics</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;reward&#39;</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s1">&#39;reward&#39;</span><span class="p">]}</span>
+    <span class="p">)</span>
+
+<span class="c1"># 生成报告</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">runner</span><span class="o">.</span><span class="n">generate_report</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><strong>输出指标</strong>:</p>
+<ul class="simple">
+<li><p>成功率对比</p></li>
+<li><p>延迟对比</p></li>
+<li><p>自定义业务指标</p></li>
+<li><p>错误类型分析</p></li>
+</ul>
+</section>
+<section id="gradualmigration">
+<h3>2. GradualMigration - 渐进式迁移<a class="headerlink" href="#gradualmigration" title="Link to this heading"></a></h3>
+<p>按流量比例逐步切换到新实现。</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.core.ab_test_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradualMigration</span>
+
+<span class="n">migration</span> <span class="o">=</span> <span class="n">GradualMigration</span><span class="p">(</span>
+    <span class="n">legacy_fn</span><span class="o">=</span><span class="n">old_controller</span><span class="p">,</span>
+    <span class="n">plugin_fn</span><span class="o">=</span><span class="n">new_controller</span><span class="p">,</span>
+    <span class="n">initial_plugin_ratio</span><span class="o">=</span><span class="mf">0.0</span>  <span class="c1"># 从 0% 开始</span>
+<span class="p">)</span>
+
+<span class="c1"># 自动选择实现</span>
+<span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">):</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">migration</span><span class="o">.</span><span class="n">select_implementation</span><span class="p">()</span>
+    <span class="n">is_plugin</span> <span class="o">=</span> <span class="p">(</span><span class="n">fn</span> <span class="ow">is</span> <span class="n">new_controller</span><span class="p">)</span>
+    
+    <span class="c1"># 运行...</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="n">run_episode</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    
+    <span class="c1"># 更新统计</span>
+    <span class="n">migration</span><span class="o">.</span><span class="n">update_metrics</span><span class="p">(</span><span class="n">is_plugin</span><span class="p">,</span> <span class="n">success</span><span class="p">)</span>
+    
+    <span class="c1"># 定期增加比例</span>
+    <span class="k">if</span> <span class="n">episode</span> <span class="o">%</span> <span class="mi">500</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">migration</span><span class="o">.</span><span class="n">increase_plugin_ratio</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># 10% -&gt; 20% -&gt; ...</span>
+</pre></div>
+</div>
+</section>
+<section id="migrationtool">
+<h3>3. MigrationTool - 自动化迁移工具<a class="headerlink" href="#migrationtool" title="Link to this heading"></a></h3>
+<p>将现有项目自动转换为 Plugin 结构。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>plugins/migrate_project.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--source<span class="w"> </span>/path/to/original/project<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span>residual_rl<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--category<span class="w"> </span>controllers
+</pre></div>
+</div>
+<p>自动生成：</p>
+<ul class="simple">
+<li><p>Plugin 目录结构</p></li>
+<li><p>plugin.yaml</p></li>
+<li><p><strong>init</strong>.py</p></li>
+<li><p>README.md 模板</p></li>
+<li><p>A/B 测试模板</p></li>
+</ul>
+</section>
+</section>
+<section id="id3">
+<h2>迁移流程<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────┐
+│                    完整迁移流程                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Step 1: 准备                                                │
+│  ├── 使用 MigrationTool 创建 Plugin 结构                     │
+│  ├── 迁移核心代码到 plugins/&lt;category&gt;/&lt;name&gt;/              │
+│  └── 完善 README 和配置                                      │
+│                                                             │
+│  Step 2: A/B 测试                                            │
+│  ├── 编写 A/B 测试脚本                                       │
+│  ├── 并行运行 1000+ 次测试                                   │
+│  ├── 对比成功率、延迟、业务指标                              │
+│  └── 生成测试报告                                            │
+│                                                             │
+│  Step 3: 决策                                                │
+│  ├── 如果 Plugin 优于旧版 → 进入 Step 4                      │
+│  ├── 如果性能相当 → 可选迁移                                 │
+│  └── 如果 Plugin 较差 → 修复后重新测试                       │
+│                                                             │
+│  Step 4: 渐进上线                                            │
+│  ├── 使用 GradualMigration                                   │
+│  ├── 流量比例: 0% → 10% → 25% → 50% → 100%                 │
+│  ├── 每步验证成功率                                          │
+│  └── 发现问题立即回滚                                        │
+│                                                             │
+│  Step 5: 完成                                                │
+│  ├── Plugin 比例达到 100%                                    │
+│  ├── 稳定运行一段时间后                                       │
+│  ├── 删除旧代码                                              │
+│  └── 更新文档                                                │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h2>快速开始<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<section id="plugin">
+<h3>1. 迁移第一个 Plugin<a class="headerlink" href="#plugin" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. 进入插件目录</span>
+<span class="nb">cd</span><span class="w"> </span>genesis-cloud-sim/plugins
+
+<span class="c1"># 2. 使用迁移工具</span>
+python<span class="w"> </span>migrate_project.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--source<span class="w"> </span>../../openloong-dyn-control<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span>mpc_wbc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--category<span class="w"> </span>controllers
+
+<span class="c1"># 3. 按提示选择要迁移的文件</span>
+
+<span class="c1"># 4. 完善生成的文件</span>
+vim<span class="w"> </span>controllers/mpc_wbc/README.md
+vim<span class="w"> </span>controllers/mpc_wbc/__init__.py
+
+<span class="c1"># 5. 运行 A/B 测试</span>
+python<span class="w"> </span>controllers/mpc_wbc/examples/ab_test.py
+
+<span class="c1"># 6. 查看报告</span>
+cat<span class="w"> </span>ab_test_results/mpc_wbc/ab_test_report_*.txt
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>2. 渐进上线<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># gradual_rollout.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.core.ab_test_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradualMigration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.plugins.controllers.mpc_wbc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPCWBCController</span>
+
+<span class="c1"># 导入旧版 (从原项目)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;/path/to/openloong&#39;</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">genesis_sim.openloong_controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">OldController</span>
+
+<span class="c1"># 创建迁移控制器</span>
+<span class="n">migration</span> <span class="o">=</span> <span class="n">GradualMigration</span><span class="p">(</span>
+    <span class="n">legacy_fn</span><span class="o">=</span><span class="n">OldController</span><span class="p">(),</span>
+    <span class="n">plugin_fn</span><span class="o">=</span><span class="n">MPCWBCController</span><span class="p">(),</span>
+    <span class="n">initial_plugin_ratio</span><span class="o">=</span><span class="mf">0.0</span>
+<span class="p">)</span>
+
+<span class="c1"># 训练循环</span>
+<span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">):</span>
+    <span class="c1"># 自动选择实现</span>
+    <span class="n">controller</span> <span class="o">=</span> <span class="n">migration</span><span class="o">.</span><span class="n">select_implementation</span><span class="p">()</span>
+    
+    <span class="c1"># 运行</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="n">run_episode</span><span class="p">(</span><span class="n">controller</span><span class="p">)</span>
+    
+    <span class="c1"># 更新统计</span>
+    <span class="n">is_plugin</span> <span class="o">=</span> <span class="p">(</span><span class="n">controller</span> <span class="ow">is</span> <span class="n">migration</span><span class="o">.</span><span class="n">plugin_fn</span><span class="p">)</span>
+    <span class="n">migration</span><span class="o">.</span><span class="n">update_metrics</span><span class="p">(</span><span class="n">is_plugin</span><span class="p">,</span> <span class="n">success</span><span class="p">)</span>
+    
+    <span class="c1"># 定期增加比例</span>
+    <span class="k">if</span> <span class="n">episode</span> <span class="o">%</span> <span class="mi">500</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">migration</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Episode </span><span class="si">{</span><span class="n">episode</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># 尝试增加比例</span>
+        <span class="n">migration</span><span class="o">.</span><span class="n">increase_plugin_ratio</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id6">
+<h2>文件结构<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>genesis-cloud-sim/
+├── src/cloud_robotics_sim/core/
+│   ├── plugin_manager.py           # 插件管理
+│   └── ab_test_framework.py        # ★ A/B 测试框架
+│
+├── plugins/
+│   ├── README.md
+│   ├── MIGRATION_GUIDE.md          # ★ 迁移指南
+│   ├── migrate_project.py          # ★ 迁移工具
+│   │
+│   └── controllers/mpc_wbc/        # ★ 示例 Plugin
+│       ├── README.md
+│       ├── plugin.yaml
+│       ├── __init__.py
+│       ├── core/                   # 核心实现
+│       ├── configs/                # 配置
+│       ├── examples/
+│       │   ├── basic_usage.py
+│       │   └── ab_test.py          # ★ A/B 测试示例
+│       └── tests/
+│
+└── docs/
+    └── AB_TESTING_OVERVIEW.md      # ★ 本文档
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h2>下一步<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>阅读详细指南</strong>: <span class="xref myst">MIGRATION_GUIDE.md</span></p></li>
+<li><p><strong>运行示例</strong>: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">plugins/controllers/mpc_wbc/examples/ab_test_example.py</span></code></p></li>
+<li><p><strong>迁移第一个项目</strong>: 使用 <code class="docutils literal notranslate"><span class="pre">migrate_project.py</span></code></p></li>
+<li><p><strong>渐进上线</strong>: 按照 0% → 10% → 25% → 50% → 100% 的步骤</p></li>
+</ol>
+</section>
+<section id="id8">
+<h2>最佳实践<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<section id="do">
+<h3>DO (推荐)<a class="headerlink" href="#do" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ 始终运行 A/B 测试后再上线</p></li>
+<li><p>✅ 保持渐进式，不要一次性 100%</p></li>
+<li><p>✅ 监控每一步的成功率</p></li>
+<li><p>✅ 准备回滚方案</p></li>
+<li><p>✅ 记录迁移过程中的问题</p></li>
+</ul>
+</section>
+<section id="don-t">
+<h3>DON’T (避免)<a class="headerlink" href="#don-t" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>❌ 直接替换，不经过测试</p></li>
+<li><p>❌ 跳过 A/B 测试直接上线</p></li>
+<li><p>❌ 忽略失败案例分析</p></li>
+<li><p>❌ 在没有监控的情况下增加比例</p></li>
+<li><p>❌ 删除旧代码前不做验证</p></li>
+</ul>
+<hr class="docutils" />
+<p><em>这个方案的核心: 数据驱动 + 渐进式 + 可回滚 = 安全的知识沉淀</em></p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

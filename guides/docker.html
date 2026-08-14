@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Docker Usage Guide &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/guides/docker.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Docker Usage Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guides/docker.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="docker-usage-guide">
+<h1>Docker Usage Guide<a class="headerlink" href="#docker-usage-guide" title="Link to this heading"></a></h1>
+<p>This guide explains how to build and run <code class="docutils literal notranslate"><span class="pre">genesis-cloud-sim</span></code> inside Docker. Two
+flavors are provided:</p>
+<ul class="simple">
+<li><p><strong>CPU</strong> – works on any machine, including laptops and CI runners without a GPU.</p></li>
+<li><p><strong>GPU</strong> – uses the NVIDIA CUDA 12.1 runtime and PyTorch CUDA wheels.</p></li>
+</ul>
+<section id="files">
+<h2>Files<a class="headerlink" href="#files" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>File</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code></p></td>
+<td><p>Multi-arg image supporting both CPU and GPU builds</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code></p></td>
+<td><p>CPU service definition</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">docker-compose.gpu.yml</span></code></p></td>
+<td><p>GPU service definition</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">.dockerignore</span></code></p></td>
+<td><p>Keeps the image small by excluding caches, outputs, and VCS data</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="quick-start-cpu">
+<h2>Quick Start (CPU)<a class="headerlink" href="#quick-start-cpu" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+</pre></div>
+</div>
+<p>This builds the <code class="docutils literal notranslate"><span class="pre">genesis-cloud-sim:cpu</span></code> image and starts a container named
+<code class="docutils literal notranslate"><span class="pre">genesis-cloud-sim-cpu</span></code>.</p>
+<p>Open a shell inside the running container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>genesis-cloud-sim-cpu<span class="w"> </span>bash
+</pre></div>
+</div>
+<p>Run the do-as-i-do scaffold:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>plugins/do_as_i_do/examples/demo_synthetic.py<span class="w"> </span>--hand-type<span class="w"> </span>sharpa<span class="w"> </span>--num-frames<span class="w"> </span><span class="m">60</span>
+</pre></div>
+</div>
+</section>
+<section id="quick-start-gpu">
+<h2>Quick Start (GPU)<a class="headerlink" href="#quick-start-gpu" title="Link to this heading"></a></h2>
+<p>Make sure the <a class="reference external" href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html">NVIDIA Container Toolkit</a>
+is installed on the host.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.gpu.yml<span class="w"> </span>up<span class="w"> </span>-d
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>genesis-cloud-sim-gpu<span class="w"> </span>bash
+</pre></div>
+</div>
+<p>Verify GPU access:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(torch.cuda.is_available())&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="manual-build">
+<h2>Manual Build<a class="headerlink" href="#manual-build" title="Link to this heading"></a></h2>
+<section id="cpu-image">
+<h3>CPU image<a class="headerlink" href="#cpu-image" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>genesis-cloud-sim:cpu<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="gpu-image">
+<h3>GPU image<a class="headerlink" href="#gpu-image" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-arg<span class="w"> </span><span class="nv">BASE_IMAGE</span><span class="o">=</span>nvidia/cuda:12.1.0-runtime-ubuntu22.04<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-arg<span class="w"> </span><span class="nv">TORCH_BACKEND</span><span class="o">=</span>cuda<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-t<span class="w"> </span>genesis-cloud-sim:gpu<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="mainland-china-builds-aliyun-mirrors">
+<h3>Mainland China builds (Aliyun mirrors)<a class="headerlink" href="#mainland-china-builds-aliyun-mirrors" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">CHINA_MIRROR</span><span class="o">=</span>aliyun<span class="w"> </span>-t<span class="w"> </span>genesis-cloud-sim:cpu<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="moore-threads-musa-image">
+<h3>Moore Threads MUSA image<a class="headerlink" href="#moore-threads-musa-image" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">TORCH_BACKEND</span><span class="o">=</span>musa<span class="w"> </span>-t<span class="w"> </span>genesis-cloud-sim:musa<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="build-arguments">
+<h3>Build arguments<a class="headerlink" href="#build-arguments" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Argument</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">BASE_IMAGE</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ubuntu:22.04</span></code></p></td>
+<td><p>Base image (use <code class="docutils literal notranslate"><span class="pre">nvidia/cuda:...</span></code> for GPU builds)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TORCH_BACKEND</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">auto</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">cpu</span></code>, <code class="docutils literal notranslate"><span class="pre">cuda</span></code>, <code class="docutils literal notranslate"><span class="pre">musa</span></code>, or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (detect hardware)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CHINA_MIRROR</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">auto</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">official</span></code>, <code class="docutils literal notranslate"><span class="pre">aliyun</span></code>, or <code class="docutils literal notranslate"><span class="pre">auto</span></code> (probe connectivity)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PYTORCH_INDEX_URL</span></code></p></td>
+<td><p><em>(empty)</em></p></td>
+<td><p>Explicit wheel index overriding mirror selection</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">PYTHON_VERSION</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">3.11</span></code></p></td>
+<td><p>Python version to install</p></td>
+</tr>
+</tbody>
+</table>
+<p>The PyTorch installation is handled by <code class="docutils literal notranslate"><span class="pre">tools/install_torch.py</span></code> (see the
+<a class="reference internal" href="installation.html#pytorch-wheel-selection-mirror--musa"><span class="std std-ref">Installation Guide</span></a>).</p>
+</section>
+<section id="run-interactively">
+<h3>Run interactively<a class="headerlink" href="#run-interactively" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># CPU</span>
+docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>:/workspace<span class="w"> </span>genesis-cloud-sim:cpu
+
+<span class="c1"># GPU</span>
+docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>:/workspace<span class="w"> </span>genesis-cloud-sim:gpu
+</pre></div>
+</div>
+</section>
+</section>
+<section id="runtime-environment-variables">
+<h2>Runtime Environment Variables<a class="headerlink" href="#runtime-environment-variables" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Variable</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GENESIS_BACKEND</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">cpu</span></code></p></td>
+<td><p>Genesis backend selector (<code class="docutils literal notranslate"><span class="pre">cpu</span></code> or <code class="docutils literal notranslate"><span class="pre">cuda</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TAICHI_ARCH</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">cpu</span></code></p></td>
+<td><p>Taichi arch selector (<code class="docutils literal notranslate"><span class="pre">cpu</span></code> or <code class="docutils literal notranslate"><span class="pre">cuda</span></code>)</p></td>
+</tr>
+</tbody>
+</table>
+<p>Override them when starting a container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>-e<span class="w"> </span><span class="nv">GENESIS_BACKEND</span><span class="o">=</span>cuda<span class="w"> </span>-e<span class="w"> </span><span class="nv">TAICHI_ARCH</span><span class="o">=</span>cuda<span class="w"> </span>genesis-cloud-sim:gpu
+</pre></div>
+</div>
+</section>
+<section id="gui-viewer-support">
+<h2>GUI / Viewer Support<a class="headerlink" href="#gui-viewer-support" title="Link to this heading"></a></h2>
+<p>For headless servers, Genesis can run without a display. If you want to forward
+X11 for the viewer, add the host display when running the container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-e<span class="w"> </span><span class="nv">DISPLAY</span><span class="o">=</span><span class="nv">$DISPLAY</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span>/tmp/.X11-unix:/tmp/.X11-unix<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>genesis-cloud-sim:cpu
+</pre></div>
+</div>
+<p>On Windows, use an X server such as VcXsrv or WSLg.</p>
+</section>
+<section id="development-workflow">
+<h2>Development Workflow<a class="headerlink" href="#development-workflow" title="Link to this heading"></a></h2>
+<p>The compose files mount the project root into <code class="docutils literal notranslate"><span class="pre">/workspace</span></code>, so code changes on
+the host are reflected immediately inside the container. Because the package is
+installed in editable mode (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>), you do not need to rebuild the
+image when the Python source changes.</p>
+<p>To add new runtime dependencies, update <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> and restart the
+container (or run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[dev]&quot;</span></code> inside it).</p>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<section id="libcuda-so-1-cannot-open-shared-object-file">
+<h3><code class="docutils literal notranslate"><span class="pre">libcuda.so.1:</span> <span class="pre">cannot</span> <span class="pre">open</span> <span class="pre">shared</span> <span class="pre">object</span> <span class="pre">file</span></code><a class="headerlink" href="#libcuda-so-1-cannot-open-shared-object-file" title="Link to this heading"></a></h3>
+<p>When running the GPU image, ensure the NVIDIA Container Toolkit is installed
+and the container was started with <code class="docutils literal notranslate"><span class="pre">--gpus</span> <span class="pre">all</span></code> or <code class="docutils literal notranslate"><span class="pre">runtime:</span> <span class="pre">nvidia</span></code>.</p>
+</section>
+<section id="genesis-taichi-kernel-compilation-is-slow-on-first-run">
+<h3>Genesis/Taichi kernel compilation is slow on first run<a class="headerlink" href="#genesis-taichi-kernel-compilation-is-slow-on-first-run" title="Link to this heading"></a></h3>
+<p>Taichi compiles kernels on first use. Mount a persistent volume for
+<code class="docutils literal notranslate"><span class="pre">/home/dev/.cache</span></code> (already configured in the compose files) so the compiled
+kernels survive container restarts.</p>
+</section>
+<section id="permission-issues-on-linux">
+<h3>Permission issues on Linux<a class="headerlink" href="#permission-issues-on-linux" title="Link to this heading"></a></h3>
+<p>The container runs as a non-root user with UID/GID <code class="docutils literal notranslate"><span class="pre">1000</span></code> by default. If your
+host user has a different UID, change the build arguments:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">USER_UID</span><span class="o">=</span><span class="k">$(</span>id<span class="w"> </span>-u<span class="k">)</span><span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">USER_GID</span><span class="o">=</span><span class="k">$(</span>id<span class="w"> </span>-g<span class="k">)</span><span class="w"> </span>-t<span class="w"> </span>genesis-cloud-sim:cpu<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

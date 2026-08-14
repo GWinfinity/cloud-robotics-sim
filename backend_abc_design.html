@@ -1,0 +1,951 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backend ABC 接口设计方案：genesis-cloud-sim → MT Lambda &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/backend_abc_design.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Backend ABC 接口设计方案：genesis-cloud-sim → MT Lambda</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/backend_abc_design.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="backend-abc-genesis-cloud-sim-mt-lambda">
+<h1>Backend ABC 接口设计方案：genesis-cloud-sim → MT Lambda<a class="headerlink" href="#backend-abc-genesis-cloud-sim-mt-lambda" title="Link to this heading"></a></h1>
+<blockquote>
+<div><p><strong>选定策略：路径 A — 保留 Genesis 物理引擎，通过 Quadrants/MUSA backend 适配 MT Lambda。</strong></p>
+<p>基于 P0 调研结果（torch_musa / mujoco_warp_musa）与当前代码库耦合分析。</p>
+</div></blockquote>
+<section id="id1">
+<h2>一、目标与范围<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3>1.1 目标<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p>为 <code class="docutils literal notranslate"><span class="pre">genesis-cloud-sim</span></code> 引入<strong>物理/渲染后端抽象层（Backend ABC）</strong>，实现：</p>
+<ol class="arabic simple">
+<li><p><strong>解耦</strong>：<code class="docutils literal notranslate"><span class="pre">core/</span></code> 业务逻辑与 Genesis API 解耦。</p></li>
+<li><p><strong>可替换</strong>：同一套 Scene/Robot/Task 代码可同时跑在 <code class="docutils literal notranslate"><span class="pre">GenesisBackend</span></code>（CUDA）和 <code class="docutils literal notranslate"><span class="pre">MTLambdaBackend</span></code>（MUSA）上。</p></li>
+<li><p><strong>性能提升</strong>：MT Lambda 版本在关键指标上<strong>比当前 CUDA/Genesis 版本提升 ≥ 10%</strong>。</p></li>
+<li><p><strong>可验证</strong>：复用现有 <code class="docutils literal notranslate"><span class="pre">ABTestFramework</span></code>，对新旧后端做物理一致性与性能回归测试。</p></li>
+</ol>
+</section>
+<section id="id3">
+<h3>1.2 范围<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>新增 <code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/backend/</span></code> 抽象层。</p></li>
+<li><p>重构 <code class="docutils literal notranslate"><span class="pre">core/composer.py</span></code>、<code class="docutils literal notranslate"><span class="pre">core/scene.py</span></code>、<code class="docutils literal notranslate"><span class="pre">core/embodiment.py</span></code> 的引擎相关代码。</p></li>
+<li><p>新增 <code class="docutils literal notranslate"><span class="pre">backends/genesis_backend.py</span></code>（保留现有 CUDA 能力）。</p></li>
+<li><p>新增 <code class="docutils literal notranslate"><span class="pre">backends/mt_lambda_backend.py</span></code>（Genesis/Quadrants MUSA backend 适配层 + <code class="docutils literal notranslate"><span class="pre">torch_musa</span></code>）。</p></li>
+<li><p>适配 <code class="docutils literal notranslate"><span class="pre">core/vectorized.py</span></code>，基于 Genesis/Quadrants 的并行能力实现 GPU 批量并行。</p></li>
+<li><p>本次<strong>不涉及</strong>全部 13 个插件迁移，仅对 <code class="docutils literal notranslate"><span class="pre">core/</span></code> 解耦；插件后续通过统一的 <code class="docutils literal notranslate"><span class="pre">Backend</span></code> API 适配。</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id4">
+<h2>二、上游技术栈调研<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<section id="torch-musa-https-github-com-moorethreads-torch-musa">
+<h3>2.1 torch_musa（https://github.com/MooreThreads/torch_musa）<a class="headerlink" href="#torch-musa-https-github-com-moorethreads-torch-musa" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>维度</p></th>
+<th class="head"><p>结论</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>API 兼容性</p></td>
+<td><p>与 PyTorch API 格式一致，只需将 <code class="docutils literal notranslate"><span class="pre">cuda</span></code> 替换为 <code class="docutils literal notranslate"><span class="pre">musa</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>典型用法</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">torch.tensor(...,</span> <span class="pre">device='musa')</span></code>、<code class="docutils literal notranslate"><span class="pre">torch.musa.is_available()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>分布式</p></td>
+<td><p>使用 <code class="docutils literal notranslate"><span class="pre">mccl</span></code> backend（S4000），S80/S3000 不支持 MCCL</p></td>
+</tr>
+<tr class="row-odd"><td><p>依赖</p></td>
+<td><p>MUSA-SDK、muDNN、MCCL（S4000）、muThrust、muAlg</p></td>
+</tr>
+<tr class="row-even"><td><p>生态</p></td>
+<td><p>已 musified：torchvision、torchaudio、pytorch3d、Transformers、Accelerate 等</p></td>
+</tr>
+<tr class="row-odd"><td><p>Docker</p></td>
+<td><p>提供 <code class="docutils literal notranslate"><span class="pre">registry.mthreads.com/.../musa-pytorch-release-public:latest</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>风险</p></td>
+<td><p>复杂自定义 CUDA kernel、自定义算子可能需要手写 MUSA kernel</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>对项目影响</strong>：训练/推理代码改动很小，主要是 <code class="docutils literal notranslate"><span class="pre">device=&quot;musa:0&quot;</span></code> 和 <code class="docutils literal notranslate"><span class="pre">dist.init_process_group(&quot;mccl&quot;,</span> <span class="pre">...)</span></code>。</p>
+</section>
+<section id="genesis-quadrants">
+<h3>2.2 Genesis/Quadrants 技术栈澄清<a class="headerlink" href="#genesis-quadrants" title="Link to this heading"></a></h3>
+<p><strong>Genesis 物理引擎不是基于 PyTorch，而是基于 Taichi/Quadrants。</strong></p>
+<ul class="simple">
+<li><p><strong>Quadrants</strong> 是 Genesis AI 从 Taichi fork 出来的 Python-to-GPU 编译器，负责把 Python kernel JIT 编译到 GPU。</p></li>
+<li><p>Quadrants 当前公开支持的后端包括：<strong>CUDA、ROCm、Metal、Vulkan、x86/ARM64 CPU</strong>。</p></li>
+<li><p>截至 <code class="docutils literal notranslate"><span class="pre">genesis-world</span> <span class="pre">1.2.2</span></code>，<strong>Quadrants 尚未公开支持 MUSA</strong>；backend 枚举只有 <code class="docutils literal notranslate"><span class="pre">cpu/cuda/gpu/metal/amdgpu</span></code>。</p></li>
+</ul>
+<p>这意味着：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">torch_musa</span></code> 只能覆盖<strong>训练/推理链路</strong>，无法替代物理引擎。</p></li>
+<li><p>要让 Genesis 跑在 MUSA 上，必须有 <strong>Quadrants MUSA backend</strong>（路径 A），或切换物理引擎（路径 B）。</p></li>
+<li><p>路径 A 的优势：保留 Genesis 自研物理引擎、场景 API、渲染管线和现有资产，迁移成本最低。</p></li>
+</ul>
+</section>
+<section id="mujoco-warp-musa">
+<h3>2.3 mujoco_warp_musa（备选方案）<a class="headerlink" href="#mujoco-warp-musa" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>维度</p></th>
+<th class="head"><p>结论</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>来源</p></td>
+<td><p>Fork 自 Google DeepMind <code class="docutils literal notranslate"><span class="pre">mujoco_warp</span></code>，添加 MUSA 计算后端</p></td>
+</tr>
+<tr class="row-odd"><td><p>API</p></td>
+<td><p>与 <code class="docutils literal notranslate"><span class="pre">mujoco_warp</span></code> 保持一致；导入为 <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">mujoco_warp.musa_api</span> <span class="pre">as</span> <span class="pre">mjw</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>精度</p></td>
+<td><p>与 MuJoCo Warp CPU 版本单步 qpos 相对误差 ≤ 1e-5</p></td>
+</tr>
+<tr class="row-odd"><td><p>支持 GPU</p></td>
+<td><p>MTT S4000 / S5000</p></td>
+</tr>
+<tr class="row-even"><td><p>依赖</p></td>
+<td><p>MUSA SDK 4.3.4、muThrust、Python ≥ 3.10、CMake ≥ 3.18</p></td>
+</tr>
+<tr class="row-odd"><td><p>构建</p></td>
+<td><p>支持 <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span></code> / <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span></code>；可增量编译 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">build_lib.py</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>可视化</p></td>
+<td><p>可用 <code class="docutils literal notranslate"><span class="pre">viewer_musa.py</span></code> 或 Mesa 软渲染</p></td>
+</tr>
+<tr class="row-odd"><td><p>测试</p></td>
+<td><p>提供 <code class="docutils literal notranslate"><span class="pre">mujoco_warp/_src/mujoco_musa/tests/all_test.py</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>作为备选方案</strong>：</p>
+<ul class="simple">
+<li><p>如果 Quadrants 长期无法支持 MUSA，或 MT Lambda 官方更推荐 MuJoCo-Warp-MUSA，可切换到路径 B。</p></li>
+<li><p>路径 B 需要重写场景构建、机器人控制和向量化逻辑，工作量大。</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id5">
+<h2>三、当前代码库耦合分析<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<section id="genesis">
+<h3>3.1 Genesis 依赖热力图<a class="headerlink" href="#genesis" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>模块</p></th>
+<th class="head"><p>严重度</p></th>
+<th class="head"><p>主要 Genesis 依赖</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">core/composer.py</span></code></p></td>
+<td><p>🔴 极高</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gs.Scene</span></code>, <code class="docutils literal notranslate"><span class="pre">gs.options.*</span></code>, <code class="docutils literal notranslate"><span class="pre">scene.build()</span></code>, <code class="docutils literal notranslate"><span class="pre">scene.step()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">core/scene.py</span></code></p></td>
+<td><p>🔴 极高</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gs.morphs.Box/Sphere/Cylinder/Mesh</span></code>, <code class="docutils literal notranslate"><span class="pre">gs.surfaces.Default</span></code>, <code class="docutils literal notranslate"><span class="pre">scene.add_entity()</span></code>, <code class="docutils literal notranslate"><span class="pre">gs.lights.*</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">core/embodiment.py</span></code></p></td>
+<td><p>🔴 极高</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gs.morphs.MJCF/URDF</span></code>, <code class="docutils literal notranslate"><span class="pre">entity.set_qpos</span></code>, <code class="docutils literal notranslate"><span class="pre">entity.get_qpos</span></code>, <code class="docutils literal notranslate"><span class="pre">entity.control_dofs_position</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">utils/genesis_compat.py</span></code></p></td>
+<td><p>🔴 极高</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gs.init</span></code>, backend 选择、<code class="docutils literal notranslate"><span class="pre">gs.materials.Rigid</span></code>、<code class="docutils literal notranslate"><span class="pre">gs.lights</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">utils/rendering.py</span></code></p></td>
+<td><p>🟠 高</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gs.RenderBodyComponent</span></code>, <code class="docutils literal notranslate"><span class="pre">gs.render.*</span></code>, <code class="docutils literal notranslate"><span class="pre">gs.Texture</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">utils/camera.py</span></code></p></td>
+<td><p>🟠 高</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gs.Viewer</span></code>, <code class="docutils literal notranslate"><span class="pre">gs.render.*</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">core/task.py</span></code></p></td>
+<td><p>🟡 中</p></td>
+<td><p>仅通过 <code class="docutils literal notranslate"><span class="pre">entity.get_pos()</span></code> 弱耦合</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">core/vectorized.py</span></code></p></td>
+<td><p>🟡 中</p></td>
+<td><p>目前为 stub，依赖 <code class="docutils literal notranslate"><span class="pre">ensure_genesis_initialized</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id6">
+<h3>3.2 关键抽象缺失<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>当前 <code class="docutils literal notranslate"><span class="pre">Scene(ABC)</span></code> / <code class="docutils literal notranslate"><span class="pre">RobotEmbodiment(ABC)</span></code> / <code class="docutils literal notranslate"><span class="pre">Task(ABC)</span></code> 只定义了<strong>业务层</strong>抽象，没有定义<strong>仿真原语</strong>抽象。</p></li>
+<li><p>没有 <code class="docutils literal notranslate"><span class="pre">SimulatorBackend</span></code> / <code class="docutils literal notranslate"><span class="pre">EntityBackend</span></code> / <code class="docutils literal notranslate"><span class="pre">RendererBackend</span></code> 概念。</p></li>
+<li><p>类型注解写死 <code class="docutils literal notranslate"><span class="pre">gs.Scene</span></code>，导致无法注入其他后端。</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="backend-abc">
+<h2>四、Backend ABC 设计方案<a class="headerlink" href="#backend-abc" title="Link to this heading"></a></h2>
+<section id="id7">
+<h3>4.1 架构分层<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────────────────────────┐
+│  Application / Learning / Plugins                           │
+├─────────────────────────────────────────────────────────────┤
+│  Core Layer (cloud_robotics_sim.core)                       │
+│  EnvironmentComposer · Scene · RobotEmbodiment · Task        │
+│  ── 业务逻辑保持不动，只调用 Backend 接口 ──                   │
+├─────────────────────────────────────────────────────────────┤
+│  Backend Abstract Layer (cloud_robotics_sim.backend)         │
+│  SimulatorBackend · SceneBackend · EntityBackend             │
+│  ArticulationBackend · RendererBackend · SensorBackend       │
+├─────────────────────────────────────────────────────────────┤
+│  Backend Implementations                                     │
+│  ├── backends/genesis_backend.py     (Quadrants/CUDA)       │
+│  └── backends/mt_lambda_backend.py   (Quadrants/MUSA)       │
+├─────────────────────────────────────────────────────────────┤
+│  Physics Engine + Compiler                                   │
+│  Genesis Engine + Quadrants   →   MUSA backend (目标)        │
+│  (当前：CUDA backend)                                        │
+└─────────────────────────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h3>4.2 模块结构<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>src/cloud_robotics_sim/
+├── backend/                         # 抽象层
+│   ├── __init__.py                  # get_backend(), register_backend()
+│   ├── base.py                      # ABC 定义
+│   ├── factory.py                   # 后端工厂与全局注册表
+│   └── types.py                     # 共享类型/枚举
+└── backends/                        # 具体实现
+    ├── __init__.py
+    ├── genesis_backend.py           # GenesisBackend (Quadrants/CUDA)
+    └── mt_lambda_backend.py         # MTLambdaBackend (Quadrants/MUSA，继承 GenesisBackend)
+</pre></div>
+</div>
+</section>
+<section id="abc">
+<h3>4.3 核心 ABC 接口<a class="headerlink" href="#abc" title="Link to this heading"></a></h3>
+<section id="simulatorbackend">
+<h4>4.3.1 <code class="docutils literal notranslate"><span class="pre">SimulatorBackend</span></code><a class="headerlink" href="#simulatorbackend" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SimulatorBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;物理仿真后端抽象接口。&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendName</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">headless</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;musa&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_scene</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">substeps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">headless</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">viewer_options</span><span class="p">:</span> <span class="n">ViewerOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SceneBackend</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_box</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">pos</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">quat</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">static</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">friction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">density</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EntityBackend</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_sphere</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EntityBackend</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_cylinder</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EntityBackend</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_mesh</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">pos</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">quat</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">static</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EntityBackend</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_mjcf</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">pos</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArticulationBackend</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_urdf</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">pos</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArticulationBackend</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_light</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">light_type</span><span class="p">:</span> <span class="n">LightType</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LightBackend</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="scenebackend">
+<h4>4.3.2 <code class="docutils literal notranslate"><span class="pre">SceneBackend</span></code><a class="headerlink" href="#scenebackend" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SceneBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;场景后端抽象接口。&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_entity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">EntityBackend</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_articulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">articulation</span><span class="p">:</span> <span class="n">ArticulationBackend</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_light</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">light</span><span class="p">:</span> <span class="n">LightBackend</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_physics_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhysicsState</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_physics_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">PhysicsState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="entitybackend">
+<h4>4.3.3 <code class="docutils literal notranslate"><span class="pre">EntityBackend</span></code><a class="headerlink" href="#entitybackend" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">EntityBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;普通刚体实体抽象接口（静态/动态物体）。&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_quat</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_quat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="articulationbackend">
+<h4>4.3.4 <code class="docutils literal notranslate"><span class="pre">ArticulationBackend</span></code><a class="headerlink" href="#articulationbackend" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ArticulationBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;关节机器人实体抽象接口。继承 EntityBackend 的位姿能力。&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">n_dofs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">n_qs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_qpos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_qpos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qpos</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_qvel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_qvel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qvel</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">control_dofs_position</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">targets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">stiffness</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">damping</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">control_dofs_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">control_dofs_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_end_effector_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pose</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="rendererbackend-sensorbackend">
+<h4>4.3.5 <code class="docutils literal notranslate"><span class="pre">RendererBackend</span></code> / <code class="docutils literal notranslate"><span class="pre">SensorBackend</span></code><a class="headerlink" href="#rendererbackend-sensorbackend" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">RendererBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;渲染后端抽象接口。&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">camera_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">rgb</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">depth</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">segmentation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderOutput</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_camera</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">pos</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">lookat</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">resolution</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraBackend</span><span class="p">:</span> <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CameraBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rgb</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">depth</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span> <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="core">
+<h3>4.4 <code class="docutils literal notranslate"><span class="pre">core/</span></code> 改造示例<a class="headerlink" href="#core" title="Link to this heading"></a></h3>
+<section id="environmentcomposer-compose">
+<h4><code class="docutils literal notranslate"><span class="pre">EnvironmentComposer.compose()</span></code> 改造前/后<a class="headerlink" href="#environmentcomposer-compose" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 改造前</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">genesis</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gs</span>
+<span class="n">ensure_genesis_initialized</span><span class="p">(</span><span class="n">headless</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">headless</span><span class="p">)</span>
+<span class="n">gs_scene</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">Scene</span><span class="p">(</span>
+    <span class="n">viewer_options</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">ViewerOptions</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+    <span class="n">sim_options</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">SimOptions</span><span class="p">(</span><span class="n">dt</span><span class="o">=...</span><span class="p">,</span> <span class="n">substeps</span><span class="o">=...</span><span class="p">),</span>
+    <span class="n">show_viewer</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">headless</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">gs_scene</span><span class="p">)</span>
+<span class="n">robot</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">gs_scene</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">spawn_pos</span><span class="p">)</span>
+<span class="n">gs_scene</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="c1"># 改造后</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_backend</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">&quot;mt_lambda&quot;</span><span class="p">)</span>  <span class="c1"># or &quot;genesis&quot;</span>
+<span class="n">backend</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">headless</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">headless</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;musa&quot;</span><span class="p">)</span>
+<span class="n">scene_backend</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">create_scene</span><span class="p">(</span>
+    <span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+    <span class="n">substeps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">substeps</span><span class="p">,</span>
+    <span class="n">headless</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">headless</span><span class="p">,</span>
+    <span class="n">viewer_options</span><span class="o">=</span><span class="n">ViewerOptions</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">scene_backend</span><span class="p">)</span>
+<span class="n">robot</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">scene_backend</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">spawn_pos</span><span class="p">)</span>
+<span class="n">scene_backend</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="scene-build-room-structure">
+<h4><code class="docutils literal notranslate"><span class="pre">Scene._build_room_structure()</span></code> 改造前/后<a class="headerlink" href="#scene-build-room-structure" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 改造前</span>
+<span class="n">floor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_entity</span><span class="p">(</span>
+    <span class="n">morph</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">morphs</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">thickness</span><span class="p">),</span> <span class="n">pos</span><span class="o">=...</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">surface</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">surfaces</span><span class="o">.</span><span class="n">Default</span><span class="p">(</span><span class="n">color</span><span class="o">=...</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># 改造后</span>
+<span class="n">floor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">create_box</span><span class="p">(</span>
+    <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">thickness</span><span class="p">),</span>
+    <span class="n">pos</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">thickness</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+    <span class="n">static</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;floor&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_entity</span><span class="p">(</span><span class="n">floor</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="frankapanda-spawn">
+<h4><code class="docutils literal notranslate"><span class="pre">FrankaPanda.spawn()</span></code> 改造前/后<a class="headerlink" href="#frankapanda-spawn" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 改造前</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">entity</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">add_entity</span><span class="p">(</span><span class="n">morph</span><span class="o">=</span><span class="n">gs</span><span class="o">.</span><span class="n">morphs</span><span class="o">.</span><span class="n">MJCF</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">model_path</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">))</span>
+
+<span class="c1"># 改造后</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">articulation</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">load_mjcf</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">model_path</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">add_articulation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">articulation</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="cuda-genesis-10">
+<h2>五、性能优化设计（目标：比 CUDA/Genesis 版本提升 ≥ 10%）<a class="headerlink" href="#cuda-genesis-10" title="Link to this heading"></a></h2>
+<section id="a-genesis-quadrants-musa">
+<h3>5.1 优化维度矩阵（路径 A：Genesis/Quadrants → MUSA）<a class="headerlink" href="#a-genesis-quadrants-musa" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>维度</p></th>
+<th class="head"><p>Genesis/CUDA 现状</p></th>
+<th class="head"><p>MT Lambda 优化点</p></th>
+<th class="head"><p>预期提升</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>物理步进</p></td>
+<td><p>Genesis 自研引擎，Quadrants/CUDA</p></td>
+<td><p>Quadrants/MUSA backend，kernel 针对 MUSA 优化</p></td>
+<td><p>10-20%</p></td>
+</tr>
+<tr class="row-odd"><td><p>状态读写</p></td>
+<td><p>每次 <code class="docutils literal notranslate"><span class="pre">get_qpos()</span></code> 都做 Python ↔ GPU 拷贝</p></td>
+<td><p>批量预取 + DLPack 零拷贝（Quadrants ↔ torch_musa）</p></td>
+<td><p>15-25%</p></td>
+</tr>
+<tr class="row-even"><td><p>向量化</p></td>
+<td><p>当前 <code class="docutils literal notranslate"><span class="pre">GenesisVectorizedEnv</span></code> 为 stub</p></td>
+<td><p>Genesis/Quadrants GPU batch / 多场景并行</p></td>
+<td><p>3-5×</p></td>
+</tr>
+<tr class="row-odd"><td><p>渲染</p></td>
+<td><p>Genesis OpenGL / LuisaRender 串行</p></td>
+<td><p>MT Photon / 3DGS 异步渲染，按需</p></td>
+<td><p>20-40%</p></td>
+</tr>
+<tr class="row-even"><td><p>训练链路</p></td>
+<td><p>PyTorch-CUDA</p></td>
+<td><p>torch_musa，MCCL 分布式</p></td>
+<td><p>持平或略优</p></td>
+</tr>
+<tr class="row-odd"><td><p>内存</p></td>
+<td><p>CUDA 显存池</p></td>
+<td><p>MUSA Unified Memory</p></td>
+<td><p>5-10%</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id9">
+<h3>5.2 关键优化策略<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<section id="batch-state-api">
+<h4>策略 1：批量状态读写接口（Batch State API）<a class="headerlink" href="#batch-state-api" title="Link to this heading"></a></h4>
+<p>当前代码中每个机器人每步调用多次 <code class="docutils literal notranslate"><span class="pre">get_qpos()</span></code> / <code class="docutils literal notranslate"><span class="pre">get_qvel()</span></code> / <code class="docutils literal notranslate"><span class="pre">control_dofs_position()</span></code>，每次调用都产生 Python ↔ GPU 往返。</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 新增 Backend 批量接口</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ArticulationBackend</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_state_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArticulationState</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;一次性返回 qpos/qvel/pos/quat，减少 Python-GPU 往返。&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_state_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">ArticulationState</span><span class="p">,</span> <span class="n">env_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">control_position_batch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">targets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">stiffness</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">damping</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;批量位置控制， targets shape: (num_envs, n_dofs)。&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p><strong>预期收益</strong>：单步 observation 收集延迟降低 10-20%。</p>
+</section>
+<section id="dlpack-quadrants-torch-musa">
+<h4>策略 2：零拷贝 DLPack 桥接（Quadrants ↔ torch_musa）<a class="headerlink" href="#dlpack-quadrants-torch-musa" title="Link to this heading"></a></h4>
+<p>Genesis/Quadrants 已经支持 DLPack 与 PyTorch tensor 共享设备内存。在 MUSA 路径上，确保 <code class="docutils literal notranslate"><span class="pre">gs.from_torch</span></code> / <code class="docutils literal notranslate"><span class="pre">gs.to_torch</span></code> 使用 MUSA 设备 tensor，避免 host-device 拷贝。</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GenesisArticulationBackend</span><span class="p">(</span><span class="n">ArticulationBackend</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_qpos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="c1"># 返回的 ndarray 最好直接是 DLPack view，避免 cudaMemcpy</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_entity</span><span class="o">.</span><span class="n">get_qpos</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><strong>预期收益</strong>：observation 生产 → PyTorch tensor 路径延迟降低 15-30%。</p>
+</section>
+<section id="genesis-quadrants-gpu">
+<h4>策略 3：Genesis/Quadrants GPU 批量并行<a class="headerlink" href="#genesis-quadrants-gpu" title="Link to this heading"></a></h4>
+<p>将 <code class="docutils literal notranslate"><span class="pre">GenesisVectorizedEnv</span></code> 从 stub 改为真正的 GPU batch。Genesis/Quadrants 支持在一个 GPU 上下文中运行多个并行场景；利用 <code class="docutils literal notranslate"><span class="pre">gs.Scene</span></code> 的 batch 能力（或未来 Quadrants 提供的 multi-env API）：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MTLambdaVectorizedEnv</span><span class="p">(</span><span class="n">VectorizedEnvironment</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">&quot;mt_lambda&quot;</span><span class="p">)</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;musa&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scene_backend</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">create_scene</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="c1"># 利用 Quadrants 的 batch 能力创建 num_envs 个副本</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="c1"># actions: (num_envs, action_dim)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scene_backend</span><span class="o">.</span><span class="n">step_batch</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_backend</span><span class="o">.</span><span class="n">get_state_batch</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">infos</span>
+</pre></div>
+</div>
+<p><strong>预期收益</strong>：相比当前 Genesis stub，批量环境吞吐量提升 3-5×。</p>
+</section>
+<section id="id10">
+<h4>策略 4：渲染与物理解耦 + 异步渲染<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<p>在 <code class="docutils literal notranslate"><span class="pre">GenesisRendererBackend</span></code> 中，物理 step 与相机渲染分离：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GenesisRendererBackend</span><span class="p">(</span><span class="n">RendererBackend</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">step_physics_only</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;不触发渲染管线，纯物理步进。&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">render_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Future</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;异步提交渲染任务，训练 loop 不必等待。&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p><strong>预期收益</strong>：headless 训练场景下，去除不必要渲染开销，step 延迟降低 20-40%。</p>
+</section>
+<section id="quadrants-jit">
+<h4>策略 5：Quadrants JIT 编译缓存与场景构建缓存<a class="headerlink" href="#quadrants-jit" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>对 Quadrants kernel 编译结果做磁盘缓存（Genesis/Quadrants 已支持 warm-cache）。</p></li>
+<li><p>对 <code class="docutils literal notranslate"><span class="pre">backend.create_scene()</span></code> 中重复的 geom/body 构建做内存缓存。</p></li>
+</ul>
+<p><strong>预期收益</strong>：大场景首次构建时间降低 30-50%（Quadrants warm-cache 已从 7.2s 降到 0.3s）。</p>
+</section>
+<section id="musa">
+<h4>策略 6：MUSA 特化算子<a class="headerlink" href="#musa" title="Link to this heading"></a></h4>
+<p>在训练链路中，对 VLA/WAM 模型的常见算子（如旋转位置编码、注意力）使用 <code class="docutils literal notranslate"><span class="pre">torch_musa</span></code> 的 fused kernel，必要时手写 MUSA kernel。</p>
+<p><strong>预期收益</strong>：训练 throughput 提升 10-15%。</p>
+</section>
+</section>
+<section id="id11">
+<h3>5.3 10% 提升目标拆解<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<p>以单环境 <code class="docutils literal notranslate"><span class="pre">Franka</span> <span class="pre">PickPlace</span></code> 为例，基准为当前 Genesis/CUDA 实现：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>指标</p></th>
+<th class="head"><p>Genesis/CUDA 基准</p></th>
+<th class="head"><p>MT Lambda 目标</p></th>
+<th class="head"><p>提升</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>step 延迟（无渲染）</p></td>
+<td><p>2.50 ms</p></td>
+<td><p>≤ 2.25 ms</p></td>
+<td><p>≥ 10%</p></td>
+</tr>
+<tr class="row-odd"><td><p>observation 收集延迟</p></td>
+<td><p>0.80 ms</p></td>
+<td><p>≤ 0.60 ms</p></td>
+<td><p>≥ 25%</p></td>
+</tr>
+<tr class="row-even"><td><p>重置稳定步数</p></td>
+<td><p>10 steps</p></td>
+<td><p>≤ 10 steps</p></td>
+<td><p>持平</p></td>
+</tr>
+<tr class="row-odd"><td><p>成功率（100 eps）</p></td>
+<td><p>baseline</p></td>
+<td><p>≥ baseline - 2%</p></td>
+<td><p>物理一致</p></td>
+</tr>
+<tr class="row-even"><td><p>内存占用</p></td>
+<td><p>baseline</p></td>
+<td><p>≤ baseline + 10%</p></td>
+<td><p>可接受</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="ab">
+<h2>六、物理一致性与 AB 测试方案<a class="headerlink" href="#ab" title="Link to this heading"></a></h2>
+<section id="id12">
+<h3>6.1 对比维度<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<p>复用 <code class="docutils literal notranslate"><span class="pre">ABTestFramework</span></code>：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span> <span class="o">=</span> <span class="n">ABTestRunner</span><span class="p">(</span>
+    <span class="n">variant_a_name</span><span class="o">=</span><span class="s2">&quot;genesis_cuda&quot;</span><span class="p">,</span>
+    <span class="n">variant_a_fn</span><span class="o">=</span><span class="n">make_genesis_env</span><span class="p">,</span>
+    <span class="n">variant_b_name</span><span class="o">=</span><span class="s2">&quot;mt_lambda_musa&quot;</span><span class="p">,</span>
+    <span class="n">variant_b_fn</span><span class="o">=</span><span class="n">make_mt_lambda_env</span><span class="p">,</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;ab_test_results/backend_migration&quot;</span><span class="p">,</span>
+    <span class="n">warmup_steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>指标</p></th>
+<th class="head"><p>目标</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>qpos 单步相对误差</p></td>
+<td><p>≤ 1e-4（同一物理引擎，backend 切换应无显著差异）</p></td>
+</tr>
+<tr class="row-odd"><td><p>成功率差异</p></td>
+<td><p>≤ 2%</p></td>
+</tr>
+<tr class="row-even"><td><p>延迟降低</p></td>
+<td><p>≥ 10%</p></td>
+</tr>
+<tr class="row-odd"><td><p>内存差异</p></td>
+<td><p>≤ 10%</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id13">
+<h3>6.2 渐进式迁移<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<p>复用 <code class="docutils literal notranslate"><span class="pre">GradualMigration</span></code>，按流量比例从 Genesis CUDA 切换到 MT Lambda MUSA。</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id14">
+<h2>七、风险与回退策略<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>风险</p></th>
+<th class="head"><p>概率</p></th>
+<th class="head"><p>影响</p></th>
+<th class="head"><p>应对措施</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Quadrants 尚未公开支持 MUSA</p></td>
+<td><p>高</p></td>
+<td><p>高</p></td>
+<td><p>与 MT Lambda 团队共建 MUSA backend；开发期 fallback 到 CUDA</p></td>
+</tr>
+<tr class="row-odd"><td><p>MT Photon 相机数据格式不匹配</p></td>
+<td><p>中</p></td>
+<td><p>高</p></td>
+<td><p>Backend 层做 numpy bridge 转换；保留 Genesis 渲染 fallback</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">torch_musa</span></code> 算子不兼容</p></td>
+<td><p>中</p></td>
+<td><p>高</p></td>
+<td><p>提前跑通 VLA 算子清单；准备 custom kernel</p></td>
+</tr>
+<tr class="row-odd"><td><p>物理一致性差异导致策略失效</p></td>
+<td><p>中</p></td>
+<td><p>高</p></td>
+<td><p>ABTestFramework 验证；Domain Randomization 重标定</p></td>
+</tr>
+<tr class="row-even"><td><p>插件直接调用 Genesis API 导致 core/ 抽象被破坏</p></td>
+<td><p>高</p></td>
+<td><p>中</p></td>
+<td><p>新增插件适配规范，先迁移 controllers/predictors</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="id15">
+<h2>八、实施路线图<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
+<section id="phase-1-week-1-3">
+<h3>Phase 1：抽象层基础建设（Week 1-3）<a class="headerlink" href="#phase-1-week-1-3" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>创建 <code class="docutils literal notranslate"><span class="pre">backend/base.py</span></code>、<code class="docutils literal notranslate"><span class="pre">backend/types.py</span></code>、<code class="docutils literal notranslate"><span class="pre">backend/factory.py</span></code>。</p></li>
+<li><p>定义 <code class="docutils literal notranslate"><span class="pre">SimulatorBackend</span></code>、<code class="docutils literal notranslate"><span class="pre">SceneBackend</span></code>、<code class="docutils literal notranslate"><span class="pre">EntityBackend</span></code>、<code class="docutils literal notranslate"><span class="pre">ArticulationBackend</span></code>、<code class="docutils literal notranslate"><span class="pre">RendererBackend</span></code>。</p></li>
+<li><p>单元测试：用 mock backend 验证 core/ 能正确注入。</p></li>
+</ol>
+</section>
+<section id="phase-2-genesis-week-4-6">
+<h3>Phase 2：Genesis 后端下沉（Week 4-6）<a class="headerlink" href="#phase-2-genesis-week-4-6" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>实现 <code class="docutils literal notranslate"><span class="pre">backends/genesis_backend.py</span></code>，将现有 <code class="docutils literal notranslate"><span class="pre">gs.*</span></code> 调用封装。</p></li>
+<li><p>重构 <code class="docutils literal notranslate"><span class="pre">core/composer.py</span></code>、<code class="docutils literal notranslate"><span class="pre">core/scene.py</span></code>、<code class="docutils literal notranslate"><span class="pre">core/embodiment.py</span></code> 使用 Backend 接口。</p></li>
+<li><p>保证现有测试全部通过，功能无损。</p></li>
+</ol>
+</section>
+<section id="phase-3-mt-lambda-week-7-10">
+<h3>Phase 3：MT Lambda 后端骨架（Week 7-10）<a class="headerlink" href="#phase-3-mt-lambda-week-7-10" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>实现 <code class="docutils literal notranslate"><span class="pre">backends/mt_lambda_backend.py</span></code>，继承 <code class="docutils literal notranslate"><span class="pre">GenesisBackend</span></code> 并选择 MUSA arch。</p></li>
+<li><p>与 MT Lambda 团队确认 Quadrants MUSA backend 的 API 和初始化方式。</p></li>
+<li><p>跑通 <code class="docutils literal notranslate"><span class="pre">Franka</span> <span class="pre">PickPlace</span></code> 单场景（开发期可 fallback 到 CUDA）。</p></li>
+</ol>
+</section>
+<section id="phase-4-week-11-14">
+<h3>Phase 4：性能优化与向量化（Week 11-14）<a class="headerlink" href="#phase-4-week-11-14" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>实现批量状态读写、DLPack 零拷贝桥接。</p></li>
+<li><p>实现 <code class="docutils literal notranslate"><span class="pre">MTLambdaVectorizedEnv</span></code> 真正的 Quadrants GPU batch。</p></li>
+<li><p>接入 MT Photon / 3DGS 渲染（可选，先保证 headless）。</p></li>
+</ol>
+</section>
+<section id="phase-5-ab-week-15-16">
+<h3>Phase 5：AB 测试与对标（Week 15-16）<a class="headerlink" href="#phase-5-ab-week-15-16" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>用 <code class="docutils literal notranslate"><span class="pre">ABTestFramework</span></code> 对比 Genesis CUDA vs MT Lambda MUSA。</p></li>
+<li><p>调优至延迟降低 ≥ 10%、物理一致性达标。</p></li>
+<li><p>输出迁移评估报告。</p></li>
+</ol>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id16">
+<h2>九、交付物<a class="headerlink" href="#id16" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>设计文档</strong>：<code class="docutils literal notranslate"><span class="pre">docs/backend_abc_design.md</span></code>（本计划获批后写入项目目录）。</p></li>
+<li><p><strong>代码</strong>：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/backend/</span></code> 抽象层</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/backends/genesis_backend.py</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/backends/mt_lambda_backend.py</span></code></p></li>
+<li><p>重构后的 <code class="docutils literal notranslate"><span class="pre">core/composer.py</span></code>、<code class="docutils literal notranslate"><span class="pre">core/scene.py</span></code>、<code class="docutils literal notranslate"><span class="pre">core/embodiment.py</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>测试</strong>：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tests/backend/test_backend_abc.py</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tests/backend/test_genesis_backend.py</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tests/backend/test_mt_lambda_backend.py</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>AB 测试报告</strong>：<code class="docutils literal notranslate"><span class="pre">ab_test_results/backend_migration/</span></code>。</p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="id17">
+<h2>十、推荐策略<a class="headerlink" href="#id17" title="Link to this heading"></a></h2>
+<p><strong>推荐采用“抽象层迁移”方案（策略 B）</strong>：</p>
+<ul class="simple">
+<li><p>保留 <code class="docutils literal notranslate"><span class="pre">core/</span></code> 业务逻辑，新增 Backend 抽象层。</p></li>
+<li><p>先实现 <code class="docutils literal notranslate"><span class="pre">GenesisBackend</span></code> 保证回归无损，再实现 <code class="docutils literal notranslate"><span class="pre">MTLambdaBackend</span></code>（复用 GenesisBackend，选择 MUSA arch）。</p></li>
+<li><p>通过批量状态读写、DLPack 零拷贝、Quadrants batch、异步渲染等优化，目标在单环境 step 延迟上比 Genesis/CUDA 版本降低 ≥ 10%。</p></li>
+</ul>
+<p>此方案风险可控，复用度高，且为后续插件迁移和国产化替代奠定统一接口基础。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
