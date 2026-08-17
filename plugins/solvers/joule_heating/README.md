@@ -30,6 +30,8 @@ small internal transient thermal solve or be injected into the existing
 - Differentiable electric-potential solve when `scene.requires_grad=True`.
 - Differentiable conductivity, Dirichlet boundary voltages, and scalar material
   properties (`rho`, `cp`, `k`) when `scene.requires_grad=True`.
+- Fused forward kernels for the Jacobi electric solve and J/Q computation,
+  reducing Python dispatch overhead on long rollouts.
 
 ## Installation
 
@@ -201,6 +203,24 @@ through the fixed-iteration Jacobi solve to:
 - the internal temperature field (`solver._T`), and
 - the coupled `ThermalSolver` temperature field when
   `couple_to_thermal=True`.
+
+## Performance
+
+For long rollouts the solver fuses the Jacobi voltage solve into one kernel
+launch per substep (copy → iterate → copy back) and fuses the current-density
+and heat-source computations into another single launch. The per-iteration
+kernels are still used during the backward pass so gradients remain unchanged.
+
+Example CPU throughput on an Intel i7-9750H with a 64×32 grid and 10 substeps:
+
+| `max_iter` | before fusion | after fusion |
+|------------|---------------|--------------|
+| 10         | ~0.029 s/step | ~0.021 s/step |
+| 50         | ~0.083 s/step | ~0.028 s/step |
+| 100        | ~0.128 s/step | ~0.036 s/step |
+| 200        | ~0.236 s/step | ~0.050 s/step |
+
+Run ``scripts/benchmark_joule_solver.py`` to reproduce on your machine.
 
 ## Limitations
 
