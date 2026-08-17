@@ -280,3 +280,52 @@ class TestJouleHeatingSolver:
             * dx
         )
         assert total_power == pytest.approx(expected_power, rel=1e-2)
+
+    def test_gradient_flows_to_conductivity(self):
+        """The conductivity field is differentiable through the electric solve."""
+        scene = gs.Scene(
+            sim_options=gs.options.SimOptions(dt=0.01, substeps=1, requires_grad=True),
+            show_viewer=False,
+        )
+        scene.add_entity(gs.morphs.Plane())
+        solver = install(
+            scene,
+            JouleHeatingOptions(
+                resolution=(16, 8),
+                dx=1.0,
+                sigma=1.0,
+                rho=1.0,
+                cp=1.0,
+                k=0.01,
+                max_iter=500,
+                tol=1e-7,
+                couple_to_thermal=False,
+            ),
+        )
+        scene.build()
+
+        # Non-uniform conductivity so a gradient has somewhere to go.
+        sigma = np.ones((16, 8), dtype=float)
+        sigma[4:12, 2:6] = 2.0
+        solver.set_conductivity(sigma)
+
+        solver.set_voltage_boundary("x_min", 10.0)
+        solver.set_voltage_boundary("x_max", 0.0)
+
+        scene.step()
+
+        # Seed the loss gradient into _Q at substep 0 and run the solver's
+        # backward pass manually (JouleHeatingSolver does not yet expose a
+        # SolverState wrapper for scene.backward).
+        q_grad = solver._Q.grad.to_numpy()
+        q_grad.fill(0.0)
+        q_grad[0] = 1.0
+        solver._Q.grad.from_numpy(q_grad)
+        solver.substep_pre_coupling_grad(0)
+
+        sigma_grad = solver._sigma.grad
+        assert sigma_grad is not None
+        grad_np = sigma_grad.to_numpy()
+        assert not np.allclose(grad_np, 0.0)
+        # The region with higher conductivity should carry a different gradient.
+        assert not np.allclose(grad_np[0, 4:12, 2:6], grad_np[0, 0, 0])

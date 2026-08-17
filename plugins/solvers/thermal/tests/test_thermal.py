@@ -562,3 +562,57 @@ class TestThermalSolver:
         assert grad is not None
         grad_np = grad.detach().cpu().numpy()
         assert not np.allclose(grad_np, 0.0)
+
+    @pytest.mark.xfail(
+        reason="Quadrants reverse-mode AD does not support atomic_add / in-place field writes in source-coupling kernels",
+        raises=RuntimeError,
+        strict=True,
+    )
+    def test_gradient_flows_to_source_temperature(self):
+        """Source temperature should be differentiable (currently blocked)."""
+
+        class _LocalSource:
+            def __init__(self, pos):
+                self._pos = np.asarray(pos, dtype=float)
+
+            def get_pos(self):
+                return self._pos
+
+        scene = gs.Scene(
+            sim_options=gs.options.SimOptions(dt=0.01, substeps=1, requires_grad=True),
+            show_viewer=False,
+        )
+        scene.add_entity(gs.morphs.Plane())
+        thermal = install(
+            scene,
+            ThermalOptions(
+                resolution=(8, 8),
+                dx=0.01,
+                alpha=1e-4,
+                boundary_mode="dirichlet",
+                boundary_value=0.0,
+                initial_temperature=0.0,
+            ),
+        )
+        thermal.add_source(
+            entity=_LocalSource((0.04, 0.04, 0.0)),
+            temperature=1.0,
+            radius=0.03,
+            rate=10.0,
+            heat_capacity=0.1,
+        )
+        scene.build()
+
+        scene.step()
+
+        t_field = thermal._T
+        assert t_field is not None and t_field.grad is not None
+        t_grad = t_field.grad.to_numpy()
+        t_grad.fill(0.0)
+        t_grad[1] = 1.0
+        t_field.grad.from_numpy(t_grad)
+        thermal._compute_source_equilibrium_2d.grad(0)
+
+        assert thermal._source_temperatures.grad is not None
+        grad_np = thermal._source_temperatures.grad.to_numpy()
+        assert not np.allclose(grad_np, 0.0)

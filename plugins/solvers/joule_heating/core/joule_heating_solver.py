@@ -102,7 +102,9 @@ class JouleHeatingSolver(Solver):
         self._J = qd.field(
             dtype=gs.qd_vec3, shape=(self._B, *self._shape), needs_grad=needs_grad
         )
-        self._sigma = qd.field(dtype=gs.qd_float, shape=(self._B, *self._shape))
+        self._sigma = qd.field(
+            dtype=gs.qd_float, shape=(self._B, *self._shape), needs_grad=needs_grad
+        )
         self._voltage_boundary_mask = qd.field(
             dtype=gs.qd_int, shape=(self._B, *self._shape)
         )
@@ -398,10 +400,10 @@ class JouleHeatingSolver(Solver):
         # Back-propagate through Q = sigma |grad V|^2.
         if self._dim == 2:
             self._compute_q_2d.grad(f)
-            self._compute_j_2d.grad(f)
+            self._compute_j_2d.grad()
         else:
             self._compute_q_3d.grad(f)
-            self._compute_j_3d.grad(f)
+            self._compute_j_3d.grad()
 
         # Back-propagate through the fixed-iteration Jacobi solve.
         for _ in range(self._max_iter):
@@ -410,11 +412,11 @@ class JouleHeatingSolver(Solver):
             else:
                 self._jacobi_step_v_3d.grad()
         if self._dim == 2:
-            self._copy_tmp_to_v.grad(f)
-            self._copy_v_to_tmp.grad(f)
+            self._copy_tmp_to_v_2d.grad(f)
+            self._copy_v_to_tmp_2d.grad(f)
         else:
-            self._copy_tmp_to_v.grad(f)
-            self._copy_v_to_tmp.grad(f)
+            self._copy_tmp_to_v_3d.grad(f)
+            self._copy_v_to_tmp_3d.grad(f)
 
     def substep_post_coupling(self, f: int) -> None:
         pass
@@ -435,6 +437,8 @@ class JouleHeatingSolver(Solver):
             self._J.grad.fill(0.0)
         if self._T is not None:
             self._T.grad.fill(0.0)
+        if self._sigma is not None:
+            self._sigma.grad.fill(0.0)
 
     def save_ckpt(self, ckpt_name: str) -> None:
         if self._V is None:
