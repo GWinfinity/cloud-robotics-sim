@@ -394,3 +394,46 @@ class TestJouleHeatingSolver:
         grad_np = sigma_grad.to_numpy()
         assert not np.allclose(grad_np, 0.0)
         assert not np.allclose(grad_np[0, 4:12, 1:3], grad_np[0, 0, 0])
+
+    def test_gradient_flows_to_boundary_voltage(self):
+        """Dirichlet boundary voltage is differentiable through the Jacobi solve."""
+        scene = gs.Scene(
+            sim_options=gs.options.SimOptions(dt=0.01, substeps=1, requires_grad=True),
+            show_viewer=False,
+        )
+        scene.add_entity(gs.morphs.Plane())
+        solver = install(
+            scene,
+            JouleHeatingOptions(
+                resolution=(16, 8),
+                dx=1.0,
+                sigma=1.0,
+                rho=1.0,
+                cp=1.0,
+                k=0.01,
+                max_iter=500,
+                tol=1e-7,
+                couple_to_thermal=False,
+            ),
+        )
+        scene.build()
+
+        solver.set_voltage_boundary("x_min", 10.0)
+        solver.set_voltage_boundary("x_max", 0.0)
+
+        scene.step()
+
+        # Seed the loss gradient into _Q at substep 0 and run the solver's
+        # backward pass. The gradient should reach the boundary-voltage field.
+        q_grad = solver._Q.grad.to_numpy()
+        q_grad.fill(0.0)
+        q_grad[0] = 1.0
+        solver._Q.grad.from_numpy(q_grad)
+        solver.substep_pre_coupling_grad(0)
+
+        bv_field = solver._boundary_voltage_field
+        assert bv_field is not None and bv_field.grad is not None
+        bv_grad = bv_field.grad.to_numpy()
+        assert not np.allclose(bv_grad, 0.0)
+        # x_min (high voltage) and x_max (ground) should receive different gradients.
+        assert not np.allclose(bv_grad[0, 0, :], bv_grad[0, -1, :])

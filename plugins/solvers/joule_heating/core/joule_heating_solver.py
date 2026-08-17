@@ -44,7 +44,8 @@ class JouleHeatingSolver(Solver):
     - Only Dirichlet voltage boundaries are supported in v1.
     - Gradients through the fixed-iteration Jacobi solve are supported when
       ``scene.requires_grad=True``. Gradients w.r.t. boundary values are
-      straight-through in this version.
+      supported when the boundary is set after ``scene.build()`` via
+      ``set_voltage_boundary`` with ``scene.requires_grad=True``.
     """
 
     def __init__(self, scene: "Scene", sim: "Simulator", options: JouleHeatingOptions):
@@ -75,6 +76,7 @@ class JouleHeatingSolver(Solver):
         self._sigma: qd.Field | None = None
         self._T: qd.Field | None = None
         self._voltage_boundary_mask: qd.Field | None = None
+        self._boundary_voltage_field: qd.Field | None = None
         self._n_frames: int = 1
 
         self._ckpt: dict[str, dict[str, gs.Tensor]] = {}
@@ -107,6 +109,9 @@ class JouleHeatingSolver(Solver):
         )
         self._voltage_boundary_mask = qd.field(
             dtype=gs.qd_int, shape=(self._B, *self._shape)
+        )
+        self._boundary_voltage_field = qd.field(
+            dtype=gs.qd_float, shape=(self._B, *self._shape), needs_grad=needs_grad
         )
 
         self._init_voltage()
@@ -157,9 +162,15 @@ class JouleHeatingSolver(Solver):
         """Initialize the boundary mask to zero (all boundaries Neumann).
 
         Dirichlet nodes are marked later through ``set_voltage_boundary``.
+        The boundary-voltage field is initialized to the default boundary
+        value so interior cells start from the same initial guess as ``_V``.
         """
         mask = np.zeros((self._B, *self._shape), dtype=np.int32)
         self._voltage_boundary_mask.from_numpy(mask)
+        boundary_values = np.full(
+            (self._B, *self._shape), self._voltage_boundary_value, dtype=gs.np_float
+        )
+        self._boundary_voltage_field.from_numpy(boundary_values)
 
     def _make_initial_temperature_array(self) -> np.ndarray:
         """Return an array of shape (B, *shape) for the initial temperature."""
@@ -310,11 +321,16 @@ class JouleHeatingSolver(Solver):
         value : float
             Boundary voltage in volts.
         """
-        if self._V is None or self._voltage_boundary_mask is None:
+        if (
+            self._V is None
+            or self._voltage_boundary_mask is None
+            or self._boundary_voltage_field is None
+        ):
             raise RuntimeError("JouleHeatingSolver has not been built yet")
 
         arr = self._V.to_numpy()
         mask = self._voltage_boundary_mask.to_numpy()
+        boundary_values = self._boundary_voltage_field.to_numpy()
 
         if self._dim == 2:
             slices = {
@@ -338,9 +354,11 @@ class JouleHeatingSolver(Solver):
 
         sl = (slice(None),) + slices[name][1:]
         arr[(slice(None),) + sl] = float(value)
+        boundary_values[sl] = float(value)
         mask[sl] = 1
         self._V.from_numpy(arr)
         self._voltage_boundary_mask.from_numpy(mask)
+        self._boundary_voltage_field.from_numpy(boundary_values)
 
     # --------------------------------------------------------------------------
     # Simulation lifecycle
@@ -446,6 +464,8 @@ class JouleHeatingSolver(Solver):
             self._T.grad.fill(0.0)
         if self._sigma is not None:
             self._sigma.grad.fill(0.0)
+        if self._boundary_voltage_field is not None:
+            self._boundary_voltage_field.grad.fill(0.0)
 
     def save_ckpt(self, ckpt_name: str) -> None:
         if self._V is None:
@@ -553,8 +573,8 @@ class JouleHeatingSolver(Solver):
     def _jacobi_step_v_2d(self):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             if self._voltage_boundary_mask[i_b, i, j] == 1:
-                # Dirichlet node: keep the prescribed value.
-                self._V_tmp[i_b, i, j] = self._V_tmp[i_b, i, j]
+                # Dirichlet node: enforce the boundary voltage.
+                self._V_tmp[i_b, i, j] = self._boundary_voltage_field[i_b, i, j]
             else:
                 # Zero-Neumann boundaries use the boundary value as the ghost value.
                 im = i - 1 if i > 0 else i
@@ -583,7 +603,9 @@ class JouleHeatingSolver(Solver):
     def _jacobi_step_v_3d(self):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             if self._voltage_boundary_mask[i_b, i, j, k] == 1:
-                self._V_tmp[i_b, i, j, k] = self._V_tmp[i_b, i, j, k]
+                self._V_tmp[i_b, i, j, k] = self._boundary_voltage_field[
+                    i_b, i, j, k
+                ]
             else:
                 im = i - 1 if i > 0 else i
                 ip = i + 1 if i < self._nx - 1 else i
