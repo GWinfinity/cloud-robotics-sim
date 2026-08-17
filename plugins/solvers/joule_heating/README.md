@@ -28,6 +28,8 @@ small internal transient thermal solve or be injected into the existing
 - Optional coupling to `plugins.solvers.thermal.ThermalSolver`.
 - Batched environments (`scene.build(n_envs=...)`).
 - Differentiable electric-potential solve when `scene.requires_grad=True`.
+- Differentiable conductivity, Dirichlet boundary voltages, and scalar material
+  properties (`rho`, `cp`, `k`) when `scene.requires_grad=True`.
 
 ## Installation
 
@@ -178,11 +180,27 @@ sigma_copper = thermal["copper"]["conductivity_s_per_m"]
 - `set_voltage_boundary(name, value)` — set Dirichlet voltage on a face.
   `name` is one of `x_min`, `x_max`, `y_min`, `y_max`, `z_min`, `z_max`.
 - `set_conductivity(sigma)` — set the per-cell conductivity field.
+- `set_rho(rho)` / `get_rho()` — set/get mass density [kg/m³].
+- `set_cp(cp)` / `get_cp()` — set/get specific heat capacity [J/(kg·K)].
+- `set_k(k)` / `get_k()` — set/get thermal conductivity [W/(m·K)].
 - `set_voltage(voltage)` / `get_voltage()` — set/get the potential field [V].
 - `get_current_density()` — get `J` [A/m²].
 - `get_heat_source()` — get `Q` [W/m³].
 - `set_temperature(temperature)` / `get_temperature()` — internal thermal
   field [K] (only when `couple_to_thermal=False`).
+
+## Autodiff
+
+When the scene is built with `requires_grad=True`, the solver tracks gradients
+through the fixed-iteration Jacobi solve to:
+
+- the per-cell conductivity field (`solver._sigma`),
+- the Dirichlet boundary-voltage field (`solver._boundary_voltage_field`),
+- the scalar material-property fields (`solver._rho_field`, `solver._cp_field`,
+  `solver._k_field`),
+- the internal temperature field (`solver._T`), and
+- the coupled `ThermalSolver` temperature field when
+  `couple_to_thermal=True`.
 
 ## Limitations
 
@@ -191,7 +209,8 @@ sigma_copper = thermal["copper"]["conductivity_s_per_m"]
   grid.
 - Dirichlet voltage boundaries are supported; current (Neumann) boundaries
   are not.
-- Gradients w.r.t. boundary voltage values are straight-through in v1.
+- Gradients w.r.t. scalar material properties (`rho`, `cp`, `k`) flow through
+  both the internal thermal step and the `couple_to_thermal` injection kernels.
 - The internal thermal solve uses simple explicit FTCS with insulated
   boundaries. For production thermal diffusion, use `couple_to_thermal=True`
   with `ThermalSolver`.
