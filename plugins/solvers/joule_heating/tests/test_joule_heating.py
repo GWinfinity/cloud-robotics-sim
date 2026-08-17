@@ -437,3 +437,79 @@ class TestJouleHeatingSolver:
         assert not np.allclose(bv_grad, 0.0)
         # x_min (high voltage) and x_max (ground) should receive different gradients.
         assert not np.allclose(bv_grad[0, 0, :], bv_grad[0, -1, :])
+
+    def test_gradient_flows_to_scalar_material_params(self):
+        """Scalar rho/cp/k are differentiable through the internal thermal step."""
+        scene = gs.Scene(
+            sim_options=gs.options.SimOptions(dt=0.01, substeps=1, requires_grad=True),
+            show_viewer=False,
+        )
+        scene.add_entity(gs.morphs.Plane())
+        solver = install(
+            scene,
+            JouleHeatingOptions(
+                resolution=(16, 8),
+                dx=1.0,
+                sigma=1.0,
+                rho=1.0,
+                cp=1.0,
+                k=0.01,
+                initial_temperature=lambda x, y: 300.0 + x,
+                max_iter=500,
+                tol=1e-7,
+                couple_to_thermal=False,
+            ),
+        )
+        scene.build()
+
+        solver.set_voltage_boundary("x_min", 10.0)
+        solver.set_voltage_boundary("x_max", 0.0)
+
+        scene.step()
+
+        # Seed a non-uniform loss gradient into the final temperature frame and
+        # run the solver's backward pass. The gradient should reach rho/cp/k.
+        t_grad = solver._T.grad.to_numpy()
+        t_grad.fill(0.0)
+        t_grad[1] = np.indices((16, 8)).sum(axis=0).astype(float)
+        solver._T.grad.from_numpy(t_grad)
+        solver.substep_pre_coupling_grad(0)
+
+        for name in ("_rho_field", "_cp_field", "_k_field"):
+            field = getattr(solver, name)
+            assert field is not None and field.grad is not None
+            grad_np = field.grad.to_numpy()
+            assert not np.allclose(grad_np, 0.0), f"{name} gradient is zero"
+
+    def test_scalar_param_setters_update_fields(self):
+        """set_rho/set_cp/set_k update both the field and cached Python value."""
+        scene = gs.Scene(
+            sim_options=gs.options.SimOptions(dt=0.01, substeps=1),
+            show_viewer=False,
+        )
+        scene.add_entity(gs.morphs.Plane())
+        solver = install(
+            scene,
+            JouleHeatingOptions(
+                resolution=(8, 4),
+                dx=1.0,
+                sigma=1.0,
+                rho=1.0,
+                cp=1.0,
+                k=0.01,
+                max_iter=100,
+                couple_to_thermal=False,
+            ),
+        )
+        scene.build()
+
+        solver.set_rho(2.5)
+        solver.set_cp(800.0)
+        solver.set_k(0.5)
+
+        assert solver._rho == 2.5
+        assert solver._cp == 800.0
+        assert solver._k == 0.5
+        np.testing.assert_allclose(solver.get_rho(), 2.5)
+        np.testing.assert_allclose(solver.get_cp(), 800.0)
+        np.testing.assert_allclose(solver.get_k(), 0.5)

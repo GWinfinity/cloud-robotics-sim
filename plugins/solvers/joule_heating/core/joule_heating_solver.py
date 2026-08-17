@@ -77,6 +77,9 @@ class JouleHeatingSolver(Solver):
         self._T: qd.Field | None = None
         self._voltage_boundary_mask: qd.Field | None = None
         self._boundary_voltage_field: qd.Field | None = None
+        self._rho_field: qd.Field | None = None
+        self._cp_field: qd.Field | None = None
+        self._k_field: qd.Field | None = None
         self._n_frames: int = 1
 
         self._ckpt: dict[str, dict[str, gs.Tensor]] = {}
@@ -113,10 +116,20 @@ class JouleHeatingSolver(Solver):
         self._boundary_voltage_field = qd.field(
             dtype=gs.qd_float, shape=(self._B, *self._shape), needs_grad=needs_grad
         )
+        self._rho_field = qd.field(
+            dtype=gs.qd_float, shape=(self._B,), needs_grad=needs_grad
+        )
+        self._cp_field = qd.field(
+            dtype=gs.qd_float, shape=(self._B,), needs_grad=needs_grad
+        )
+        self._k_field = qd.field(
+            dtype=gs.qd_float, shape=(self._B,), needs_grad=needs_grad
+        )
 
         self._init_voltage()
         self._init_conductivity()
         self._init_voltage_boundary_mask()
+        self._init_scalar_material_params()
 
         if (
             not self._couple_to_thermal
@@ -172,6 +185,15 @@ class JouleHeatingSolver(Solver):
         )
         self._boundary_voltage_field.from_numpy(boundary_values)
 
+    def _init_scalar_material_params(self) -> None:
+        """Broadcast scalar material properties to batched differentiable fields."""
+        rho_arr = np.full((self._B,), self._rho, dtype=gs.np_float)
+        cp_arr = np.full((self._B,), self._cp, dtype=gs.np_float)
+        k_arr = np.full((self._B,), self._k, dtype=gs.np_float)
+        self._rho_field.from_numpy(rho_arr)
+        self._cp_field.from_numpy(cp_arr)
+        self._k_field.from_numpy(k_arr)
+
     def _make_initial_temperature_array(self) -> np.ndarray:
         """Return an array of shape (B, *shape) for the initial temperature."""
         base_shape = self._shape
@@ -204,7 +226,11 @@ class JouleHeatingSolver(Solver):
             and getattr(self._sim, "thermal_solver", None) is not None
         ):
             return
-        r = self._alpha * self._substep_dt / (self._dx * self._dx)
+        rho = float(self._rho_field.to_numpy()[0])
+        cp = float(self._cp_field.to_numpy()[0])
+        k = float(self._k_field.to_numpy()[0])
+        alpha = k / (rho * cp)
+        r = alpha * self._substep_dt / (self._dx * self._dx)
         limit = 1.0 / 6.0 if self._dim == 3 else 0.25
         if r > limit:
             raise ValueError(
@@ -360,6 +386,47 @@ class JouleHeatingSolver(Solver):
         self._voltage_boundary_mask.from_numpy(mask)
         self._boundary_voltage_field.from_numpy(boundary_values)
 
+    def _set_scalar_param(
+        self, field: qd.Field | None, attr_name: str, value: float
+    ) -> None:
+        """Update a batched scalar parameter field and its cached Python value."""
+        if field is None:
+            raise RuntimeError("JouleHeatingSolver has not been built yet")
+        arr = np.full((self._B,), float(value), dtype=gs.np_float)
+        field.from_numpy(arr)
+        setattr(self, attr_name, float(value))
+
+    def set_rho(self, rho: float) -> None:
+        """Set mass density [kg/m^3] for all environments."""
+        self._set_scalar_param(self._rho_field, "_rho", rho)
+
+    def set_cp(self, cp: float) -> None:
+        """Set specific heat capacity [J/(kg*K)] for all environments."""
+        self._set_scalar_param(self._cp_field, "_cp", cp)
+
+    def set_k(self, k: float) -> None:
+        """Set thermal conductivity [W/(m*K)] for all environments."""
+        self._set_scalar_param(self._k_field, "_k", k)
+        self._alpha = k / (self._rho * self._cp)
+
+    def get_rho(self) -> np.ndarray:
+        """Return the per-environment density values [kg/m^3]."""
+        if self._rho_field is None:
+            raise RuntimeError("JouleHeatingSolver has not been built yet")
+        return self._rho_field.to_numpy().copy()
+
+    def get_cp(self) -> np.ndarray:
+        """Return the per-environment specific heat values [J/(kg*K)]."""
+        if self._cp_field is None:
+            raise RuntimeError("JouleHeatingSolver has not been built yet")
+        return self._cp_field.to_numpy().copy()
+
+    def get_k(self) -> np.ndarray:
+        """Return the per-environment thermal conductivity values [W/(m*K)]."""
+        if self._k_field is None:
+            raise RuntimeError("JouleHeatingSolver has not been built yet")
+        return self._k_field.to_numpy().copy()
+
     # --------------------------------------------------------------------------
     # Simulation lifecycle
     # --------------------------------------------------------------------------
@@ -466,6 +533,12 @@ class JouleHeatingSolver(Solver):
             self._sigma.grad.fill(0.0)
         if self._boundary_voltage_field is not None:
             self._boundary_voltage_field.grad.fill(0.0)
+        if self._rho_field is not None:
+            self._rho_field.grad.fill(0.0)
+        if self._cp_field is not None:
+            self._cp_field.grad.fill(0.0)
+        if self._k_field is not None:
+            self._k_field.grad.fill(0.0)
 
     def save_ckpt(self, ckpt_name: str) -> None:
         if self._V is None:
@@ -603,9 +676,7 @@ class JouleHeatingSolver(Solver):
     def _jacobi_step_v_3d(self):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             if self._voltage_boundary_mask[i_b, i, j, k] == 1:
-                self._V_tmp[i_b, i, j, k] = self._boundary_voltage_field[
-                    i_b, i, j, k
-                ]
+                self._V_tmp[i_b, i, j, k] = self._boundary_voltage_field[i_b, i, j, k]
             else:
                 im = i - 1 if i > 0 else i
                 ip = i + 1 if i < self._nx - 1 else i
@@ -720,22 +791,30 @@ class JouleHeatingSolver(Solver):
     def _apply_q_to_thermal_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             q = self._Q[f, i_b, i, j]
-            dt_over_rhocp = self._substep_dt / (self._rho * self._cp)
+            rho = self._rho_field[i_b]
+            cp = self._cp_field[i_b]
+            dt_over_rhocp = self._substep_dt / (rho * cp)
             self._sim.thermal_solver._T[f + 1, i_b, i, j] += q * dt_over_rhocp
 
     @qd.kernel
     def _apply_q_to_thermal_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             q = self._Q[f, i_b, i, j, k]
-            dt_over_rhocp = self._substep_dt / (self._rho * self._cp)
+            rho = self._rho_field[i_b]
+            cp = self._cp_field[i_b]
+            dt_over_rhocp = self._substep_dt / (rho * cp)
             self._sim.thermal_solver._T[f + 1, i_b, i, j, k] += q * dt_over_rhocp
 
     @qd.kernel
     def _heat_step_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             t_old = self._T[f, i_b, i, j]
-            r = self._alpha * self._substep_dt / (self._dx * self._dx)
-            heating = self._Q[f, i_b, i, j] * self._substep_dt / (self._rho * self._cp)
+            rho = self._rho_field[i_b]
+            cp = self._cp_field[i_b]
+            k = self._k_field[i_b]
+            alpha = k / (rho * cp)
+            r = alpha * self._substep_dt / (self._dx * self._dx)
+            heating = self._Q[f, i_b, i, j] * self._substep_dt / (rho * cp)
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
                 # Insulated (zero-Neumann) boundary.
                 im = qd.max(i - 1, 0)
@@ -764,10 +843,12 @@ class JouleHeatingSolver(Solver):
     def _heat_step_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             t_old = self._T[f, i_b, i, j, k]
-            r = self._alpha * self._substep_dt / (self._dx * self._dx)
-            heating = (
-                self._Q[f, i_b, i, j, k] * self._substep_dt / (self._rho * self._cp)
-            )
+            rho = self._rho_field[i_b]
+            cp = self._cp_field[i_b]
+            k = self._k_field[i_b]
+            alpha = k / (rho * cp)
+            r = alpha * self._substep_dt / (self._dx * self._dx)
+            heating = self._Q[f, i_b, i, j, k] * self._substep_dt / (rho * cp)
             if (
                 i == 0
                 or i == self._nx - 1
