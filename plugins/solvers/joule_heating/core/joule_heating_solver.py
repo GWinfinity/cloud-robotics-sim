@@ -439,21 +439,20 @@ class JouleHeatingSolver(Solver):
 
     def substep_pre_coupling(self, f: int) -> None:
         # Solve electric potential for frame f+1.
-        self._copy_v_to_tmp(f)
-        for _ in range(self._max_iter):
-            if self._dim == 2:
-                self._jacobi_step_v_2d()
-            else:
-                self._jacobi_step_v_3d()
-        self._copy_tmp_to_v(f)
+        # Use the fused forward kernel to avoid Python dispatch overhead for
+        # each Jacobi iteration. The per-iteration kernels remain in use for
+        # the backward pass.
+        if self._dim == 2:
+            self._solve_v_2d(f)
+        else:
+            self._solve_v_3d(f)
 
         # Compute current density and heat source from the new potential.
+        # Use the fused forward kernel to avoid one extra launch per substep.
         if self._dim == 2:
-            self._compute_j_2d()
-            self._compute_q_2d(f)
+            self._compute_jq_2d(f)
         else:
-            self._compute_j_3d()
-            self._compute_q_3d(f)
+            self._compute_jq_3d(f)
 
         # Inject heat source into thermal solver or internal thermal field.
         if self._couple_to_thermal:
@@ -643,6 +642,47 @@ class JouleHeatingSolver(Solver):
             self._copy_tmp_to_v_3d(f)
 
     @qd.kernel
+    def _solve_v_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Fused forward Jacobi solve: copy -> iterate -> copy back.
+
+        This replaces the Python-level loop of ``_copy_v_to_tmp``,
+        ``_jacobi_step_v_2d`` (``max_iter`` times), and ``_copy_tmp_to_v``
+        with a single kernel launch, removing Python dispatch overhead for
+        long rollouts. The per-iteration kernels are kept for the backward
+        pass, which cannot be fused due to same-field in-place read/write
+        adjoint limitations.
+        """
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            self._V_tmp[i_b, i, j] = self._V[f, i_b, i, j]
+        for _ in range(self._max_iter):
+            for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+                if self._voltage_boundary_mask[i_b, i, j] == 1:
+                    self._V_tmp[i_b, i, j] = self._boundary_voltage_field[i_b, i, j]
+                else:
+                    im = i - 1 if i > 0 else i
+                    ip = i + 1 if i < self._nx - 1 else i
+                    jm = j - 1 if j > 0 else j
+                    jp = j + 1 if j < self._ny - 1 else j
+                    s_c = self._sigma[i_b, i, j]
+                    s_ip = self._sigma[i_b, ip, j]
+                    s_im = self._sigma[i_b, im, j]
+                    s_jp = self._sigma[i_b, i, jp]
+                    s_jm = self._sigma[i_b, i, jm]
+                    sigma_x = 2.0 * s_c * s_ip / (s_c + s_ip + 1e-10)
+                    sigma_xm = 2.0 * s_c * s_im / (s_c + s_im + 1e-10)
+                    sigma_y = 2.0 * s_c * s_jp / (s_c + s_jp + 1e-10)
+                    sigma_ym = 2.0 * s_c * s_jm / (s_c + s_jm + 1e-10)
+                    denom = sigma_x + sigma_xm + sigma_y + sigma_ym + 1e-10
+                    self._V_tmp[i_b, i, j] = (
+                        sigma_x * self._V_tmp[i_b, ip, j]
+                        + sigma_xm * self._V_tmp[i_b, im, j]
+                        + sigma_y * self._V_tmp[i_b, i, jp]
+                        + sigma_ym * self._V_tmp[i_b, i, jm]
+                    ) / denom
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            self._V[f + 1, i_b, i, j] = self._V_tmp[i_b, i, j]
+
+    @qd.kernel
     def _jacobi_step_v_2d(self):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             if self._voltage_boundary_mask[i_b, i, j] == 1:
@@ -671,6 +711,57 @@ class JouleHeatingSolver(Solver):
                     + sigma_y * self._V_tmp[i_b, i, jp]
                     + sigma_ym * self._V_tmp[i_b, i, jm]
                 ) / denom
+
+    @qd.kernel
+    def _solve_v_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Fused forward Jacobi solve for 3D (see ``_solve_v_2d``)."""
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            self._V_tmp[i_b, i, j, k] = self._V[f, i_b, i, j, k]
+        for _ in range(self._max_iter):
+            for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+                if self._voltage_boundary_mask[i_b, i, j, k] == 1:
+                    self._V_tmp[i_b, i, j, k] = self._boundary_voltage_field[
+                        i_b, i, j, k
+                    ]
+                else:
+                    im = i - 1 if i > 0 else i
+                    ip = i + 1 if i < self._nx - 1 else i
+                    jm = j - 1 if j > 0 else j
+                    jp = j + 1 if j < self._ny - 1 else j
+                    km = k - 1 if k > 0 else k
+                    kp = k + 1 if k < self._nz - 1 else k
+                    s_c = self._sigma[i_b, i, j, k]
+                    s_ip = self._sigma[i_b, ip, j, k]
+                    s_im = self._sigma[i_b, im, j, k]
+                    s_jp = self._sigma[i_b, i, jp, k]
+                    s_jm = self._sigma[i_b, i, jm, k]
+                    s_kp = self._sigma[i_b, i, j, kp]
+                    s_km = self._sigma[i_b, i, j, km]
+                    sigma_x = 2.0 * s_c * s_ip / (s_c + s_ip + 1e-10)
+                    sigma_xm = 2.0 * s_c * s_im / (s_c + s_im + 1e-10)
+                    sigma_y = 2.0 * s_c * s_jp / (s_c + s_jp + 1e-10)
+                    sigma_ym = 2.0 * s_c * s_jm / (s_c + s_jm + 1e-10)
+                    sigma_z = 2.0 * s_c * s_kp / (s_c + s_kp + 1e-10)
+                    sigma_zm = 2.0 * s_c * s_km / (s_c + s_km + 1e-10)
+                    denom = (
+                        sigma_x
+                        + sigma_xm
+                        + sigma_y
+                        + sigma_ym
+                        + sigma_z
+                        + sigma_zm
+                        + 1e-10
+                    )
+                    self._V_tmp[i_b, i, j, k] = (
+                        sigma_x * self._V_tmp[i_b, ip, j, k]
+                        + sigma_xm * self._V_tmp[i_b, im, j, k]
+                        + sigma_y * self._V_tmp[i_b, i, jp, k]
+                        + sigma_ym * self._V_tmp[i_b, i, jm, k]
+                        + sigma_z * self._V_tmp[i_b, i, j, kp]
+                        + sigma_zm * self._V_tmp[i_b, i, j, km]
+                    ) / denom
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            self._V[f + 1, i_b, i, j, k] = self._V_tmp[i_b, i, j, k]
 
     @qd.kernel
     def _jacobi_step_v_3d(self):  # type: ignore[no-untyped-def]
@@ -783,6 +874,65 @@ class JouleHeatingSolver(Solver):
                 jy = j_vec[1]
                 jz = j_vec[2]
                 sigma = self._sigma[i_b, i, j, k]
+                self._Q[f, i_b, i, j, k] = (jx * jx + jy * jy + jz * jz) / (
+                    sigma + 1e-10
+                )
+
+    @qd.kernel
+    def _compute_jq_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Fused J and Q computation for the forward pass.
+
+        Eliminates one kernel launch per substep by computing ``Q = |J|^2/sigma``
+        directly from the voltage gradient without materializing ``_J``.
+        The separate ``_compute_j_*`` / ``_compute_q_*`` kernels remain for the
+        backward pass.
+        """
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
+                self._J[i_b, i, j] = gs.qd_vec3(0.0, 0.0, 0.0)
+                self._Q[f, i_b, i, j] = gs.qd_float(0.0)
+            else:
+                sigma = self._sigma[i_b, i, j]
+                dvdx = (self._V_tmp[i_b, i + 1, j] - self._V_tmp[i_b, i - 1, j]) / (
+                    2.0 * self._dx
+                )
+                dvdy = (self._V_tmp[i_b, i, j + 1] - self._V_tmp[i_b, i, j - 1]) / (
+                    2.0 * self._dx
+                )
+                jx = -sigma * dvdx
+                jy = -sigma * dvdy
+                self._J[i_b, i, j] = gs.qd_vec3(jx, jy, 0.0)
+                self._Q[f, i_b, i, j] = (jx * jx + jy * jy) / (sigma + 1e-10)
+
+    @qd.kernel
+    def _compute_jq_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Fused J and Q computation for 3D (see ``_compute_jq_2d``)."""
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            if (
+                i == 0
+                or i == self._nx - 1
+                or j == 0
+                or j == self._ny - 1
+                or k == 0
+                or k == self._nz - 1
+            ):
+                self._J[i_b, i, j, k] = gs.qd_vec3(0.0, 0.0, 0.0)
+                self._Q[f, i_b, i, j, k] = gs.qd_float(0.0)
+            else:
+                sigma = self._sigma[i_b, i, j, k]
+                dvdx = (
+                    self._V_tmp[i_b, i + 1, j, k] - self._V_tmp[i_b, i - 1, j, k]
+                ) / (2.0 * self._dx)
+                dvdy = (
+                    self._V_tmp[i_b, i, j + 1, k] - self._V_tmp[i_b, i, j - 1, k]
+                ) / (2.0 * self._dx)
+                dvdz = (
+                    self._V_tmp[i_b, i, j, k + 1] - self._V_tmp[i_b, i, j, k - 1]
+                ) / (2.0 * self._dx)
+                jx = -sigma * dvdx
+                jy = -sigma * dvdy
+                jz = -sigma * dvdz
+                self._J[i_b, i, j, k] = gs.qd_vec3(jx, jy, jz)
                 self._Q[f, i_b, i, j, k] = (jx * jx + jy * jy + jz * jz) / (
                     sigma + 1e-10
                 )
