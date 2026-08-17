@@ -140,6 +140,7 @@ class ObjectSpawn:
                     color=self.color,
                     static=self.static,
                     friction=self.friction,
+                    material=self.material,
                     name=entity_name,
                 )
             case "deformable":

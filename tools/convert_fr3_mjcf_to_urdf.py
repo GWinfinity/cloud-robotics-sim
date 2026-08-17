@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import math
 import shutil
+import warnings
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -103,17 +104,25 @@ def parse_mjcf(mjcf_path: Path) -> tuple[BodyNode, dict[str, str]]:
             ),
         )
         joint = elem.find("joint")
-        if joint is not None and joint.get("type", "hinge") in ("hinge", None):
-            node.joint_name = joint.get("name")
-            node.joint_axis = _parse_vec(  # type: ignore[assignment]
-                joint.get("axis"), 3, (0.0, 0.0, 1.0)
-            )
-            rng = _parse_vec(joint.get("range"), 2, ())  # type: ignore[arg-type]
-            if rng:
-                node.joint_range = (rng[0], rng[1])
-            effort = joint.get("actuatorfrcrange")
-            if effort:
-                node.joint_effort = max(abs(float(x)) for x in effort.split())
+        if joint is not None:
+            jtype = joint.get("type", "hinge")
+            if jtype in ("hinge", None):
+                node.joint_name = joint.get("name")
+                node.joint_axis = _parse_vec(  # type: ignore[assignment]
+                    joint.get("axis"), 3, (0.0, 0.0, 1.0)
+                )
+                rng = _parse_vec(joint.get("range"), 2, ())  # type: ignore[arg-type]
+                if rng:
+                    node.joint_range = (rng[0], rng[1])
+                effort = joint.get("actuatorfrcrange")
+                if effort:
+                    node.joint_effort = max(abs(float(x)) for x in effort.split())
+            else:
+                warnings.warn(
+                    f"body {node.name!r} has joint type {jtype!r} which is not "
+                    f"supported; treating as fixed joint",
+                    stacklevel=2,
+                )
         for geom in elem.findall("geom"):
             mesh_ref = geom.get("mesh")
             if mesh_ref and mesh_ref in meshes:

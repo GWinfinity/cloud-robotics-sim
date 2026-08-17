@@ -127,6 +127,8 @@ class VRBridge:
         self.transport.start()
 
     def stop(self) -> None:
+        if self.recorder.recording:
+            self.recorder.stop()
         self.transport.stop()
 
     # ------------------------------------------------------------------
@@ -256,7 +258,9 @@ class VRBridge:
                     self._q_target[dof] = q_arm[i]
 
         for name, close_fraction in action.gripper_cmds.items():
-            gripper = next(g for g in self.mapper.grippers if g.name == name)
+            gripper = next((g for g in self.mapper.grippers if g.name == name), None)
+            if gripper is None:
+                continue
             value = gripper.to_joint_value(close_fraction)
             for dof in gripper.dofs:
                 if dof < self._q_target.shape[0]:

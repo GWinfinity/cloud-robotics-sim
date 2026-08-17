@@ -43,6 +43,41 @@ logger = logging.getLogger(__name__)
 __all__ = ["ObjectInstance", "RoboTwinObjectLibrary", "normalize_scale"]
 
 
+def _resolve_robotwin_material(class_name: str) -> Any | None:
+    """Resolve a RoboTwin class name to a Genesis Rigid material via robomat.
+
+    Returns ``None`` if robomat is unavailable or no mapping is found, allowing
+    the caller to fall back to Genesis defaults.
+    """
+    try:
+        import robomat as rm
+        from robomat.adapters.genesis import to_genesis
+    except ImportError:
+        logger.debug("robomat not installed; using default Genesis material")
+        return None
+
+    try:
+        result = rm.resolve(class_name)
+    except Exception:  # noqa: BLE001 - mapping failure is non-fatal
+        logger.debug("robomat could not resolve %s; using default material", class_name)
+        return None
+
+    material = result.get("material")
+    if material is None:
+        return None
+
+    try:
+        return to_genesis(material, solver="rigid")
+    except Exception as exc:  # noqa: BLE001 - adapter failure is non-fatal
+        logger.debug(
+            "robomat adapter failed for %s (%s): %s; using default material",
+            class_name,
+            material.id,
+            exc,
+        )
+        return None
+
+
 def normalize_scale(
     raw_height: float,
     scale: tuple[float, float, float],
@@ -60,7 +95,7 @@ def normalize_scale(
     height = raw_height * scale[1]
     if raw_height <= 0 or height <= max_height:
         return scale
-    factor = target_height / raw_height
+    factor = target_height / height
     return (scale[0] * factor, scale[1] * factor, scale[2] * factor)
 
 
@@ -262,6 +297,7 @@ class RoboTwinObjectLibrary:
                     pos=pos,
                     scale=urdf_scale,
                     fixed=False,
+                    material=_resolve_robotwin_material(class_name),
                 ),
                 surface=gs.surfaces.Default(roughness=0.6),
             )
@@ -286,7 +322,10 @@ class RoboTwinObjectLibrary:
         if quat is not None:
             kwargs["quat"] = quat
         entity = scene.add_entity(
-            gs.morphs.Mesh(**kwargs),
+            gs.morphs.Mesh(
+                **kwargs,
+                material=_resolve_robotwin_material(class_name),
+            ),
             surface=gs.surfaces.Default(roughness=0.6),
         )
         return entity

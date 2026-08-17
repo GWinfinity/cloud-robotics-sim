@@ -246,13 +246,16 @@ def download_component(
 
 
 def _download_file(url: str, dest: Path) -> None:
-    """Stream ``url`` to ``dest`` via a ``.part`` file (atomic on success)."""
-    part = dest.with_suffix(dest.suffix + ".part")
+    """Stream ``url`` to ``dest`` via a temp file (atomic on success)."""
+    import tempfile
+
+    tmp_fd, tmp_path = tempfile.mkstemp(suffix=".part", dir=str(dest.parent))
+    tmp = Path(tmp_path)
     try:
         with urllib.request.urlopen(url, timeout=60) as response:
             total = int(response.headers.get("Content-Length") or 0)
             received = 0
-            with part.open("wb") as fh:
+            with os.fdopen(tmp_fd, "wb") as fh:
                 while True:
                     chunk = response.read(_CHUNK_SIZE)
                     if not chunk:
@@ -265,9 +268,9 @@ def _download_file(url: str, dest: Path) -> None:
             raise RuntimeError(
                 f"incomplete download: {dest} ({received}/{total} bytes)"
             )
-        part.replace(dest)
+        tmp.replace(dest)
     except Exception:
-        part.unlink(missing_ok=True)
+        tmp.unlink(missing_ok=True)
         raise
 
 
@@ -312,8 +315,11 @@ def _extract_zip(archive_path: Path, target_dir: Path) -> None:
                 or name.endswith(".DS_Store")
             ):
                 continue
+            # Reject symlink entries (external_attr bit 0xA0000000).
+            if info.external_attr >> 28 == 0xA:
+                raise RuntimeError(f"symlink entry not allowed: {name!r}")
             dest = (target_dir / name).resolve()
-            if not str(dest).startswith(str(target_resolved)):
+            if not dest.is_relative_to(target_resolved):
                 raise RuntimeError(f"unsafe zip entry: {name!r}")
             zf.extract(info, target_dir)
 

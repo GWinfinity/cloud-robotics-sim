@@ -63,6 +63,28 @@ uv run python tools/convert_assets.py assets/robotwin/objects/objects assets_gen
 uv run python examples/genesis_aloha_demo.py --out outputs/genesis_aloha_demo
 ```
 
+## Automatic Material Assignment
+
+Physical materials are resolved automatically through
+[`robomat`](https://github.com/robomat/robomat) in two places:
+
+1. **RoboTwin objects**: `RoboTwinObjectLibrary.spawn_in_scene()` maps the
+   class name (e.g. `021_cup`, `077_phone`) to a material and passes
+   `gs.materials.Rigid(rho=..., friction=...)` to the Genesis URDF/Mesh morph.
+2. **Generic mesh spawns**: `ObjectSpawn(shape_type="mesh", material="...")`
+   forwards the `material` hint to `GenesisBackend.create_mesh()`, which also
+   resolves it through robomat.
+
+In both cases the render surface stays unchanged and missing/unmapped
+materials fall back to the Genesis default without error.
+
+To inspect the mapping for a class:
+
+```bash
+# from the robomat repo
+robomat map 077_phone --composite
+```
+
 ## Example
 
 See `examples/robotwin_replay.py` and the full guide in

@@ -146,9 +146,13 @@ def genesis_init(
 
                 _enum = _imported_enum
             except Exception:
+                logger.debug(
+                    "_inject_backend_names: genesis.constants.backend not importable"
+                )
                 return
         _members = getattr(_enum, "__members__", {})
         if not _members:
+            logger.debug("_inject_backend_names: no members found in backend enum")
             return
         for _name, _member in _members.items():
             if not hasattr(_mod, _name):
@@ -229,15 +233,25 @@ def genesis_init(
         # Some genesis-world installs crash inside gs.init() because the ``gs``
         # global it references lacks the backend attributes (cpu/gpu/...).
         # Re-inject the names and retry with auto-detection.
-        if any(
-            name in str(exc).lower()
-            for name in ("cpu", "gpu", "cuda", "metal", "amdgpu")
+        if (
+            any(
+                name in str(exc).lower()
+                for name in ("cpu", "gpu", "cuda", "metal", "amdgpu")
+            )
+            and "has no attribute" in str(exc).lower()
         ):
             logger.debug(
                 "gs.init backend attribute missing; re-injecting and auto-detecting"
             )
             _inject_backend_names(sys.modules.get("genesis") or gs)
-            gs.init(**kwargs)
+            try:
+                gs.init(backend=backend, **kwargs)
+            except Exception:
+                logger.debug(
+                    "Retry gs.init(backend=%s) after injection also failed; trying auto-detect",
+                    backend,
+                )
+                gs.init(**kwargs)
             return
         raise
     except gs.GenesisException:

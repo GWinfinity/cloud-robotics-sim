@@ -53,6 +53,7 @@ from cloud_robotics_sim.robotwin.suction_grasp import (  # noqa: E402
     follow_path,
     goto_joints,
 )
+from cloud_robotics_sim.utils.genesis_compat import genesis_init  # noqa: E402
 
 logger = logging.getLogger("grasp_all")
 
@@ -576,7 +577,7 @@ def run_single_scene(args: argparse.Namespace) -> None:
 
     import genesis as gs
 
-    gs.init(backend=gs.gpu, logging_level="warning")
+    genesis_init(backend="cuda", logging_level="warning")
     scene = gs.Scene(show_viewer=False)
     scene.add_entity(gs.morphs.Plane())
     scene.add_entity(
@@ -618,6 +619,13 @@ def run_single_scene(args: argparse.Namespace) -> None:
     t0 = time.time()
     scene.build()
     logger.info("scene built in %.1f s", time.time() - t0)
+
+    link_names = [link.name for link in robot.links]
+    if EE_LINK not in link_names:
+        raise RuntimeError(
+            f"EE_LINK {EE_LINK!r} not found after scene.build(); "
+            f"links_to_keep may have failed. Available: {link_names}"
+        )
 
     # Restore the MJCF's actuator gains / joint dynamics (URDF carries none).
     dofs7 = list(range(7))

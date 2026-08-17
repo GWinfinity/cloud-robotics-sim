@@ -40,5 +40,5 @@ try:
     from cloud_robotics_sim.core.plugin_manager import get_plugin_manager
 
     _pm = get_plugin_manager()
-except Exception:
+except ImportError:
     pass

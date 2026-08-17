@@ -56,7 +56,8 @@ class JouleHeatingSolver(Solver):
         self._ny = int(options.resolution[1])
         self._nz = int(options.resolution[2]) if self._dim == 3 else 1
         self._dx = float(options.dx)
-        self._sigma_scalar = float(options.sigma)
+        self._sigma_value = options.sigma
+        self._sigma_scalar = float(np.asarray(options.sigma).flat[0])
         self._rho = float(options.rho)
         self._cp = float(options.cp)
         self._k = float(options.k)
@@ -375,6 +376,11 @@ class JouleHeatingSolver(Solver):
                     self._apply_q_to_thermal_2d(f)
                 else:
                     self._apply_q_to_thermal_3d(f)
+            elif self._T is not None:
+                if self._dim == 2:
+                    self._heat_step_2d(f)
+                else:
+                    self._heat_step_3d(f)
         elif self._T is not None:
             if self._dim == 2:
                 self._heat_step_2d(f)
@@ -544,13 +550,22 @@ class JouleHeatingSolver(Solver):
                 ip = i + 1 if i < self._nx - 1 else i
                 jm = j - 1 if j > 0 else j
                 jp = j + 1 if j < self._ny - 1 else j
-                # Arithmetic average of conductivities on each axis.
-                sigma_x = (self._sigma[i_b, ip, j] + self._sigma[i_b, im, j]) / 2.0
-                sigma_y = (self._sigma[i_b, i, jp] + self._sigma[i_b, i, jm]) / 2.0
-                denom = 2.0 * (sigma_x + sigma_y) + 1e-10
+                # Face conductivities via harmonic mean of adjacent cells.
+                s_c = self._sigma[i_b, i, j]
+                s_ip = self._sigma[i_b, ip, j]
+                s_im = self._sigma[i_b, im, j]
+                s_jp = self._sigma[i_b, i, jp]
+                s_jm = self._sigma[i_b, i, jm]
+                sigma_x = 2.0 * s_c * s_ip / (s_c + s_ip + 1e-10)
+                sigma_xm = 2.0 * s_c * s_im / (s_c + s_im + 1e-10)
+                sigma_y = 2.0 * s_c * s_jp / (s_c + s_jp + 1e-10)
+                sigma_ym = 2.0 * s_c * s_jm / (s_c + s_jm + 1e-10)
+                denom = sigma_x + sigma_xm + sigma_y + sigma_ym + 1e-10
                 self._V_tmp[i_b, i, j] = (
-                    sigma_x * (self._V_tmp[i_b, ip, j] + self._V_tmp[i_b, im, j])
-                    + sigma_y * (self._V_tmp[i_b, i, jp] + self._V_tmp[i_b, i, jm])
+                    sigma_x * self._V_tmp[i_b, ip, j]
+                    + sigma_xm * self._V_tmp[i_b, im, j]
+                    + sigma_y * self._V_tmp[i_b, i, jp]
+                    + sigma_ym * self._V_tmp[i_b, i, jm]
                 ) / denom
 
     @qd.kernel
@@ -565,22 +580,30 @@ class JouleHeatingSolver(Solver):
                 jp = j + 1 if j < self._ny - 1 else j
                 km = k - 1 if k > 0 else k
                 kp = k + 1 if k < self._nz - 1 else k
-                sigma_x = (
-                    self._sigma[i_b, ip, j, k] + self._sigma[i_b, im, j, k]
-                ) / 2.0
-                sigma_y = (
-                    self._sigma[i_b, i, jp, k] + self._sigma[i_b, i, jm, k]
-                ) / 2.0
-                sigma_z = (
-                    self._sigma[i_b, i, j, kp] + self._sigma[i_b, i, j, km]
-                ) / 2.0
-                denom = 2.0 * (sigma_x + sigma_y + sigma_z) + 1e-10
+                # Face conductivities via harmonic mean of adjacent cells.
+                s_c = self._sigma[i_b, i, j, k]
+                s_ip = self._sigma[i_b, ip, j, k]
+                s_im = self._sigma[i_b, im, j, k]
+                s_jp = self._sigma[i_b, i, jp, k]
+                s_jm = self._sigma[i_b, i, jm, k]
+                s_kp = self._sigma[i_b, i, j, kp]
+                s_km = self._sigma[i_b, i, j, km]
+                sigma_x = 2.0 * s_c * s_ip / (s_c + s_ip + 1e-10)
+                sigma_xm = 2.0 * s_c * s_im / (s_c + s_im + 1e-10)
+                sigma_y = 2.0 * s_c * s_jp / (s_c + s_jp + 1e-10)
+                sigma_ym = 2.0 * s_c * s_jm / (s_c + s_jm + 1e-10)
+                sigma_z = 2.0 * s_c * s_kp / (s_c + s_kp + 1e-10)
+                sigma_zm = 2.0 * s_c * s_km / (s_c + s_km + 1e-10)
+                denom = (
+                    sigma_x + sigma_xm + sigma_y + sigma_ym + sigma_z + sigma_zm + 1e-10
+                )
                 self._V_tmp[i_b, i, j, k] = (
-                    sigma_x * (self._V_tmp[i_b, ip, j, k] + self._V_tmp[i_b, im, j, k])
-                    + sigma_y
-                    * (self._V_tmp[i_b, i, jp, k] + self._V_tmp[i_b, i, jm, k])
-                    + sigma_z
-                    * (self._V_tmp[i_b, i, j, kp] + self._V_tmp[i_b, i, j, km])
+                    sigma_x * self._V_tmp[i_b, ip, j, k]
+                    + sigma_xm * self._V_tmp[i_b, im, j, k]
+                    + sigma_y * self._V_tmp[i_b, i, jp, k]
+                    + sigma_ym * self._V_tmp[i_b, i, jm, k]
+                    + sigma_z * self._V_tmp[i_b, i, j, kp]
+                    + sigma_zm * self._V_tmp[i_b, i, j, km]
                 ) / denom
 
     @qd.kernel

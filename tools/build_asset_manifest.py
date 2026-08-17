@@ -188,6 +188,14 @@ def build_manifest(objects_dir: str | Path) -> dict:
                 for i in c["instance_records"]
                 if i["license"] == UNREGISTERED
             ),
+            "disallowed_instances": sum(
+                1
+                for c in classes
+                for i in c["instance_records"]
+                if i["imported"]
+                and i["license"] != UNREGISTERED
+                and i["license"] not in ALLOWED_LICENSES
+            ),
         },
         "warnings": warnings,
         "classes": classes,
@@ -235,6 +243,11 @@ def main(argv: list[str] | None = None) -> int:
         logger.warning("%s", warning)
     if args.check and totals["unregistered_instances"]:
         logger.error("license gate failed: unregistered imported assets present")
+        return 1
+    if args.check and totals["disallowed_instances"]:
+        logger.error(
+            "license gate failed: imported assets with non-allowlist licenses present"
+        )
         return 1
     return 0
 

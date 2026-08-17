@@ -151,7 +151,34 @@ class TestObjectSpawn:
             color=(0.8, 0.8, 0.8, 1.0),
             static=True,
             friction=0.5,
+            material="default",
             name="mesh_obj",
+        )
+
+    def test_spawn_mesh_with_material_hint(self):
+        """Test ObjectSpawn.spawn forwards material hint for mesh shape."""
+        scene_backend = _make_mock_scene_backend()
+        entity = MagicMock()
+        scene_backend.backend.create_mesh.return_value = entity
+
+        spawn = ObjectSpawn(
+            name="wood_chair",
+            shape_type="mesh",
+            mesh_path="path/to/chair.obj",
+            material="wood",
+        )
+        spawn.spawn(scene_backend)
+
+        scene_backend.backend.create_mesh.assert_called_once_with(
+            file="path/to/chair.obj",
+            pos=(0.0, 0.0, 0.0),
+            quat=(1.0, 0.0, 0.0, 0.0),
+            scale=(1.0, 1.0, 1.0),
+            color=(0.8, 0.8, 0.8, 1.0),
+            static=True,
+            friction=0.5,
+            material="wood",
+            name="wood_chair",
         )
 
     def test_spawn_unsupported_shape(self):

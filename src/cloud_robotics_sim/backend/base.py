@@ -98,7 +98,7 @@ class ArticulationBackend(EntityBackend):
         ...
 
     @abstractmethod
-    def set_qpos(self, qpos: np.ndarray) -> None:
+    def set_qpos(self, qpos: np.ndarray, **kwargs: Any) -> None:
         """Set generalized positions."""
         ...
 
@@ -118,6 +118,7 @@ class ArticulationBackend(EntityBackend):
         targets: np.ndarray,
         stiffness: np.ndarray | None = None,
         damping: np.ndarray | None = None,
+        **kwargs: Any,
     ) -> None:
         """Set joint position targets for internal PD controllers."""
         ...
@@ -561,7 +562,7 @@ class SimulatorBackend(ABC):
         self,
         *,
         headless: bool = True,
-        device: str = "musa",
+        device: str = "auto",
         **kwargs: Any,
     ) -> None:
         """Initialize the underlying physics engine and compute runtime."""
@@ -655,6 +656,7 @@ class SimulatorBackend(ABC):
         color: tuple[float, float, float, float] | None = None,
         static: bool = True,
         friction: float = 0.5,
+        material: str | None = None,
         name: str | None = None,
     ) -> EntityBackend: ...
 

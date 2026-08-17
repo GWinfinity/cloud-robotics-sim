@@ -1,0 +1,25 @@
+name: thermal
+version: 0.1.0
+description: Grid-based thermal conduction solver plugin for genesis-world 1.3.2
+
+category: solvers
+source_project: genesis-cloud-sim
+
+author:
+  name: Genesis Cloud Sim Team
+  email: team@example.com
+
+dependencies:
+  - numpy>=1.20
+  - genesis-world>=1.3.0
+
+exports:
+  - ThermalSolver
+  - ThermalOptions
+  - install
+
+tags:
+  - solver
+  - thermal
+  - heat-conduction
+  - multiphysics

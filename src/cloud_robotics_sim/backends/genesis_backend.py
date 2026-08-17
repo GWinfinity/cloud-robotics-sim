@@ -33,6 +33,7 @@ from cloud_robotics_sim.backend.types import (
     ViewerOptions,
 )
 from cloud_robotics_sim.utils.genesis_compat import ensure_genesis_initialized
+from cloud_robotics_sim.utils.robomat_compat import resolve_genesis_rigid_material
 
 logger = logging.getLogger(__name__)
 
@@ -161,6 +162,7 @@ class GenesisArticulationBackend(GenesisEntityBackend, ArticulationBackend):
         qpos: np.ndarray,
         *,
         qs_idx_local: list[int] | None = None,
+        **kwargs: Any,
     ) -> None:
         entity = self._resolve_entity()
         qpos_arr = np.asarray(qpos, dtype=np.float64)
@@ -183,16 +185,17 @@ class GenesisArticulationBackend(GenesisEntityBackend, ArticulationBackend):
         stiffness: np.ndarray | None = None,
         damping: np.ndarray | None = None,
         dofs_idx_local: list[int] | None = None,
+        **kwargs: Any,
     ) -> None:
         entity = self._resolve_entity()
-        kwargs: dict[str, Any] = {}
+        forward_kwargs: dict[str, Any] = {}
         if stiffness is not None:
-            kwargs["stiffness"] = np.asarray(stiffness)
+            forward_kwargs["stiffness"] = np.asarray(stiffness)
         if damping is not None:
-            kwargs["damping"] = np.asarray(damping)
+            forward_kwargs["damping"] = np.asarray(damping)
         if dofs_idx_local is not None:
-            kwargs["dofs_idx_local"] = dofs_idx_local
-        entity.control_dofs_position(np.asarray(targets), **kwargs)
+            forward_kwargs["dofs_idx_local"] = dofs_idx_local
+        entity.control_dofs_position(np.asarray(targets), **forward_kwargs)
 
     def control_dofs_velocity(self, targets: np.ndarray) -> None:
         entity = self._resolve_entity()
@@ -653,7 +656,17 @@ def _lookat_to_matrix(
     forward = forward / norm if norm > 1e-9 else np.array([1.0, 0.0, 0.0])
     left = np.cross(up, forward)
     left_norm = np.linalg.norm(left)
-    left = left / left_norm if left_norm > 1e-9 else np.array([0.0, 1.0, 0.0])
+    if left_norm < 1e-9:
+        # forward is parallel to up; pick an arbitrary perpendicular vector.
+        alt = (
+            np.array([1.0, 0.0, 0.0])
+            if abs(forward[0]) < 0.9
+            else np.array([0.0, 1.0, 0.0])
+        )
+        left = np.cross(forward, alt)
+        left /= np.linalg.norm(left)
+    else:
+        left /= left_norm
     true_up = np.cross(forward, left)
     mat = np.eye(4, dtype=np.float64)
     mat[:3, 0] = forward
@@ -1024,14 +1037,19 @@ class GenesisBackend(SimulatorBackend):
         color: tuple[float, float, float, float] | None = None,
         static: bool = True,
         friction: float = 0.5,
+        material: str | None = None,
         name: str | None = None,
     ) -> EntityBackend:
         _require_genesis()
+
         kwargs: dict[str, Any] = {"file": file, "pos": pos, "fixed": static}
         if quat is not None:
             kwargs["quat"] = quat
         if scale is not None:
             kwargs["scale"] = scale
+        resolved = resolve_genesis_rigid_material(material)
+        if resolved is not None:
+            kwargs["material"] = resolved
         morph = gs.morphs.Mesh(**kwargs)
         surface = gs.surfaces.Default(color=color, roughness=0.8) if color else None
         return GenesisEntityBackend(morph, surface, name=name)

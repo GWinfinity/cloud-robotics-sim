@@ -82,9 +82,9 @@ WORKDIR /workspace
 # China). Set PYTORCH_INDEX_URL to pin an explicit wheel index.
 COPY tools/install_torch.py /tmp/install_torch.py
 RUN python /tmp/install_torch.py \
-    --backend ${TORCH_BACKEND} \
-    --mirror ${CHINA_MIRROR} \
-    ${PYTORCH_INDEX_URL:+--index-url ${PYTORCH_INDEX_URL}}
+    --backend "${TORCH_BACKEND}" \
+    --mirror "${CHINA_MIRROR}" \
+    ${PYTORCH_INDEX_URL:+--index-url "${PYTORCH_INDEX_URL}"}
 
 # Copy the project and install it in editable mode with dev dependencies
 COPY --chown=${USERNAME}:${USERNAME} . /workspace

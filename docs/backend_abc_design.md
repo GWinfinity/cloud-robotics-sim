@@ -186,6 +186,8 @@ class SimulatorBackend(ABC):
         quat: tuple[float, float, float, float] | None = None,
         scale: tuple[float, float, float] | None = None,
         static: bool = True,
+        friction: float = 0.5,
+        material: str | None = None,
         name: str | None = None,
     ) -> EntityBackend: ...
 

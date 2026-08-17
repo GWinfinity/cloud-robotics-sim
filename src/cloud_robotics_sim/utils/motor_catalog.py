@@ -8,6 +8,7 @@ JouleHeatingSolver or thermal analysis).
 
 from __future__ import annotations
 
+import functools
 from pathlib import Path
 from typing import Any
 
@@ -16,10 +17,12 @@ import yaml
 _CATALOG_PATH = Path(__file__).resolve().parents[1] / "data" / "robot_motors.yaml"
 
 
+@functools.lru_cache(maxsize=1)
 def _load_catalog() -> dict[str, Any]:
-    """Load the motor catalog YAML file."""
+    """Load the motor catalog YAML file (cached)."""
     with open(_CATALOG_PATH, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        catalog: dict[str, Any] = yaml.safe_load(f)
+        return catalog
 
 
 def get_catalog() -> dict[str, Any]:
@@ -140,7 +143,8 @@ def estimate_resistance_from_motor(
 
     The catalog stores voltage/current/power ranges, not exact resistances.
     This helper returns a rough resistance estimate using
-    ``R ≈ P / I²`` when both bounds are available.
+    ``R ≈ (V*I - P_mech) / I²`` (copper loss model) when voltage data is
+    available, falling back to ``R ≈ P / I²`` otherwise.
 
     Parameters
     ----------
@@ -161,6 +165,7 @@ def estimate_resistance_from_motor(
     entry = get_motor(name)
     power_range = entry.get("power_w", [1.0, 1.0])
     current_range = entry.get("current_a", [1.0, 1.0])
+    voltage_range = entry.get("voltage_v")
 
     power = operating_power_w if operating_power_w is not None else _mid(power_range)
     current = (
@@ -168,6 +173,10 @@ def estimate_resistance_from_motor(
     )
     if current == 0:
         raise ValueError("Cannot estimate resistance with zero current")
+    if voltage_range:
+        voltage = _mid(voltage_range)
+        p_copper = max(voltage * current - power, 0.0)
+        return p_copper / (current**2)
     return power / (current**2)
 
 

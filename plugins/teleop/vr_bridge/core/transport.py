@@ -182,6 +182,7 @@ class TransportServer:
                 while b"\n" in buffer:
                     line, buffer = buffer.split(b"\n", 1)
                     if len(line) > MAX_LINE:
+                        buffer = b""
                         break
                     self._handle_control_line(line.strip(), conn)
         finally:
