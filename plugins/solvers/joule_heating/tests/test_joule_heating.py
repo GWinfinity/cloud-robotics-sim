@@ -329,3 +329,68 @@ class TestJouleHeatingSolver:
         assert not np.allclose(grad_np, 0.0)
         # The region with higher conductivity should carry a different gradient.
         assert not np.allclose(grad_np[0, 4:12, 2:6], grad_np[0, 0, 0])
+
+    def test_gradient_flows_through_thermal_coupling(self):
+        """Gradients propagate from thermal _T back to Joule _sigma via coupling."""
+        from plugins.solvers.thermal import install as install_thermal
+        from plugins.solvers.thermal import ThermalOptions
+
+        scene = gs.Scene(
+            sim_options=gs.options.SimOptions(dt=0.001, substeps=1, requires_grad=True),
+            show_viewer=False,
+        )
+        scene.add_entity(gs.morphs.Plane())
+        thermal = install_thermal(
+            scene,
+            ThermalOptions(
+                resolution=(16, 4),
+                dx=1.0,
+                alpha=1e-4,
+                boundary_mode="neumann",
+                initial_temperature=300.0,
+            ),
+        )
+        joule = install(
+            scene,
+            JouleHeatingOptions(
+                resolution=(16, 4),
+                dx=1.0,
+                sigma=1.0,
+                rho=1.0,
+                cp=1.0,
+                k=1.0,
+                max_iter=500,
+                tol=1e-7,
+                couple_to_thermal=True,
+            ),
+        )
+        scene.build()
+
+        # Non-uniform conductivity so gradients have somewhere to go.
+        sigma = np.ones((16, 4), dtype=float)
+        sigma[4:12, 1:3] = 2.0
+        joule.set_conductivity(sigma)
+
+        joule.set_voltage_boundary("x_min", 10.0)
+        joule.set_voltage_boundary("x_max", 0.0)
+
+        scene.step()
+
+        # Seed the loss gradient into the thermal field at substep 1 and pull it
+        # back through the Joule -> Thermal coupling into Joule _Q, then through
+        # the electric solve into _sigma.
+        thermal_t = thermal._T
+        assert thermal_t is not None and thermal_t.grad is not None
+        t_grad = thermal_t.grad.to_numpy()
+        t_grad.fill(0.0)
+        t_grad[1] = 1.0
+        thermal_t.grad.from_numpy(t_grad)
+
+        joule.reset_grad()
+        joule.substep_pre_coupling_grad(0)
+
+        sigma_grad = joule._sigma.grad
+        assert sigma_grad is not None
+        grad_np = sigma_grad.to_numpy()
+        assert not np.allclose(grad_np, 0.0)
+        assert not np.allclose(grad_np[0, 4:12, 1:3], grad_np[0, 0, 0])

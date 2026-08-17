@@ -390,8 +390,15 @@ class JouleHeatingSolver(Solver):
                 self._heat_step_3d(f)
 
     def substep_pre_coupling_grad(self, f: int) -> None:
-        # Back-propagate through internal thermal step or thermal injection.
-        if not self._couple_to_thermal and self._T is not None:
+        # Back-propagate through internal thermal step or cross-solver injection.
+        if self._couple_to_thermal:
+            thermal = getattr(self._sim, "thermal_solver", None)
+            if thermal is not None and thermal._T is not None:
+                if self._dim == 2:
+                    self._apply_q_to_thermal_2d.grad(f)
+                else:
+                    self._apply_q_to_thermal_3d.grad(f)
+        elif self._T is not None:
             if self._dim == 2:
                 self._heat_step_2d.grad(f)
             else:
