@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable
 
 import numpy as np
@@ -30,6 +31,10 @@ class VecEnvConfig:
     num_scenes_per_env: int = 1
     max_parallel: int = 32
     use_cuda: bool = True
+    # Cache cleanup / dataset pipeline hand-off.
+    cache_dir: str | Path = "outputs/sim_cache"
+    dataset_pipeline: bool = False
+    dataset_pipeline_dir: str | Path = "outputs/dataset_pipeline/staging"
 
 
 class VectorizedEnvironment:
@@ -154,8 +159,19 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
         return obs, rewards, terminated, truncated, infos
 
     def close(self) -> None:
-        """Clean up Genesis resources."""
-        # Genesis cleanup would go here
+        """Clean up Genesis resources.
+
+        If a downstream dataset pipeline is enabled, the simulation cache is
+        staged for later processing.  Otherwise the cache is deleted and the
+        Genesis runtime is released.
+        """
+        from cloud_robotics_sim.utils.cache_cleanup import cleanup_after_simulation
+
+        cleanup_after_simulation(
+            cache_dir=self.config.cache_dir,
+            pipeline_dir=self.config.dataset_pipeline_dir,
+            dataset_pipeline=self.config.dataset_pipeline,
+        )
         logger.info("Vectorized environment closed")
 
 

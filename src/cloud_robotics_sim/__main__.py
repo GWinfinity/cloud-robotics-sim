@@ -78,6 +78,18 @@ def test_command(args: argparse.Namespace) -> int:
     return result.returncode
 
 
+def clean_cache_command(args: argparse.Namespace) -> int:
+    """Clean Genesis simulation cache or stage it for the dataset pipeline."""
+    from cloud_robotics_sim.utils.cache_cleanup import cleanup_after_simulation
+
+    cleanup_after_simulation(
+        cache_dir=args.cache_dir,
+        pipeline_dir=args.pipeline_dir,
+        dataset_pipeline=args.dataset_pipeline,
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -90,6 +102,7 @@ Examples:
   %(prog)s eval --checkpoint checkpoints/latest.pt
   %(prog)s agent --goal "pick up the red cube"
   %(prog)s test
+  %(prog)s clean-cache
         """,
     )
 
@@ -157,6 +170,27 @@ Examples:
         help="Run the test suite",
     )
     test_parser.set_defaults(func=test_command)
+
+    # Clean-cache command
+    clean_parser = subparsers.add_parser(
+        "clean-cache",
+        help="Clean Genesis simulation cache or stage it for the dataset pipeline",
+    )
+    clean_parser.add_argument(
+        "--cache-dir",
+        help="Simulation cache directory (env: CRS_SIM_CACHE_DIR)",
+    )
+    clean_parser.add_argument(
+        "--pipeline-dir",
+        help="Dataset pipeline staging directory (env: CRS_DATASET_PIPELINE_DIR)",
+    )
+    clean_parser.add_argument(
+        "--dataset-pipeline",
+        action="store_true",
+        default=None,
+        help="Stage cache for downstream dataset pipeline instead of deleting it",
+    )
+    clean_parser.set_defaults(func=clean_cache_command)
 
     args = parser.parse_args(argv)
 

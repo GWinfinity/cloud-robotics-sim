@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
 
 import numpy as np
@@ -52,6 +53,10 @@ class ComposerConfig:
     sph_options: Any | None = None
     mpm_options: Any | None = None
     sf_options: Any | None = None
+    # Cache cleanup / dataset pipeline hand-off.
+    cache_dir: str | Path = "outputs/sim_cache"
+    dataset_pipeline: bool = False
+    dataset_pipeline_dir: str | Path = "outputs/dataset_pipeline/staging"
 
 
 class ComposedEnvironment:
@@ -84,6 +89,7 @@ class ComposedEnvironment:
         self.step_count: int = 0
         self.episode_reward: float = 0.0
         self._rng: np.random.Generator = np.random.default_rng(0)
+        self._composer_config: ComposerConfig | None = None
 
         # Callbacks for extensibility
         self.on_reset: Callable | None = None
@@ -202,8 +208,16 @@ class ComposedEnvironment:
         return None
 
     def close(self) -> None:
-        """Clean up resources."""
-        pass
+        """Clean up resources.
+
+        If a downstream dataset pipeline is enabled, the simulation cache is
+        staged for later processing.  Otherwise the cache is deleted and the
+        Genesis runtime is released.
+        """
+        from cloud_robotics_sim.utils.cache_cleanup import cleanup_after_simulation
+
+        config = getattr(self, "_composer_config", None)
+        cleanup_after_simulation(config=config)
 
     @property
     def observation_space(self) -> dict:
@@ -316,6 +330,7 @@ class EnvironmentComposer:
             task=task,
             scene_backend=scene_backend,
         )
+        env._composer_config = self.config
 
         logger.info("Environment composition complete")
         return env
