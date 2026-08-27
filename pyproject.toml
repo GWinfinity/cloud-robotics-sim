@@ -171,6 +171,12 @@ module = ["zarr.*", "tifffile.*"]
 follow_imports = "skip"
 ignore_missing_imports = true
 
+# The Meshy T2 reproduction is torch-heavy: torch/trimesh/scipy stubs return
+# Any for many ops, which would force noisy casts on every return statement.
+[[tool.mypy.overrides]]
+module = ["cloud_robotics_sim.meshy_t2", "cloud_robotics_sim.meshy_t2.*"]
+warn_return_any = false
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q --strict-markers"

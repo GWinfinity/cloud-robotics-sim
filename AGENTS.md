@@ -44,3 +44,7 @@ CI treats all of these as blocking.
 - `plugins/envs/sky/core/genesis/` is a vendored old Genesis 0.3.11 copy. Do not import it from core code.
 - Keep `uv.lock` in sync with `pyproject.toml` by running `uv lock` after dependency changes.
 - Genesis simulation cache cleanup is handled by `cloud_robotics_sim.utils.cache_cleanup`. Set `CRS_DATASET_PIPELINE=true` to stage cache into `outputs/dataset_pipeline/staging` for a downstream dataset pipeline; otherwise `env.close()` / `cloud-robotics-sim clean-cache` deletes `outputs/sim_cache` and releases Genesis runtime resources. Override paths with `CRS_SIM_CACHE_DIR` and `CRS_DATASET_PIPELINE_DIR`.
+
+## Meshy T2 Module
+
+`src/cloud_robotics_sim/meshy_t2/` is a pure-PyTorch reproduction of the Meshy T2 paper (arXiv:2607.28675; official code unreleased): vertex-set Mesh VAE (spacetime edge logits + halfedge successor faces with NULL extension + Sinkhorn), Voxel VAE, and a two-stage Rectified-Flow cascade (voxel scaffold flow -> per-vertex latent flow with Sobol-OT 3D RoPE positions, existence channel and vertex-count conditioning). It is torch/trimesh/scipy-only (no Genesis import). Model defaults match the paper; `*.tiny()` configs run on CPU. Train with `python -m cloud_robotics_sim.meshy_t2 train {voxel-vae,mesh-vae,voxel-flow,mesh-flow} --tiny`, generate with `... generate image.png --num-faces 4000`; tests live in `tests/meshy_t2/`. mypy `warn_return_any` is disabled for this module in `pyproject.toml` (torch stubs return `Any` pervasively).
