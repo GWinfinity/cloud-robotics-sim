@@ -90,6 +90,51 @@ def clean_cache_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def patents_command(args: argparse.Namespace) -> int:
+    """Run or list classic patent simulations."""
+    from cloud_robotics_sim.patents import list_patents, run_patent_simulation
+
+    if args.list:
+        print("Registered patent simulations:")
+        for patent_id in list_patents():
+            print(f"  {patent_id}")
+        return 0
+
+    if args.run is None:
+        logger.error("Use --run PATENT_ID or --list")
+        return 1
+
+    parameters: dict = {}
+    if args.param:
+        for item in args.param:
+            key, value = item.split("=", 1)
+            try:
+                value = float(value)
+            except ValueError:
+                pass
+            parameters[key] = value
+
+    final_state = run_patent_simulation(
+        args.run,
+        headless=args.headless,
+        steps=args.steps,
+        dt=args.dt,
+        substeps=args.substeps,
+        resolution=tuple(args.resolution),
+        device=args.device,
+        seed=args.seed,
+        parameters=parameters,
+        record_path=args.record,
+        follow_entity=args.follow,
+    )
+
+    print(f"Final state for {args.run}:")
+    print(f"  time: {final_state.time:.2f}s")
+    print(f"  parameters: {final_state.parameters}")
+    print(f"  metrics: {final_state.metrics}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -103,6 +148,8 @@ Examples:
   %(prog)s agent --goal "pick up the red cube"
   %(prog)s test
   %(prog)s clean-cache
+  %(prog)s patents --list
+  %(prog)s patents --run US821393 --param thrust=0.8 --param wind_speed=5
         """,
     )
 
@@ -191,6 +238,77 @@ Examples:
         help="Stage cache for downstream dataset pipeline instead of deleting it",
     )
     clean_parser.set_defaults(func=clean_cache_command)
+
+    # Patents command
+    patents_parser = subparsers.add_parser(
+        "patents",
+        help="Run classic patent simulations in Genesis",
+    )
+    patents_parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List registered patent simulations",
+    )
+    patents_parser.add_argument(
+        "--run",
+        help="Patent ID to run (e.g. US821393)",
+    )
+    patents_parser.add_argument(
+        "--headless",
+        action="store_true",
+        default=True,
+        help="Run without the interactive viewer",
+    )
+    patents_parser.add_argument(
+        "--steps",
+        type=int,
+        default=500,
+        help="Number of control steps",
+    )
+    patents_parser.add_argument(
+        "--dt",
+        type=float,
+        default=0.01,
+        help="Physics timestep",
+    )
+    patents_parser.add_argument(
+        "--substeps",
+        type=int,
+        default=10,
+        help="Physics substeps per control step",
+    )
+    patents_parser.add_argument(
+        "--resolution",
+        type=int,
+        nargs=2,
+        default=[640, 480],
+        help="Camera resolution width height",
+    )
+    patents_parser.add_argument(
+        "--device",
+        default="cuda",
+        help="Genesis compute device (cuda or cpu)",
+    )
+    patents_parser.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="Random seed",
+    )
+    patents_parser.add_argument(
+        "--param",
+        action="append",
+        help="Parameter override in key=value format (repeatable)",
+    )
+    patents_parser.add_argument(
+        "--record",
+        help="Optional path to save an MP4 recording",
+    )
+    patents_parser.add_argument(
+        "--follow",
+        help="Entity name for the camera to follow (e.g. aircraft for US821393)",
+    )
+    patents_parser.set_defaults(func=patents_command)
 
     args = parser.parse_args(argv)
 

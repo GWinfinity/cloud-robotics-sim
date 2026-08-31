@@ -346,6 +346,90 @@ class ArticulationBackend(EntityBackend):
             f"{type(self).__name__} does not support set_com_shift"
         )
 
+    # ------------------------------------------------------------------
+    # Dynamics primitives for QP / whole-body control.
+    # ------------------------------------------------------------------
+
+    def get_mass_matrix(
+        self,
+        envs_idx: list[int] | None = None,
+    ) -> np.ndarray:
+        """Return the full joint-space mass matrix ``M(q)``.
+
+        Args:
+            envs_idx: Optional subset of parallel environments.
+
+        Returns:
+            Mass matrix of shape ``(n_dofs, n_dofs)`` for single-env backends,
+            or ``(len(envs_idx), n_dofs, n_dofs)`` for batched backends.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support get_mass_matrix"
+        )
+
+    def get_jacobian(
+        self,
+        link: str | int | Any,
+        local_point: np.ndarray | None = None,
+        envs_idx: list[int] | None = None,
+    ) -> np.ndarray:
+        """Return the spatial Jacobian of a link (or a point on the link).
+
+        Args:
+            link: Link name, link index, or link object.
+            local_point: Optional point in the link's local frame.
+            envs_idx: Optional subset of parallel environments.
+
+        Returns:
+            Jacobian of shape ``(6, n_dofs)`` (single-env) or
+            ``(len(envs_idx), 6, n_dofs)`` (batched). Rows are ordered
+            ``[translational; rotational]``.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support get_jacobian"
+        )
+
+    def get_contacts(
+        self,
+        with_entity: EntityBackend | str | None = None,
+        exclude_self_contact: bool = False,
+        envs_idx: list[int] | None = None,
+    ) -> dict[str, np.ndarray] | list[dict[str, np.ndarray]]:
+        """Return contact information from the most recent simulation step.
+
+        Args:
+            with_entity: Optional other entity/backend to filter contacts with.
+            exclude_self_contact: If True, exclude contacts within the same body.
+            envs_idx: Optional subset of parallel environments.
+
+        Returns:
+            Backend-specific contact dict(s). Expected keys include
+            ``position``, ``normal``, ``force_a``, ``force_b``, ``geom_a``,
+            ``geom_b``, ``link_a``, ``link_b``, ``penetration``.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support get_contacts"
+        )
+
+    def get_bias_force(
+        self,
+        envs_idx: list[int] | None = None,
+    ) -> np.ndarray:
+        """Return the generalized bias force ``C(q, qdot)`` (Coriolis + gravity).
+
+        This is the term that appears in the equations of motion
+        ``M(q) qddot + C(q, qdot) = tau + J^T f``.
+
+        Args:
+            envs_idx: Optional subset of parallel environments.
+
+        Returns:
+            Bias force of shape ``(n_dofs,)`` or ``(len(envs_idx), n_dofs)``.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support get_bias_force"
+        )
+
 
 class DeformableEntityBackend(EntityBackend):
     """Backend-agnostic interface for deformable entities.

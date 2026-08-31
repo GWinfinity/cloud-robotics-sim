@@ -49,6 +49,11 @@ class JouleHeatingOptions:
         If ``True`` and ``scene.sim.thermal_solver`` exists, the computed
         volumetric heat source ``Q`` is injected into the thermal solver instead
         of maintaining an internal temperature field.
+    solver_type : str
+        Electric-potential solver: ``"jacobi"`` (default) or ``"direct"``.
+        ``"direct"`` builds a sparse linear system and uses SciPy's direct
+        solver, which is much faster on CPU but is currently only supported
+        for single-environment scenes and forward-only mode.
     """
 
     dt: float | None = None
@@ -64,6 +69,7 @@ class JouleHeatingOptions:
     max_iter: int = 1000
     tol: float = 1e-6
     couple_to_thermal: bool = False
+    solver_type: str = "jacobi"
 
     def __post_init__(self) -> None:
         """Validate options."""
@@ -85,3 +91,7 @@ class JouleHeatingOptions:
             raise ValueError(f"max_iter must be positive, got {self.max_iter}")
         if self.tol <= 0:
             raise ValueError(f"tol must be positive, got {self.tol}")
+        if self.solver_type not in ("jacobi", "direct"):
+            raise ValueError(
+                f"solver_type must be 'jacobi' or 'direct', got {self.solver_type}"
+            )

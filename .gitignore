@@ -187,6 +187,9 @@ plugins/do_as_i_do/assets/robots/*.urdf
 # RoboTwin 2.0 assets (~4GB, downloaded from HuggingFace TianxingChen/RoboTwin2.0)
 assets/robotwin/
 assets_genesis/
+
+# Patent demo assets (downloaded scans, e.g. Smithsonian Wright Flyer STL)
+assets/patents/
 !plugins/do_as_i_do/assets/robots/.gitkeep
 
 # HiFi-UMI-2K downloaded shards (large parquet, fetch from HF)
@@ -195,3 +198,6 @@ data/hifiumi/
 # Business plan docs (keep local only)
 BUSINESS_PLAN_mt-embodied-sim*.md
 BUSINESS_PLAN_mt-embodied-sim*.pdf
+
+# Embedded clone of MuJoCo Menagerie (download via examples/download_github_dir.py)
+plugins/manipulation/dexterous_gnn_qp/assets/mujoco_menagerie/

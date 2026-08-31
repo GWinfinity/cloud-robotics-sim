@@ -1,0 +1,393 @@
+# 机器人 + 灵巧手国标目录
+# 用途：MHS 风格仿真设备库参考文件（reference file）的数据源。
+# 字段说明：
+#   id            - 标准号
+#   name          - 标准名称（中文）
+#   level         - national(国标 GB/GB/T) | industry(行业标准) | group(团体标准)
+#   status        - current(现行) | in_development(制定中)
+#   adopts        - 等同/修改采用的国际标准（可为空）
+#   scope         - 适用范围简述
+#   device_classes - 关联的仿真设备类
+#   simulatable_params - 可落地为仿真参数的内容（空列表表示仅作合规声明）
+#   mandatory     - 是否强制性国标
+#
+# 设备类枚举：robot_arm(机械臂) | dexterous_hand(灵巧手) | dual_arm(双臂系统)
+#   | mobile_manipulator(复合移动机器人) | humanoid(人形机器人) | all(通用)
+
+schema_version: "1.0"
+updated: "2026-08-31"
+source_note: >
+  所有标准条目经公开渠道核实（国家标准全文公开系统 openstd.samr.gov.cn、
+  全国标准信息公共服务平台、团体标准发布信息）。制定中项目以官方立项公告为准。
+
+# ---------------------------------------------------------------------------
+# 一、基础与安全类（机器人本体）
+# ---------------------------------------------------------------------------
+standards:
+
+  - id: "GB/T 12643-2013"
+    name: "机器人与机器人装备 词汇"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 8373"
+    scope: "机器人领域术语与定义"
+    device_classes: [all]
+    simulatable_params:
+      - "设备参考文件字段命名规范"
+
+  - id: "GB/T 39405-2020"
+    name: "机器人分类"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "机器人分类原则与类别"
+    device_classes: [all]
+    simulatable_params:
+      - "设备库设备类别划分"
+
+  - id: "GB 11291.1-2011"
+    name: "工业环境用机器人 安全要求 第1部分：机器人"
+    level: national
+    status: current
+    mandatory: true
+    adopts: "ISO 10218-1:2006"
+    scope: "工业机器人本体安全设计与制造要求"
+    device_classes: [robot_arm, dexterous_hand]
+    simulatable_params:
+      - "最大空间/限制空间/操作空间的区域划分"
+      - "使能装置、急停的功能要求"
+
+  - id: "GB 11291.2-2013"
+    name: "机器人与机器人装备 工业机器人的安全要求 第2部分：机器人系统与集成"
+    level: national
+    status: current
+    mandatory: true
+    adopts: "ISO 10218-2:2011"
+    scope: "机器人系统集成安全：防护区域、联锁、协作区域"
+    device_classes: [robot_arm, dexterous_hand, mobile_manipulator]
+    simulatable_params:
+      - "防护区域与协作区域建模"
+      - "安全联锁信号（门、光幕）→ 全局停机"
+
+  - id: "GB/T 38244-2019"
+    name: "机器人安全总则"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "机器人全生命周期安全的通用原则"
+    device_classes: [all]
+    simulatable_params: []
+
+  - id: "GB/T 16855.1-2018"
+    name: "机械安全 控制系统安全相关部件 第1部分：设计通则"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 13849-1:2015"
+    scope: "安全控制系统性能等级 PL a~e 分级与设计"
+    device_classes: [all]
+    simulatable_params:
+      - "安全回路 PL 等级作为可靠性评估维度"
+      - "故障注入：安全回路失效概率建模"
+
+  - id: "GB/T 5226.1-2019"
+    name: "机械电气安全 机械电气设备 第1部分：通用技术条件"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "IEC 60204-1"
+    scope: "机械电气设备通用安全技术要求"
+    device_classes: [all]
+    simulatable_params:
+      - "急停类别（0/1/2 类停止）"
+      - "使能装置（三位式）行为模型"
+
+  - id: "GB/T 23821-2022"
+    name: "机械安全 防止上下肢触及危险区的安全距离"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 13857"
+    scope: "上下肢触及危险区的安全距离要求"
+    device_classes: [robot_arm, dexterous_hand]
+    simulatable_params:
+      - "危险区几何与安全距离参数"
+      - "碰撞预警距离阈值"
+
+  - id: "GB/T 38642-2020"
+    name: "工业机器人生命周期风险评价方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "机器人设计/集成/使用/维护各阶段风险评价方法"
+    device_classes: [robot_arm, dexterous_hand]
+    simulatable_params:
+      - "故障注入场景库的设计方法论（危险源清单）"
+
+  - id: "GB/T 38326-2019"
+    name: "工业、科学和医疗机器人 电磁兼容 抗扰度试验"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "IEC 61326 系列相关"
+    scope: "机器人电磁兼容抗扰度要求与试验"
+    device_classes: [robot_arm, dexterous_hand]
+    simulatable_params:
+      - "故障注入：电磁干扰导致传感器异常"
+
+# ---------------------------------------------------------------------------
+# 二、协作与力控类（灵巧手最相关）
+# ---------------------------------------------------------------------------
+
+  - id: "GB/T 36008-2018"
+    name: "机器人与机器人装备 协作机器人"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO/TS 15066:2016"
+    scope: "协作机器人四种协作模式与人体生物力学限值"
+    device_classes: [robot_arm, dexterous_hand, dual_arm, humanoid]
+    simulatable_params:
+      - "四种协作模式：安全级监控停止/手动引导/速度与分离监控/功率与力限制"
+      - "人体 29 部位准静态/瞬态接触力与压强限值（如手部 140N、头部 65N）"
+      - "保护性分离距离计算"
+    notes: "核心标准：safety_limits 字段的主要来源"
+
+  - id: "GB/T 38559-2020"
+    name: "工业机器人力控制技术规范"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "机器人力控制系统的技术要求与性能指标"
+    device_classes: [robot_arm, dexterous_hand]
+    simulatable_params:
+      - "力跟踪精度、接触力超调量指标"
+      - "力控模式切换行为"
+
+  - id: "GB/T 39402-2020"
+    name: "面向人机协作工业机器人设计规范"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "协作应用的机械、电气与安全功能设计要求"
+    device_classes: [robot_arm, dexterous_hand]
+    simulatable_params: []
+
+  - id: "GB/T 38839-2020"
+    name: "工业机器人柔性控制通用技术要求"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "柔顺/柔性控制接口与性能要求"
+    device_classes: [robot_arm, dexterous_hand]
+    simulatable_params:
+      - "柔顺控制参数接口（刚度、阻尼）"
+
+# ---------------------------------------------------------------------------
+# 三、性能与测试类
+# ---------------------------------------------------------------------------
+
+  - id: "GB/T 12642-2013"
+    name: "工业机器人 性能规范及其试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 9283"
+    scope: "位姿准确度/重复性、轨迹准确度、速度等性能试验"
+    device_classes: [robot_arm, dual_arm]
+    simulatable_params:
+      - "位姿重复定位精度验收测试用例"
+      - "轨迹跟踪误差测试用例"
+    notes: "仿真验收测试自动化的主要方法来源"
+
+  - id: "GB/T 20868-2024"
+    name: "工业机器人 性能试验应用规范"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "性能试验的实施条件与应用规范"
+    device_classes: [robot_arm]
+    simulatable_params:
+      - "试验环境条件（温度、载荷、速度百分比）"
+
+  - id: "GB/T 40014-2021"
+    name: "双臂工业机器人 性能及其试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "双臂机器人协调操作性能与试验"
+    device_classes: [dual_arm]
+    simulatable_params:
+      - "双臂协调精度测试用例"
+    notes: "对应项目 dual_sharpa_wave 双臂构型"
+
+  - id: "GB/T 43200-2023"
+    name: "机器人一体化关节性能及试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "一体化关节模组的性能指标与试验"
+    device_classes: [dexterous_hand, robot_arm, humanoid]
+    simulatable_params:
+      - "关节扭矩、回差、温升参数（灵巧手手指关节建模）"
+
+  - id: "GB/T 38834.1-2020"
+    name: "机器人 服务机器人性能规范及其试验方法 第1部分：轮式机器人运动"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "服务机器人运动性能试验"
+    device_classes: [mobile_manipulator]
+    simulatable_params: []
+
+  - id: "GB/T 38834.2-2023"
+    name: "机器人 服务机器人性能规范及其试验方法 第2部分：导航"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "服务机器人导航性能试验"
+    device_classes: [mobile_manipulator]
+    simulatable_params:
+      - "导航定位精度、路径偏差测试用例"
+
+  - id: "GB/T 38834.3-2023"
+    name: "机器人 服务机器人性能规范及其试验方法 第3部分：操作"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "服务机器人操作性能试验"
+    device_classes: [dexterous_hand, mobile_manipulator, humanoid]
+    simulatable_params:
+      - "操作性能（抓取成功率、操作精度）测试用例"
+
+  - id: "GB/T 39785-2021"
+    name: "服务机器人 机械安全评估与测试方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "机械安全评估：结构设计、危险部件防护、稳定性"
+    device_classes: [all]
+    simulatable_params:
+      - "静态/动态稳定性测试（附录C）"
+      - "危险运动部件防护验证"
+
+  - id: "GB/T 40013-2021"
+    name: "服务机器人 电气安全要求及测试方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "服务机器人电气安全"
+    device_classes: [all]
+    simulatable_params: []
+
+  - id: "GB/T 39360-2020"
+    name: "工业机器人控制系统性能评估与测试"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "控制系统功能与性能评估"
+    device_classes: [robot_arm, dexterous_hand]
+    simulatable_params: []
+
+# ---------------------------------------------------------------------------
+# 四、灵巧手专用
+# ---------------------------------------------------------------------------
+
+  - id: "T/CIE 387-2026"
+    name: "人形机器人 灵巧手通用技术要求"
+    level: group
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "灵巧手分类、手指能力、操作能力要求与测试评价"
+    device_classes: [dexterous_hand, humanoid]
+    simulatable_params:
+      - "测试项目：自由度、负载、重复定位精度"
+      - "拇指/四指最大指尖力、四指弯曲角度"
+      - "物体抓握功能、精密操作功能、拟人化手势"
+    notes: "目前唯一成文的灵巧手专用标准（2026-05 发布，中国工业互联网研究院牵头）"
+
+  - id: "2025-0487T-YD"
+    name: "人形机器人 零部件及组件 灵巧手技术规范"
+    level: industry
+    status: in_development
+    mandatory: false
+    adopts: null
+    scope: "灵巧手部件级技术规范（工信部 2025 年第二批行业标准计划）"
+    device_classes: [dexterous_hand]
+    simulatable_params: []
+    notes: "已立项，中国电子学会提出，发布后替代 T/CIE 387-2026 作为主要对标依据"
+
+  - id: "TC591-humanoid-series"
+    name: "人形机器人技术要求系列国家标准（含作业操作技术要求：灵巧操作、双臂操作、长序列执行）"
+    level: national
+    status: in_development
+    mandatory: false
+    adopts: null
+    scope: "首批人形机器人国标，2025-04 立项，优必选牵头作业操作部分"
+    device_classes: [humanoid, dual_arm, dexterous_hand]
+    simulatable_params: []
+    notes: "制定中，跟踪 TC591 发布动态"
+
+# ---------------------------------------------------------------------------
+# 五、移动/人形整机（扩展用）
+# ---------------------------------------------------------------------------
+
+  - id: "GB/T 38871-2020"
+    name: "工业环境用移动操作臂复合机器人通用技术条件"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "移动底盘+操作臂复合机器人技术要求"
+    device_classes: [mobile_manipulator]
+    simulatable_params:
+      - "复合机器人整机性能指标"
+
+  - id: "GB/T 20721-2022"
+    name: "自动导引车 通用技术条件"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "AGV 通用技术要求"
+    device_classes: [mobile_manipulator]
+    simulatable_params: []
+
+  - id: "GB/T 44251-2024"
+    name: "腿式机器人性能及试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "腿式机器人运动性能试验"
+    device_classes: [humanoid]
+    simulatable_params: []
+
+  - id: "GB/T 44589-2024"
+    name: "机器人自适应能力技术要求"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "位姿偏差容忍度、抗干扰能力、任务泛化能力要求与测试"
+    device_classes: [robot_arm, dexterous_hand]
+    simulatable_params:
+      - "位姿偏差容忍度测试（视觉引导/力控补偿场景）"
+      - "抗干扰与任务泛化测试用例"

@@ -63,6 +63,23 @@ try:
 except ImportError:
     _CORE_AVAILABLE = False
 
+# Classic patent simulations (optional import)
+try:
+    from cloud_robotics_sim.patents import (
+        PatentSimConfig,
+        PatentSimulation,
+        SimState,
+        StubPatentSimulation,
+        create_simulation,
+        list_patents,
+        register_patent,
+        run_patent_simulation,
+    )
+
+    _PATENTS_AVAILABLE = True
+except ImportError:
+    _PATENTS_AVAILABLE = False
+
 __all__ = [
     # Version
     "__version__",
@@ -105,5 +122,20 @@ if _CORE_AVAILABLE:
             "VectorizedEnvironment",
             "GenesisVectorizedEnv",
             "VecEnvConfig",
+        ]
+    )
+
+if _PATENTS_AVAILABLE:
+    __all__.extend(
+        [
+            # Patent simulations
+            "PatentSimConfig",
+            "PatentSimulation",
+            "SimState",
+            "StubPatentSimulation",
+            "create_simulation",
+            "list_patents",
+            "register_patent",
+            "run_patent_simulation",
         ]
     )

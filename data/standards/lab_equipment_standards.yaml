@@ -1,0 +1,363 @@
+# 实验室/检测设备国标目录
+# 用途：MHS 风格仿真设备库参考文件的数据源（与 robot_standards_catalog.yaml 互补）。
+# 字段约定同 robot_standards_catalog.yaml。
+#
+# 设备类枚举：furnace(炉类) | utm(力学试验机) | liquid_handler(液体处理器)
+#   | plate_reader(读板机) | qpcr(qPCR 仪) | microscope(显微镜) | facility(设施) | all(通用)
+
+schema_version: "1.0"
+updated: "2026-08-31"
+source_note: >
+  所有标准条目经公开渠道核实（国家标准全文公开系统 openstd.samr.gov.cn、
+  全国标准信息公共服务平台）。
+
+# ---------------------------------------------------------------------------
+# 一、实验室电气设备安全（GB 4793 系列，IEC 61010）
+# ---------------------------------------------------------------------------
+standards:
+
+  - id: "GB 4793.1-2007"
+    name: "测量、控制和实验室用电气设备的安全要求 第1部分：通用要求"
+    level: national
+    status: current
+    mandatory: true
+    adopts: "IEC 61010-1:2001"
+    scope: "实验室电气设备通用安全：防电击、温度限值、联锁、标志与文件"
+    device_classes: [all]
+    simulatable_params:
+      - "设备温度限值与联锁要求"
+      - "参考文件/标志的文档化要求"
+
+  - id: "GB 4793.6-2008"
+    name: "测量、控制和实验室用电气设备的安全要求 第6部分：实验室用材料加热设备的特殊要求"
+    level: national
+    status: current
+    mandatory: true
+    adopts: "IEC 61010-2-010:2005"
+    scope: "马弗炉、干燥箱等实验室加热设备的特殊安全要求"
+    device_classes: [furnace]
+    simulatable_params:
+      - "加热设备超温保护要求"
+      - "门/盖联锁要求"
+
+  - id: "GB 4793.9-2013"
+    name: "测量、控制和实验室用电气设备的安全要求 第9部分：实验室用分析和其他目的自动和半自动设备的特殊要求"
+    level: national
+    status: current
+    mandatory: true
+    adopts: "IEC 61010-2-081:2009"
+    scope: "自动化工作站（液体处理器、自动分析仪）安全特殊要求"
+    device_classes: [liquid_handler, plate_reader, qpcr]
+    simulatable_params:
+      - "自动设备运动部件防护与联锁"
+      - "有毒有害气体释放防护"
+
+# ---------------------------------------------------------------------------
+# 二、电热装置（GB 5959 / GB/T 10066 / GB/T 10067 系列）
+# ---------------------------------------------------------------------------
+
+  - id: "GB/T 5959.1-2019"
+    name: "电热和电磁处理装置的安全 第1部分：通用要求"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "IEC 60519-1:2015"
+    scope: "工业电热装置通用安全要求"
+    device_classes: [furnace]
+    simulatable_params:
+      - "超温保护、急停类别"
+      - "泄漏电流与绝缘监测点"
+
+  - id: "GB 5959.4-2008"
+    name: "电热装置的安全 第4部分：对电阻加热装置的特殊要求"
+    level: national
+    status: current
+    mandatory: true
+    adopts: "IEC 60519-2:2006"
+    scope: "电阻炉（马弗炉、管式炉）安全特殊要求"
+    device_classes: [furnace]
+    simulatable_params:
+      - "独立超温切断装置（串联接触器）"
+      - "炉门联锁切断加热"
+
+  - id: "GB 5959.6-2008"
+    name: "电热装置的安全 第6部分：工业微波加热设备的安全规范"
+    level: national
+    status: current
+    mandatory: true
+    adopts: "IEC 60519-6:2002"
+    scope: "工业微波加热设备安全：门联锁、微波泄漏限值"
+    device_classes: [furnace]
+    simulatable_params:
+      - "微波门联锁（开门断磁控管）"
+      - "微波泄漏限值违规检测"
+
+  - id: "GB/T 10066.1-2019"
+    name: "电热和电磁处理装置的试验方法 第1部分：通用部分"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "IEC 60398:2015, MOD"
+    scope: "电热设备通用试验方法：安全联锁和报警系统、绝缘、温升"
+    device_classes: [furnace]
+    simulatable_params:
+      - "安全联锁与报警系统试验用例"
+      - "空载升温时间、表面温升测试"
+
+  - id: "GB/T 9452-2003"
+    name: "热处理炉有效加热区测定方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "热处理炉有效加热区温度均匀性测定"
+    device_classes: [furnace]
+    simulatable_params:
+      - "炉膛温度均匀性测试用例（多点测温）"
+
+  - id: "GB/T 15911-1995"
+    name: "工业电热设备节能监测方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "电能利用率、空载升温时间、表面温升监测"
+    device_classes: [furnace]
+    simulatable_params:
+      - "能耗与电能利用率评估"
+
+# ---------------------------------------------------------------------------
+# 三、力学试验设备
+# ---------------------------------------------------------------------------
+
+  - id: "GB/T 16491-2022"
+    name: "电子式万能试验机"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "电子万能试验机分级（0.5/1/2级）、技术要求与检验"
+    device_classes: [utm]
+    simulatable_params:
+      - "力值精度等级（示值误差限）"
+      - "过载保护：达到设定值声光报警并自动停机"
+      - "试验环境条件 (23±5)°C"
+
+  - id: "GB/T 2611-2022"
+    name: "试验机 通用技术要求"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "试验机通用技术与安全保护要求"
+    device_classes: [utm]
+    simulatable_params:
+      - "限位保护、断裂自动停机"
+
+  - id: "GB/T 16825.1"
+    name: "静力单轴试验机的检验 第1部分：拉力和（或）压力试验机测力系统的检验与校准"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 7500-1"
+    scope: "试验机测力系统分级检验（以现行版本为准）"
+    device_classes: [utm]
+    simulatable_params:
+      - "测力系统分级（0.5/1/2/3级）校准用例"
+
+  - id: "GB/T 228.1-2021"
+    name: "金属材料 拉伸试验 第1部分：室温试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 6892-1:2019, MOD"
+    scope: "金属拉伸试验方法：ReH/ReL/Rm/A/Z 等结果测定"
+    device_classes: [utm]
+    simulatable_params:
+      - "力-位移曲线生成（弹性-屈服-强化-颈缩-断裂）"
+      - "试验速率控制模式（应力/应变速率）"
+      - "引伸计摘除时机规程（屈服后）"
+
+  - id: "GB/T 12160-2002"
+    name: "单轴试验用引伸计的标定"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 9513"
+    scope: "引伸计标定要求"
+    device_classes: [utm]
+    simulatable_params:
+      - "引伸计标定用例与漂移故障注入"
+
+  - id: "GB/T 7314-2017"
+    name: "金属材料 室温压缩试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "金属压缩试验方法"
+    device_classes: [utm]
+    simulatable_params: []
+
+  - id: "GB/T 232-2010"
+    name: "金属材料 弯曲试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 7438"
+    scope: "金属弯曲试验方法"
+    device_classes: [utm]
+    simulatable_params: []
+
+  - id: "GB/T 229-2020"
+    name: "金属材料 夏比摆锤冲击试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 148-1"
+    scope: "夏比摆锤冲击试验"
+    device_classes: [utm]
+    simulatable_params:
+      - "冲击吸收功测定用例"
+
+  - id: "GB/T 3808-2018"
+    name: "摆锤式冲击试验机的检验"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 148-2"
+    scope: "摆锤冲击试验机检验"
+    device_classes: [utm]
+    simulatable_params: []
+
+  - id: "GB/T 230.1-2018"
+    name: "金属材料 洛氏硬度试验 第1部分：试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 6508-1"
+    scope: "洛氏硬度试验方法"
+    device_classes: [utm]
+    simulatable_params: []
+
+  - id: "GB/T 231.1-2018"
+    name: "金属材料 布氏硬度试验 第1部分：试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 6506-1"
+    scope: "布氏硬度试验方法"
+    device_classes: [utm]
+    simulatable_params: []
+
+  - id: "GB/T 4340.1-2009"
+    name: "金属材料 维氏硬度试验 第1部分：试验方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 6507-1"
+    scope: "维氏硬度试验方法"
+    device_classes: [utm]
+    simulatable_params: []
+
+  - id: "GB/T 3075-2021"
+    name: "金属材料 疲劳试验 轴向力控制方法"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO 1099"
+    scope: "轴向力控制疲劳试验"
+    device_classes: [utm]
+    simulatable_params:
+      - "循环载荷谱与停机判据用例"
+
+  - id: "GB/T 16826-2008"
+    name: "电液伺服万能试验机"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "电液伺服试验机技术要求"
+    device_classes: [utm]
+    simulatable_params: []
+
+  - id: "GB/T 2423.10-2019"
+    name: "环境试验 第2部分：试验方法 试验Fc：振动（正弦）"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "IEC 60068-2-6"
+    scope: "电工电子产品正弦振动试验"
+    device_classes: [utm]
+    simulatable_params:
+      - "扫频/驻留振动程序用例"
+
+# ---------------------------------------------------------------------------
+# 四、实验室设施与环境
+# ---------------------------------------------------------------------------
+
+  - id: "GB 19489-2008"
+    name: "实验室 生物安全通用要求"
+    level: national
+    status: current
+    mandatory: true
+    adopts: null
+    scope: "实验室生物安全分级（BSL-1~4）与通用要求"
+    device_classes: [facility, liquid_handler, qpcr]
+    simulatable_params:
+      - "生物安全柜气流状态与前窗开度联锁"
+
+  - id: "GB 50346-2011"
+    name: "生物安全实验室 建筑技术规范"
+    level: national
+    status: current
+    mandatory: true
+    adopts: null
+    scope: "生物安全实验室布局、分区、压差与气流组织"
+    device_classes: [facility]
+    simulatable_params:
+      - "实验室功能分区与设备布局约束"
+
+  - id: "GB/T 27025-2019"
+    name: "检测和校准实验室能力的通用要求"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "ISO/IEC 17025"
+    scope: "实验室能力通用要求：环境条件监控、设备溯源"
+    device_classes: [facility, all]
+    simulatable_params:
+      - "环境条件（温湿度）监控点"
+      - "设备校准状态字段"
+
+  - id: "GB/T 2985-2008"
+    name: "生物显微镜"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "生物显微镜技术要求"
+    device_classes: [microscope]
+    simulatable_params: []
+
+  - id: "GB/T 39005-2020"
+    name: "工业机器人视觉集成系统通用技术要求"
+    level: national
+    status: current
+    mandatory: false
+    adopts: null
+    scope: "机器人视觉集成系统技术要求"
+    device_classes: [microscope, all]
+    simulatable_params: []
+
+  - id: "GB/T 33863.1-2017"
+    name: "OPC统一架构 第1部分：概述和概念"
+    level: national
+    status: current
+    mandatory: false
+    adopts: "IEC 62541-1"
+    scope: "设备互联信息建模（OPC UA），设备节点/地址空间组织方式"
+    device_classes: [all]
+    simulatable_params:
+      - "设备信息模型组织方式（节点、引用、类型定义）"
+    notes: "MHS 风格设备发现/建模可对标 OPC UA 节点模型"

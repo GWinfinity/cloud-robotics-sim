@@ -1,0 +1,88 @@
+# Phase-1 default config: LEAP Hand grasping a sphere.
+
+sim:
+  dt: 0.002                # integration timestep [s]
+  n_steps: 500            # total simulation steps
+  backend: mujoco         # mujoco | genesis
+  render: false            # enable interactive renderer
+  render_every: 50         # render every N steps if render=true
+
+robot:
+  # Local MJCF path. robot_descriptions is used as a fallback if this key is absent.
+  hand_mjcf_path: assets/mujoco_menagerie/leap_hand/right_hand.xml
+  hand_mjcf_description: leap_hand_mj_description
+  # Palm above the object, fingers pointing downward.
+  base_position: [0.0, 0.0, 0.28]
+  base_quaternion: [0.0, 1.0, 0.0, 0.0]
+
+object:
+  type: sphere             # sphere | cylinder | box
+  size: 0.05               # radius for sphere, half-size for box/cylinder [m]
+  mass: 0.05              # [kg]
+  position: [0.0, 0.0, 0.08]
+  quaternion: [1.0, 0.0, 0.0, 0.0]
+  friction: [0.8, 0.005, 0.0001]
+
+contacts:
+  only_fingertips: true
+
+controller:
+  hand_kp: 20.0
+  hand_kv: 4.0
+  object_kp: 200.0
+  object_kv: 40.0
+  # Target hand configuration: curl index/middle/ring fingers, partly curl thumb.
+  hand_target:
+    # index: mcp, rot, pip, dip
+    - 0.5
+    - 0.0
+    - 1.2
+    - 1.0
+    # middle
+    - 0.5
+    - 0.0
+    - 1.2
+    - 1.0
+    # ring
+    - 0.5
+    - 0.0
+    - 1.2
+    - 1.0
+    # thumb: cmc, axl, mcp, ipl
+    - 0.5
+    - 0.0
+    - 0.8
+    - 0.6
+
+qp:
+  backend: osqp
+  include_tau: true        # include hand joint torques as decision variables
+  mu: 1.5                  # friction coefficient (overrides geom-derived value)
+  weights:
+    object_acceleration: 200.0
+    hand_acceleration: 2.0
+    torque: 0.001
+    force: 1.0e-5
+    max_force_per_contact: 10.0
+  torque_limits: null      # [N m] if null, no limits
+
+skeleton:
+  method: force_magnitude
+  target_size: 6
+  min_size: 3
+  max_size: 8
+  force_threshold: 0.05
+  support_polygon_check: false
+  force_closure_check: false
+  edge_force_strategy: history
+
+hierarchical:
+  enable_alternating: true   # enable alternating iteration between skeleton and edge layers
+  max_iterations: 5          # maximum number of alternating iterations
+  residual_tol: 1e-2         # convergence tolerance for residual norm
+  edge_update_gain: 0.8      # gain for edge force gradient update
+  friction_cone_shrinkage: 0.9  # shrinkage factor for friction cone (safety margin)
+
+benchmark:
+  log_path: data/benchmark.csv
+  warmup_steps: 0

@@ -1,0 +1,203 @@
+# Classic Patents catalog
+# Metadata for the 22 historical patents featured on classic-patents.com.
+# Each entry maps a canonical ID to title, inventors, grant date, and the
+# Python module that implements the Genesis simulation.
+
+patents:
+  - id: US1647
+    number: "US 1,647"
+    title: "Electro-Magnetic Telegraph"
+    inventors: ["Samuel F. B. Morse"]
+    grant_date: "1840-06-20"
+    breakthrough: "Regenerative relay amplifiers and binary code"
+    module: "morse_telegraph"
+    has_simulation: true
+
+  - id: US3633
+    number: "US 3,633"
+    title: "India-Rubber Fabrics (Vulcanization)"
+    inventors: ["Charles Goodyear"]
+    grant_date: "1844-06-15"
+    breakthrough: "Disulfide polymer cross-linking under heat"
+    module: "goodyear_vulcanization"
+    has_simulation: false
+
+  - id: US4750
+    number: "US 4,750"
+    title: "Sewing Machine"
+    inventors: ["Elias Howe Jr."]
+    grant_date: "1846-09-10"
+    breakthrough: "Eye-pointed needle and reciprocating shuttle lockstitch"
+    module: "howe_sewing_machine"
+    has_simulation: true
+
+  - id: US6469
+    number: "US 6,469"
+    title: "Buoying Vessels Over Shoals"
+    inventors: ["Abraham Lincoln"]
+    grant_date: "1849-05-22"
+    breakthrough: "Synchronized expandable buoyant air chambers"
+    module: "lincoln_buoying_vessels"
+    has_simulation: false
+
+  - id: US174465
+    number: "US 174,465"
+    title: "Improvement in Telegraphy (Telephone)"
+    inventors: ["Alexander Graham Bell"]
+    grant_date: "1876-03-07"
+    breakthrough: "Variable resistance undulating acoustic speech transmission"
+    module: "bell_telephone"
+    has_simulation: true
+
+  - id: US223898
+    number: "US 223,898"
+    title: "Electric-Lamp"
+    inventors: ["Thomas A. Edison"]
+    grant_date: "1880-01-27"
+    breakthrough: "High-resistance carbon filament in high vacuum"
+    module: "edison_lamp"
+    has_simulation: true
+
+  - id: US381968
+    number: "US 381,968"
+    title: "Electro-Magnetic Motor"
+    inventors: ["Nikola Tesla"]
+    grant_date: "1888-05-01"
+    breakthrough: "Brushless polyphase AC rotating magnetic stator field"
+    module: "tesla_motor"
+    has_simulation: true
+
+  - id: US586193
+    number: "US 586,193"
+    title: "Transmitting Electrical Signals"
+    inventors: ["Guglielmo Marconi"]
+    grant_date: "1897-07-13"
+    breakthrough: "Elevated monopole aerial and earth-grounded spark system"
+    module: "marconi_radio"
+    has_simulation: false
+
+  - id: US593138
+    number: "US 593,138"
+    title: "Electrical Transformer"
+    inventors: ["Nikola Tesla"]
+    grant_date: "1897-11-02"
+    breakthrough: "Graded spiral windings for high-potential transformation"
+    module: "tesla_transformer"
+    has_simulation: true
+
+  - id: US821393
+    number: "US 821,393"
+    title: "Flying-Machine"
+    inventors: ["Orville Wright", "Wilbur Wright"]
+    grant_date: "1906-05-22"
+    breakthrough: "3-axis aerodynamic flight control via wing warping"
+    module: "wright_flyer"
+    has_simulation: true
+
+  - id: US1155986
+    number: "US 1,155,986"
+    title: "Rocket Apparatus"
+    inventors: ["Robert H. Goddard"]
+    grant_date: "1915-10-05"
+    breakthrough: "Bipropellant combustion chamber and de Laval nozzle"
+    module: "goddard_rocket"
+    has_simulation: true
+
+  - id: US1781541
+    number: "US 1,781,541"
+    title: "Refrigeration"
+    inventors: ["Albert Einstein", "Leo Szilard"]
+    grant_date: "1930-11-11"
+    breakthrough: "Zero-moving-parts hermetic Dalton partial pressure cooling"
+    module: "einstein_refrigerator"
+    has_simulation: false
+
+  - id: US1773980
+    number: "US 1,773,980"
+    title: "Television System"
+    inventors: ["Philo T. Farnsworth"]
+    grant_date: "1930-08-26"
+    breakthrough: "All-electronic image dissector and magnetic raster"
+    module: "farnsworth_television"
+    has_simulation: true
+
+  - id: US2292387
+    number: "US 2,292,387"
+    title: "Secret Communication System"
+    inventors: ["Hedy Lamarr", "George Antheil"]
+    grant_date: "1942-08-11"
+    breakthrough: "88-frequency piano-roll spread-spectrum carrier hopping"
+    module: "lamarr_frequency_hopping"
+    has_simulation: false
+
+  - id: US2495429
+    number: "US 2,495,429"
+    title: "Method of Treating Foodstuffs"
+    inventors: ["Percy L. Spencer"]
+    grant_date: "1950-01-24"
+    breakthrough: "Cavity magnetron dielectric microwave heating"
+    module: "spencer_microwave"
+    has_simulation: true
+
+  - id: US2708656
+    number: "US 2,708,656"
+    title: "Neutronic Reactor"
+    inventors: ["Enrico Fermi", "Leo Szilard"]
+    grant_date: "1955-05-17"
+    breakthrough: "Heterogeneous graphite lattice and cadmium criticality"
+    module: "fermi_reactor"
+    has_simulation: true
+
+  - id: US2524035
+    number: "US 2,524,035"
+    title: "Three-Electrode Circuit Element Utilizing Semiconductive Materials"
+    inventors: ["John Bardeen", "Walter Brattain"]
+    grant_date: "1950-10-03"
+    breakthrough: "Point-contact germanium semiconductor circuit element"
+    module: "bardeen_transistor"
+    has_simulation: false
+
+  - id: US2981877
+    number: "US 2,981,877"
+    title: "Semiconductor Device-and-Lead Structure"
+    inventors: ["Robert N. Noyce"]
+    grant_date: "1961-04-25"
+    breakthrough: "Monolithic planar silicon IC with aluminum leads"
+    module: "noyce_integrated_circuit"
+    has_simulation: false
+
+  - id: US3541541
+    number: "US 3,541,541"
+    title: "X-Y Position Indicator"
+    inventors: ["Douglas C. Engelbart"]
+    grant_date: "1970-11-17"
+    breakthrough: "Orthogonal dual-wheel coordinate encoder mouse"
+    module: "engelbart_mouse"
+    has_simulation: false
+
+  - id: US3671542
+    number: "US 3,671,542"
+    title: "Wholly Aromatic Polycarbonamide Filaments"
+    inventors: ["Stephanie L. Kwolek"]
+    grant_date: "1972-06-20"
+    breakthrough: "Liquid-crystalline aramid polymer chain alignment (Kevlar)"
+    module: "kwolek_kevlar"
+    has_simulation: false
+
+  - id: US3923554
+    number: "US 3,923,554"
+    title: "3-Phase Charge-Coupled Device"
+    inventors: ["Willard Boyle", "George Smith"]
+    grant_date: "1975-12-02"
+    breakthrough: "3-phase MOS potential well charge packets"
+    module: "boyle_smith_ccd"
+    has_simulation: false
+
+  - id: US4136359
+    number: "US 4,136,359"
+    title: "Microcomputer for Use with Video Display"
+    inventors: ["Steve Wozniak"]
+    grant_date: "1979-01-23"
+    breakthrough: "Two-phase shared-bus time-multiplexed DRAM"
+    module: "wozniak_microcomputer"
+    has_simulation: false

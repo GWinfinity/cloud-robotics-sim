@@ -39,11 +39,13 @@ logger = logging.getLogger(__name__)
 
 try:
     import genesis as gs
+    import torch
 
     HAS_GENESIS = True
 except ImportError:
     HAS_GENESIS = False
     gs = None
+    torch = None
 
 
 def _require_genesis() -> None:
@@ -438,6 +440,101 @@ class GenesisArticulationBackend(GenesisEntityBackend, ArticulationBackend):
         """Per-env center-of-mass domain randomization."""
         entity = self._resolve_entity()
         entity.set_COM_shift(np.asarray(shifts), envs_idx=envs_idx)
+
+    # ------------------------------------------------------------------
+    # QP / whole-body dynamics primitives.
+    # ------------------------------------------------------------------
+
+    def _resolve_link(self, link: str | int | Any) -> Any:
+        """Resolve a link name/index to a Genesis RigidLink object."""
+        entity = self._resolve_entity()
+        if isinstance(link, str):
+            return entity.get_link(link)
+        if isinstance(link, int):
+            return entity.links[link]
+        return link
+
+    @staticmethod
+    def _squeeze_leading_batch(arr: np.ndarray) -> np.ndarray:
+        """Drop a leading batch dimension of size 1 returned by single-env scenes."""
+        if arr.ndim >= 2 and arr.shape[0] == 1:
+            return arr[0]
+        return arr
+
+    def get_mass_matrix(
+        self,
+        envs_idx: list[int] | None = None,
+    ) -> np.ndarray:
+        """Return the joint-space mass matrix ``M(q)`` for this articulation."""
+        entity = self._resolve_entity()
+        M = entity.get_mass_mat(envs_idx=envs_idx)
+        return self._squeeze_leading_batch(np.asarray(M, dtype=np.float64))
+
+    def get_jacobian(
+        self,
+        link: str | int | Any,
+        local_point: np.ndarray | None = None,
+        envs_idx: list[int] | None = None,
+    ) -> np.ndarray:
+        """Return the spatial Jacobian (rows [trans; rot]) of a link or link point."""
+        entity = self._resolve_entity()
+        link_obj = self._resolve_link(link)
+        local = None
+        if local_point is not None:
+            local = torch.as_tensor(
+                np.asarray(local_point, dtype=np.float64),
+                dtype=getattr(entity, "float_type", gs.tc_float),
+                device=getattr(entity, "device", gs.device),
+            )
+        J = entity.get_jacobian(link_obj, local_point=local)
+        return self._squeeze_leading_batch(np.asarray(J, dtype=np.float64))
+
+    def get_contacts(
+        self,
+        with_entity: EntityBackend | str | None = None,
+        exclude_self_contact: bool = False,
+        envs_idx: list[int] | None = None,
+    ) -> dict[str, np.ndarray]:
+        """Return contact information from the most recent simulation step."""
+        entity = self._resolve_entity()
+        other = with_entity
+        if isinstance(other, GenesisEntityBackend):
+            other = other._entity
+        raw = entity.get_contacts(
+            with_entity=other,
+            exclude_self_contact=exclude_self_contact,
+        )
+        contacts: dict[str, np.ndarray] = {}
+        for key, value in raw.items():
+            if value is None:
+                continue
+            arr = np.asarray(value, dtype=np.float64)
+            contacts[key] = self._squeeze_leading_batch(arr)
+        return contacts
+
+    def get_bias_force(
+        self,
+        envs_idx: list[int] | None = None,
+    ) -> np.ndarray:
+        """Return the generalized bias force ``C(q, qdot)`` (gravity + Coriolis).
+
+        Uses the internal ``qf_bias`` field computed by Genesis during the last
+        forward-dynamics pass. The returned vector follows the convention
+        ``M(q) qddot + C(q, qdot) = tau + J^T f``.
+        """
+        entity = self._resolve_entity()
+        solver = entity._solver
+        qf_bias = solver.dyn_state.dofs.qf_bias
+        bias_all = np.asarray(qf_bias.to_numpy(), dtype=np.float64)
+        # Slice the DOFs belonging to this entity.
+        start = int(getattr(entity, "_dof_start", 0))
+        size = int(getattr(entity, "n_dofs", 0))
+        bias = bias_all[start : start + size]
+        if bias.ndim == 2 and bias.shape[1] == 1:
+            bias = bias[:, 0]
+        # ``qf_bias`` is the generalized bias force (gravity + velocity products)
+        # matching the MuJoCo convention ``M*qddot + C = tau + J^T*f``.
+        return bias
 
 
 class GenesisDeformableEntityBackend(DeformableEntityBackend):

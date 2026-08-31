@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 import genesis as gs
 import numpy as np
 import quadrants as qd
+import scipy.sparse as sp
+import scipy.sparse.linalg as spla
 from genesis.engine.solvers.base_solver import Solver
 
 from .options import JouleHeatingOptions
@@ -63,10 +65,14 @@ class JouleHeatingSolver(Solver):
         self._cp = float(options.cp)
         self._k = float(options.k)
         self._alpha = self._k / (self._rho * self._cp)
+        self._dt_over_dx2 = 0.0  # filled in build() once _substep_dt is known
         self._voltage_boundary_value = float(options.voltage_boundary_value)
         self._max_iter = int(options.max_iter)
         self._tol = float(options.tol)
         self._couple_to_thermal = bool(options.couple_to_thermal)
+        self._solver_type = str(options.solver_type)
+        self._direct_solver_cache: dict[str, object] | None = None
+        self._direct_v_cache: np.ndarray | None = None
         self._initial_temperature = options.initial_temperature
 
         self._V: qd.Field | None = None
@@ -125,6 +131,14 @@ class JouleHeatingSolver(Solver):
         self._k_field = qd.field(
             dtype=gs.qd_float, shape=(self._B,), needs_grad=needs_grad
         )
+        self._r_field = qd.field(
+            dtype=gs.qd_float, shape=(self._B,), needs_grad=needs_grad
+        )
+        self._dt_over_rhocp_field = qd.field(
+            dtype=gs.qd_float, shape=(self._B,), needs_grad=needs_grad
+        )
+
+        self._dt_over_dx2 = self._substep_dt / (self._dx * self._dx)
 
         self._init_voltage()
         self._init_conductivity()
@@ -193,6 +207,17 @@ class JouleHeatingSolver(Solver):
         self._rho_field.from_numpy(rho_arr)
         self._cp_field.from_numpy(cp_arr)
         self._k_field.from_numpy(k_arr)
+        self._init_thermal_constants()
+
+    def _init_thermal_constants(self) -> None:
+        """Precompute per-env thermal constants for the internal heat step."""
+        rho = self._rho_field.to_numpy()
+        cp = self._cp_field.to_numpy()
+        k = self._k_field.to_numpy()
+        r_arr = (k / (rho * cp)) * self._dt_over_dx2
+        dt_over_rhocp_arr = self._substep_dt / (rho * cp)
+        self._r_field.from_numpy(r_arr.astype(gs.np_float))
+        self._dt_over_rhocp_field.from_numpy(dt_over_rhocp_arr.astype(gs.np_float))
 
     def _make_initial_temperature_array(self) -> np.ndarray:
         """Return an array of shape (B, *shape) for the initial temperature."""
@@ -240,6 +265,212 @@ class JouleHeatingSolver(Solver):
             )
 
     # --------------------------------------------------------------------------
+    # Direct sparse solver (forward-only, single-env)
+    # --------------------------------------------------------------------------
+
+    def _invalidate_direct_solver_cache(self) -> None:
+        """Drop cached sparse factorization and solution.
+
+        Called when conductivity or boundary values change.
+        """
+        self._direct_solver_cache = None
+        self._direct_v_cache = None
+
+    def _build_linear_system_2d(self) -> tuple:
+        """Build ``A`` and ``b`` for the 2D potential solve (single env).
+
+        Returns:
+        -------
+        A : scipy.sparse.csr_matrix
+            N×N sparse matrix, N = nx * ny.
+        b : np.ndarray
+            Right-hand side vector of length N.
+        """
+        nx, ny = self._nx, self._ny
+        n = nx * ny
+        mask = self._voltage_boundary_mask.to_numpy()[0]
+        bv = self._boundary_voltage_field.to_numpy()[0]
+        sigma = self._sigma.to_numpy()[0]
+
+        rows: list[int] = []
+        cols: list[int] = []
+        data: list[float] = []
+        b = np.zeros(n, dtype=gs.np_float)
+
+        for i in range(nx):
+            for j in range(ny):
+                idx = i * ny + j
+                if mask[i, j] == 1:
+                    rows.append(idx)
+                    cols.append(idx)
+                    data.append(1.0)
+                    b[idx] = bv[i, j]
+                    continue
+
+                im = i - 1 if i > 0 else i
+                ip = i + 1 if i < nx - 1 else i
+                jm = j - 1 if j > 0 else j
+                jp = j + 1 if j < ny - 1 else j
+
+                s_c = sigma[i, j]
+                s_ip = sigma[ip, j]
+                s_im = sigma[im, j]
+                s_jp = sigma[i, jp]
+                s_jm = sigma[i, jm]
+                sigma_x = 2.0 * s_c * s_ip / (s_c + s_ip + 1e-10)
+                sigma_xm = 2.0 * s_c * s_im / (s_c + s_im + 1e-10)
+                sigma_y = 2.0 * s_c * s_jp / (s_c + s_jp + 1e-10)
+                sigma_ym = 2.0 * s_c * s_jm / (s_c + s_jm + 1e-10)
+                denom = sigma_x + sigma_xm + sigma_y + sigma_ym + 1e-10
+
+                rows.append(idx)
+                cols.append(idx)
+                data.append(1.0)
+
+                rows.append(idx)
+                cols.append(ip * ny + j)
+                data.append(-sigma_x / denom)
+
+                rows.append(idx)
+                cols.append(im * ny + j)
+                data.append(-sigma_xm / denom)
+
+                rows.append(idx)
+                cols.append(i * ny + jp)
+                data.append(-sigma_y / denom)
+
+                rows.append(idx)
+                cols.append(i * ny + jm)
+                data.append(-sigma_ym / denom)
+
+        a_mat = sp.csr_matrix((data, (rows, cols)), shape=(n, n))
+        return a_mat, b
+
+    def _build_linear_system_3d(self) -> tuple:
+        """Build ``A`` and ``b`` for the 3D potential solve (single env)."""
+        nx, ny, nz = self._nx, self._ny, self._nz
+        n = nx * ny * nz
+        mask = self._voltage_boundary_mask.to_numpy()[0]
+        bv = self._boundary_voltage_field.to_numpy()[0]
+        sigma = self._sigma.to_numpy()[0]
+
+        rows: list[int] = []
+        cols: list[int] = []
+        data: list[float] = []
+        b = np.zeros(n, dtype=gs.np_float)
+
+        for i in range(nx):
+            for j in range(ny):
+                for k in range(nz):
+                    idx = (i * ny + j) * nz + k
+                    if mask[i, j, k] == 1:
+                        rows.append(idx)
+                        cols.append(idx)
+                        data.append(1.0)
+                        b[idx] = bv[i, j, k]
+                        continue
+
+                    im = i - 1 if i > 0 else i
+                    ip = i + 1 if i < nx - 1 else i
+                    jm = j - 1 if j > 0 else j
+                    jp = j + 1 if j < ny - 1 else j
+                    km = k - 1 if k > 0 else k
+                    kp = k + 1 if k < nz - 1 else k
+
+                    s_c = sigma[i, j, k]
+                    s_ip = sigma[ip, j, k]
+                    s_im = sigma[im, j, k]
+                    s_jp = sigma[i, jp, k]
+                    s_jm = sigma[i, jm, k]
+                    s_kp = sigma[i, j, kp]
+                    s_km = sigma[i, j, km]
+                    sigma_x = 2.0 * s_c * s_ip / (s_c + s_ip + 1e-10)
+                    sigma_xm = 2.0 * s_c * s_im / (s_c + s_im + 1e-10)
+                    sigma_y = 2.0 * s_c * s_jp / (s_c + s_jp + 1e-10)
+                    sigma_ym = 2.0 * s_c * s_jm / (s_c + s_jm + 1e-10)
+                    sigma_z = 2.0 * s_c * s_kp / (s_c + s_kp + 1e-10)
+                    sigma_zm = 2.0 * s_c * s_km / (s_c + s_km + 1e-10)
+                    denom = (
+                        sigma_x
+                        + sigma_xm
+                        + sigma_y
+                        + sigma_ym
+                        + sigma_z
+                        + sigma_zm
+                        + 1e-10
+                    )
+
+                    rows.append(idx)
+                    cols.append(idx)
+                    data.append(1.0)
+
+                    rows.append(idx)
+                    cols.append((ip * ny + j) * nz + k)
+                    data.append(-sigma_x / denom)
+
+                    rows.append(idx)
+                    cols.append((im * ny + j) * nz + k)
+                    data.append(-sigma_xm / denom)
+
+                    rows.append(idx)
+                    cols.append((i * ny + jp) * nz + k)
+                    data.append(-sigma_y / denom)
+
+                    rows.append(idx)
+                    cols.append((i * ny + jm) * nz + k)
+                    data.append(-sigma_ym / denom)
+
+                    rows.append(idx)
+                    cols.append((i * ny + j) * nz + kp)
+                    data.append(-sigma_z / denom)
+
+                    rows.append(idx)
+                    cols.append((i * ny + j) * nz + km)
+                    data.append(-sigma_zm / denom)
+
+        a_mat = sp.csr_matrix((data, (rows, cols)), shape=(n, n))
+        return a_mat, b
+
+    def _solve_v_direct(self, f: int) -> None:
+        """Solve the electric potential with a sparse direct solver.
+
+        The sparse factorization and the converged voltage are cached and
+        reused across substeps until conductivity or boundary values change.
+        """
+        if self._B != 1:
+            raise RuntimeError(
+                "direct solver is only supported for single-environment scenes"
+            )
+
+        if self._direct_v_cache is not None:
+            arr = self._V.to_numpy()
+            arr[f + 1, 0] = self._direct_v_cache
+            self._V.from_numpy(arr)
+            return
+
+        if self._direct_solver_cache is None:
+            if self._dim == 2:
+                a_mat, b = self._build_linear_system_2d()
+            else:
+                a_mat, b = self._build_linear_system_3d()
+            factorization = spla.factorized(a_mat)
+            self._direct_solver_cache = {
+                "A": a_mat,
+                "b": b,
+                "factorization": factorization,
+            }
+        else:
+            b = self._direct_solver_cache["b"].copy()
+            factorization = self._direct_solver_cache["factorization"]
+
+        v_flat = factorization(b)
+        v = v_flat.reshape(self._shape)
+        self._direct_v_cache = v.copy()
+        arr = self._V.to_numpy()
+        arr[f + 1, 0] = v
+        self._V.from_numpy(arr)
+
+    # --------------------------------------------------------------------------
     # Public accessors
     # --------------------------------------------------------------------------
 
@@ -272,6 +503,7 @@ class JouleHeatingSolver(Solver):
             voltage[None, ...], (self._n_frames, *voltage.shape)
         ).copy()
         self._V.from_numpy(full)
+        self._direct_v_cache = None
 
     def get_current_density(self) -> np.ndarray:
         """Return the current-density vector field [A/m²]."""
@@ -335,6 +567,7 @@ class JouleHeatingSolver(Solver):
         if self._scene.n_envs == 0:
             sigma = np.broadcast_to(sigma, (self._B, *self._shape)).copy()
         self._sigma.from_numpy(sigma)
+        self._invalidate_direct_solver_cache()
 
     def set_voltage_boundary(self, name: str, value: float) -> None:
         """Apply a Dirichlet voltage to one domain face.
@@ -385,6 +618,7 @@ class JouleHeatingSolver(Solver):
         self._V.from_numpy(arr)
         self._voltage_boundary_mask.from_numpy(mask)
         self._boundary_voltage_field.from_numpy(boundary_values)
+        self._invalidate_direct_solver_cache()
 
     def _set_scalar_param(
         self, field: qd.Field | None, attr_name: str, value: float
@@ -399,15 +633,18 @@ class JouleHeatingSolver(Solver):
     def set_rho(self, rho: float) -> None:
         """Set mass density [kg/m^3] for all environments."""
         self._set_scalar_param(self._rho_field, "_rho", rho)
+        self._init_thermal_constants()
 
     def set_cp(self, cp: float) -> None:
         """Set specific heat capacity [J/(kg*K)] for all environments."""
         self._set_scalar_param(self._cp_field, "_cp", cp)
+        self._init_thermal_constants()
 
     def set_k(self, k: float) -> None:
         """Set thermal conductivity [W/(m*K)] for all environments."""
         self._set_scalar_param(self._k_field, "_k", k)
         self._alpha = k / (self._rho * self._cp)
+        self._init_thermal_constants()
 
     def get_rho(self) -> np.ndarray:
         """Return the per-environment density values [kg/m^3]."""
@@ -439,20 +676,40 @@ class JouleHeatingSolver(Solver):
 
     def substep_pre_coupling(self, f: int) -> None:
         # Solve electric potential for frame f+1.
-        # Use the fused forward kernel to avoid Python dispatch overhead for
-        # each Jacobi iteration. The per-iteration kernels remain in use for
-        # the backward pass.
-        if self._dim == 2:
-            self._solve_v_2d(f)
+        direct_path = False
+        if self._solver_type == "direct":
+            if self._sim.requires_grad:
+                # The direct solver does not yet support autodiff; fall back
+                # to the Jacobi kernels so gradients still flow.
+                if self._dim == 2:
+                    self._solve_v_2d(f)
+                else:
+                    self._solve_v_3d(f)
+            else:
+                self._solve_v_direct(f)
+                direct_path = True
         else:
-            self._solve_v_3d(f)
+            # Use the fused forward kernel to avoid Python dispatch overhead for
+            # each Jacobi iteration. The per-iteration kernels remain in use for
+            # the backward pass.
+            if self._dim == 2:
+                self._solve_v_2d(f)
+            else:
+                self._solve_v_3d(f)
 
         # Compute current density and heat source from the new potential.
-        # Use the fused forward kernel to avoid one extra launch per substep.
-        if self._dim == 2:
-            self._compute_jq_2d(f)
+        # For the direct solver path, use the fused kernel that reads from
+        # _V[f+1] directly, skipping the _V_tmp copy.
+        if direct_path:
+            if self._dim == 2:
+                self._compute_jq_from_v_2d(f)
+            else:
+                self._compute_jq_from_v_3d(f)
         else:
-            self._compute_jq_3d(f)
+            if self._dim == 2:
+                self._compute_jq_2d(f)
+            else:
+                self._compute_jq_3d(f)
 
         # Inject heat source into thermal solver or internal thermal field.
         if self._couple_to_thermal:
@@ -538,6 +795,10 @@ class JouleHeatingSolver(Solver):
             self._cp_field.grad.fill(0.0)
         if self._k_field is not None:
             self._k_field.grad.fill(0.0)
+        if self._r_field is not None:
+            self._r_field.grad.fill(0.0)
+        if self._dt_over_rhocp_field is not None:
+            self._dt_over_rhocp_field.grad.fill(0.0)
 
     def save_ckpt(self, ckpt_name: str) -> None:
         if self._V is None:
@@ -938,35 +1199,81 @@ class JouleHeatingSolver(Solver):
                 )
 
     @qd.kernel
+    def _compute_jq_from_v_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Fused J+Q from ``_V[f+1]`` (skips ``_V_tmp`` copy for direct solver)."""
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
+                self._J[i_b, i, j] = gs.qd_vec3(0.0, 0.0, 0.0)
+                self._Q[f, i_b, i, j] = gs.qd_float(0.0)
+            else:
+                sigma = self._sigma[i_b, i, j]
+                dvdx = (self._V[f + 1, i_b, i + 1, j] - self._V[f + 1, i_b, i - 1, j]) / (
+                    2.0 * self._dx
+                )
+                dvdy = (self._V[f + 1, i_b, i, j + 1] - self._V[f + 1, i_b, i, j - 1]) / (
+                    2.0 * self._dx
+                )
+                jx = -sigma * dvdx
+                jy = -sigma * dvdy
+                self._J[i_b, i, j] = gs.qd_vec3(jx, jy, 0.0)
+                self._Q[f, i_b, i, j] = (jx * jx + jy * jy) / (sigma + 1e-10)
+
+    @qd.kernel
+    def _compute_jq_from_v_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Fused J+Q from ``_V[f+1]`` for 3D (see ``_compute_jq_from_v_2d``)."""
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            if (
+                i == 0
+                or i == self._nx - 1
+                or j == 0
+                or j == self._ny - 1
+                or k == 0
+                or k == self._nz - 1
+            ):
+                self._J[i_b, i, j, k] = gs.qd_vec3(0.0, 0.0, 0.0)
+                self._Q[f, i_b, i, j, k] = gs.qd_float(0.0)
+            else:
+                sigma = self._sigma[i_b, i, j, k]
+                dvdx = (
+                    self._V[f + 1, i_b, i + 1, j, k] - self._V[f + 1, i_b, i - 1, j, k]
+                ) / (2.0 * self._dx)
+                dvdy = (
+                    self._V[f + 1, i_b, i, j + 1, k] - self._V[f + 1, i_b, i, j - 1, k]
+                ) / (2.0 * self._dx)
+                dvdz = (
+                    self._V[f + 1, i_b, i, j, k + 1] - self._V[f + 1, i_b, i, j, k - 1]
+                ) / (2.0 * self._dx)
+                jx = -sigma * dvdx
+                jy = -sigma * dvdy
+                jz = -sigma * dvdz
+                self._J[i_b, i, j, k] = gs.qd_vec3(jx, jy, jz)
+                self._Q[f, i_b, i, j, k] = (jx * jx + jy * jy + jz * jz) / (
+                    sigma + 1e-10
+                )
+
+    @qd.kernel
     def _apply_q_to_thermal_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            q = self._Q[f, i_b, i, j]
-            rho = self._rho_field[i_b]
-            cp = self._cp_field[i_b]
-            dt_over_rhocp = self._substep_dt / (rho * cp)
-            self._sim.thermal_solver._T[f + 1, i_b, i, j] += q * dt_over_rhocp
+            self._sim.thermal_solver._T[f + 1, i_b, i, j] += (
+                self._Q[f, i_b, i, j] * self._dt_over_rhocp_field[i_b]
+            )
 
     @qd.kernel
     def _apply_q_to_thermal_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            q = self._Q[f, i_b, i, j, k]
-            rho = self._rho_field[i_b]
-            cp = self._cp_field[i_b]
-            dt_over_rhocp = self._substep_dt / (rho * cp)
-            self._sim.thermal_solver._T[f + 1, i_b, i, j, k] += q * dt_over_rhocp
+            self._sim.thermal_solver._T[f + 1, i_b, i, j, k] += (
+                self._Q[f, i_b, i, j, k] * self._dt_over_rhocp_field[i_b]
+            )
 
     @qd.kernel
     def _heat_step_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        r_env = self._r_field
+        dt_over_rhocp_env = self._dt_over_rhocp_field
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             t_old = self._T[f, i_b, i, j]
-            rho = self._rho_field[i_b]
-            cp = self._cp_field[i_b]
-            k = self._k_field[i_b]
-            alpha = k / (rho * cp)
-            r = alpha * self._substep_dt / (self._dx * self._dx)
-            heating = self._Q[f, i_b, i, j] * self._substep_dt / (rho * cp)
+            r = r_env[i_b]
+            heating = self._Q[f, i_b, i, j] * dt_over_rhocp_env[i_b]
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
-                # Insulated (zero-Neumann) boundary.
                 im = qd.max(i - 1, 0)
                 ip = qd.min(i + 1, self._nx - 1)
                 jm = qd.max(j - 1, 0)
@@ -991,14 +1298,12 @@ class JouleHeatingSolver(Solver):
 
     @qd.kernel
     def _heat_step_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        r_env = self._r_field
+        dt_over_rhocp_env = self._dt_over_rhocp_field
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             t_old = self._T[f, i_b, i, j, k]
-            rho = self._rho_field[i_b]
-            cp = self._cp_field[i_b]
-            k = self._k_field[i_b]
-            alpha = k / (rho * cp)
-            r = alpha * self._substep_dt / (self._dx * self._dx)
-            heating = self._Q[f, i_b, i, j, k] * self._substep_dt / (rho * cp)
+            r = r_env[i_b]
+            heating = self._Q[f, i_b, i, j, k] * dt_over_rhocp_env[i_b]
             if (
                 i == 0
                 or i == self._nx - 1
