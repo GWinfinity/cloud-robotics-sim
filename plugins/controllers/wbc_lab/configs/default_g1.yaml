@@ -1,0 +1,82 @@
+# wbc-lab Genesis Default Config
+# Migrated from wbc-lab G1 task config
+
+# Physics engine settings
+genesis:
+  dt: 0.005
+  substeps: 20
+
+# Scene rendering
+scene:
+  show_viewer: true
+  camera_pos: [3.0, 3.0, 2.0]
+  camera_lookat: [0.0, 0.0, 0.5]
+  camera_fov: 45
+
+# Environment settings
+env:
+  num_envs: 1
+  max_episode_steps: 1000
+  device: cuda
+
+# Robot configuration
+robot:
+  num_joints: 29
+  action_scale: 0.25
+
+# Motion tracking
+motion:
+  motion_path: ""  # Set to NPZ bundle or directory
+  anchor_body_name: torso_link
+
+# RSI (Reference State Initialization)
+rsi:
+  sampling_mode: adaptive
+  strategy: similarity_ema
+  bin_width_s: 4.0
+  uniform_ratio: 0.15
+  alpha: 0.005
+  temperature_base: 1.0
+
+# Reward weights
+rewards:
+  tracking_joint_pos:
+    weight: 1.0
+    sigma: 0.1
+  tracking_joint_vel:
+    weight: 0.2
+    sigma: 0.5
+  tracking_anchor_pos:
+    weight: 2.0
+    sigma: 0.05
+  tracking_anchor_ori:
+    weight: 1.0
+    sigma: 0.2
+  tracking_body_pos:
+    weight: 1.0
+    sigma: 0.05
+  tracking_anchor_lin_vel:
+    weight: 0.5
+    sigma: 0.25
+  tracking_anchor_ang_vel:
+    weight: 0.2
+    sigma: 0.25
+  action_rate:
+    weight: -0.01
+  joint_acc:
+    weight: -2.5e-7
+  torque_limit:
+    weight: -0.0001
+  self_collision:
+    weight: -1.0
+  termination:
+    weight: -10.0
+
+# Termination conditions
+termination:
+  anchor_pos_xy_threshold: 3.0
+  anchor_pos_z_threshold: 0.8
+  anchor_ori_threshold: 1.5
+  min_base_height: 0.3
+  max_contact_force: 500.0
+  max_episode_steps: 1000

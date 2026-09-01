@@ -1,0 +1,36 @@
+name: wbc_lab
+version: 0.1.0
+description: WBC motion tracking controller migrated from wbc-lab - multi-clip motion library, adaptive RSI, assistive wrench, Unitree G1
+
+category: controllers
+source_project: wbc-lab
+
+author:
+  name: wbc-lab Team
+  email: contact@wbc-lab.dev
+
+dependencies:
+  - numpy>=1.20
+  - torch>=2.0
+  - genesis-world>=1.3.0
+  - pyyaml>=6.0
+  - scipy>=1.10
+
+exports:
+  - WbcGenesisEnv
+  - MotionCommand
+  - MotionLoader
+  - AdaptiveRsiSampler
+  - G1RobotConfig
+  - RewardComputer
+  - TerminationChecker
+  - TrackingParamsExporter
+
+tags:
+  - humanoid
+  - whole_body_control
+  - motion_tracking
+  - reinforcement_learning
+  - unitree_g1
+  - adaptive_rsi
+  - assistive_wrench
