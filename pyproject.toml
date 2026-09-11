@@ -68,7 +68,6 @@ dependencies = [
     # Utilities
     "requests>=2.31.0",
     "packaging>=24.0",
-    "robomat",
 ]
 
 [project.optional-dependencies]
@@ -84,6 +83,11 @@ dev = [
     "zarr>=2.16,<3.0; python_version<'3.11'",
     "zarr>=3.0.8; python_version>='3.11' and python_version<'3.12'",
     "zarr>=3.2.1; python_version>='3.12'",
+]
+
+# Optional local material library (not on PyPI; uv-only path source).
+robomat = [
+    "robomat",
 ]
 
 docs = [

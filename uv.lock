@@ -382,7 +382,6 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "requests" },
-    { name = "robomat" },
     { name = "scipy", version = "1.15.3", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "scipy", version = "1.18.0", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version >= '3.12'" },
@@ -436,6 +435,9 @@ docs = [
     { name = "sphinx", version = "9.1.0", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "sphinx-rtd-theme" },
 ]
+robomat = [
+    { name = "robomat" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -464,7 +466,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "pyyaml", specifier = ">=6.0.1" },
     { name = "requests", specifier = ">=2.31.0" },
-    { name = "robomat", editable = "../robomat" },
+    { name = "robomat", marker = "extra == 'robomat'", editable = "../robomat" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4.0" },
     { name = "scipy", specifier = ">=1.10" },
     { name = "shapely", specifier = ">=2.0" },
@@ -480,7 +482,7 @@ requires-dist = [
     { name = "zarr", marker = "python_full_version < '3.11' and extra == 'dev'", specifier = ">=2.16,<3.0" },
     { name = "zarr", marker = "python_full_version >= '3.12' and extra == 'dev'", specifier = ">=3.2.1" },
 ]
-provides-extras = ["dev", "docs", "all"]
+provides-extras = ["dev", "robomat", "docs", "all"]
 
 [[package]]
 name = "cloudpickle"

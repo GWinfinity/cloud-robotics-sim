@@ -68,6 +68,7 @@ def test_create_mesh_with_default_material_uses_no_physics_material(
 
 def test_create_mesh_with_robomat_material(backend: GenesisBackend) -> None:
     """A known robomat material hint is converted to gs.materials.Rigid."""
+    pytest.importorskip("robomat")
     fake_gs = _fake_gs_module()
     backend._gs_backend = SimpleNamespace()  # type: ignore[attr-defined]
 

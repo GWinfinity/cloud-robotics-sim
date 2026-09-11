@@ -82,6 +82,7 @@ def fake_library(tmp_path: Path) -> RoboTwinObjectLibrary:
 
 def test_resolve_robotwin_material_returns_rigid() -> None:
     """Robomat should resolve a known RoboTwin class to a Genesis Rigid material."""
+    pytest.importorskip("robomat")
     material = _resolve_robotwin_material("021_cup")
     assert material is not None
     assert hasattr(material, "rho")
@@ -97,6 +98,7 @@ def test_spawn_mesh_passes_material(
     fake_library: RoboTwinObjectLibrary, tmp_path: Path
 ) -> None:
     """spawn_in_scene forwards a resolved material to gs.morphs.Mesh."""
+    pytest.importorskip("robomat")
     fake_gs = _fake_gs_module()
     scene = SimpleNamespace(add_entity=lambda morph, surface=None: morph)
 
@@ -112,6 +114,7 @@ def test_spawn_mesh_passes_material(
 
 def test_spawn_urdf_passes_material(tmp_path: Path) -> None:
     """spawn_in_scene forwards a resolved material to gs.morphs.URDF."""
+    pytest.importorskip("robomat")
     class_dir = tmp_path / "009_kettle"
     sub = class_dir / "102730"
     sub.mkdir(parents=True)

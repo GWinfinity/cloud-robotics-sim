@@ -17,6 +17,8 @@ uv run python -m mypy src/cloud_robotics_sim
 
 On Windows, the venv interpreter is at `.venv/Scripts/python.exe`. Avoid using the system Python or external virtual environments.
 
+The `robomat` material library is an optional local sibling package (`../robomat`, not on PyPI) wired through `[tool.uv.sources]`. It lives in the `robomat` extra so that pip-based CI (`pip install -e ".[dev]"`) works; install it locally with `uv sync --extra dev --extra robomat`. All robomat imports are guarded and degrade to simulator defaults when absent.
+
 ## Supported Python Versions
 
 - `requires-python = ">=3.10,<3.14"`
