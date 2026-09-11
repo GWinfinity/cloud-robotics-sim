@@ -525,3 +525,43 @@ class TestMultiplePairwiseContacts:
         )
         assert len(result2[c]) == 1
         assert result2[c][0][1] is False
+
+
+class TestApplyEntityForce:
+    """Tests for the version-compatible external force helper."""
+
+    def test_new_wrench_api_preferred(self):
+        """genesis-world >= 1.4 entities use base_link.apply_external_force."""
+        calls = {}
+
+        class FakeLink:
+            def apply_external_force(self, force, envs_idx=None, *, pos=None, **kw):
+                calls["force"] = np.asarray(force)
+                calls["pos"] = pos if pos is None else np.asarray(pos)
+
+        entity = SimpleNamespace(base_link=FakeLink())
+        ok = genesis_compat.apply_entity_force(
+            entity, [1.0, 2.0, 3.0], pos=[0.0, 0.0, 1.0]
+        )
+        assert ok is True
+        np.testing.assert_allclose(calls["force"], [1.0, 2.0, 3.0])
+        np.testing.assert_allclose(calls["pos"], [0.0, 0.0, 1.0])
+
+    def test_legacy_apply_force_fallback(self):
+        """Entities without the 1.4 wrench API fall back to apply_force."""
+        calls = {}
+
+        class FakeEntity:
+            def apply_force(self, force, pos=None):
+                calls["force"] = np.asarray(force)
+                calls["pos"] = pos
+
+        entity = FakeEntity()
+        ok = genesis_compat.apply_entity_force(entity, [0.0, 0.0, 9.8])
+        assert ok is True
+        np.testing.assert_allclose(calls["force"], [0.0, 0.0, 9.8])
+        assert calls["pos"] is None
+
+    def test_unsupported_entity_returns_false(self):
+        """Entities with no force API return False instead of raising."""
+        assert genesis_compat.apply_entity_force(object(), [1.0, 0.0, 0.0]) is False

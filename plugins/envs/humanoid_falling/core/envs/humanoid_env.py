@@ -233,9 +233,10 @@ class HumanoidFallingEnv:
                 ])
         
         if self.is_pushing and self.push_timer > 0:
-            # 施加力到躯干
-            self.robot.apply_force(
-                force=self.push_direction,
+            # 施加力到躯干 (genesis-world >= 1.4 通过 base_link.apply_external_force)
+            apply_entity_force(
+                self.robot,
+                self.push_direction,
                 pos=self.robot.get_pos()
             )
             self.push_timer -= 1

@@ -299,6 +299,46 @@ def is_genesis_scene(scene: Any) -> bool:
         return False
 
 
+def apply_entity_force(entity: Any, force: Any, pos: Any = None) -> bool:
+    """Apply a world-frame external force to a rigid entity for one sim step.
+
+    Version-compatible wrapper:
+
+    - genesis-world >= 1.4: uses ``RigidLink.apply_external_force`` on the
+      entity's base link (``pos`` selects the application point, world frame).
+    - Older releases (e.g. the vendored 0.3.x copy): falls back to the legacy
+      ``entity.apply_force`` when available.
+
+    The force persists for a single simulation step and must be re-applied
+    every step.
+
+    Args:
+        entity: A Genesis rigid entity.
+        force: (3,) linear force in the world frame.
+        pos: Optional (3,) application point in the world frame.
+
+    Returns:
+        True if the force was applied, False if the entity exposes no
+        supported force-application API.
+    """
+    force_arr = np.asarray(force, dtype=np.float64) if HAS_NUMPY else force
+    pos_arr = (
+        np.asarray(pos, dtype=np.float64) if (HAS_NUMPY and pos is not None) else pos
+    )
+    base_link = getattr(entity, "base_link", None)
+    if base_link is not None and hasattr(base_link, "apply_external_force"):
+        base_link.apply_external_force(force_arr, pos=pos_arr)
+        return True
+    if hasattr(entity, "apply_force"):
+        if pos is None:
+            entity.apply_force(force_arr)
+        else:
+            entity.apply_force(force_arr, pos=pos_arr)
+        return True
+    logger.debug("Genesis entity does not support external force application")
+    return False
+
+
 # =============================================================================
 # Type Aliases
 # =============================================================================

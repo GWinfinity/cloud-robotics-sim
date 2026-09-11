@@ -13,6 +13,8 @@ import numpy as np
 import genesis as gs
 from typing import Optional
 
+from cloud_robotics_sim.utils.genesis_compat import apply_entity_force
+
 
 class TableTennisBall:
     """

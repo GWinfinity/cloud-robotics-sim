@@ -142,8 +142,10 @@ class TestGenesisArticulationExtended:
         robot.set_mass_shift(np.zeros((4, 3)))
         robot.set_com_shift(np.zeros((4, 3, 3)))
         entity.set_friction_ratio.assert_called_once()
-        entity.set_mass_shift.assert_called_once()
-        entity.set_COM_shift.assert_called_once()
+        # genesis-world 1.4 removed the *_shift API; the backend emulates it
+        # via baseline + set_links_mass / set_links_COM.
+        entity.set_links_mass.assert_called_once()
+        entity.set_links_COM.assert_called_once()
         assert entity.set_friction_ratio.call_args.kwargs["envs_idx"] == [0, 1]
 
 

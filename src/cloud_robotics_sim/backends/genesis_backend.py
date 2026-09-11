@@ -32,7 +32,10 @@ from cloud_robotics_sim.backend.types import (
     RenderOutput,
     ViewerOptions,
 )
-from cloud_robotics_sim.utils.genesis_compat import ensure_genesis_initialized
+from cloud_robotics_sim.utils.genesis_compat import (
+    apply_entity_force,
+    ensure_genesis_initialized,
+)
 from cloud_robotics_sim.utils.robomat_compat import resolve_genesis_rigid_material
 
 logger = logging.getLogger(__name__)
@@ -45,7 +48,7 @@ try:
 except ImportError:
     HAS_GENESIS = False
     gs = None
-    torch = None
+    torch = None  # type: ignore[assignment]
 
 
 def _require_genesis() -> None:
@@ -133,13 +136,7 @@ class GenesisEntityBackend(EntityBackend):
         force: np.ndarray,
         pos: np.ndarray | None = None,
     ) -> None:
-        entity = self._resolve_entity()
-        if hasattr(entity, "apply_force"):
-            entity.apply_force(
-                np.asarray(force), pos=np.asarray(pos) if pos is not None else None
-            )
-        else:
-            logger.debug("Genesis entity does not support apply_force")
+        apply_entity_force(self._resolve_entity(), force, pos)
 
 
 class GenesisArticulationBackend(GenesisEntityBackend, ArticulationBackend):
@@ -428,18 +425,36 @@ class GenesisArticulationBackend(GenesisEntityBackend, ArticulationBackend):
         shifts: np.ndarray,
         envs_idx: list[int] | None = None,
     ) -> None:
-        """Per-env link-mass domain randomization."""
+        """Per-env link-mass domain randomization.
+
+        genesis-world 1.4 removed the ``*_shift`` randomization API; emulate
+        its replacement semantics on top of the entity's original link masses.
+        """
         entity = self._resolve_entity()
-        entity.set_mass_shift(np.asarray(shifts), envs_idx=envs_idx)
+        shifts = np.asarray(shifts, dtype=np.float64)
+        if not hasattr(entity, "_crs_mass_baseline"):
+            entity._crs_mass_baseline = np.asarray(
+                entity.get_links_mass(), dtype=np.float64
+            )
+        entity.set_links_mass(entity._crs_mass_baseline + shifts, envs_idx=envs_idx)
 
     def set_com_shift(
         self,
         shifts: np.ndarray,
         envs_idx: list[int] | None = None,
     ) -> None:
-        """Per-env center-of-mass domain randomization."""
+        """Per-env center-of-mass domain randomization.
+
+        genesis-world 1.4 removed the ``*_shift`` randomization API; emulate
+        its replacement semantics on top of the entity's original link COMs.
+        """
         entity = self._resolve_entity()
-        entity.set_COM_shift(np.asarray(shifts), envs_idx=envs_idx)
+        shifts = np.asarray(shifts, dtype=np.float64)
+        if not hasattr(entity, "_crs_com_baseline"):
+            entity._crs_com_baseline = np.asarray(
+                entity.get_links_COM(), dtype=np.float64
+            )
+        entity.set_links_COM(entity._crs_com_baseline + shifts, envs_idx=envs_idx)
 
     # ------------------------------------------------------------------
     # QP / whole-body dynamics primitives.
@@ -458,7 +473,8 @@ class GenesisArticulationBackend(GenesisEntityBackend, ArticulationBackend):
     def _squeeze_leading_batch(arr: np.ndarray) -> np.ndarray:
         """Drop a leading batch dimension of size 1 returned by single-env scenes."""
         if arr.ndim >= 2 and arr.shape[0] == 1:
-            return arr[0]
+            squeezed: np.ndarray = arr[0]
+            return squeezed
         return arr
 
     def get_mass_matrix(
@@ -467,8 +483,10 @@ class GenesisArticulationBackend(GenesisEntityBackend, ArticulationBackend):
     ) -> np.ndarray:
         """Return the joint-space mass matrix ``M(q)`` for this articulation."""
         entity = self._resolve_entity()
-        M = entity.get_mass_mat(envs_idx=envs_idx)
-        return self._squeeze_leading_batch(np.asarray(M, dtype=np.float64))
+        mass_mat: np.ndarray = np.asarray(
+            entity.get_mass_mat(envs_idx=envs_idx), dtype=np.float64
+        )
+        return self._squeeze_leading_batch(mass_mat)
 
     def get_jacobian(
         self,
@@ -486,8 +504,10 @@ class GenesisArticulationBackend(GenesisEntityBackend, ArticulationBackend):
                 dtype=getattr(entity, "float_type", gs.tc_float),
                 device=getattr(entity, "device", gs.device),
             )
-        J = entity.get_jacobian(link_obj, local_point=local)
-        return self._squeeze_leading_batch(np.asarray(J, dtype=np.float64))
+        jacobian: np.ndarray = np.asarray(
+            entity.get_jacobian(link_obj, local_point=local), dtype=np.float64
+        )
+        return self._squeeze_leading_batch(jacobian)
 
     def get_contacts(
         self,
@@ -619,13 +639,7 @@ class GenesisDeformableEntityBackend(DeformableEntityBackend):
         force: np.ndarray,
         pos: np.ndarray | None = None,
     ) -> None:
-        entity = self._resolve_entity()
-        if hasattr(entity, "apply_force"):
-            entity.apply_force(
-                np.asarray(force), pos=np.asarray(pos) if pos is not None else None
-            )
-        else:
-            logger.debug("Genesis deformable entity does not support apply_force")
+        apply_entity_force(self._resolve_entity(), force, pos)
 
     def get_particle_positions(self) -> np.ndarray:
         entity = self._resolve_entity()
@@ -1033,6 +1047,10 @@ class GenesisBackend(SimulatorBackend):
         scene_kwargs: dict[str, Any] = {
             "viewer_options": gs_viewer_options,
             "sim_options": gs.options.SimOptions(dt=dt, substeps=substeps),
+            # Batch per-link physical info so domain randomization
+            # (set_mass_shift/set_com_shift/set_friction_ratio) can set
+            # per-env values (required by genesis-world >= 1.4).
+            "rigid_options": gs.options.RigidOptions(batch_links_info=True),
             "show_viewer": not headless,
         }
         if fem_options is not None:

@@ -13,6 +13,8 @@ import numpy as np
 import genesis as gs
 from typing import Optional
 
+from cloud_robotics_sim.utils.genesis_compat import apply_entity_force
+
 
 class Shuttlecock:
     """
@@ -132,8 +134,8 @@ class Shuttlecock:
         tumble_factor = 1.0 + 0.5 * (speed / self.terminal_velocity)
         drag_accel *= tumble_factor
         
-        # 应用力
-        self.entity.apply_force(force=drag_accel * self.mass)
+        # 应用力 (genesis-world >= 1.4 通过 base_link.apply_external_force)
+        apply_entity_force(self.entity, drag_accel * self.mass)
         
         # 更新状态
         self.velocity = self.entity.get_vel()
