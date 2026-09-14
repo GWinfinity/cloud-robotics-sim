@@ -56,6 +56,7 @@ try:
     from cloud_robotics_sim.core.vectorized import (
         GenesisVectorizedEnv,
         VecEnvConfig,
+        VecTask,
         VectorizedEnvironment,
     )
 
@@ -122,6 +123,7 @@ if _CORE_AVAILABLE:
             "VectorizedEnvironment",
             "GenesisVectorizedEnv",
             "VecEnvConfig",
+            "VecTask",
         ]
     )
 

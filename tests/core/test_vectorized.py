@@ -4,12 +4,74 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+import torch
 
 from cloud_robotics_sim import (
     GenesisVectorizedEnv,
     VecEnvConfig,
+    VecTask,
     VectorizedEnvironment,
 )
+from cloud_robotics_sim.core.vectorized import GenesisVecEnv, VectorizedEnv
+
+
+class FakeTask(VecTask):
+    """Minimal batched task used to test GenesisVectorizedEnv without Genesis.
+
+    Observations are a constant ramp per reset so tests can distinguish
+    fresh observations from stale ones.
+    """
+
+    num_observations = 4
+    num_actions = 2
+
+    def __init__(self):
+        self.reset_calls = []
+        self.step_calls = []
+
+    def build_scene(self, scene):
+        scene.mark("build_scene")
+
+    def setup(self, scene):
+        scene.mark("setup")
+
+    def reset(self, envs_idx=None):
+        self.reset_calls.append(envs_idx)
+        n = self.num_envs if envs_idx is None else int(envs_idx.numel())
+        return torch.ones(n, self.num_observations, device=self.seeds.device)
+
+    def step(self, actions):
+        self.step_calls.append(actions)
+        n = actions.shape[0]
+        device = actions.device
+        return (
+            torch.zeros(n, self.num_observations, device=device),
+            torch.zeros(n, device=device),
+            torch.zeros(n, dtype=torch.bool, device=device),
+            torch.zeros(n, dtype=torch.bool, device=device),
+            {},
+        )
+
+
+class FakeScene:
+    """Stand-in for a built Genesis scene."""
+
+    def __init__(self):
+        self.build = MagicMock()
+        self.marks = []
+
+    def mark(self, name):
+        self.marks.append(name)
+
+
+def make_env(num_envs=4, **config_kwargs):
+    """Build an env with a FakeTask and FakeScene (no Genesis required)."""
+    config_kwargs.setdefault("use_cuda", False)
+    config = VecEnvConfig(num_envs=num_envs, **config_kwargs)
+    task = FakeTask()
+    scene = FakeScene()
+    env = GenesisVectorizedEnv(config=config, task=task, scene_fn=lambda: scene)
+    return env, task, scene
 
 
 class TestVecEnvConfig:
@@ -24,17 +86,28 @@ class TestVecEnvConfig:
         assert config.max_parallel == 32
         assert config.use_cuda is True
 
+    def test_physics_defaults(self):
+        """Test contact-fidelity physics knobs are exposed."""
+        config = VecEnvConfig()
+
+        assert config.sim_dt == 0.02
+        assert config.sim_substeps == 2
+        assert config.integrator == "implicitfast"
+        assert config.noslip_iterations == 5
+
     def test_custom_values(self):
         """Test custom vectorized environment configuration."""
         config = VecEnvConfig(
             num_envs=16,
             max_parallel=4,
             use_cuda=False,
+            noslip_iterations=10,
         )
 
         assert config.num_envs == 16
         assert config.max_parallel == 4
         assert config.use_cuda is False
+        assert config.noslip_iterations == 10
 
 
 class TestVectorizedEnvironment:
@@ -68,33 +141,55 @@ class TestVectorizedEnvironment:
         vec_env.close()
 
 
+class TestVecTask:
+    """Tests for the VecTask abstract interface."""
+
+    def test_cannot_instantiate_without_impl(self):
+        """Test VecTask is abstract."""
+        with pytest.raises(TypeError):
+            VecTask()
+
+    def test_fake_task_is_vec_task(self):
+        """Test FakeTask satisfies the VecTask interface."""
+        assert isinstance(FakeTask(), VecTask)
+
+
 class TestGenesisVectorizedEnv:
     """Tests for GenesisVectorizedEnv."""
 
     def test_init(self):
-        """Test initialization stores factory functions."""
-        config = VecEnvConfig(num_envs=8)
-        scene_fn = MagicMock()
-        robot_fn = MagicMock()
-        task_fn = MagicMock()
-
-        env = GenesisVectorizedEnv(
-            config=config,
-            scene_fn=scene_fn,
-            robot_fn=robot_fn,
-            task_fn=task_fn,
-        )
+        """Test initialization stores task and scene factory."""
+        env, task, scene = make_env(num_envs=8)
 
         assert env.num_envs == 8
-        assert env.scene_fn is scene_fn
-        assert env.robot_fn is robot_fn
-        assert env.task_fn is task_fn
+        assert env.task is task
         assert env._initialized is False
+        assert env.scene_fn() is scene
+
+    def test_task_dimension_properties(self):
+        """Test num_actions / num_observations delegate to the task."""
+        env, _, _ = make_env()
+
+        assert env.num_actions == 2
+        assert env.num_observations == 4
+
+    def test_task_dimension_properties_require_task(self):
+        """Test dimension properties raise without a task."""
+        env = GenesisVectorizedEnv(VecEnvConfig())
+
+        with pytest.raises(RuntimeError, match="No task configured"):
+            _ = env.num_actions
+
+    def test_initialize_requires_task(self):
+        """Test initialize raises a clear error without a task."""
+        env = GenesisVectorizedEnv(VecEnvConfig())
+
+        with pytest.raises(RuntimeError, match="VecTask"):
+            env.initialize()
 
     def test_initialize(self):
-        """Test initialize calls Genesis initialization."""
-        config = VecEnvConfig(num_envs=4, use_cuda=False)
-        env = GenesisVectorizedEnv(config)
+        """Test initialize builds the batched scene and wires the task."""
+        env, task, scene = make_env(num_envs=4)
 
         with patch(
             "cloud_robotics_sim.utils.genesis_compat.ensure_genesis_initialized"
@@ -102,45 +197,96 @@ class TestGenesisVectorizedEnv:
             env.initialize()
 
         mock_init.assert_called_once_with(use_cuda=False)
+        assert env.device == torch.device("cpu")
+        scene.build.assert_called_once_with(n_envs=4)
+        assert scene.marks == ["build_scene", "setup"]
+        assert task.num_envs == 4
+        assert task.seeds.shape == (4,)
+        assert env.episode_length.shape == (4,)
         assert env._initialized is True
 
     def test_initialize_idempotent(self):
-        """Test initialize is idempotent."""
-        env = GenesisVectorizedEnv(VecEnvConfig())
+        """Test initialize only builds the scene once."""
+        env, _, scene = make_env()
 
         with patch(
             "cloud_robotics_sim.utils.genesis_compat.ensure_genesis_initialized"
-        ) as mock_init:
+        ):
             env.initialize()
             env.initialize()
 
-        assert mock_init.call_count == 2
+        assert scene.build.call_count == 1
+
+    def test_initialize_falls_back_to_cpu(self):
+        """Test CUDA requests fall back to CPU when unavailable."""
+        env, _, _ = make_env(use_cuda=True)
+
+        with (
+            patch("cloud_robotics_sim.utils.genesis_compat.ensure_genesis_initialized"),
+            patch("torch.cuda.is_available", return_value=False),
+        ):
+            env.initialize()
+
+        assert env.device == torch.device("cpu")
 
     def test_reset(self):
-        """Test reset returns placeholder observations."""
-        env = GenesisVectorizedEnv(VecEnvConfig(num_envs=4))
+        """Test full reset returns batched observations and seed infos."""
+        env, task, _ = make_env(num_envs=4)
         env._initialized = True
+        env.device = torch.device("cpu")
+        env.episode_length = torch.tensor([3, 5, 7, 9])
+        env.task.seeds = torch.arange(4)
 
         obs, infos = env.reset()
 
-        assert obs.shape == (4, 23)
+        assert isinstance(obs, torch.Tensor)
+        assert obs.shape == (4, 4)
         assert len(infos) == 4
         for i, info in enumerate(infos):
             assert info["seed"] == i
+        assert torch.equal(env.episode_length, torch.zeros(4, dtype=torch.long))
+        assert task.reset_calls[-1].numel() == 4
 
     def test_reset_with_seeds(self):
-        """Test reset uses provided seeds."""
-        env = GenesisVectorizedEnv(VecEnvConfig(num_envs=2))
+        """Test reset updates seeds for the reset environments."""
+        env, task, _ = make_env(num_envs=4)
         env._initialized = True
+        env.device = torch.device("cpu")
+        env.episode_length = torch.zeros(4, dtype=torch.long)
+        env.task.seeds = torch.arange(4)
 
-        obs, infos = env.reset(seeds=[100, 200])
+        env.reset(seeds=[100, 200, 300, 400])
 
-        assert infos[0]["seed"] == 100
-        assert infos[1]["seed"] == 200
+        assert torch.equal(task.seeds, torch.tensor([100, 200, 300, 400]))
+
+    def test_reset_with_seeds_length_mismatch(self):
+        """Test seed count must match the reset subset size."""
+        env, _, _ = make_env(num_envs=4)
+        env._initialized = True
+        env.device = torch.device("cpu")
+        env.episode_length = torch.zeros(4, dtype=torch.long)
+        env.task.seeds = torch.arange(4)
+
+        with pytest.raises(ValueError, match="seeds"):
+            env.reset(seeds=[1, 2])
+
+    def test_reset_partial_envs_idx(self):
+        """Test mask-style partial reset only resets the given envs."""
+        env, task, _ = make_env(num_envs=4)
+        env._initialized = True
+        env.device = torch.device("cpu")
+        env.episode_length = torch.tensor([1, 2, 3, 4])
+        env.task.seeds = torch.arange(4)
+
+        obs = env.reset_idx(torch.tensor([1, 3]))
+
+        assert obs.shape == (2, 4)
+        assert torch.equal(env.episode_length, torch.tensor([1, 0, 3, 0]))
+        assert torch.equal(task.reset_calls[-1], torch.tensor([1, 3]))
 
     def test_reset_initializes(self):
-        """Test reset initializes if not already initialized."""
-        env = GenesisVectorizedEnv(VecEnvConfig(num_envs=2))
+        """Test reset lazily initializes the environment."""
+        env, _, scene = make_env(num_envs=2)
 
         with patch(
             "cloud_robotics_sim.utils.genesis_compat.ensure_genesis_initialized"
@@ -148,35 +294,52 @@ class TestGenesisVectorizedEnv:
             obs, infos = env.reset()
 
         assert env._initialized is True
-        assert obs.shape == (2, 23)
+        scene.build.assert_called_once_with(n_envs=2)
+        assert obs.shape == (2, 4)
         assert len(infos) == 2
 
     def test_step(self):
-        """Test step returns placeholder batched results."""
-        env = GenesisVectorizedEnv(VecEnvConfig(num_envs=4))
+        """Test step returns batched tensors and increments episode length."""
+        env, task, _ = make_env(num_envs=4)
         env._initialized = True
+        env.device = torch.device("cpu")
+        env.episode_length = torch.zeros(4, dtype=torch.long)
 
-        actions = np.zeros((4, 8))
+        actions = np.zeros((4, 2), dtype=np.float64)
         obs, rewards, terminated, truncated, infos = env.step(actions)
 
-        assert obs.shape == (4, 23)
+        assert obs.shape == (4, 4)
         assert rewards.shape == (4,)
         assert terminated.shape == (4,)
         assert truncated.shape == (4,)
         assert len(infos) == 4
+        assert torch.equal(env.episode_length, torch.ones(4, dtype=torch.long))
+        # numpy actions are converted to float32 tensors on the device
+        assert task.step_calls[-1].dtype == torch.float32
+        assert task.step_calls[-1].shape == (4, 2)
+
+    def test_step_validates_action_shape(self):
+        """Test step rejects wrongly shaped actions."""
+        env, _, _ = make_env(num_envs=4)
+        env._initialized = True
+        env.device = torch.device("cpu")
+        env.episode_length = torch.zeros(4, dtype=torch.long)
+
+        with pytest.raises(ValueError, match="Expected actions"):
+            env.step(torch.zeros(4, 3))
 
     def test_step_initializes(self):
-        """Test step initializes if not already initialized."""
-        env = GenesisVectorizedEnv(VecEnvConfig(num_envs=3))
+        """Test step lazily initializes the environment."""
+        env, _, scene = make_env(num_envs=3)
 
         with patch(
             "cloud_robotics_sim.utils.genesis_compat.ensure_genesis_initialized"
         ):
-            actions = np.zeros((3, 8))
-            obs, rewards, terminated, truncated, infos = env.step(actions)
+            obs, rewards, terminated, truncated, infos = env.step(torch.zeros(3, 2))
 
         assert env._initialized is True
-        assert obs.shape == (3, 23)
+        scene.build.assert_called_once_with(n_envs=3)
+        assert obs.shape == (3, 4)
 
     def test_close(self, caplog):
         """Test close logs cleanup message."""
@@ -194,7 +357,5 @@ class TestTypeAliases:
 
     def test_aliases(self):
         """Test backward-compatibility aliases."""
-        from cloud_robotics_sim.core.vectorized import GenesisVecEnv, VectorizedEnv
-
         assert VectorizedEnv is VectorizedEnvironment
         assert GenesisVecEnv is GenesisVectorizedEnv
