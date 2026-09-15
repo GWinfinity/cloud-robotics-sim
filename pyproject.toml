@@ -96,8 +96,14 @@ docs = [
     "myst-parser>=2.0.0",
 ]
 
+# Redis client for the Kubernetes/KEDA queue worker
+# (see deploy/kubernetes/ and cloud_robotics_sim.runtime.queue_worker).
+k8s = [
+    "redis>=5.0",
+]
+
 all = [
-    "cloud-robotics-sim[dev,docs]",
+    "cloud-robotics-sim[dev,docs,k8s]",
 ]
 
 [[tool.uv.index]]

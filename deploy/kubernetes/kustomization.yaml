@@ -1,0 +1,12 @@
+# Convenience kustomization. Use `kubectl apply -k deploy/kubernetes/`.
+# (Plain `kubectl apply -f deploy/kubernetes/` also works — kubectl
+# automatically skips kustomization.yaml in directory mode.)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: genesis-sim
+resources:
+  - namespace.yaml
+  - redis.yaml
+  - sim-worker-cpu.yaml
+  - sim-worker-gpu.yaml
+  - keda-scaledobjects.yaml

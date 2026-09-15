@@ -1,0 +1,75 @@
+# GPU simulation worker.
+#
+# Requires the NVIDIA device plugin (and GPU nodes) in the cluster:
+#   https://github.com/NVIDIA/k8s-device-plugin
+#
+# Replicas are managed by the KEDA ScaledObject in
+# keda-scaledobjects.yaml.
+#
+# Build/push the image first (see docs/guides/kubernetes.md):
+#   docker build --build-arg BASE_IMAGE=nvidia/cuda:12.1.0-runtime-ubuntu22.04 \
+#                --build-arg TORCH_BACKEND=cuda \
+#                -t <registry>/genesis-cloud-sim:gpu .
+#   docker push <registry>/genesis-cloud-sim:gpu
+#
+# NOTE: adjust the nodeSelector to match your cluster's GPU node labels
+# (the label below is the common one applied by the NVIDIA GPU Operator).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sim-worker-gpu
+  namespace: genesis-sim
+  labels:
+    app: sim-worker
+    tier: gpu
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: sim-worker
+      tier: gpu
+  template:
+    metadata:
+      labels:
+        app: sim-worker
+        tier: gpu
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+      containers:
+        - name: worker
+          image: genesis-cloud-sim:gpu # replace with your registry/image:tag
+          imagePullPolicy: IfNotPresent
+          command:
+            - python
+            - -m
+            - cloud_robotics_sim
+            - worker
+            - --queue
+            - sim-tasks-gpu
+          env:
+            - name: REDIS_URL
+              value: redis://redis:6379/0
+            - name: QUEUE_NAME
+              value: sim-tasks-gpu
+            - name: GENESIS_BACKEND
+              value: cuda
+            - name: TAICHI_ARCH
+              value: cuda
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "4"
+              memory: 16Gi
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: genesis-cache
+              mountPath: /home/dev/.cache
+      volumes:
+        - name: genesis-cache
+          emptyDir: {}

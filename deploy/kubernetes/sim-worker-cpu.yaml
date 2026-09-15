@@ -1,0 +1,64 @@
+# CPU simulation worker.
+#
+# Replicas are managed by the KEDA ScaledObject in
+# keda-scaledobjects.yaml: the deployment stays at 0 replicas while the
+# queue is empty and scales out when tasks arrive.
+#
+# Build/push the image first (see docs/guides/kubernetes.md):
+#   docker build -t <registry>/genesis-cloud-sim:cpu .
+#   docker push <registry>/genesis-cloud-sim:cpu
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sim-worker-cpu
+  namespace: genesis-sim
+  labels:
+    app: sim-worker
+    tier: cpu
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: sim-worker
+      tier: cpu
+  template:
+    metadata:
+      labels:
+        app: sim-worker
+        tier: cpu
+    spec:
+      containers:
+        - name: worker
+          image: genesis-cloud-sim:cpu # replace with your registry/image:tag
+          imagePullPolicy: IfNotPresent
+          command:
+            - python
+            - -m
+            - cloud_robotics_sim
+            - worker
+            - --queue
+            - sim-tasks-cpu
+          env:
+            - name: REDIS_URL
+              value: redis://redis:6379/0
+            - name: QUEUE_NAME
+              value: sim-tasks-cpu
+            - name: GENESIS_BACKEND
+              value: cpu
+            - name: TAICHI_ARCH
+              value: cpu
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              cpu: "4"
+              memory: 8Gi
+          volumeMounts:
+            - name: genesis-cache
+              mountPath: /home/dev/.cache
+      volumes:
+        - name: genesis-cache
+          emptyDir: {}

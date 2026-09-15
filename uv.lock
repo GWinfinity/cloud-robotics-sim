@@ -89,6 +89,15 @@ wheels = [
 ]
 
 [[package]]
+name = "async-timeout"
+version = "5.0.1"
+source = { registry = "https://mirrors.aliyun.com/pypi/simple" }
+sdist = { url = "https://mirrors.aliyun.com/pypi/packages/a5/ae/136395dfbfe00dfc94da3f3e136d0b13f394cba8f4841120e34226265780/async_timeout-5.0.1.tar.gz", hash = "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3" }
+wheels = [
+    { url = "https://mirrors.aliyun.com/pypi/packages/fe/ba/e2081de779ca30d473f21f5b30e0e737c438205440784c7dfc81efc2b029/async_timeout-5.0.1-py3-none-any.whl", hash = "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c" },
+]
+
+[[package]]
 name = "attrs"
 version = "26.1.0"
 source = { registry = "https://mirrors.aliyun.com/pypi/simple" }
@@ -405,6 +414,7 @@ all = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
+    { name = "redis" },
     { name = "ruff" },
     { name = "sphinx", version = "8.1.3", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version < '3.11'" },
     { name = "sphinx", version = "9.0.4", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version == '3.11.*'" },
@@ -435,6 +445,9 @@ docs = [
     { name = "sphinx", version = "9.1.0", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "sphinx-rtd-theme" },
 ]
+k8s = [
+    { name = "redis" },
+]
 robomat = [
     { name = "robomat" },
 ]
@@ -442,7 +455,7 @@ robomat = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
-    { name = "cloud-robotics-sim", extras = ["dev", "docs"], marker = "extra == 'all'" },
+    { name = "cloud-robotics-sim", extras = ["dev", "docs", "k8s"], marker = "extra == 'all'" },
     { name = "fastapi", specifier = ">=0.104.0" },
     { name = "genesis-world", specifier = "==1.4.0" },
     { name = "gymnasium", specifier = ">=1.0.0" },
@@ -465,6 +478,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "pyyaml", specifier = ">=6.0.1" },
+    { name = "redis", marker = "extra == 'k8s'", specifier = ">=5.0" },
     { name = "requests", specifier = ">=2.31.0" },
     { name = "robomat", marker = "extra == 'robomat'", editable = "../robomat" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4.0" },
@@ -482,7 +496,7 @@ requires-dist = [
     { name = "zarr", marker = "python_full_version < '3.11' and extra == 'dev'", specifier = ">=2.16,<3.0" },
     { name = "zarr", marker = "python_full_version >= '3.12' and extra == 'dev'", specifier = ">=3.2.1" },
 ]
-provides-extras = ["dev", "robomat", "docs", "all"]
+provides-extras = ["dev", "robomat", "docs", "k8s", "all"]
 
 [[package]]
 name = "cloudpickle"
@@ -3200,6 +3214,18 @@ wheels = [
     { url = "https://mirrors.aliyun.com/pypi/packages/ef/5f/fd875f16b75e3f021e9fd6f89cbd5a862e2b2b32de275044ffee3fb40544/quadrants-1.3.0-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_34_aarch64.whl", hash = "sha256:e84d152b6bcb7ace8604918f157023f1890703d591ba3dda235d52ea71667688" },
     { url = "https://mirrors.aliyun.com/pypi/packages/59/dc/ab888de75da5604d8a604822a32be2761d5716195d04e467347681215f53/quadrants-1.3.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f2593e5a1078c511dd33e22225da8ea024023564feac331f17820d71ce577194" },
     { url = "https://mirrors.aliyun.com/pypi/packages/0c/2f/f6ab0908b931e347789634b2f65bc5f1fd07137bc847376fb2abe982bacd/quadrants-1.3.0-cp313-cp313-win_amd64.whl", hash = "sha256:70c2985fa986b908b1e12564f9ed40b3cd45bae8986d0e5bd41d033d7cf48daf" },
+]
+
+[[package]]
+name = "redis"
+version = "8.1.0"
+source = { registry = "https://mirrors.aliyun.com/pypi/simple" }
+dependencies = [
+    { name = "async-timeout", marker = "python_full_version < '3.11.3'" },
+]
+sdist = { url = "https://mirrors.aliyun.com/pypi/packages/a8/99/604f0b666d4c616d891cf77ebb9db6bb21601344c051aebf1b72b9ff915f/redis-8.1.0.tar.gz", hash = "sha256:6e1a19beef9225c83efd689c7e6b7da2d5215b1f42cd13b7fc3714d0a09c7b25" }
+wheels = [
+    { url = "https://mirrors.aliyun.com/pypi/packages/66/9d/c5731f6e3608663d4d3656fd8d3aecee8b509c3082818f5a13eae925baea/redis-8.1.0-py3-none-any.whl", hash = "sha256:a4fe1aac3d3b3cc791d4b3d5931c5a956045dc951ee74d1c913ee3ac4d2ee9fb" },
 ]
 
 [[package]]

@@ -1,0 +1,50 @@
+# KEDA ScaledObjects: scale the CPU/GPU worker Deployments based on the
+# length of their Redis task queues. Requires KEDA >= 2.9 installed in
+# the cluster (the bundled redis scaler is enabled by default):
+#   kubectl apply -f https://github.com/kedacore/keda/releases/latest/download/keda.yaml
+#
+# Each queue is consumed by exactly one worker tier, so the queue length
+# maps 1:1 to the desired replica count (1 pending task -> 1 worker).
+# The CPU and GPU workers use SEPARATE queues (sim-tasks-cpu /
+# sim-tasks-gpu) so the same queue never scales both tiers at once.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: sim-worker-cpu
+  namespace: genesis-sim
+  labels:
+    app: sim-worker
+spec:
+  scaleTargetRef:
+    name: sim-worker-cpu
+  minReplicaCount: 0
+  maxReplicaCount: 32
+  pollingInterval: 15
+  cooldownPeriod: 120
+  triggers:
+    - type: redis
+      metadata:
+        connectionFromEnv: REDIS_URL
+        listName: sim-tasks-cpu
+        listLength: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: sim-worker-gpu
+  namespace: genesis-sim
+  labels:
+    app: sim-worker
+spec:
+  scaleTargetRef:
+    name: sim-worker-gpu
+  minReplicaCount: 0
+  maxReplicaCount: 8
+  pollingInterval: 15
+  cooldownPeriod: 120
+  triggers:
+    - type: redis
+      metadata:
+        connectionFromEnv: REDIS_URL
+        listName: sim-tasks-gpu
+        listLength: "1"

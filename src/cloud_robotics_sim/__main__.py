@@ -58,6 +58,17 @@ def agent_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def worker_command(args: argparse.Namespace) -> int:
+    """Run the Redis queue worker (for Kubernetes/KEDA deployments)."""
+    from cloud_robotics_sim.runtime.queue_worker import run_worker
+
+    return run_worker(
+        redis_url=args.redis_url,
+        queue=args.queue,
+        poll_interval=args.poll_interval,
+    )
+
+
 def test_command(args: argparse.Namespace) -> int:
     """Run test suite."""
     import subprocess
@@ -148,6 +159,7 @@ Examples:
   %(prog)s agent --goal "pick up the red cube"
   %(prog)s test
   %(prog)s clean-cache
+  %(prog)s worker --queue sim-tasks-cpu
   %(prog)s patents --list
   %(prog)s patents --run US821393 --param thrust=0.8 --param wind_speed=5
         """,
@@ -210,6 +222,29 @@ Examples:
         help="Optional agent configuration",
     )
     agent_parser.set_defaults(func=agent_command)
+
+    # Worker command
+    worker_parser = subparsers.add_parser(
+        "worker",
+        help="Run the Redis queue worker (Kubernetes/KEDA autoscaling)",
+    )
+    worker_parser.add_argument(
+        "--redis-url",
+        default=None,
+        help="Redis connection URL (default: REDIS_URL env or redis://localhost:6379/0)",
+    )
+    worker_parser.add_argument(
+        "--queue",
+        default=None,
+        help="Queue (Redis list) to consume (default: QUEUE_NAME env or sim-tasks-cpu)",
+    )
+    worker_parser.add_argument(
+        "--poll-interval",
+        type=float,
+        default=None,
+        help="Seconds between polls when idle (default: POLL_INTERVAL env or 2.0)",
+    )
+    worker_parser.set_defaults(func=worker_command)
 
     # Test command
     test_parser = subparsers.add_parser(
