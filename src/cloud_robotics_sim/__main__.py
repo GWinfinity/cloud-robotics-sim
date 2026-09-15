@@ -6,9 +6,11 @@ Provides commands for training, evaluation, and agent deployment.
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import sys
 from pathlib import Path
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
@@ -49,13 +51,74 @@ def eval_command(args: argparse.Namespace) -> int:
     return 0
 
 
-def agent_command(args: argparse.Namespace) -> int:
-    """Run agent in interactive mode."""
-    logger.info(f"Starting agent with goal: {args.goal}")
+def _parse_cli_value(value: str) -> Any:
+    """Parse a CLI string into int/float/bool/JSON/native string."""
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return float(value)
+    except ValueError:
+        pass
+    lowered = value.lower()
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    if value.startswith(("{", "[")):
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            pass
+    return value
 
-    # Agent runtime implementation would go here
-    logger.info("Agent execution completed")
-    return 0
+
+def _parse_kv_params(items: list[str]) -> dict[str, Any]:
+    params: dict[str, Any] = {}
+    for item in items or []:
+        if "=" not in item:
+            raise ValueError(f"--param must be KEY=VALUE, got: {item!r}")
+        key, value = item.split("=", 1)
+        params[key] = _parse_cli_value(value)
+    return params
+
+
+def agent_command(args: argparse.Namespace) -> int:
+    """Run an agent goal, a specific skill, or list available skills."""
+    from cloud_robotics_sim.runtime.agent_hub import SimHub
+
+    hub = SimHub()
+
+    if args.list_skills:
+        for skill in hub.registry.list_skills():
+            print(f"{skill['name']}: {skill['description']}")
+        return 0
+
+    if args.skill:
+        try:
+            params = _parse_kv_params(args.param)
+        except ValueError as exc:
+            logger.error(str(exc))
+            return 1
+        record = hub.executor.execute(args.skill, params)
+    elif args.goal:
+        matches = hub.executor.resolve_goal(args.goal)
+        if not matches:
+            available = ", ".join(s["name"] for s in hub.registry.list_skills())
+            logger.error(
+                "no skill matches goal %r; available skills: %s", args.goal, available
+            )
+            return 1
+        best, score = matches[0]
+        logger.info("goal resolved to skill %r (score=%d)", best.name, score)
+        record = hub.executor.execute_goal(args.goal)
+    else:
+        logger.error("provide --goal GOAL, --skill SKILL, or --list-skills")
+        return 1
+
+    print(json.dumps(record.to_dict(), ensure_ascii=False, indent=2))
+    return 0 if record.status == "ok" else 1
 
 
 def worker_command(args: argparse.Namespace) -> int:
@@ -156,7 +219,8 @@ def main(argv: list[str] | None = None) -> int:
 Examples:
   %(prog)s train --config configs/franka_pickplace.yaml
   %(prog)s eval --checkpoint checkpoints/latest.pt
-  %(prog)s agent --goal "pick up the red cube"
+  %(prog)s agent --goal "run patent US821393 headlessly"
+  %(prog)s agent --skill run_patent --param run=US821393
   %(prog)s test
   %(prog)s clean-cache
   %(prog)s worker --queue sim-tasks-cpu
@@ -209,17 +273,28 @@ Examples:
     # Agent command
     agent_parser = subparsers.add_parser(
         "agent",
-        help="Run agent in interactive mode",
+        help="Run an agent goal, a specific skill, or list available skills",
     )
     agent_parser.add_argument(
         "--goal",
         "-g",
-        required=True,
-        help="Natural language goal for the agent",
+        help="Natural language goal, resolved to the best-matching skill",
     )
     agent_parser.add_argument(
-        "--config",
-        help="Optional agent configuration",
+        "--skill",
+        "-s",
+        help="Run a specific skill by name (see --list-skills)",
+    )
+    agent_parser.add_argument(
+        "--param",
+        action="append",
+        metavar="KEY=VALUE",
+        help="Skill parameter (repeatable); numbers/bools/JSON auto-parsed",
+    )
+    agent_parser.add_argument(
+        "--list-skills",
+        action="store_true",
+        help="List available skills and exit",
     )
     agent_parser.set_defaults(func=agent_command)
 

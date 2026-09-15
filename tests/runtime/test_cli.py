@@ -39,9 +39,45 @@ class TestEvalCommand:
 class TestAgentCommand:
     """Tests for agent subcommand."""
 
-    def test_agent(self):
-        code = main(["agent", "--goal", "pick up the cube"])
+    def test_agent_no_args(self):
+        code = main(["agent"])
+        assert code == 1
+
+    def test_agent_list_skills(self, capsys):
+        code = main(["agent", "--list-skills"])
+        captured = capsys.readouterr()
         assert code == 0
+        assert "run_patent" in captured.out
+
+    def test_agent_run_skill(self, capsys):
+        code = main(["agent", "--skill", "list_patents"])
+        captured = capsys.readouterr()
+        assert code == 0
+        assert '"status": "ok"' in captured.out
+
+    def test_agent_run_skill_bad_param(self):
+        code = main(["agent", "--skill", "list_patents", "--param", "hack=1"])
+        assert code == 1
+
+    def test_agent_goal_no_match(self):
+        code = main(["agent", "--goal", "zzzqqq nothing matches"])
+        assert code == 1
+
+    def test_agent_goal_resolves_and_runs(self, capsys, monkeypatch):
+        import cloud_robotics_sim.patents as patents
+
+        class FakeState:
+            time = 2.0
+            parameters = {}
+            metrics = {}
+
+        monkeypatch.setattr(
+            patents, "run_patent_simulation", lambda *a, **k: FakeState()
+        )
+        code = main(["agent", "--goal", "run patent US821393 headlessly"])
+        captured = capsys.readouterr()
+        assert code == 0
+        assert '"skill": "run_patent"' in captured.out
 
 
 class TestTestCommand:

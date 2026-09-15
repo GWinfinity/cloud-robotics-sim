@@ -29,6 +29,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
+from cloud_robotics_sim.runtime.skills import SkillError
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_QUEUE = "sim-tasks-cpu"
@@ -77,38 +79,13 @@ def parse_task(raw: bytes | str) -> TaskSpec:
 
 
 def _run_patent(params: dict[str, Any]) -> dict[str, Any]:
-    """Run a classic patent simulation headlessly."""
-    from cloud_robotics_sim.patents import run_patent_simulation
+    """Run a classic patent simulation headlessly (shared with skills)."""
+    from cloud_robotics_sim.runtime.skills import run_patent_task
 
-    params = dict(params)
-    patent_id = params.pop("run", None) or params.pop("patent_id", None)
-    if not isinstance(patent_id, str) or not patent_id:
-        raise TaskError("patent task requires params.run (patent id)")
-    allowed = {
-        "steps",
-        "dt",
-        "substeps",
-        "resolution",
-        "device",
-        "seed",
-        "record_path",
-        "follow",
-    }
-    unknown = set(params) - allowed
-    if unknown:
-        raise TaskError(f"unknown patent params: {sorted(unknown)}")
-    resolution = params.get("resolution")
-    if resolution is not None:
-        params["resolution"] = tuple(resolution)
-    follow = params.pop("follow", None)
-    if follow is not None:
-        params["follow_entity"] = follow
-    state = run_patent_simulation(patent_id, headless=True, **params)
-    return {
-        "time": state.time,
-        "parameters": state.parameters,
-        "metrics": state.metrics,
-    }
+    try:
+        return run_patent_task(params)
+    except SkillError as exc:
+        raise TaskError(str(exc)) from exc
 
 
 _TASK_HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {

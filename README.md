@@ -143,6 +143,7 @@ cloud-robotics-sim/
 - [安装指南](docs/guides/installation.md)
 - [配置指南](docs/guides/configuration.md)
 - [Kubernetes 部署指南](docs/guides/kubernetes.md)
+- [Agent 接口指南](docs/guides/agent.md)
 - [API 参考](docs/api/core.md)
 - [贡献指南](CONTRIBUTING.md)
 
