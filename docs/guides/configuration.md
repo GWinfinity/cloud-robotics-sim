@@ -45,6 +45,30 @@ logging:
   save_interval: 100000
 ```
 
+## Robot Model Resolution
+
+`environment.robot.urdf_path` 可以留空（`null`），模型路径按以下优先级自动解析
+（`core/robot_assets.py`）：
+
+1. 显式路径（若存在）
+2. 仓库内 `assets_genesis/embodiments/` 的捆绑 URDF（gitignored，本地可选存在）
+3. 自动浅克隆的 [awesome-robot-descriptions](https://github.com/robot-descriptions/awesome-robot-descriptions)
+   （默认用 AtomGit 镜像 `https://atomgit.com/gh_mirrors/aw/awesome-robot-descriptions`，
+   GitHub 作为兜底；`CRS_ROBOT_DESC_AUTO_DOWNLOAD=0` 可禁用自动克隆，
+   `CRS_ROBOT_DESC_DIR` 可改下载位置）
+4. Genesis 内置资产查找；全部失败时降级为占位盒子并给出明显警告
+   （spawn 后可通过 `robot.asset_source` 查看实际用到的资产）
+
+预取模型：
+
+```bash
+python -m cloud_robotics_sim.core.robot_assets
+```
+
+配置通过 `cloud_robotics_sim.core.config_loader.load_sim_config()` 加载与校验
+（`environment.scene/robot/task/simulation` 为必需结构），改进循环
+（`runtime/main.py`）即使用该加载器消费 `configs/franka_pickplace.yaml`。
+
 ## Scene Configuration
 
 ### Empty Room

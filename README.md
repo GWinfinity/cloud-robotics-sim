@@ -124,9 +124,26 @@ cloud-robotics-sim/
 
 | 机器人 | 类型 | 自由度 | 状态 |
 |--------|------|--------|------|
-| Franka Emika Panda | 协作机械臂 | 7+1 | ✅ 完全支持 |
-| Universal Robots UR5 | 工业机械臂 | 6 | ✅ 完全支持 |
+| Franka Emika Panda | 协作机械臂 | 7+1 | ✅ 支持（模型自动解析，见[配置指南](docs/guides/configuration.md)） |
+| Universal Robots UR5 | 工业机械臂 | 6 | ✅ 支持（模型自动解析） |
 | 移动操作机器人 | 移动底盘 + 机械臂 | 10+ | 🚧 实验性支持 |
+
+### 人形机器人（实验性）
+
+以下人形机器人由 `plugins/` 下的环境/控制器插件支持（G1 有完整的关节配置、PD
+增益和力矩限制定义）：
+
+| 机器人 | 自由度 | 插件入口 | 状态 |
+|--------|--------|----------|------|
+| Unitree G1 | 29 | `plugins/controllers/wbc_lab/`、`plugins/envs/table_tennis/`、`plugins/predictors/bfm_zero/` | 🚧 实验性 |
+| Unitree H1 | — | `plugins/controllers/hugwbc/`（全身控制 + PPO） | 🚧 实验性 |
+| Fourier GR1 | 32 | `plugins/datasets/dreamdojo/`（数据管线，见 `examples/migration/dreamdojo_example.py`） | 🚧 实验性 |
+| OpenLoong | — | `plugins/controllers/openloong/`（步行控制） | 🚧 实验性 |
+
+> **注意**：人形机器人模型资产暂未随仓库分发，运行时自动回退到 Genesis 内置的
+> 21 自由度 `humanoid.xml` 占位模型；插件中的关节/任务配置按上表对应的真实机型
+> 编写。可运行示例：`plugins/controllers/hugwbc/examples/basic_usage.py`、
+> `plugins/envs/humanoid_falling/`。
 
 ## 支持的任务
 

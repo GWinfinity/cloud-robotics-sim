@@ -122,6 +122,9 @@ class ImprovementLoop:
         self.history: list[dict[str, Any]] = []
 
     def _load_config(self, path: str) -> dict[str, Any]:
+        # Generic container for the loop: baseline configs may be partial
+        # (proposals mutate them). Full simulation-structure validation
+        # happens at consumption time in make_env_from_config.
         with open(path) as f:
             config = yaml.safe_load(f)
             if not isinstance(config, dict):
@@ -285,7 +288,10 @@ _gs_initialized = False
 def make_env_from_config(config: dict[str, Any]) -> Any:
     """Create a ComposedEnvironment from a loop config dictionary."""
     from cloud_robotics_sim.core.composer import ComposerConfig, EnvironmentComposer
+    from cloud_robotics_sim.core.config_loader import validate_sim_config
     from cloud_robotics_sim.core.registry import default_registry
+
+    validate_sim_config(config, source="make_env_from_config")
 
     global _gs_initialized
     if not _gs_initialized:

@@ -13,7 +13,11 @@ environment:
   robot:
     type: franka_panda
     base_position: [0.0, 0.0, 0.0]
-    urdf_path: D:/githbi/awesome-robot-descriptions-main/robot_descriptions/Arms/franka_emika_panda/panda.xml
+    # Model path: null = auto-resolve (bundled assets_genesis/ -> auto-cloned
+    # awesome-robot-descriptions -> Genesis built-in). Prefetch with:
+    #   python -m cloud_robotics_sim.core.robot_assets
+    # Set an explicit path here to override.
+    urdf_path: null
   
   task:
     type: pick_place

@@ -15,6 +15,7 @@ import genesis as gs
 import numpy as np
 
 from cloud_robotics_sim.backend import ArticulationBackend, EntityBackend, SceneBackend
+from cloud_robotics_sim.core.robot_assets import resolve_robot_model
 from cloud_robotics_sim.utils.genesis_compat import is_genesis_scene
 
 logger = logging.getLogger(__name__)
@@ -107,6 +108,11 @@ class RobotEmbodiment(ABC):
         self.entity: EntityBackend | ArticulationBackend | Any | None = None
         self.scene: SceneBackend | gs.Scene | None = None
         self.cameras: dict[str, Any] = {}
+        #: Which asset produced ``entity`` after :meth:`spawn`, e.g.
+        #: ``"mjcf:/path/panda.xml"``, ``"urdf:/path/ur5.urdf"``, or
+        #: ``"procedural-box"`` when every real asset source failed.
+        #: ``None`` before spawning.
+        self.asset_source: str | None = None
 
         self._obs_dim: int = 0
         self._action_dim: int = 0
@@ -205,16 +211,28 @@ class FrankaPanda(RobotEmbodiment):
         self.scene = scene
         pos = position or self.config.base_position
 
-        # Prefer an explicit model path from the embodiment config; fall back to
-        # the Genesis built-in / current-directory lookup for backwards compatibility.
-        model_path = self.config.urdf_path or "franka_emika_panda/panda.xml"
+        # Resolve a real model asset: explicit path -> bundled
+        # assets_genesis URDF -> auto-cloned awesome-robot-descriptions MJCF
+        # -> Genesis built-in lookup -> procedural box (degraded).
+        model = resolve_robot_model("franka_panda", self.config.urdf_path)
+        if model is not None:
+            self.asset_source = f"{model.format}:{model.path}"
+            model_path = str(model.path)
+            is_mjcf = model.format == "mjcf"
+        else:
+            model_path = "franka_emika_panda/panda.xml"
+            is_mjcf = True
 
         if _is_genesis_scene(scene):
             try:
-                morph = gs.morphs.MJCF(file=model_path, pos=pos)
+                if is_mjcf:
+                    morph = gs.morphs.MJCF(file=model_path, pos=pos)
+                else:
+                    morph = gs.morphs.URDF(file=model_path, pos=pos)
                 self.entity = scene.add_entity(morph)
             except Exception as e:
-                logger.warning(f"Failed to load MJCF Franka from '{model_path}': {e}")
+                logger.warning(f"Failed to load Franka from '{model_path}': {e}")
+                self.asset_source = "procedural-box"
                 self._create_procedural_franka(pos)
         else:
             backend = scene.backend if hasattr(scene, "backend") else None
@@ -222,15 +240,25 @@ class FrankaPanda(RobotEmbodiment):
                 raise RuntimeError("Scene backend is not available for spawning robots")
 
             try:
-                self.entity = backend.load_mjcf(file=model_path, pos=pos)
+                if is_mjcf:
+                    self.entity = backend.load_mjcf(file=model_path, pos=pos)
+                else:
+                    self.entity = backend.load_urdf(file=model_path, pos=pos)
                 scene.add_articulation(self.entity)
             except Exception as e:
-                logger.warning(f"Failed to load MJCF Franka from '{model_path}': {e}")
-                # Fallback to procedural creation
+                logger.warning(f"Failed to load Franka from '{model_path}': {e}")
+                self.asset_source = "procedural-box"
                 self._create_procedural_franka(pos)
 
+        if self.asset_source == "procedural-box":
+            logger.warning(
+                "Franka Panda spawned as a static placeholder box — no real "
+                "model asset available (set urdf_path, place assets under "
+                "assets_genesis/embodiments/, or prefetch: python -m "
+                "cloud_robotics_sim.core.robot_assets)"
+            )
         self._initialize_cameras()
-        logger.info(f"Franka Panda spawned at {pos}")
+        logger.info(f"Franka Panda spawned at {pos} (asset={self.asset_source})")
         return self
 
     def _create_procedural_franka(self, position: tuple[float, float, float]) -> None:
@@ -336,14 +364,24 @@ class UniversalRobotUR5(RobotEmbodiment):
         """Spawn UR5 in the scene."""
         self.scene = scene
         pos = position or self.config.base_position
-        model_path = self.config.urdf_path or "ur5/ur5.urdf"
+
+        # Resolve a real model asset: explicit path -> bundled
+        # assets_genesis URDF -> auto-cloned awesome-robot-descriptions
+        # -> Genesis built-in lookup -> procedural box (degraded).
+        model = resolve_robot_model("ur5", self.config.urdf_path)
+        if model is not None:
+            self.asset_source = f"{model.format}:{model.path}"
+            model_path = str(model.path)
+        else:
+            model_path = "ur5/ur5.urdf"
 
         if _is_genesis_scene(scene):
             try:
                 morph = gs.morphs.URDF(file=model_path, pos=pos)
                 self.entity = scene.add_entity(morph)
             except Exception as e:
-                logger.warning(f"Failed to load URDF UR5: {e}")
+                logger.warning(f"Failed to load URDF UR5 from '{model_path}': {e}")
+                self.asset_source = "procedural-box"
                 self._create_procedural_ur5(pos)
         else:
             backend = scene.backend if hasattr(scene, "backend") else None
@@ -354,11 +392,19 @@ class UniversalRobotUR5(RobotEmbodiment):
                 self.entity = backend.load_urdf(file=model_path, pos=pos)
                 scene.add_articulation(self.entity)
             except Exception as e:
-                logger.warning(f"Failed to load URDF UR5: {e}")
+                logger.warning(f"Failed to load URDF UR5 from '{model_path}': {e}")
+                self.asset_source = "procedural-box"
                 self._create_procedural_ur5(pos)
 
+        if self.asset_source == "procedural-box":
+            logger.warning(
+                "UR5 spawned as a static placeholder box — no real model "
+                "asset available (set urdf_path, place assets under "
+                "assets_genesis/embodiments/, or prefetch: python -m "
+                "cloud_robotics_sim.core.robot_assets)"
+            )
         self._initialize_cameras()
-        logger.info(f"UR5 spawned at {pos}")
+        logger.info(f"UR5 spawned at {pos} (asset={self.asset_source})")
         return self
 
     def _create_procedural_ur5(self, position: tuple[float, float, float]) -> None:

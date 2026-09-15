@@ -1,5 +1,6 @@
 """Tests for robot embodiment definitions."""
 
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -128,8 +129,12 @@ class TestFrankaPanda:
         assert action_space["high"] == 1.0
         assert action_space["shape"] == (8,)
 
-    def test_spawn_mjcf_success(self):
+    def test_spawn_mjcf_success(self, monkeypatch):
         """Test Franka spawn with MJCF success path."""
+        monkeypatch.setattr(
+            "cloud_robotics_sim.core.embodiment.resolve_robot_model",
+            lambda *a, **k: None,
+        )
         scene = _make_mock_scene()
         articulation = MockArticulation()
         scene.backend.load_mjcf.return_value = articulation
@@ -146,8 +151,12 @@ class TestFrankaPanda:
         )
         scene.add_articulation.assert_called_once_with(articulation)
 
-    def test_spawn_mjcf_fallback(self):
+    def test_spawn_mjcf_fallback(self, monkeypatch):
         """Test Franka fallback to procedural box when MJCF fails."""
+        monkeypatch.setattr(
+            "cloud_robotics_sim.core.embodiment.resolve_robot_model",
+            lambda *a, **k: None,
+        )
         scene = _make_mock_scene()
         scene.backend.load_mjcf.side_effect = RuntimeError("load failed")
         fallback_entity = MockEntity()
@@ -158,6 +167,54 @@ class TestFrankaPanda:
 
         assert scene.backend.create_box.called
         assert scene.add_entity.call_count == 1
+        assert robot.asset_source == "procedural-box"
+
+    def test_spawn_with_resolved_urdf_asset(self, monkeypatch):
+        """Test Franka spawn uses a resolved URDF asset and records it."""
+        from cloud_robotics_sim.core.robot_assets import RobotModel
+
+        model = RobotModel(
+            robot="franka_panda", path=Path("/tmp/panda.urdf"), format="urdf"
+        )
+        monkeypatch.setattr(
+            "cloud_robotics_sim.core.embodiment.resolve_robot_model",
+            lambda *a, **k: model,
+        )
+        scene = _make_mock_scene()
+        articulation = MockArticulation()
+        scene.backend.load_urdf.return_value = articulation
+
+        robot = FrankaPanda()
+        robot.spawn(scene)
+
+        scene.backend.load_urdf.assert_called_once_with(
+            file=str(model.path), pos=(0.0, 0.0, 0.0)
+        )
+        assert robot.entity is articulation
+        assert robot.asset_source == f"urdf:{model.path}"
+
+    def test_spawn_with_resolved_mjcf_asset(self, monkeypatch):
+        """Test Franka spawn uses a resolved MJCF asset and records it."""
+        from cloud_robotics_sim.core.robot_assets import RobotModel
+
+        model = RobotModel(
+            robot="franka_panda", path=Path("/tmp/panda.xml"), format="mjcf"
+        )
+        monkeypatch.setattr(
+            "cloud_robotics_sim.core.embodiment.resolve_robot_model",
+            lambda *a, **k: model,
+        )
+        scene = _make_mock_scene()
+        articulation = MockArticulation()
+        scene.backend.load_mjcf.return_value = articulation
+
+        robot = FrankaPanda()
+        robot.spawn(scene)
+
+        scene.backend.load_mjcf.assert_called_once_with(
+            file=str(model.path), pos=(0.0, 0.0, 0.0)
+        )
+        assert robot.asset_source == f"mjcf:{model.path}"
 
     def test_reset_with_dofs(self):
         """Test reset sets qpos when DOFs exist."""
@@ -248,8 +305,12 @@ class TestUniversalRobotUR5:
         assert robot.action_dim == 6
         assert robot.obs_dim == 18  # 6*3
 
-    def test_spawn_urdf_success(self):
+    def test_spawn_urdf_success(self, monkeypatch):
         """Test UR5 spawn with URDF success path."""
+        monkeypatch.setattr(
+            "cloud_robotics_sim.core.embodiment.resolve_robot_model",
+            lambda *a, **k: None,
+        )
         scene = _make_mock_scene()
         articulation = MockArticulation(n_dofs=6, n_qs=6)
         scene.backend.load_urdf.return_value = articulation
@@ -263,8 +324,12 @@ class TestUniversalRobotUR5:
         )
         scene.add_articulation.assert_called_once_with(articulation)
 
-    def test_spawn_urdf_fallback(self):
+    def test_spawn_urdf_fallback(self, monkeypatch):
         """Test UR5 fallback when URDF fails."""
+        monkeypatch.setattr(
+            "cloud_robotics_sim.core.embodiment.resolve_robot_model",
+            lambda *a, **k: None,
+        )
         scene = _make_mock_scene()
         scene.backend.load_urdf.side_effect = RuntimeError("load failed")
         fallback_entity = MockEntity()
@@ -274,6 +339,7 @@ class TestUniversalRobotUR5:
         robot.spawn(scene)
 
         assert scene.backend.create_box.called
+        assert robot.asset_source == "procedural-box"
         assert scene.add_entity.call_count == 1
 
     def test_reset_with_dofs(self):
