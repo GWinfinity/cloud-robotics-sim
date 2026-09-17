@@ -94,6 +94,21 @@
 
 ---
 
+### 7. 渲染阴影伪影排查（MuJoCo bug vs Genesis 差异）
+**文件**: `07_rendering_shadow_artifact_investigation.md`
+
+**来源项目**: 外部 MuJoCo 渲染 bug 坐实案例 + 本仓库排查
+
+**核心内容**:
+- MuJoCo 阴影贴图伪影的三对照实验证据链（同进程残留 / 最新版复现 / 平移归零消失）
+- Genesis 1.4.0 阴影相机锚定 AABB 质心且每帧重算的源码级差异（非同款 bug）
+- patents 长跑渲染的次级风险（贴图稀释 / z-fighting / 帧间跳变）与规避
+- composer 灯光配置因 `gs.lights` 移除而静默失效的附带发现
+
+**适用场景**: 排查渲染伪影、渲染器状态残留类问题；patents 长跑视频渲染质量调优
+
+---
+
 ## 快速参考
 
 ### 按任务类型选择文档
@@ -107,6 +122,8 @@
 | Sim-to-Real | 02_residual_rl.md + 04_generalized_manipulation_reward.md |
 | 高速预测 | 05_dual_predictor_architecture.md |
 | 热求解器可微迁移 | 06_thermal_solver_musa_autodiff.md |
+| 渲染伪影排查 | 07_rendering_shadow_artifact_investigation.md |
+| 声学仿真数学原理与可微性 | 08_ansys_acoustics_math_and_differentiability.md |
 
 ### 关键技术栈
 
@@ -172,4 +189,4 @@
 
 ---
 
-*最后更新: 2026-08-14*
+*最后更新: 2026-09-16*
