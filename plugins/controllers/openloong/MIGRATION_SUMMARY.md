@@ -294,7 +294,7 @@ All validation tests passed!
 - `numpy>=1.20.0`
 
 ### Optional
-- `genesis-world>=0.4.0` (for physics simulation)
+- `genesis-world>=1.4.0` (for physics simulation)
 - `gymnasium>=0.28.0` (for RL environment)
 
 ## Integration with Other Plugins

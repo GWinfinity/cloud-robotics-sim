@@ -171,7 +171,7 @@ metadata:
   tags: ["humanoid", "locomotion", "mpc", "wbc"]
   
 requirements:
-  genesis_world: ">=0.4.0"   # 明确 Genesis 版本要求
+  genesis_world: ">=1.4.0"   # 明确 Genesis 版本要求
   python: ">=3.10"
   dependencies:
     - numpy>=1.20
@@ -429,7 +429,7 @@ ball_sports.yaml:
 FROM nvidia/cuda:12.1-devel-ubuntu22.04
 
 # 安装 Genesis + Cloud Sim
-RUN pip install genesis-world>=0.4.0 cloud-robotics-sim>=2.3.0
+RUN pip install genesis-world>=1.4.0 cloud-robotics-sim>=2.3.0
 
 # 安装插件（按需）
 ARG PLUGINS="hugwbc,badminton"
@@ -638,7 +638,7 @@ market = sim.marketplace()
 plugins = market.search(
     tags=["humanoid", "locomotion"],
     min_rating=4.0,
-    tested_with=["genesis-world>=0.4.0"]
+    tested_with=["genesis-world>=1.4.0"]
 )
 
 # 一键安装

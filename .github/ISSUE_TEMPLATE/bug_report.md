@@ -23,7 +23,7 @@ A clear and concise description of what you expected to happen.
 **Environment (please complete the following information):**
  - OS: [e.g. Ubuntu 22.04]
  - Python version: [e.g. 3.11]
- - Genesis version: [e.g. 0.4.0]
+ - Genesis version: [e.g. 1.4.0]
  - GPU: [e.g. RTX 4090]
 
 **Additional context**

@@ -31,7 +31,7 @@
 
 ### Dependencies Status
 All required dependencies are installed:
-- genesis-world >= 0.4.0
+- genesis-world >= 1.4.0
 - taichi >= 1.7.0
 - torch >= 2.0.0
 - gymnasium >= 1.0.0

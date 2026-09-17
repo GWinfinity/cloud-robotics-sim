@@ -3,7 +3,13 @@
 # This module provides utility functions for Genesis-based simulations,
 # adapted from ManiSkill's genesis_utils.py.
 
-__version__ = "0.1.0"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    # Aligned with the installed distribution version (pyproject.toml).
+    __version__ = version("cloud-robotics-sim")
+except PackageNotFoundError:  # pragma: no cover - source tree without install
+    __version__ = "2.0.0"
 
 # Import from camera module
 from .camera import (

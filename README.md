@@ -168,7 +168,7 @@ cloud-robotics-sim/
 
 - Python 3.10+
 - CUDA 11.8+（用于 GPU 加速）
-- Genesis World 0.4+
+- Genesis World 1.4+
 - PyTorch 2.0+
 
 ## 开发

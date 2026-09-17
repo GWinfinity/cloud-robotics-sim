@@ -29,7 +29,7 @@ examples/costream/
 
 ## 运行环境
 
-使用 `genesis-cloud-sim` 仓库已经配置好的 Python 环境（`genesis-world>=0.4.0`）。
+使用 `genesis-cloud-sim` 仓库已经配置好的 Python 环境（`genesis-world>=1.4.0`）。
 
 ```bash
 cd D:\githbi\genesis-cloud-sim

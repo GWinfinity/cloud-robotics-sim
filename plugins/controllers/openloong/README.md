@@ -18,7 +18,7 @@ The OpenLoong Walking Controller enables:
 pip install numpy>=1.20.0
 
 # Optional but recommended
-pip install genesis-world>=0.4.0
+pip install genesis-world>=1.4.0
 pip install gymnasium>=0.28.0
 ```
 

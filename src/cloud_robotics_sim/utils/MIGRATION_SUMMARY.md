@@ -240,7 +240,7 @@ Examples: `genesis-cloud-sim/examples/migration/maniskill_utils_example.py`
 - None (all dependencies are optional)
 
 ### Optional (for full functionality)
-- `genesis-world>=0.4.0` - Physics simulation
+- `genesis-world>=1.4.0` - Physics simulation
 - `numpy>=1.20.0` - Numerical operations
 - `torch>=2.0.0` - Deep learning tensors
 - `Pillow` - Image I/O for screenshots

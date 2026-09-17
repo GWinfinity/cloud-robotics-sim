@@ -244,7 +244,7 @@ All validation tests passed!
 ## Dependencies
 
 ### Required
-- `genesis-world>=0.4.0`
+- `genesis-world>=1.4.0`
 - `numpy>=1.20.0`
 - `trimesh>=3.0.0`
 

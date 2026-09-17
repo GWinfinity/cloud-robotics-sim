@@ -15,7 +15,7 @@ The DreamDojo plugin enables:
 ### Prerequisites
 
 ```bash
-pip install genesis-world>=0.4.0
+pip install genesis-world>=1.4.0
 ```
 
 ### Plugin Installation

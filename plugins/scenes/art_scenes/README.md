@@ -14,7 +14,7 @@ The ART Scenes plugin enables creation of richly decorated indoor environments w
 ### Prerequisites
 
 ```bash
-pip install genesis-world>=0.4.0
+pip install genesis-world>=1.4.0
 pip install trimesh>=3.0.0
 ```
 

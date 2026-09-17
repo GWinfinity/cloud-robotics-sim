@@ -139,7 +139,7 @@ All validation tests passed!
 - None (all heavy dependencies are optional)
 
 ### Optional (for full functionality)
-- `genesis-world>=0.4.0` - Physics simulation
+- `genesis-world>=1.4.0` - Physics simulation
 - `numpy>=1.20.0` - Numerical operations
 - `torch>=2.0.0` - Deep learning tensors
 - `h5py>=3.0.0` - Dataset storage
