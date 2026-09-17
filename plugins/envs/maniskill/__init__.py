@@ -39,6 +39,7 @@ __source__ = "genesis-maniskill"
 # 环境
 try:
     from .core.genesis_maniskill.envs.kitchen_env import KitchenEnv
+    from .core.genesis_maniskill.envs.replica_cad_env import ReplicaCADEnv
     from .core.genesis_maniskill.envs.tabletop_env import TableTopEnv
     
     # 任务
@@ -56,6 +57,7 @@ try:
     
     __all__ = [
         'KitchenEnv',
+        'ReplicaCADEnv',
         'TableTopEnv',
         'PickPlaceTask',
         'OpenDrawerTask',

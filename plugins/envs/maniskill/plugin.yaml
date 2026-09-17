@@ -21,6 +21,7 @@ dependencies:
 exports:
   - KitchenEnv
   - TableTopEnv
+  - ReplicaCADEnv
   - PickPlaceTask
   - OpenDrawerTask
   - RobotLoader
@@ -33,6 +34,7 @@ tags:
   - manipulation
   - kitchen
   - tabletop
+  - replica_cad
   - gpu_parallel
   - robocasa
   - maniskill

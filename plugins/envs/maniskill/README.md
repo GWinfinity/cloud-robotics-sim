@@ -21,6 +21,11 @@
 - 基础桌面操作
 - 可自定义物体配置
 
+**ReplicaCAD 公寓场景**（ManiSkill ReplicaCAD_SceneManipulation 等价）:
+- 90 个真实公寓场景配置（`apt_0..5`、`v3_sc*_staging_*`）
+- ModelScope 数据集（~289MB）自动下载解压
+- 刚体物件 + 关节家具（冰箱、橱柜等 URDF）
+
 ### 3. ManiSkill API
 - 熟悉的 Gymnasium 接口
 - 易于从 ManiSkill2/3 迁移
@@ -76,6 +81,56 @@ env = TableTopEnv(
 obs, info = env.reset()
 # ... 训练代码
 ```
+
+### ReplicaCAD 场景（ManiSkill ReplicaCAD_SceneManipulation 等价）
+
+支持 ManiSkill 的 ReplicaCAD 公寓场景数据集（ModelScope 镜像
+`jessy888/ManiSkill_replica_cad_dataset`，Apache-2.0，约 289MB，含 90 个场景配置：
+`apt_0..apt_5` 与 `v3_sc*_staging_*`）。数据集不随仓库分发，首次使用时自动从
+ModelScope 下载并解压到 `assets/maniskill/`（gitignored）；也可以手动预取：
+
+```bash
+python -m genesis_maniskill.datasets.replicacad_assets          # 下载 + 解压
+python -m genesis_maniskill.datasets.replicacad_assets --check-only
+```
+
+环境变量：`CRS_REPLICACAD_ASSETS` 覆盖数据集根目录；
+`CRS_REPLICACAD_AUTO_DOWNLOAD=0` 禁用自动下载（缺失时抛 `FileNotFoundError`）。
+
+```python
+from genesis_maniskill.envs.replica_cad_env import ReplicaCADEnv
+
+# 与 ManiSkill 的 ReplicaCAD_SceneManipulation-v1 对应的场景
+env = ReplicaCADEnv(
+    scene_name="apt_0",        # 90 个场景之一，见 ReplicaCADSceneBuilder.list_available_scenes()
+    robot_uid="franka",
+    task_type="pick_place",
+    scene_config={"include_doors": False},   # 与 ManiSkill 一致默认跳过门
+)
+obs, info = env.reset()
+for _ in range(50):
+    obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
+env.close()
+```
+
+或直接查看场景（不需要机器人）：
+
+```bash
+python plugins/envs/maniskill/examples/replica_cad_scene.py --scene apt_0 --list-scenes
+python plugins/envs/maniskill/examples/replica_cad_scene.py --scene apt_0 --save-img
+python plugins/envs/maniskill/examples/replica_cad_scene.py --scene apt_0 --human   # 交互查看
+```
+
+实现要点（语义对齐 ManiSkill 的 `ReplicaCADSceneBuilder`）：
+
+- 所有资产为 habitat Y-up 坐标，实例姿态统一左乘 RotX(+90°) 转到 Genesis Z-up；
+  数据集四元数 (x,y,z,w) 转为 Genesis 的 (w,x,y,z)。
+- `DYNAMIC` 物体用数据集中预分解的凸包碰撞 GLB（`objects/convex/*_cv_decomp.glb`）
+  作为物理网格以避免昂贵的运行时凸分解，渲染表面为略 facet 化的原表面；
+  `STATIC` 物体以原始 render GLB 非凸固定网格加入。质量经 `object_config.json` 的
+  `mass` 在 `scene.build()` 后通过 `set_mass()` 落实。
+- 关节家具从 `urdf/<name>/<name>.urdf` 加载（mesh 为同目录相对路径）。
+- 目前仅支持 `num_envs=1`（GPU 并行场景构建待后续支持）。
 
 ### 自定义任务
 

@@ -20,7 +20,6 @@ class PickPlaceTask:
         
         self.target_object = None
         self.target_pos = None
-        self.state_dim = 6  # object_pos (3) + target_pos (3)
         
     def reset(self):
         """Reset task."""

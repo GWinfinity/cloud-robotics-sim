@@ -186,6 +186,8 @@ plugins/do_as_i_do/assets/robots/*.urdf
 
 # RoboTwin 2.0 assets (~4GB, downloaded from HuggingFace TianxingChen/RoboTwin2.0)
 assets/robotwin/
+# ManiSkill ReplicaCAD scene dataset (~289MB, downloaded from ModelScope jessy888/ManiSkill_replica_cad_dataset)
+assets/maniskill/
 assets_genesis/
 
 # Auto-cloned awesome-robot-descriptions robot models

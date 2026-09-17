@@ -50,8 +50,8 @@ class FrankaAgent:
     
     @property
     def state_dim(self) -> int:
-        """State dimension (joint positions + velocities + gripper)."""
-        return self.total_dof * 2 + 6  # pos + vel + ee_pos + ee_quat
+        """State dimension (joint positions + velocities + EE pose)."""
+        return self.total_dof * 2 + 7  # pos + vel + ee_pos(3) + ee_quat(4)
     
     @property
     def action_dim(self) -> int:
@@ -75,6 +75,9 @@ class FrankaAgent:
     
     def apply_action(self, action: torch.Tensor):
         """Apply action to robot."""
+        action = torch.as_tensor(action, dtype=torch.float32).reshape(
+            self.num_envs, -1
+        )
         if self.control_mode == "pd_joint_pos":
             self._apply_joint_pos_action(action)
         elif self.control_mode == "pd_ee_pos":
@@ -135,18 +138,18 @@ class FrankaAgent:
     
     def get_joint_positions(self) -> torch.Tensor:
         """Get joint positions."""
-        return self.robot.get_dofs_position()
+        return self.robot.get_dofs_position().reshape(self.num_envs, -1)
     
     def get_joint_velocities(self) -> torch.Tensor:
         """Get joint velocities."""
-        return self.robot.get_dofs_velocity()
+        return self.robot.get_dofs_velocity().reshape(self.num_envs, -1)
     
     def get_ee_pose(self) -> tuple:
         """Get end-effector pose (position, quaternion)."""
-        # Get link position (assuming last link is EE)
-        link_idx = -1
-        ee_pos = self.robot.get_link(link_idx).get_pos()
-        ee_quat = self.robot.get_link(link_idx).get_quat()
+        # Last link of the kinematic chain is the EE (gripper base).
+        ee_link = self.robot.links[-1]
+        ee_pos = ee_link.get_pos().reshape(self.num_envs, -1)
+        ee_quat = ee_link.get_quat().reshape(self.num_envs, -1)
         return ee_pos, ee_quat
     
     def reset(self):

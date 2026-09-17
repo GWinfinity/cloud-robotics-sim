@@ -1,48 +1,50 @@
 """Dataset tools for Genesis ManiSkill"""
 
 # Formats
-from genesis_maniskill.datasets.formats.trajectory import Trajectory, TrajectoryDataset, Step
-
-# Loaders
-from genesis_maniskill.datasets.loaders.robocasa_loader import RoboCasaLoader, load_robocasa_dataset
-from genesis_maniskill.datasets.loaders.maniskill_loader import ManiSkillLoader, load_maniskill_dataset
-from genesis_maniskill.datasets.loaders.lerobot_loader import LeRobotLoader, load_lerobot_dataset
-
-# Converters
-from genesis_maniskill.datasets.converters.robocasa_converter import RoboCasaConverter, convert_robocasa_dataset
-from genesis_maniskill.datasets.converters.maniskill_converter import ManiSkillConverter, convert_maniskill_dataset
-
 # Augmentation
-from genesis_maniskill.datasets.augmentation import (
+from .augmentation import (
     TrajectoryAugmenter,
     add_action_noise,
-    perturb_states,
     get_standard_augmentation,
+    perturb_states,
+)
+from .converters.maniskill_converter import (
+    ManiSkillConverter,
+    convert_maniskill_dataset,
 )
 
-# Visualization
-from genesis_maniskill.datasets.visualization import (
-    TrajectoryVisualizer,
-    visualize_trajectory,
-    visualize_dataset,
+# Converters
+from .converters.robocasa_converter import RoboCasaConverter, convert_robocasa_dataset
+from .formats.trajectory import Step, Trajectory, TrajectoryDataset
+from .loaders.lerobot_loader import LeRobotLoader, load_lerobot_dataset
+from .loaders.maniskill_loader import ManiSkillLoader, load_maniskill_dataset
+
+# Loaders
+from .loaders.robocasa_loader import RoboCasaLoader, load_robocasa_dataset
+
+# Replay
+from .replay import (
+    DatasetValidator,
+    TrajectoryReplayer,
+    replay_trajectory,
+    validate_dataset,
 )
 
 # Split/Merge
-from genesis_maniskill.datasets.split_merge import (
-    DatasetSplitter,
-    DatasetMerger,
+from .split_merge import (
     DatasetBalancer,
     DatasetFilter,
-    split_dataset,
+    DatasetMerger,
+    DatasetSplitter,
     merge_datasets,
+    split_dataset,
 )
 
-# Replay
-from genesis_maniskill.datasets.replay import (
-    TrajectoryReplayer,
-    DatasetValidator,
-    replay_trajectory,
-    validate_dataset,
+# Visualization
+from .visualization import (
+    TrajectoryVisualizer,
+    visualize_dataset,
+    visualize_trajectory,
 )
 
 __all__ = [
