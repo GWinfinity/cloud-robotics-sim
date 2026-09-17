@@ -12,6 +12,7 @@ designed for scalable reinforcement learning and imitation learning research.
    guides/installation
    guides/quickstart
    guides/configuration
+   guides/asset_generation_apis
    architecture/overview
    architecture/core
    architecture/runtime
