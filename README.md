@@ -14,6 +14,7 @@
 - **大规模并行** - 可同时训练多达 4,096 个并行环境
 - **Agent 就绪** - 内置技能注册表与任务执行引擎
 - **兼容 Gymnasium** - 可与主流 RL/IL 库无缝集成
+- **多物理场求解器** - 插件化网格场求解器：热传导（FTCS）、焦耳热（电势-热源耦合）、时域声学（leapfrog 波动方程），随 `scene.step()` 一起积分，支持麦克风录音与 SPL 频谱后处理（[plugins/solvers/](plugins/solvers/)）
 
 ## 快速开始
 
@@ -115,6 +116,7 @@ cloud-robotics-sim/
 │       ├── runtime/            # Agent 运行时
 │       └── learning/           # RL/IL 框架
 ├── configs/                    # 配置文件
+├── plugins/                    # 插件（求解器 / 环境 / 控制器 / 数据集，见 plugins/ 各 README）
 ├── tests/                      # 测试套件
 ├── examples/                   # 示例脚本（索引见 examples/README.md）
 └── docs/                       # 文档
@@ -150,6 +152,35 @@ cloud-robotics-sim/
 - **抓取放置（Pick and Place）** - 抓取物体并放置到目标位置
 - **导航（Navigation）** - 在避开障碍物的同时到达目标位置
 - **到达（Reach）** - 将末端执行器移动到目标位姿
+
+## 多物理场场求解器
+
+`plugins/solvers/` 提供三个结构一致的网格场求解器插件，在 `scene.build()` 前
+`install()` 注入、随仿真循环一起积分（[plugins/solvers/README.md](plugins/solvers/README.md)）：
+
+| 求解器 | 物理 | 数值方法 | 亮点 |
+|---|---|---|---|
+| `thermal` | 热传导 | 显式 FTCS + 能量守恒实体耦合 | 刚体-网格双向换热，GB 标准器件（马弗炉）底层模型 |
+| `joule_heating` | 焦耳热 | Jacobi 电势求解 → `Q = σ\|∇V\|²` | 可注入 thermal 求解器（`couple_to_thermal=True`），材料参数可微 |
+| `acoustics` | 线性声学 | leapfrog 波动方程 + CFL 校验 | 海绵层/刚性壁边界、单极子声源、刚体振动发声（单向流固耦合）、虚拟麦克风 + SPL 频谱后处理 |
+
+```python
+import genesis as gs
+from plugins.solvers.acoustics import AcousticsOptions, install
+
+gs.init(backend=gs.cpu)
+scene = gs.Scene(sim_options=gs.options.SimOptions(dt=4e-6), show_viewer=False)
+scene.add_entity(gs.morphs.Plane())
+
+acoustics = install(scene, AcousticsOptions(resolution=(200, 200), dx=0.0025))
+acoustics.add_source(position=(0.5, 0.5, 0.0),
+                     signal=lambda t: 5.0 * __import__("math").sin(2 * 3.1416 * 200 * t))
+mic = acoustics.add_probe((0.7, 0.5, 0.0))
+scene.build()
+for _ in range(1200):
+    scene.step()
+print(mic.spl(dt=4e-6))  # 整体声压级 (dB)
+```
 
 ## 文档
 
