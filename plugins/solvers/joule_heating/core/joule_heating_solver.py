@@ -101,6 +101,9 @@ class JouleHeatingSolver(Solver):
     def build(self) -> None:
         super().build()
 
+        # genesis 1.4 Solver no longer provides TimeBasedMixin's _substep_dt.
+        self._substep_dt = self._sim.substep_dt
+
         self._n_frames = self._sim.substeps_local + 1
         full_shape = (self._n_frames, self._B, *self._shape)
 
@@ -1254,25 +1257,29 @@ class JouleHeatingSolver(Solver):
     @qd.kernel
     def _apply_q_to_thermal_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._sim.thermal_solver._T[f + 1, i_b, i, j] += (
-                self._Q[f, i_b, i, j] * self._dt_over_rhocp_field[i_b]
-            )
+            self._sim.thermal_solver._T[f + 1, i_b, i, j] += self._Q[
+                f, i_b, i, j
+            ] * self._substep_dt / (self._rho_field[i_b] * self._cp_field[i_b])
 
     @qd.kernel
     def _apply_q_to_thermal_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._sim.thermal_solver._T[f + 1, i_b, i, j, k] += (
-                self._Q[f, i_b, i, j, k] * self._dt_over_rhocp_field[i_b]
-            )
+            self._sim.thermal_solver._T[f + 1, i_b, i, j, k] += self._Q[
+                f, i_b, i, j, k
+            ] * self._substep_dt / (self._rho_field[i_b] * self._cp_field[i_b])
 
     @qd.kernel
     def _heat_step_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
-        r_env = self._r_field
-        dt_over_rhocp_env = self._dt_over_rhocp_field
+        # NOTE: quadrants 1.3 rejects field aliases inside kernels
+        # (`r_env = self._r_field`); index the fields directly instead.
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             t_old = self._T[f, i_b, i, j]
-            r = r_env[i_b]
-            heating = self._Q[f, i_b, i, j] * dt_over_rhocp_env[i_b]
+            rho = self._rho_field[i_b]
+            cp = self._cp_field[i_b]
+            # Inlined from _init_thermal_constants so autodiff reaches the
+            # scalar material fields (host-precomputed constants would not).
+            r = self._k_field[i_b] / (rho * cp) * self._dt_over_dx2
+            heating = self._Q[f, i_b, i, j] * self._substep_dt / (rho * cp)
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
                 im = qd.max(i - 1, 0)
                 ip = qd.min(i + 1, self._nx - 1)
@@ -1298,12 +1305,16 @@ class JouleHeatingSolver(Solver):
 
     @qd.kernel
     def _heat_step_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
-        r_env = self._r_field
-        dt_over_rhocp_env = self._dt_over_rhocp_field
+        # NOTE: quadrants 1.3 rejects field aliases inside kernels
+        # (`r_env = self._r_field`); index the fields directly instead.
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             t_old = self._T[f, i_b, i, j, k]
-            r = r_env[i_b]
-            heating = self._Q[f, i_b, i, j, k] * dt_over_rhocp_env[i_b]
+            rho = self._rho_field[i_b]
+            cp = self._cp_field[i_b]
+            # Inlined from _init_thermal_constants so autodiff reaches the
+            # scalar material fields (host-precomputed constants would not).
+            r = self._k_field[i_b] / (rho * cp) * self._dt_over_dx2
+            heating = self._Q[f, i_b, i, j, k] * self._substep_dt / (rho * cp)
             if (
                 i == 0
                 or i == self._nx - 1

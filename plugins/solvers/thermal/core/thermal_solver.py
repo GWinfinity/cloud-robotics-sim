@@ -196,6 +196,9 @@ class ThermalSolver(Solver):
     def build(self) -> None:
         super().build()
 
+        # genesis 1.4 Solver no longer provides TimeBasedMixin's _substep_dt.
+        self._substep_dt = self._sim.substep_dt
+
         self._n_frames = self._sim.substeps_local + 1
         full_shape = (self._n_frames, self._B, *self._shape)
         self._T = qd.field(dtype=gs.qd_float, shape=full_shape, needs_grad=True)

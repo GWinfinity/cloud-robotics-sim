@@ -54,7 +54,7 @@ def install(scene: "Scene", options: ThermalOptions | None = None) -> ThermalSol
     """
     options = options or ThermalOptions()
     if options.dt is None:
-        options = ThermalOptions(**{**options.__dict__, "dt": scene.sim_options.dt})
+        options = ThermalOptions(**{**options.__dict__, "dt": scene._sim.dt})
 
     solver = ThermalSolver(scene, scene.sim, options)
     scene.sim.thermal_solver = solver

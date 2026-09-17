@@ -1,0 +1,29 @@
+name: acoustics
+version: 0.1.0
+description: Grid-based time-domain acoustics (linear wave equation) solver plugin for genesis-world 1.4.0
+
+category: solvers
+source_project: genesis-cloud-sim
+
+author:
+  name: Genesis Cloud Sim Team
+  email: team@example.com
+
+dependencies:
+  - numpy>=1.20
+  - genesis-world>=1.4.0
+
+exports:
+  - AcousticsSolver
+  - AcousticsOptions
+  - AcousticSource
+  - AcousticBody
+  - AcousticProbe
+  - install
+
+tags:
+  - solver
+  - acoustics
+  - wave-equation
+  - aeroacoustics
+  - multiphysics

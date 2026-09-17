@@ -18,7 +18,7 @@ def install(scene, options=None):
         The scene to install the solver into.
     options : JouleHeatingOptions | None
         Solver options. If ``None``, default options are used. If ``dt`` is not
-        set, it is defaulted to ``scene.sim_options.dt``.
+        set, it is defaulted to ``scene._sim.dt``.
 
     Returns:
     -------
@@ -28,7 +28,7 @@ def install(scene, options=None):
     options = options or JouleHeatingOptions()
     if options.dt is None:
         options = JouleHeatingOptions(
-            **{**options.__dict__, "dt": scene.sim_options.dt}
+            **{**options.__dict__, "dt": scene._sim.dt}
         )
     solver = JouleHeatingSolver(scene, scene.sim, options)
     scene.sim.joule_heating_solver = solver
