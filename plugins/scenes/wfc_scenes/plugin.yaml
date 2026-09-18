@@ -1,0 +1,67 @@
+# WFC Chinese Home Scenes Plugin for genesis-cloud-sim
+#
+# 波函数坍缩（WFC）驱动的中式家居场景自动生成插件。
+
+name: "wfc_scenes"
+version: "0.1.0"
+type: "scene"
+description: "Wave Function Collapse driven Chinese-home scene generation (中式家居程序化场景生成)"
+author: "Cloud Robotics Sim"
+license: "Apache-2.0"
+
+dependencies:
+  required:
+    - numpy>=1.20.0
+    - trimesh>=3.0.0
+  optional:
+    - genesis-world>=1.4.0
+    - pillow>=8.0.0
+
+# Scene presets provided
+scenes:
+  chinese_home:
+    name: "Chinese Home (WFC)"
+    description: "Procedurally generated Chinese apartment floor plans with everyday furniture"
+    file: "scene.py"
+    class: "ChineseHomeScene"
+
+# 模块目录（与 core/rules_cn.py 保持一致）
+tiles:
+  living: 客厅
+  dining: 餐厅
+  kitchen: 厨房
+  bedroom: 卧室
+  study: 书房
+  entry: 玄关
+  balcony: 阳台
+  tea: 茶室
+  bathroom: 卫生间
+  corridor: 过道
+
+# Plugin configuration
+config:
+  default_grid: [4, 3]
+  tile_size: 3.2
+  wall_height: 2.8
+  festival_decorations: false
+
+# Entry points
+entry_points:
+  scene: "scene:ChineseHomeScene"
+  populate: "scene:populate_genesis_scene"
+  cli: "__main__:main"
+
+# Integration with other plugins
+integration:
+  compatible_with:
+    - dreamdojo
+    - maniskill
+    - art_scenes
+  provides:
+    - procedural_floorplans
+    - furniture_placement
+    - layout_json_export
+    - glb_export
+
+testing:
+  test_module: "tests.test_wfc_scenes"
