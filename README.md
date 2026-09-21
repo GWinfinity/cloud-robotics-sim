@@ -56,18 +56,20 @@ for _ in range(100):
 
 ### 命令行工具
 
+安装后提供 `crs`（短别名）和 `cloud-robotics-sim` 两个等价的命令：
+
 ```bash
 # 训练
-cloud-robotics-sim train --config configs/franka_pickplace.yaml
+crs train --config configs/franka_pickplace.yaml
 
 # 评估
-cloud-robotics-sim eval --checkpoint checkpoints/latest.pt --num-episodes 100
+crs eval --checkpoint checkpoints/latest.pt --num-episodes 100
 
 # 交互式 Agent
-cloud-robotics-sim agent --goal "pick up the red cube"
+crs agent --goal "pick up the red cube"
 
 # 运行测试
-cloud-robotics-sim test
+crs test
 ```
 
 ## 架构

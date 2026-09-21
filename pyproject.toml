@@ -112,6 +112,7 @@ default = true
 
 [project.scripts]
 cloud-robotics-sim = "cloud_robotics_sim.__main__:main"
+crs = "cloud_robotics_sim.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/GWinfinity/cloud-robotics-sim"
