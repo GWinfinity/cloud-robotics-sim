@@ -248,6 +248,6 @@ cd docs && make html
 
 ## 支持
 
-- 📧 邮箱: support@cloudrobotics.dev
+- 📧 邮箱: guoweist@foxmail.com
 - 💬 讨论区: [GitHub Discussions](https://github.com/your-org/cloud-robotics-sim/discussions)
 - 🐛 问题反馈: [GitHub Issues](https://github.com/your-org/cloud-robotics-sim/issues)
