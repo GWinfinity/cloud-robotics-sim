@@ -34,6 +34,73 @@ import torch
 G = 9.81  # gravitational acceleration [m/s^2]
 
 
+def build_poisson_csr(
+    nx: int,
+    ny: int,
+    nz: int,
+    h: float,
+    outlet_mask: np.ndarray,
+) -> tuple[Any, np.ndarray]:
+    """Assemble the negative-Laplacian operator (Neumann + outlet Dirichlet).
+
+    Returns the CSR matrix and its diagonal. Shared by the torch and
+    quadrants CFD backends: row ``(i*ny + j)*nz + k`` matches C-order
+    raveling of an ``(nx, ny, nz)`` field.
+
+    Ghost accounting per direction pair: both neighbours present -> diagonal
+    2 each; a Neumann (replicate) ghost -> contributes 1; a Dirichlet ghost
+    at the open outlet cells -> contributes 3 (1 + 2).
+    """
+    import scipy.sparse as sp
+
+    h2 = h * h
+    n = nx * ny * nz
+    outlet = np.asarray(outlet_mask, dtype=bool).reshape(ny, nz)
+    rows: list[int] = []
+    cols: list[int] = []
+    vals: list[float] = []
+    diag = np.empty(n)
+
+    def idx(i: int, j: int, k: int) -> int:
+        return (i * ny + j) * nz + k
+
+    for i in range(nx):
+        for j in range(ny):
+            for k in range(nz):
+                c = idx(i, j, k)
+                d = 0.0
+                # x pair
+                cnt = 0
+                if i > 0:
+                    rows.append(c)
+                    cols.append(idx(i - 1, j, k))
+                    vals.append(-1.0)
+                    cnt += 1
+                if i < nx - 1:
+                    rows.append(c)
+                    cols.append(idx(i + 1, j, k))
+                    vals.append(-1.0)
+                    cnt += 1
+                elif outlet[j, k]:
+                    d += 2.0  # Dirichlet ghost: 1 + 2 = 3
+                d += cnt
+                # y / z pairs: walls, always Neumann ghosts
+                for jj, kk in ((j - 1, k), (j + 1, k), (j, k - 1), (j, k + 1)):
+                    if 0 <= jj < ny and 0 <= kk < nz:
+                        rows.append(c)
+                        cols.append(idx(i, jj, kk))
+                        vals.append(-1.0)
+                        d += 1.0
+                rows.append(c)
+                cols.append(c)
+                vals.append(d)
+                diag[c] = d
+    mat = sp.csr_matrix(
+        (np.array(vals) / h2, (rows, cols)), shape=(n, n), dtype=np.float64
+    )
+    return mat, diag
+
+
 def _replicate_pad(f: torch.Tensor, dim: int) -> torch.Tensor:
     """Pad by replicating the boundary values (zero-gradient ghost)."""
     lo = f.narrow(dim, 0, 1)
@@ -232,58 +299,15 @@ class CFD3D:
 
     def _solve_pressure_direct(self, rhs: torch.Tensor) -> torch.Tensor:
         """Exact sparse-LU solve (cached factorisation), for small grids."""
-        import scipy.sparse as sp
         import scipy.sparse.linalg as spla
 
         if self._direct_lu is None:
-            nx, ny, nz = self.nx, self.ny, self.nz
-            h2 = self.h * self.h
-            n = nx * ny * nz
-            outlet = self.outlet_mask_f.cpu().numpy()  # True -> Dirichlet ghost
-            diag = np.empty(n)
-            rows: list[int] = []
-            cols: list[int] = []
-            vals: list[float] = []
-
-            def idx(i: int, j: int, k: int) -> int:
-                return (i * ny + j) * nz + k
-
-            for i in range(nx):
-                for j in range(ny):
-                    for k in range(nz):
-                        c = idx(i, j, k)
-                        d = 0.0
-                        # x pair: real neighbours count 1 each; the missing
-                        # side is a ghost. At the outlet face the ghost is
-                        # Dirichlet (-p, +2 extra on the diagonal) on the
-                        # patch and Neumann (replicate, +0 extra) elsewhere.
-                        cnt = 0
-                        if i > 0:
-                            rows.append(c)
-                            cols.append(idx(i - 1, j, k))
-                            vals.append(-1.0)
-                            cnt += 1
-                        if i < nx - 1:
-                            rows.append(c)
-                            cols.append(idx(i + 1, j, k))
-                            vals.append(-1.0)
-                            cnt += 1
-                        elif outlet[j, k]:
-                            d += 2.0  # Dirichlet ghost: diag 1 + 2 = 3
-                        d += cnt
-                        # y / z pairs: no-slip walls, always Neumann ghosts
-                        for jj, kk in ((j - 1, k), (j + 1, k), (j, k - 1), (j, k + 1)):
-                            if 0 <= jj < ny and 0 <= kk < nz:
-                                rows.append(c)
-                                cols.append(idx(i, jj, kk))
-                                vals.append(-1.0)
-                                d += 1.0
-                        rows.append(c)
-                        cols.append(c)
-                        vals.append(d)
-                        diag[c] = d
-            mat = sp.csr_matrix(
-                (np.array(vals) / h2, (rows, cols)), shape=(n, n), dtype=np.float64
+            mat, diag = build_poisson_csr(
+                self.nx,
+                self.ny,
+                self.nz,
+                self.h,
+                self.outlet_mask_f.cpu().numpy(),
             )
             self._direct_lu = spla.splu(mat.tocsc())
             self._direct_diag = diag

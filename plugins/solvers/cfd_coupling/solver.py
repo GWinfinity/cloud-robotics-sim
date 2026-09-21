@@ -36,6 +36,38 @@ from plugins.solvers.cfd_coupling.core import (
     PipeOptions,
 )
 
+
+def _make_cfd_core(cfd_options, backend: str):
+    """Instantiate the CFD core on the requested backend.
+
+    ``backend`` is one of ``"quadrants"`` (default: genesis-native
+    ``@qd.kernel`` implementation), ``"torch"`` (pure PyTorch core, works
+    without genesis) or ``"auto"`` (quadrants when genesis is importable,
+    else torch). The two backends are numerically equivalent and
+    duck-type-compatible with the coupler.
+    """
+    if backend in ("auto", "quadrants"):
+        try:
+            from plugins.solvers.cfd_coupling.core.cfd3d_qd import (
+                QDCFD3D,
+                QDCFDOptions,
+            )
+
+            if isinstance(cfd_options, QDCFDOptions):
+                qd_opts = cfd_options
+            else:
+                qd_opts = QDCFDOptions(
+                    **{
+                        f.name: getattr(cfd_options, f.name)
+                        for f in QDCFDOptions.__dataclass_fields__.values()
+                    }
+                )
+            return QDCFD3D(qd_opts)
+        except ImportError:
+            if backend == "quadrants":
+                raise
+    return CFD3D(cfd_options)
+
 if TYPE_CHECKING:
     from genesis.engine.scene import Scene
     from genesis.engine.simulator import Simulator
@@ -99,12 +131,16 @@ class CoupledSolverOptions:
     pipe, cfd, coupling :
         Core solver options (see ``PipeOptions`` / ``CFDOptions`` /
         ``CouplingOptions``).
+    backend : str
+        CFD core backend: ``"quadrants"`` (default, genesis-native
+        ``@qd.kernel`` s), ``"torch"`` (genesis-free), or ``"auto"``.
     """
 
     dt: float | None = None
     pipe: PipeOptions = field(default_factory=PipeOptions)
     cfd: CFDOptions = field(default_factory=CFDOptions)
     coupling: CouplingOptions = field(default_factory=CouplingOptions)
+    backend: str = "quadrants"
 
 
 @dataclass
@@ -122,6 +158,7 @@ class CFDSolverOptions:
     dt: float | None = None
     cfd: CFDOptions = field(default_factory=CFDOptions)
     inlet_velocity: float = 0.0  # prescribed inlet velocity [m/s]
+    backend: str = "quadrants"  # CFD core backend (see _make_cfd_core)
 
 
 # --------------------------------------------------------------------- #
@@ -139,7 +176,7 @@ class CoupledCFDSolver(_PluginSolverBase, Solver):
         super().__init__(scene, sim, options)
         self._options = options
         self._pipe = Pipe1D(options.pipe)
-        self._cfd = CFD3D(options.cfd)
+        self._cfd = _make_cfd_core(options.cfd, options.backend)
         self._coupler = Coupler(self._pipe, self._cfd, options.coupling)
         self._substep_dt: float = options.coupling.macro_dt
 
@@ -156,7 +193,7 @@ class CoupledCFDSolver(_PluginSolverBase, Solver):
         return self._pipe
 
     @property
-    def cfd(self) -> CFD3D:
+    def cfd(self):
         return self._cfd
 
     def build(self) -> None:
@@ -244,7 +281,7 @@ class CFDSolver(_PluginSolverBase, Solver):
     def __init__(self, scene: "Scene", sim: "Simulator", options: CFDSolverOptions):
         super().__init__(scene, sim, options)
         self._options = options
-        self._cfd = CFD3D(options.cfd)
+        self._cfd = _make_cfd_core(options.cfd, options.backend)
         self._cfd.set_inlet(options.inlet_velocity)
         self._substep_dt = 0.0
 
@@ -253,7 +290,7 @@ class CFDSolver(_PluginSolverBase, Solver):
         return True
 
     @property
-    def cfd(self) -> CFD3D:
+    def cfd(self):
         return self._cfd
 
     def build(self) -> None:

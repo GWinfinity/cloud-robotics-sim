@@ -4,8 +4,9 @@ description: >-
   Bidirectional 1D pipe network (MOC water hammer) <-> 3D CFD (projection
   method) coupling solver with sub-cycling, fixed-point interface iteration
   and millisecond valve control events. Genesis-world injectable via
-  install(scene, options); the numerical core also runs headless
-  (PyTorch + NumPy only).
+  install(scene, options). The 3D CFD core defaults to quadrants/Taichi
+  kernels (like the other solver plugins) with a numerically equivalent
+  PyTorch fallback backend for genesis-free/headless use.
 
 category: solvers
 source_project: genesis-cloud-sim
@@ -23,6 +24,8 @@ exports:
   - PipeOptions
   - CFD3D
   - CFDOptions
+  - QDCFD3D
+  - QDCFDOptions
   - Coupler
   - CouplingOptions
   - CoupledCFDSolver

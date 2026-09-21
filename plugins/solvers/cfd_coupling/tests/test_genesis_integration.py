@@ -60,8 +60,8 @@ def _pipe_options() -> PipeOptions:
     )
 
 
-def _cfd_options() -> CFDOptions:
-    return CFDOptions(
+def _cfd_kwargs() -> dict:
+    return dict(
         domain=(0.2, 0.1, 0.1),
         cells=(20, 10, 10),
         viscosity=1.0e-4,
@@ -69,6 +69,10 @@ def _cfd_options() -> CFDOptions:
         outlet_patch=((0.45, 0.55), (0.45, 0.55)),
         advect_temperature=False,
     )
+
+
+def _cfd_options() -> CFDOptions:
+    return CFDOptions(**_cfd_kwargs())
 
 
 def _make_scene(dt: float = _DT, substeps: int = _SUBSTEPS):
@@ -148,6 +152,7 @@ class TestCoupledSolverIntegration:
                 pipe=_pipe_options(),
                 cfd=_cfd_options(),
                 coupling=CouplingOptions(macro_dt=0.001, inlet_ramp_time=0.02),
+                backend="torch",  # keep the genesis-free backend covered here
             ),
         )
         scene.build()
@@ -169,6 +174,94 @@ class TestCoupledSolverIntegration:
         assert solver.cfd.n_steps == steps_snapshot
         assert solver.coupler.plenum_head == pytest.approx(head_snapshot)
         assert np.array_equal(solver.pipe.Q, q_snapshot)
+
+
+class TestQuadrantsBackend:
+    """Numerical parity and latency of the quadrants (qd.kernel) CFD backend."""
+
+    def test_mass_conservation(self):
+        from plugins.solvers.cfd_coupling.core.cfd3d_qd import QDCFD3D, QDCFDOptions
+
+        cfd = QDCFD3D(QDCFDOptions(**_cfd_kwargs()))
+        cfd.set_inlet(0.5)
+        for _ in range(400):
+            cfd.step(0.001)
+        q_in = cfd.inlet_flow()
+        q_out = cfd.outlet_flow()
+        assert q_in == pytest.approx(0.5 * cfd.inlet_patch_area(), rel=1e-3)
+        assert q_out == pytest.approx(q_in, rel=0.05)
+        assert cfd.divergence_norm() < 5e-4
+
+    def test_matches_torch_reference(self):
+        from plugins.solvers.cfd_coupling.core.cfd3d import CFD3D, CFDOptions
+        from plugins.solvers.cfd_coupling.core.cfd3d_qd import QDCFD3D, QDCFDOptions
+
+        torch_cfd = CFD3D(CFDOptions(**_cfd_kwargs()))
+        qd_cfd = QDCFD3D(QDCFDOptions(**_cfd_kwargs()))
+        u = 5.8e-4 / torch_cfd.inlet_patch_area()
+        torch_cfd.set_inlet(u)
+        qd_cfd.set_inlet(u)
+        for _ in range(50):
+            torch_cfd.step(0.001)
+            qd_cfd.step(0.001)
+        assert qd_cfd.inlet_flow() == pytest.approx(torch_cfd.inlet_flow(), rel=1e-3)
+        assert qd_cfd.outlet_flow() == pytest.approx(torch_cfd.outlet_flow(), rel=1e-2)
+        # Same backpressure physics (restricted outlet -> plenum head).
+        assert qd_cfd.inlet_pressure_head() == pytest.approx(
+            torch_cfd.inlet_pressure_head(), rel=0.3
+        )
+
+    def test_latency_vs_torch(self):
+        import time
+
+        from plugins.solvers.cfd_coupling.core.cfd3d import CFD3D, CFDOptions
+        from plugins.solvers.cfd_coupling.core.cfd3d_qd import QDCFD3D, QDCFDOptions
+
+        torch_cfd = CFD3D(CFDOptions(**_cfd_kwargs()))
+        qd_cfd = QDCFD3D(QDCFDOptions(**_cfd_kwargs()))
+        for cfd in (torch_cfd, qd_cfd):
+            cfd.set_inlet(0.5)
+            for _ in range(50):
+                cfd.step(0.001)
+        t0 = time.perf_counter()
+        for _ in range(100):
+            torch_cfd.step(0.001)
+        t1 = time.perf_counter()
+        for _ in range(100):
+            qd_cfd.step(0.001)
+        t2 = time.perf_counter()
+        torch_ms = (t1 - t0) * 10.0
+        qd_ms = (t2 - t1) * 10.0
+        print(f"\nlatency: torch {torch_ms:.2f} ms/step, quadrants {qd_ms:.2f} ms/step")
+        # The quadrants backend must stay in the same latency class as torch.
+        assert qd_ms < max(torch_ms * 2.0, 10.0)
+
+    def test_coupler_with_quadrants_backend(self):
+        """Full bidirectional loop on the quadrants backend: restricted-outlet
+        plenum pressurises, valve closure chokes the nozzle flow."""
+        from plugins.solvers.cfd_coupling import Coupler, CouplingOptions, Pipe1D
+        from plugins.solvers.cfd_coupling.core.cfd3d_qd import QDCFD3D, QDCFDOptions
+
+        pipe = Pipe1D(_pipe_options())
+        cfd = QDCFD3D(QDCFDOptions(**_cfd_kwargs()))
+        coupler = Coupler(
+            pipe,
+            cfd,
+            CouplingOptions(
+                macro_dt=0.001,
+                fixed_point_iters=1,
+                inlet_ramp_time=0.02,
+                valve_closure_start=0.06,
+                valve_closure_duration=0.05,
+            ),
+        )
+        logs_pre = coupler.run(0.06)
+        head_pre = float(np.mean([log.plenum_head for log in logs_pre[-10:]]))
+        flow_pre = float(np.mean([log.nozzle_flow for log in logs_pre[-10:]]))
+        logs_post = coupler.run(0.15)
+        flow_post_min = min(log.nozzle_flow for log in logs_post)
+        assert head_pre > 0.2
+        assert flow_post_min < 0.5 * flow_pre
 
 
 class TestStandaloneSolvers:

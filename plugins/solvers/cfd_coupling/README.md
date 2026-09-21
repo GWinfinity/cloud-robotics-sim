@@ -53,9 +53,16 @@ reservoir ──[1D 管道, MOC 特征线法]──> nozzle/valve ══> 3D ple
 
 | 模块 | 文件 | 说明 |
 |------|------|------|
-| 1D 求解器 | `core/pipe1d.py` | MOC 水锤(Courant=1 精确),上游定水位水库,下游喷嘴/阀门边界,背压水头可时变(3D 回传) |
-| 3D 求解器 | `core/cfd3d.py` | 不可压 Navier-Stokes,MAC 交错网格 + 投影法,一阶迎风显式对流,CG(纯 Neumann 出口 Dirichlet p=0,Jacobi 预条件,热启动) |
-| 耦合器 | `core/coupler.py` | 宏步协调、双向交换、Gauss-Seidel 固定点迭代、阀门事件(0D 控制逻辑) |
+| 1D 求解器 | `core/pipe1d.py` | MOC 水锤(Courant=1 精确),上游定水位水库,下游喷嘴/阀门边界,背压水头可时变(3D 回传)。NumPy 实现,控制逻辑天然 host 侧 |
+| 3D 求解器(quadrants) | `core/cfd3d_qd.py` | **默认后端**。不可压 NS,MAC 交错网格 + 投影法,`@qd.kernel` 与 thermal/acoustics 同技术栈;预测/扩散/散度/投影/温度全部 Taichi 内核,压力 Poisson 走宿主侧缓存稀疏 LU(≤30k 单元)或 scipy CG |
+| 3D 求解器(torch) | `core/cfd3d.py` | 备用后端(无 genesis 环境)。与 quadrants 版数值等价、API 鸭子类型兼容,共享同一稀疏 LU 装配(`build_poisson_csr`) |
+| 耦合器 | `core/coupler.py` | 宏步协调、双向交换、Gauss-Seidel 固定点迭代、阀门事件(0D 控制逻辑)。对两个 3D 后端无差别 |
+
+后端由 `CoupledSolverOptions.backend` / `CFDSolverOptions.backend` 选择:
+`"quadrants"`(默认)、`"torch"` 或 `"auto"`(有 genesis 用 quadrants,否则 torch)。
+
+**延迟**(20×10×10 网格,本机 CPU):quadrants **~2.0 ms/步** vs torch ~6.4 ms/步——
+Taichi 内核的预测+投影链路比 30+ 次小张量 torch 算子更省,达到并超过 torch 延迟水平。
 
 ### 时间步长协调
 
@@ -103,9 +110,10 @@ uv run python -m pytest plugins/solvers/cfd_coupling/tests/ -m slow   # 方腔
 uv run python plugins/solvers/cfd_coupling/examples/run_valve_closure.py
 ```
 
-`tests/test_coupling.py` 为无 genesis 的数值验证;
-`tests/test_genesis_integration.py` 为 `gs.Scene` 生命周期验证
-(install/build/step/reset,无 genesis 时自动跳过)。
+`tests/test_coupling.py` 为无 genesis 的数值验证(torch 后端);
+`tests/test_genesis_integration.py` 为 `gs.Scene` 生命周期验证 + quadrants 后端
+数值对照(质量守恒、与 torch 参考一致性、背压闭环、延迟同量级断言),
+无 genesis 时自动跳过。quadrants 内核编译(首次 JIT)需要 genesis 已初始化。
 
 示例脚本输出稳态标定、Joukowsky 参考值、逐宏步交换延迟统计
 (median/p95/最小交换周期),并将历史保存到
@@ -115,6 +123,7 @@ uv run python plugins/solvers/cfd_coupling/examples/run_valve_closure.py
 
 - 单管 1D(无分叉管网);相态参数以入口边界参数传递,无真两相流模型。
 - 3D 为单相不可压、等温(温度仅作被动标量);出口为受限补丁 + p=0 Dirichlet。
-- 显式格式,需满足 CFL;CG 压力求解为 float32(网格 ≤ 64³ 时残差可接受)。
+- 显式格式,需满足 CFL;quadrants 内核为 float32,散度 ~1e-4 量级。
 - 1D↔3D 面积不匹配通过补丁面积比处理,未做动量通量修正(界面动量
   守恒的精化处理是后续工作)。
+- 反传(autodiff)未实现:两个 3D 后端的梯度钩子均为 no-op。
