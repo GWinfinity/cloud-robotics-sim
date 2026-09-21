@@ -1,8 +1,48 @@
-# cfd_coupling — 1D 管网 ↔ 3D CFD 双向耦合原型
+# cfd_coupling — 1D 管网 ↔ 3D CFD 双向耦合求解器插件
 
 面向「AI+工业软件」赛题(*一维管网系统+三维 CFD 局部精细模拟的联合仿真:
-时间步长协调与边界耦合*)的最小可运行原型。自包含,仅依赖 PyTorch + NumPy,
-不需要 genesis-world,可跑在纯 CPU 上。
+时间步长协调与边界耦合*)的可运行原型。与 `plugins/solvers/` 下其他求解器
+一样通过 `install(scene, options)` 注入 `gs.Scene`;数值核心(PyTorch + NumPy)
+同时保持无 genesis 独立可跑。
+
+## 两种使用模式
+
+**Genesis 模式**(与其他 solver 插件一致,推荐):
+
+```python
+import genesis as gs
+from plugins.solvers.cfd_coupling import CFDOptions, CouplingOptions, PipeOptions, install
+from plugins.solvers.cfd_coupling.solver import CoupledSolverOptions  # genesis 侧选项
+
+gs.init(backend=gs.cpu)
+scene = gs.Scene(sim_options=gs.options.SimOptions(dt=0.002, substeps=2))
+scene.add_entity(gs.morphs.Plane())
+
+solver = install(scene, CoupledSolverOptions(
+    pipe=PipeOptions(length=10.0, wave_speed=200.0, ...),
+    cfd=CFDOptions(domain=(0.2, 0.1, 0.1), cells=(20, 10, 10), ...),
+    coupling=CouplingOptions(fixed_point_iters=2, valve_closure_start=0.1),
+))
+scene.build()
+
+for _ in range(100):
+    scene.step()   # 每个 genesis substep = 一个耦合宏步
+
+print(solver.coupler.plenum_head)      # 3D 回传的 plenum 背压水头
+print(solver.coupler.history()['t'])   # 逐宏步交换历史与延迟
+```
+
+- `scene.sim.cfd_coupling_solver` 访问求解器;`solver.pipe` / `solver.cfd` /
+  `solver.coupler` 直达三个核心。
+- 一个 genesis substep = 一个耦合宏步;宏步自动吸附到 1D MOC 步网
+  (`n·dx/a`),建议把场景 `dt/substeps` 配成 `dx/a` 的整数倍。
+- `scene.get_state()` / `scene.reset(state)` 会经 `get_state`/`set_state`
+  快照/恢复 1D+3D+界面状态(与其他插件求解器一致)。
+- 独立组件:`install_pipe(scene, PipeSolverOptions(...))`(1D 水锤,
+  自动子循环)、`install_cfd(scene, CFDSolverOptions(...))`(3D CFD)。
+
+**Headless 模式**(无 genesis,CI/原型调试用):直接组合 `core/` 里的
+`Pipe1D` / `CFD3D` / `Coupler`,见 `examples/run_valve_closure.py`。
 
 ```
 reservoir ──[1D 管道, MOC 特征线法]──> nozzle/valve ══> 3D plenum ──> 受限出口
@@ -62,6 +102,10 @@ uv run python -m pytest plugins/solvers/cfd_coupling/tests/ -m "not slow"
 uv run python -m pytest plugins/solvers/cfd_coupling/tests/ -m slow   # 方腔
 uv run python plugins/solvers/cfd_coupling/examples/run_valve_closure.py
 ```
+
+`tests/test_coupling.py` 为无 genesis 的数值验证;
+`tests/test_genesis_integration.py` 为 `gs.Scene` 生命周期验证
+(install/build/step/reset,无 genesis 时自动跳过)。
 
 示例脚本输出稳态标定、Joukowsky 参考值、逐宏步交换延迟统计
 (median/p95/最小交换周期),并将历史保存到

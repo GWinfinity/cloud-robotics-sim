@@ -2,8 +2,10 @@ name: cfd_coupling
 version: 0.1.0
 description: >-
   Bidirectional 1D pipe network (MOC water hammer) <-> 3D CFD (projection
-  method) coupling prototype with sub-cycling, fixed-point interface iteration
-  and millisecond valve control events. Self-contained (PyTorch + NumPy only).
+  method) coupling solver with sub-cycling, fixed-point interface iteration
+  and millisecond valve control events. Genesis-world injectable via
+  install(scene, options); the numerical core also runs headless
+  (PyTorch + NumPy only).
 
 category: solvers
 source_project: genesis-cloud-sim
@@ -23,6 +25,15 @@ exports:
   - CFDOptions
   - Coupler
   - CouplingOptions
+  - CoupledCFDSolver
+  - CoupledSolverOptions
+  - PipeSolver
+  - PipeSolverOptions
+  - CFDSolver
+  - CFDSolverOptions
+  - install
+  - install_pipe
+  - install_cfd
 
 tags:
   - solver
