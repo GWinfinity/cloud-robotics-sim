@@ -58,7 +58,7 @@ def _make_cfd_core(cfd_options, backend: str):
             else:
                 qd_opts = QDCFDOptions(
                     **{
-                        f.name: getattr(cfd_options, f.name)
+                        f.name: getattr(cfd_options, f.name, f.default)
                         for f in QDCFDOptions.__dataclass_fields__.values()
                     }
                 )

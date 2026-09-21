@@ -40,6 +40,7 @@ def build_poisson_csr(
     nz: int,
     h: float,
     outlet_mask: np.ndarray,
+    dtype: Any = np.float64,
 ) -> tuple[Any, np.ndarray]:
     """Assemble the negative-Laplacian operator (Neumann + outlet Dirichlet).
 
@@ -96,7 +97,7 @@ def build_poisson_csr(
                 vals.append(d)
                 diag[c] = d
     mat = sp.csr_matrix(
-        (np.array(vals) / h2, (rows, cols)), shape=(n, n), dtype=np.float64
+        (np.array(vals) / h2, (rows, cols)), shape=(n, n), dtype=dtype
     )
     return mat, diag
 

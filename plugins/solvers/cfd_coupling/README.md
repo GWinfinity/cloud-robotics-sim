@@ -61,8 +61,12 @@ reservoir ──[1D 管道, MOC 特征线法]──> nozzle/valve ══> 3D ple
 后端由 `CoupledSolverOptions.backend` / `CFDSolverOptions.backend` 选择:
 `"quadrants"`(默认)、`"torch"` 或 `"auto"`(有 genesis 用 quadrants,否则 torch)。
 
-**延迟**(20×10×10 网格,本机 CPU):quadrants **~2.0 ms/步** vs torch ~6.4 ms/步——
-Taichi 内核的预测+投影链路比 30+ 次小张量 torch 算子更省,达到并超过 torch 延迟水平。
+**延迟**(20×10×10 网格,本机 CPU,交错采样中位数):quadrants **~1.8 ms/步**
+(最好 1.6)vs torch ~7.5 ms/步,**4 倍于 torch**。手段:每步仅 2 次融合内核启动
+(预测+BC+散度 一次、投影+swap+温度 一次)、散度在 kernel 里预缩放 `-1/dt`
+(宿主零算术)、`qd_to_torch` 零拷贝视图走 scipy 稀疏 LU(f64,缓存分解,
+~0.7 ms)、温度场双帧缓冲消除 in-place 竞态。LU 精度可选
+`direct_precision="float32"`(实测反而更慢且散度差一个量级,默认 f64)。
 
 ### 时间步长协调
 
