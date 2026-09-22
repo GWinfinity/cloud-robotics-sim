@@ -125,10 +125,10 @@ uv run python plugins/solvers/cfd_coupling/examples/run_valve_closure.py
 
 ## 浸入式固体障碍物（飞机/部件绕流）
 
-两个 3D 后端都支持静态固体障碍物：任意三角网格（如 CATIA 导出的
-STL/OBJ/GLB）栅格化为 cell 中心 solid mask 后，障碍物表面自动成为无滑移
-壁面（压力 Poisson 把固体边界当 Neumann 壁面、固体 cell 以恒等行排除），
-torch 与 quadrants 后端数值同构。
+两个 3D 后端都支持固体障碍物：任意三角网格（如 CATIA 导出的 STL/OBJ/GLB）或
+STEP 装配体（`.stp`/`.step`，含多实体 CATIA 产品）解析为每零件一个网格，栅格化
+为 cell 中心 solid mask 后，障碍物表面自动成为无滑移壁面（压力 Poisson 把固体
+边界当 Neumann 壁面、固体 cell 以恒等行排除），torch 与 quadrants 后端数值同构。
 
 ```python
 import trimesh
@@ -138,22 +138,42 @@ mesh = trimesh.load("wing.stl")   # CATIA: 另存为 STL，单位米
 cfd.set_solid_mask(mask_from_mesh(mesh, cfd.o.domain, cfd.o.cells))
 ```
 
-Genesis 场景内可直接吃文件路径、trimesh 或刚体 entity：
+STEP 装配体直解析（每实体一个零件，`part_masks` 可用于分零件受力）：
+
+```python
+from plugins.solvers.cfd_coupling.core.obstacles import mask_from_step
+
+union, part_masks = mask_from_step("airframe.stp", cfd.o.domain, cfd.o.cells)
+cfd.set_solid_mask(union)
+```
+
+需要可选依赖 `pip install cloud-robotics-sim[cad]`（cadquery / OpenCASCADE）。
+CATPart/CATProduct 为达索专有格式无法直解析，请从 CATIA 导出 STEP 或 STL。
+
+Genesis 场景内可直接吃文件路径、trimesh、零件列表或刚体 entity：
 
 ```python
 solver = install_cfd(scene, CFDSolverOptions(cfd=CFDOptions(...)))
 scene.build()
-solver.add_obstacle("wing.stl", position=(0.1, 0.05, 0.05),
-                    rotation_euler=(0, 0, 0), scale=1.0)
-solver.add_obstacle(scene.entities[1])   # 或一个已 build 的刚体
+solver.add_obstacle("airframe.stp", position=(0.1, 0.05, 0.05))  # 装配体整体
+solver.add_obstacle(scene.entities[1])                           # 或已 build 的刚体
 ```
 
-- `add_obstacle` 多次调用取并集；返回该障碍物本次贡献的 mask。
-- mask 在步进间是静态的；移动障碍物后重新调用即可（重新栅格化）。
+- `add_obstacle` 多次调用取并集，返回该障碍物本次的 mask；`remove_obstacle(name)`
+  移除；`solver.obstacles` 查看各障碍物的 mask。
+- **动网格**：`add_obstacle(mesh, position=..., name="pod", track=pose_fn)`，
+  `pose_fn()` 每个 substep 被调用（返回 None / (3,) 位置 / (4,4) 矩阵），位姿变化
+  时自动重栅格化并重建并集 mask。跟踪障碍物须用文件/网格源（模型坐标）；
+  entity 快照仅静态。单向耦合：流体感受障碍物，障碍物不受流体反作用。
+- **受力积分**：`cfd.obstacle_forces(mask=None)` /
+  `solver.obstacle_forces()` 返回每个障碍物的压力分量、壁面粘性分量与合力
+  （牛顿，世界系）：压力在流体-固体交界面上按 `rho*p*h^2` 求和，粘性用
+  无滑移面假设 `tau = rho*nu*U_tan/(h/2)`。均匀压力场合力恒为零（闭曲面），
+  线性压力坡合力 ≈ `-grad(p)*V`（一阶阶梯格式有 O(h) 面误差）。
 - 障碍物不得接触 x = 0 / x = Lx 面（入口/出口补丁须保持无遮挡）。
-- CATIA 原生格式（CATPart/CATProduct/STEP）不直接解析，请先导出网格。
 - 演示：`python plugins/solvers/cfd_coupling/examples/run_obstacle_flow.py`
-  （内置方柱；`--stl` 传外部网格，可选 `--save` 导出截面场）。
+  （内置方柱；`--stl`/`--step` 传外部模型，`--move-amp/--move-omega` 滑动演示，
+  `--save` 导出截面场与合力）。
 
 ## 已知边界(原型范围)
 
@@ -163,5 +183,5 @@ solver.add_obstacle(scene.entities[1])   # 或一个已 build 的刚体
 - 1D↔3D 面积不匹配通过补丁面积比处理,未做动量通量修正(界面动量
   守恒的精化处理是后续工作)。
 - 反传(autodiff)未实现:两个 3D 后端的梯度钩子均为 no-op。
-- 障碍物为静态 immersed mask（阶梯近似，固体表面有一阶散度残差）；
-  固体受力（气动力积分）尚未输出；>30k cell 时压力求解走 CG。
+- 障碍物为 immersed mask（阶梯近似，固体表面有一阶散度/受力面误差）；
+  动网格为单向耦合（流体不反推固体）；>30k cell 时压力求解走 CG。

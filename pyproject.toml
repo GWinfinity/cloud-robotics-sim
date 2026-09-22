@@ -102,8 +102,14 @@ k8s = [
     "redis>=5.0",
 ]
 
+# OpenCASCADE (cadquery) for direct STEP assembly parsing in the
+# cfd_coupling obstacle pipeline (plugins/solvers/cfd_coupling/core/obstacles.py).
+cad = [
+    "cadquery>=2.4",
+]
+
 all = [
-    "cloud-robotics-sim[dev,docs,k8s]",
+    "cloud-robotics-sim[dev,docs,k8s,cad]",
 ]
 
 [[tool.uv.index]]

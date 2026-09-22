@@ -22,6 +22,9 @@ from plugins.solvers.cfd_coupling.core.obstacles import (
     combine_masks,
     mask_from_box,
     mask_from_mesh,
+    mask_from_step,
+    meshes_from_step,
+    surface_forces,
 )
 
 DOMAIN = (0.2, 0.1, 0.1)
@@ -205,3 +208,134 @@ def test_clear_mask_restores_baseline() -> None:
         a = getattr(baseline, f).cpu().numpy()
         b = getattr(disturbed, f).cpu().numpy()
         assert np.allclose(a, b, atol=1e-6), f
+
+
+# --------------------------------------------------------------------- #
+# Surface-force integration (aerodynamic loads)
+# --------------------------------------------------------------------- #
+def _zero_fields(cfd: CFD3D):
+    u = np.zeros((cfd.nx + 1, cfd.ny, cfd.nz))
+    v = np.zeros((cfd.nx, cfd.ny + 1, cfd.nz))
+    w = np.zeros((cfd.nx, cfd.ny, cfd.nz + 1))
+    return u, v, w
+
+
+def test_forces_uniform_pressure_zero() -> None:
+    """A uniform pressure field exerts zero net force on a closed solid."""
+    cfd = CFD3D(_opts())
+    mask = _box_mask()
+    u, v, w = _zero_fields(cfd)
+    p = np.full(CELLS, 123.0)
+    f_out = surface_forces(u, v, w, p, cfd.h, 1000.0, 1.0e-6, mask)
+    assert np.allclose(f_out["total"], 0.0, atol=1e-9)
+
+
+def test_forces_pressure_gradient_matches_discrete_expectation() -> None:
+    """Linear ramp p = gx*x: force equals the exact discrete sum (first-order
+    staircase: face pressures sample cell centres h/2 outside the solid).
+    """
+    cfd = CFD3D(_opts())
+    mask = _box_mask()
+    u, v, w = _zero_fields(cfd)
+    gx, rho = -5.0, 1000.0
+    xs = (np.arange(CELLS[0]) + 0.5) * cfd.h
+    p = np.tile((gx * xs)[:, None, None], (1, CELLS[1], CELLS[2]))
+    f_out = surface_forces(u, v, w, p, cfd.h, rho, 1.0e-6, mask)
+
+    idx = np.argwhere(mask)
+    i0, i1 = idx[:, 0].min(), idx[:, 0].max()
+    n_yz = len(np.unique(idx[:, [1, 2]], axis=0))
+    # Fluid cell centres adjacent to the solid on each side.
+    x_left = (i0 - 1 + 0.5) * cfd.h
+    x_right = (i1 + 1 + 0.5) * cfd.h
+    expected = -rho * gx * cfd.h * cfd.h * n_yz * (x_right - x_left)
+    assert f_out["total"][0] == pytest.approx(expected, rel=1e-6)
+    # And within ~30% of the continuum value -grad(p) * V (O(h) surface error).
+    volume = mask.sum() * cfd.h**3
+    assert f_out["total"][0] == pytest.approx(-rho * gx * volume, rel=0.3)
+    assert np.allclose(f_out["total"][1:], 0.0, atol=1e-9)
+
+
+def test_forces_viscous_direction() -> None:
+    """Uniform streamwise velocity drags the solid along +x only."""
+    cfd = CFD3D(_opts())
+    mask = _box_mask()
+    u, v, w = _zero_fields(cfd)
+    u[:] = 0.3
+    f_out = surface_forces(u, v, w, np.zeros(CELLS), cfd.h, 1000.0, 1.0e-4, mask)
+    assert f_out["total"][0] > 0.0
+    assert np.allclose(f_out["total"][1:], 0.0, atol=1e-12)
+    # Static fluid -> no force.
+    u[:] = 0.0
+    f_zero = surface_forces(u, v, w, np.zeros(CELLS), cfd.h, 1000.0, 1.0e-4, mask)
+    assert np.allclose(f_zero["total"], 0.0, atol=1e-12)
+
+
+def test_obstacle_forces_from_simulation() -> None:
+    """Steady duct flow: drag on the box points along the stream, lift ~ 0."""
+    cfd = _obstacle_case()
+    parts = cfd.obstacle_forces()
+    assert set(parts) == {"pressure", "viscous", "total"}
+    f_tot = parts["total"]
+    assert f_tot[0] > 0.0  # fluid drags the box downstream (+x)
+    assert abs(f_tot[1]) < 0.1 * abs(f_tot[0])
+    assert abs(f_tot[2]) < 0.1 * abs(f_tot[0])
+
+
+# --------------------------------------------------------------------- #
+# STEP assemblies (CATIA products; needs the optional cadquery package)
+# --------------------------------------------------------------------- #
+def _export_two_box_step(tmp_path: Path) -> Path:
+    """Two disjoint boxes as a STEP compound, centered at x=0.08 / 0.12."""
+    cadquery = pytest.importorskip("cadquery")
+    s1 = cadquery.Solid.makeBox(0.02, 0.02, 0.02, cadquery.Vector(0.07, 0.04, 0.04))
+    s2 = cadquery.Solid.makeBox(0.02, 0.02, 0.02, cadquery.Vector(0.11, 0.04, 0.04))
+    comp = cadquery.Compound.makeCompound([s1, s2])
+    path = tmp_path / "two_boxes.step"
+    cadquery.exporters.export(comp, str(path))
+    return path
+
+
+def test_step_assembly_expands_to_parts(tmp_path) -> None:
+    """A two-solid STEP file parses to one mesh per solid; the union mask
+    matches the analytic two-box mask.
+    """
+    pytest.importorskip("cadquery")
+    path = _export_two_box_step(tmp_path)
+    meshes = meshes_from_step(path)
+    assert len(meshes) == 2
+    union, parts = mask_from_step(path, DOMAIN, CELLS)
+    assert len(parts) == 2 and all(p.any() for p in parts)
+    m1 = mask_from_box((0.08, 0.05, 0.05), (0.02, 0.02, 0.02), DOMAIN, CELLS)
+    m2 = mask_from_box((0.12, 0.05, 0.05), (0.02, 0.02, 0.02), DOMAIN, CELLS)
+    assert np.array_equal(union, combine_masks(m1, m2))
+
+
+def test_step_assembly_flow_and_forces(tmp_path) -> None:
+    """A STEP assembly runs as an obstacle and yields per-part forces."""
+    pytest.importorskip("cadquery")
+    path = _export_two_box_step(tmp_path)
+    cfd = CFD3D(_opts())
+    union, parts = mask_from_step(path, DOMAIN, CELLS)
+    cfd.set_solid_mask(union)
+    _run(cfd, steps=1200, u_in=1.0)
+    f_each = [cfd.obstacle_forces(p)["total"][0] for p in parts]
+    f_all = cfd.obstacle_forces()["total"][0]
+    assert all(f > 0.0 for f in f_each)  # both parts feel downstream drag
+    assert f_all == pytest.approx(sum(f_each), rel=1e-6)  # masks are disjoint
+
+
+def test_meshes_from_step_requires_cadquery(monkeypatch) -> None:
+    """Without cadquery, meshes_from_step raises a helpful ImportError."""
+    import builtins
+
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "cadquery":
+            raise ImportError("No module named 'cadquery'")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+    with pytest.raises(ImportError, match="cadquery"):
+        meshes_from_step("whatever.step")

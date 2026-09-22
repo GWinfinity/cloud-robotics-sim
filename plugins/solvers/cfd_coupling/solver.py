@@ -80,7 +80,7 @@ class _MarkerEntity:
 
 
 # --------------------------------------------------------------------- #
-# Obstacle bridge: CATIA/CAD meshes and genesis entities -> solid mask
+# Obstacle bridge: CAD meshes, STEP assemblies, entities -> solid masks
 # --------------------------------------------------------------------- #
 def _placement_matrix(
     position: tuple[float, float, float] | None,
@@ -104,6 +104,23 @@ def _placement_matrix(
     if position is not None:
         mat[:3, 3] = np.asarray(position, dtype=np.float64)
     return mat
+
+
+def _coerce_placement(result) -> np.ndarray | None:
+    """Normalize a pose-provider return value to a 4x4 (or None = keep)."""
+    if result is None:
+        return None
+    arr = np.asarray(result, dtype=np.float64)
+    if arr.shape == (4, 4):
+        return arr
+    if arr.shape == (3,):  # position only
+        mat = np.eye(4)
+        mat[:3, 3] = arr
+        return mat
+    raise ValueError(
+        "pose provider must return None, a (3,) position, or a (4, 4) "
+        f"matrix, got array of shape {arr.shape}"
+    )
 
 
 def _entity_to_trimesh(entity):
@@ -135,32 +152,190 @@ def _entity_to_trimesh(entity):
     return trimesh.util.concatenate(meshes)
 
 
-def _add_obstacle_to_core(cfd, source, position, rotation_euler, scale) -> np.ndarray:
-    """Rasterize ``source`` into a solid mask and union it into ``cfd``."""
+def _resolve_sources(source) -> tuple[list, bool]:
+    """Normalize ``source`` into a list of trimesh meshes.
+
+    Returns ``(meshes, is_world_snapshot)``: STEP assemblies expand to one
+    mesh per solid; lists/tuples flatten recursively; a genesis entity
+    becomes a single world-frame snapshot mesh (``is_world_snapshot=True``,
+    i.e. model coordinates are already world coordinates and cannot be
+    re-placed by a pose provider).
+    """
+    import trimesh
+
+    from plugins.solvers.cfd_coupling.core.obstacles import meshes_from_step
+
+    if isinstance(source, (str, bytes, Path)):
+        suffix = Path(str(source)).suffix.lower()
+        if suffix in (".stp", ".step", ".stpz"):
+            return meshes_from_step(source), False
+        mesh = trimesh.load(str(source))
+        if isinstance(mesh, trimesh.Scene):
+            mesh = mesh.to_mesh()
+        return [mesh], False
+    if isinstance(source, (list, tuple)):
+        meshes: list = []
+        world = False
+        for part in source:
+            sub, sub_world = _resolve_sources(part)
+            meshes.extend(sub)
+            world = world or sub_world
+        return meshes, world
+    if hasattr(source, "links") and hasattr(source, "get_pos"):
+        return [_entity_to_trimesh(source)], True
+    if hasattr(source, "vertices") and hasattr(source, "faces"):
+        return [source], False  # already a trimesh.Trimesh
+    raise TypeError(
+        "source must be a mesh/STEP file path, a trimesh.Trimesh, a list of "
+        f"those (assembly), or a built genesis RigidEntity, got {type(source)!r}"
+    )
+
+
+def _rasterize_meshes(cfd, meshes, placement) -> np.ndarray:
+    """Rasterize meshes into a solid mask on the cfd grid (union)."""
     from plugins.solvers.cfd_coupling.core.obstacles import (
         combine_masks,
         mask_from_mesh,
     )
 
-    if isinstance(source, (str, bytes, Path)):
-        import trimesh
-
-        mesh = trimesh.load(str(source))
-        if isinstance(mesh, trimesh.Scene):
-            mesh = mesh.to_mesh()
-    elif hasattr(source, "links") and hasattr(source, "get_pos"):
-        mesh = _entity_to_trimesh(source)
-    elif hasattr(source, "vertices") and hasattr(source, "faces"):
-        mesh = source  # already a trimesh.Trimesh
-    else:
-        raise TypeError(
-            "source must be a mesh file path, a trimesh.Trimesh, or a built "
-            f"genesis RigidEntity, got {type(source)!r}"
+    mask = combine_masks(
+        *[
+            mask_from_mesh(
+                m, tuple(cfd.o.domain), tuple(cfd.o.cells), transform=placement
+            )
+            for m in meshes
+        ]
+    )
+    if mask is None or not mask.any():
+        raise ValueError(
+            "obstacle rasterized to an empty mask: check units (metres), "
+            "placement and that the geometry intersects the CFD domain"
         )
-    transform = _placement_matrix(position, rotation_euler, scale)
-    mask = mask_from_mesh(mesh, tuple(cfd.o.domain), tuple(cfd.o.cells), transform)
-    cfd.set_solid_mask(combine_masks(cfd.solid_mask, mask))
     return mask
+
+
+class _ObstacleMixin:
+    """Obstacle registry shared by CFDSolver and CoupledCFDSolver.
+
+    Each entry keeps its own mask so per-obstacle force breakdown is
+    available; the core always holds the union mask. Tracked obstacles
+    re-rasterize from their pose provider every substep (moving masks).
+    """
+
+    _cfd: object  # duck-typed CFD3D / QDCFD3D
+    _obstacles: dict
+
+    def _init_obstacles(self) -> None:
+        self._obstacles = {}
+
+    def add_obstacle(
+        self,
+        source,
+        position: tuple[float, float, float] | None = None,
+        rotation_euler: tuple[float, float, float] | None = None,
+        scale: float | tuple[float, float, float] | None = None,
+        name: str | None = None,
+        track=None,
+    ) -> np.ndarray:
+        """Add an immersed no-slip obstacle to the 3D CFD domain.
+
+        ``source`` is a mesh file path (STL/OBJ/GLB, e.g. exported from
+        CATIA), a STEP file (``.stp``/``.step``, incl. multi-solid CATIA
+        assemblies - one part per solid), a ``trimesh.Trimesh``, a list of
+        those (assembly), or a built genesis RigidEntity. ``position`` /
+        ``rotation_euler`` (degrees, xyz) / ``scale`` place the source into
+        the CFD world frame (metres) on top of any transform the source
+        itself carries.
+
+        ``track`` is an optional pose provider callable for moving
+        obstacles, invoked every substep; it returns None (keep pose), a
+        (3,) position, or a (4, 4) matrix. Tracked obstacles must use
+        file/mesh sources (model coordinates); entity snapshots are static.
+
+        Returns the mask this obstacle contributed; masks of successive
+        calls are unioned. Obstacles must stay clear of the x = 0 / x = Lx
+        faces. One-way coupling only: the fluid feels the obstacle, not
+        vice versa.
+        """
+        name = name or f"obstacle_{len(self._obstacles)}"
+        if name in self._obstacles:
+            raise ValueError(f"obstacle name already registered: {name!r}")
+        meshes, world_snapshot = _resolve_sources(source)
+        if track is not None and world_snapshot:
+            raise ValueError(
+                "tracked (moving) obstacles need file/mesh sources in model "
+                "coordinates; a genesis entity snapshot is static - export "
+                "the entity mesh and pass the file with a pose provider"
+            )
+        placement = (
+            None
+            if world_snapshot and position is None
+            else _placement_matrix(position, rotation_euler, scale)
+        )
+        entry = {
+            "meshes": meshes,
+            "placement": placement,
+            "track": track,
+            "mask": _rasterize_meshes(self._cfd, meshes, placement),
+        }
+        self._obstacles[name] = entry
+        self._rebuild_solid_union()
+        return entry["mask"]
+
+    def remove_obstacle(self, name: str) -> None:
+        """Remove a registered obstacle and rebuild the union mask."""
+        if name not in self._obstacles:
+            raise KeyError(f"unknown obstacle: {name!r}")
+        del self._obstacles[name]
+        self._rebuild_solid_union()
+
+    @property
+    def obstacles(self) -> dict:
+        """Registered obstacle masks by name (copies)."""
+        return {k: v["mask"].copy() for k, v in self._obstacles.items()}
+
+    def obstacle_forces(self) -> dict:
+        """Per-obstacle fluid forces (Newton) plus a 'total' entry.
+
+        Each value is the dict returned by the core's ``obstacle_forces``:
+        pressure / viscous / total length-3 arrays in world axes.
+        """
+        out = {
+            name: self._cfd.obstacle_forces(entry["mask"])
+            for name, entry in self._obstacles.items()
+        }
+        total_mask = self._cfd.solid_mask
+        out["total"] = (
+            self._cfd.obstacle_forces(total_mask) if total_mask is not None else None
+        )
+        return out
+
+    def _rebuild_solid_union(self) -> None:
+        from plugins.solvers.cfd_coupling.core.obstacles import combine_masks
+
+        self._cfd.set_solid_mask(
+            combine_masks(*[e["mask"] for e in self._obstacles.values()])
+        )
+
+    def _sync_tracked_obstacles(self) -> None:
+        """Re-rasterize tracked obstacles whose pose changed; rebuild union."""
+        changed = False
+        for entry in self._obstacles.values():
+            if entry["track"] is None:
+                continue
+            new_placement = _coerce_placement(entry["track"]())
+            old = entry["placement"]
+            if (new_placement is None) != (old is None) or (
+                new_placement is not None
+                and not np.allclose(new_placement, old, atol=1e-12)
+            ):
+                entry["placement"] = new_placement
+                entry["mask"] = _rasterize_meshes(
+                    self._cfd, entry["meshes"], new_placement
+                )
+                changed = True
+        if changed:
+            self._rebuild_solid_union()
 
 
 class _PluginSolverBase:
@@ -250,7 +425,7 @@ class CFDSolverOptions:
 # --------------------------------------------------------------------- #
 # Coupled solver
 # --------------------------------------------------------------------- #
-class CoupledCFDSolver(_PluginSolverBase, Solver):
+class CoupledCFDSolver(_ObstacleMixin, _PluginSolverBase, Solver):
     """Plugin solver wrapping the 1D(MOC) <-> 3D(CFD) bidirectional coupler.
 
     One genesis substep = one coupling macro step. Use ``solver.coupler``,
@@ -265,6 +440,7 @@ class CoupledCFDSolver(_PluginSolverBase, Solver):
         self._cfd = _make_cfd_core(options.cfd, options.backend)
         self._coupler = Coupler(self._pipe, self._cfd, options.coupling)
         self._substep_dt: float = options.coupling.macro_dt
+        self._init_obstacles()
 
     @property
     def is_active(self) -> bool:
@@ -282,29 +458,6 @@ class CoupledCFDSolver(_PluginSolverBase, Solver):
     def cfd(self):
         return self._cfd
 
-    def add_obstacle(
-        self,
-        source,
-        position: tuple[float, float, float] | None = None,
-        rotation_euler: tuple[float, float, float] | None = None,
-        scale: float | tuple[float, float, float] | None = None,
-    ) -> np.ndarray:
-        """Add an immersed no-slip obstacle to the 3D CFD domain.
-
-        ``source`` is a mesh file path (STL/OBJ/GLB, e.g. exported from
-        CATIA), a ``trimesh.Trimesh``, or a built genesis RigidEntity.
-        ``position`` / ``rotation_euler`` (degrees, xyz) / ``scale`` place
-        the source into the CFD world frame (metres) on top of any
-        transform the source itself carries. Returns the mask this
-        obstacle contributed; masks of successive calls are unioned.
-
-        Obstacles must stay clear of the x = 0 / x = Lx faces. The mask is
-        static within a step; call again (e.g. after moving an entity) to
-        re-rasterize. Requires ``scene.build()`` to have happened when
-        ``source`` is an entity.
-        """
-        return _add_obstacle_to_core(self._cfd, source, position, rotation_euler, scale)
-
     def build(self) -> None:
         super().build()
         # genesis 1.4 Solver no longer provides TimeBasedMixin's _substep_dt.
@@ -318,6 +471,7 @@ class CoupledCFDSolver(_PluginSolverBase, Solver):
         self._entities.append(_MarkerEntity())
 
     def substep_pre_coupling(self, f: int) -> None:
+        self._sync_tracked_obstacles()
         self._coupler.step()
 
     def get_state(self, f: int):
@@ -384,7 +538,7 @@ class PipeSolver(_PluginSolverBase, Solver):
         self._pipe.set_state(state)
 
 
-class CFDSolver(_PluginSolverBase, Solver):
+class CFDSolver(_ObstacleMixin, _PluginSolverBase, Solver):
     """Plugin solver wrapping the standalone 3D projection CFD core."""
 
     def __init__(self, scene: "Scene", sim: "Simulator", options: CFDSolverOptions):
@@ -393,6 +547,7 @@ class CFDSolver(_PluginSolverBase, Solver):
         self._cfd = _make_cfd_core(options.cfd, options.backend)
         self._cfd.set_inlet(options.inlet_velocity)
         self._substep_dt = 0.0
+        self._init_obstacles()
 
     @property
     def is_active(self) -> bool:
@@ -402,22 +557,13 @@ class CFDSolver(_PluginSolverBase, Solver):
     def cfd(self):
         return self._cfd
 
-    def add_obstacle(
-        self,
-        source,
-        position: tuple[float, float, float] | None = None,
-        rotation_euler: tuple[float, float, float] | None = None,
-        scale: float | tuple[float, float, float] | None = None,
-    ) -> np.ndarray:
-        """Add an immersed no-slip obstacle; see CoupledCFDSolver.add_obstacle."""
-        return _add_obstacle_to_core(self._cfd, source, position, rotation_euler, scale)
-
     def build(self) -> None:
         super().build()
         self._substep_dt = self._sim.substep_dt
         self._entities.append(_MarkerEntity())
 
     def substep_pre_coupling(self, f: int) -> None:
+        self._sync_tracked_obstacles()
         self._cfd.step(self._substep_dt)
 
     def get_state(self, f: int):

@@ -79,8 +79,10 @@ def main() -> None:
     q0 = pipe.Q[-1]
     v0 = q0 / pipe.area
     print(f"Steady nozzle flow Q0 = {q0:.4e} m^3/s (V0 = {v0:.3f} m/s)")
-    print(f"Joukowsky reference dH = a*dV/g = "
-          f"{pipe.o.wave_speed * v0 / 9.81:.2f} m (instant full closure)")
+    print(
+        f"Joukowsky reference dH = a*dV/g = "
+        f"{pipe.o.wave_speed * v0 / 9.81:.2f} m (instant full closure)"
+    )
 
     wall_start = time.perf_counter()
     coupler.run(0.1)  # open-valve steady state
@@ -92,15 +94,19 @@ def main() -> None:
 
     hist = coupler.history()
     post = hist["t"] > 0.1
-    print(f"After closure: min nozzle flow = {hist['nozzle_flow'][post].min():.3e} m^3/s")
+    print(
+        f"After closure: min nozzle flow = {hist['nozzle_flow'][post].min():.3e} m^3/s"
+    )
     print(f"               min plenum head  = {hist['plenum_head'][post].min():+.4f} m")
     print(f"3D incompressible: max |div| = {cfd.divergence_norm():.2e}")
 
     lat = hist["exchange_latency_ms"]
     print(f"\nExchange latency (boundary transfer only):")
     print(f"  median = {np.median(lat):.3f} ms, p95 = {np.percentile(lat, 95):.3f} ms")
-    print(f"Macro step: {wall_s / len(hist['t']) * 1e3:.1f} ms wall "
-          f"(incl. both solvers, fixed-point passes)")
+    print(
+        f"Macro step: {wall_s / len(hist['t']) * 1e3:.1f} ms wall "
+        f"(incl. both solvers, fixed-point passes)"
+    )
     print(f"Minimum exchange period (macro_dt): {coupler.macro_dt * 1e3:.1f} ms")
 
     out = ROOT / "outputs" / "cfd_coupling"

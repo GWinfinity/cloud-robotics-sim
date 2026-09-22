@@ -361,3 +361,60 @@ class TestObstacles:
         u = solver.cfd.u.cpu().numpy()
         u_cell = 0.5 * (u[:-1] + u[1:])
         assert np.abs(u_cell[mask]).max() < 1e-9
+
+    def test_qd_torch_force_parity_with_obstacle(self):
+        """Surface-force integration agrees across backends on live fields."""
+        from plugins.solvers.cfd_coupling.core.cfd3d import CFD3D
+        from plugins.solvers.cfd_coupling.core.cfd3d_qd import QDCFD3D, QDCFDOptions
+
+        mask = self._box_mask()
+        torch_cfd = CFD3D(CFDOptions(**_cfd_kwargs()))
+        qd_cfd = QDCFD3D(QDCFDOptions(**_cfd_kwargs()))
+        u = 5.8e-4 / torch_cfd.inlet_patch_area()
+        for cfd in (torch_cfd, qd_cfd):
+            cfd.set_solid_mask(mask)
+            cfd.set_inlet(u)
+        for _ in range(50):
+            torch_cfd.step(0.001)
+            qd_cfd.step(0.001)
+        f_t = torch_cfd.obstacle_forces(mask)["total"]
+        f_q = qd_cfd.obstacle_forces(mask)["total"]
+        scale = max(1.0, float(np.abs(f_t).max()))
+        assert np.allclose(f_q, f_t, rtol=0.2, atol=0.02 * scale)
+
+    def test_tracked_obstacle_follows_pose_fn(self):
+        """A tracked obstacle re-rasterizes every substep from its provider."""
+        import trimesh
+
+        scene = _make_scene()
+        solver = install_cfd(
+            scene,
+            CFDSolverOptions(cfd=_cfd_options(), inlet_velocity=0.5, backend="torch"),
+        )
+        scene.build()
+        mesh = trimesh.creation.box(extents=self._BOX_SIZE)  # model coords
+        state = {"x": 0.06}
+
+        def pose_fn():
+            mat = np.eye(4)
+            mat[0, 3] = state["x"]
+            return mat
+
+        solver.add_obstacle(
+            mesh, position=(0.06, 0.05, 0.05), name="pod", track=pose_fn
+        )
+        for _ in range(5):
+            scene.step()
+        state["x"] = 0.14
+        for _ in range(5):
+            scene.step()
+
+        mask = solver.obstacles["pod"]
+        centroid = (np.argwhere(mask).mean(axis=0) + 0.5) * 0.01
+        assert np.allclose(centroid, (0.14, 0.05, 0.05), atol=0.02)
+        # Tracked obstacles still report forces.
+        forces = solver.obstacle_forces()
+        assert forces["pod"]["total"].shape == (3,)
+        # Removal clears the union mask.
+        solver.remove_obstacle("pod")
+        assert solver.cfd.solid_mask is None

@@ -146,6 +146,29 @@ class QDCFD3D:
         """Current solid mask (bool ``(nx, ny, nz)``) or None."""
         return None if self._solid_np is None else self._solid_np.copy()
 
+    def obstacle_forces(self, mask: np.ndarray | None = None) -> dict:
+        """Integrate fluid forces on a solid mask (Newton, world axes).
+
+        ``mask`` defaults to the full solid mask. Returns a dict with the
+        pressure part, the viscous wall-shear part and their sum (each a
+        length-3 array). See ``obstacles.surface_forces`` for the method.
+        """
+        from plugins.solvers.cfd_coupling.core.obstacles import surface_forces
+
+        m = self._solid_np if mask is None else np.asarray(mask, dtype=bool)
+        if m is None:
+            raise ValueError("no solid mask set; call set_solid_mask first")
+        return surface_forces(
+            u=self.u.to_numpy(),
+            v=self.v.to_numpy(),
+            w=self.w.to_numpy(),
+            p=self.p.to_numpy(),
+            h=self.h,
+            rho=self.o.density,
+            nu=self.o.viscosity,
+            mask=m,
+        )
+
     def set_solid_mask(self, mask: np.ndarray | None) -> None:
         """Set (or clear, with None) the immersed-solid cell mask.
 
