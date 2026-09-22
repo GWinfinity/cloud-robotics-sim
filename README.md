@@ -14,7 +14,7 @@
 - **大规模并行** - 可同时训练多达 4,096 个并行环境
 - **Agent 就绪** - 内置技能注册表与任务执行引擎
 - **兼容 Gymnasium** - 可与主流 RL/IL 库无缝集成
-- **多物理场求解器** - 插件化网格场求解器：热传导（FTCS）、焦耳热（电势-热源耦合）、时域声学（leapfrog 波动方程），随 `scene.step()` 一起积分，支持麦克风录音与 SPL 频谱后处理（[plugins/solvers/](plugins/solvers/)）
+- **多物理场求解器** - 插件化网格场求解器：热传导（FTCS）、焦耳热（电势-热源耦合）、时域声学（leapfrog 波动方程）、1D-3D CFD 耦合（水锤/绕流），随 `scene.step()` 一起积分，支持麦克风录音与 SPL 频谱后处理（[plugins/solvers/](plugins/solvers/)）
 
 ## 快速开始
 
@@ -165,6 +165,7 @@ cloud-robotics-sim/
 | `thermal` | 热传导 | 显式 FTCS + 能量守恒实体耦合 | 刚体-网格双向换热，GB 标准器件（马弗炉）底层模型 |
 | `joule_heating` | 焦耳热 | Jacobi 电势求解 → `Q = σ\|∇V\|²` | 可注入 thermal 求解器（`couple_to_thermal=True`），材料参数可微 |
 | `acoustics` | 线性声学 | leapfrog 波动方程 + CFL 校验 | 海绵层/刚性壁边界、单极子声源、刚体振动发声（单向流固耦合）、虚拟麦克风 + SPL 频谱后处理 |
+| `cfd_coupling` | 1D 管网水锤 ↔ 3D 不可压绕流 | 1D MOC 特征线 ↔ 3D MAC 投影法（FTCS），Gauss-Seidel 界面不动点迭代 | torch / quadrants 双后端数值同构；**浸入式固体障碍物**：STL 网格或 **STEP 装配体**（OpenCASCADE/cadquery 直解析，多实体 CATIA 产品逐零件栅格化）、动网格每步自动重建（单向耦合）、障碍物气动力积分（压力 + 壁面粘性，分零件输出） |
 
 ```python
 import genesis as gs
@@ -203,6 +204,7 @@ print(mic.spl(dt=4e-6))  # 整体声压级 (dB)
 - CUDA 11.8+（用于 GPU 加速）
 - Genesis World 1.4+
 - PyTorch 2.0+
+- 可选 `cad` extra：OpenCASCADE（cadquery），用于 cfd_coupling 障碍物管线的 STEP 装配体直解析（`pip install cloud-robotics-sim[cad]`；不装则 STL 网格路径照常可用，STEP 会提示安装）
 
 ## 开发
 

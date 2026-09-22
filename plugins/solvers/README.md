@@ -10,7 +10,7 @@ examples/。全部适配 genesis-world 1.4.0（见各 README 的兼容性说明�
 | [thermal](thermal/) | 热传导（扩散方程 ∂T/∂t = α∇²T） | 显式 FTCS，Dirichlet/Neumann 边界，能量守恒的刚体-网格双向耦合 | `thermal.install` |
 | [joule_heating](joule_heating/) | 焦耳热（∇·(σ∇V)=0 → Q=σ\|∇V\|²） | Jacobi 迭代（可选 direct），热源可单向注入 thermal 求解器 | `joule_heating.install` |
 | [acoustics](acoustics/) | 线性声学（波动方程 p_tt = c²∇²p） | 二阶 leapfrog + CFL 校验；海绵层/Dirichlet/Neumann 边界；单极子声源、刚体振动发声、虚拟麦克风（FFT → SPL） | `acoustics.install` |
-| [cfd_coupling](cfd_coupling/) | 1D 管网(MOC 水锤) ↔ 3D 不可压 CFD(投影法) 双向耦合 | 宏步子循环 + Gauss-Seidel 固定点界面迭代 + 毫秒级阀门事件;`install(scene, options)` 注入(亦支持无 genesis 独立运行) | `cfd_coupling.install` |
+| [cfd_coupling](cfd_coupling/) | 1D 管网(MOC 水锤) ↔ 3D 不可压 CFD(投影法) 双向耦合 | 宏步子循环 + Gauss-Seidel 固定点界面迭代 + 毫秒级阀门事件;`install(scene, options)` 注入(亦支持无 genesis 独立运行);torch/quadrants 双后端;浸入式固体障碍物(STL 网格 / STEP 装配体 OpenCASCADE 直解析)、动网格自动重建、气动力积分 | `cfd_coupling.install` |
 
 ## 共同约定
 
