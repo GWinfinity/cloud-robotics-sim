@@ -120,6 +120,14 @@ class QDCFD3D:
         self.T_in = o.inlet_temperature
         self._cg_iters = 0
 
+        # Immersed-obstacle state (see set_solid_mask); numerically
+        # equivalent to the torch backend's masked operator.
+        self.solid = qd.field(dtype=f32, shape=(nx, ny, nz))
+        self.solid.from_numpy(np.zeros((nx, ny, nz)))
+        self._solid_np: np.ndarray | None = None
+        self._has_solid = False
+        self._fluid_ravel = np.ones(nx * ny * nz, dtype=np.float64)
+
         # Host-side pressure operator (shared assembly with the torch backend).
         self._direct_lu = None
         self._div_t = None  # zero-copy torch views of the transfer fields
@@ -129,6 +137,50 @@ class QDCFD3D:
             o.pressure_solver == "auto" and nx * ny * nz <= self._direct_threshold
         )
         self._mat = None
+
+    # ------------------------------------------------------------------ #
+    # Immersed obstacles (static solid mask; same semantics as CFD3D)
+    # ------------------------------------------------------------------ #
+    @property
+    def solid_mask(self) -> np.ndarray | None:
+        """Current solid mask (bool ``(nx, ny, nz)``) or None."""
+        return None if self._solid_np is None else self._solid_np.copy()
+
+    def set_solid_mask(self, mask: np.ndarray | None) -> None:
+        """Set (or clear, with None) the immersed-solid cell mask.
+
+        Solid cells are no-slip interior walls: velocity faces touching a
+        solid cell are pinned to zero, the pressure Poisson excludes solid
+        cells (identity rows) and treats solid boundaries as Neumann walls,
+        and the temperature field is held fixed inside solids. Keep
+        obstacles clear of the x = 0 / x = Lx faces. Static within a step;
+        call again to move an obstacle.
+        """
+        nx, ny, nz = self.nx, self.ny, self.nz
+        if mask is None:
+            self._solid_np = None
+            self._has_solid = False
+            self._fluid_ravel = np.ones(nx * ny * nz, dtype=np.float64)
+            self.solid.from_numpy(np.zeros((nx, ny, nz)))
+            self._mat = None  # operator changed: rebuild on next solve
+            self._direct_lu = None
+            return
+        m = np.asarray(mask, dtype=bool)
+        if m.shape != (nx, ny, nz):
+            raise ValueError(f"solid mask shape {m.shape} != grid shape {(nx, ny, nz)}")
+        if m.all():
+            raise ValueError("solid mask must leave at least one fluid cell")
+        if m[0].any() or m[-1].any():
+            raise ValueError(
+                "solid mask must not touch the x = 0 / x = Lx faces "
+                "(keep the inlet/outlet patches unobstructed)"
+            )
+        self._solid_np = m.copy()
+        self._has_solid = True
+        self._fluid_ravel = (~m).ravel().astype(np.float64)
+        self.solid.from_numpy(m.astype(np.float64))
+        self._mat = None  # operator changed: rebuild on next solve
+        self._direct_lu = None
 
     # ------------------------------------------------------------------ #
     # Ghost accessors. Each component has its own ghost rules; pad-space
@@ -288,6 +340,7 @@ class QDCFD3D:
         inv_h2: float,
         u_in: float,
         neg_inv_dt: float,
+        has_solid: int,
     ):
         for i, j, k in qd.ndrange(self.nx + 1, self.ny, self.nz):
             U = self.u[i, j, k]
@@ -420,6 +473,17 @@ class QDCFD3D:
         for i, j in qd.ndrange(self.nx, self.ny):
             self.w1[i, j, 0] = 0.0
             self.w1[i, j, self.nz] = 0.0
+        # No-slip on immersed solids: pin faces touching a solid cell.
+        if has_solid == 1:
+            for i, j, k in qd.ndrange(self.nx - 1, self.ny, self.nz):
+                if self.solid[i, j, k] + self.solid[i + 1, j, k] > 0.5:
+                    self.u1[i + 1, j, k] = 0.0
+            for i, j, k in qd.ndrange(self.nx, self.ny - 1, self.nz):
+                if self.solid[i, j, k] + self.solid[i, j + 1, k] > 0.5:
+                    self.v1[i, j + 1, k] = 0.0
+            for i, j, k in qd.ndrange(self.nx, self.ny, self.nz - 1):
+                if self.solid[i, j, k] + self.solid[i, j, k + 1] > 0.5:
+                    self.w1[i, j, k + 1] = 0.0
         # Divergence of the predictor field, pre-scaled by -1/dt.
         for i, j, k in qd.ndrange(self.nx, self.ny, self.nz):
             self.div[i, j, k] = (
@@ -439,20 +503,33 @@ class QDCFD3D:
         t_in: float,
         f: int,
         do_t: int,
+        has_solid: int,
     ):
         # Face correction with the pressure gradient (x ghosts: Neumann at the
         # inlet, Dirichlet p=0 on the open outlet patch).
         for i, j, k in qd.ndrange(self.nx + 1, self.ny, self.nz):
             if i > 0:
-                self.u1[i, j, k] -= dt * (
-                    self._p_xpad(i + 1, j, k) - self._p_xpad(i, j, k)
-                ) * inv_h
+                self.u1[i, j, k] -= (
+                    dt * (self._p_xpad(i + 1, j, k) - self._p_xpad(i, j, k)) * inv_h
+                )
         for i, j, k in qd.ndrange(self.nx, self.ny + 1, self.nz):
             if j > 0 and j < self.ny:
                 self.v1[i, j, k] -= dt * (self.p[i, j, k] - self.p[i, j - 1, k]) * inv_h
         for i, j, k in qd.ndrange(self.nx, self.ny, self.nz + 1):
             if k > 0 and k < self.nz:
                 self.w1[i, j, k] -= dt * (self.p[i, j, k] - self.p[i, j, k - 1]) * inv_h
+        # Re-pin faces touching a solid cell (the pressure correction above
+        # is skipped implicitly: these faces are overwritten during the swap).
+        if has_solid == 1:
+            for i, j, k in qd.ndrange(self.nx - 1, self.ny, self.nz):
+                if self.solid[i, j, k] + self.solid[i + 1, j, k] > 0.5:
+                    self.u1[i + 1, j, k] = 0.0
+            for i, j, k in qd.ndrange(self.nx, self.ny - 1, self.nz):
+                if self.solid[i, j, k] + self.solid[i, j + 1, k] > 0.5:
+                    self.v1[i, j + 1, k] = 0.0
+            for i, j, k in qd.ndrange(self.nx, self.ny, self.nz - 1):
+                if self.solid[i, j, k] + self.solid[i, j, k + 1] > 0.5:
+                    self.w1[i, j, k + 1] = 0.0
         # Swap predictor fields back into u/v/w with boundary conditions.
         for i, j, k in qd.ndrange(self.nx + 1, self.ny, self.nz):
             val = self.u1[i, j, k]
@@ -502,7 +579,11 @@ class QDCFD3D:
                 + self._t_ghost(i, j, k + 1, t_in, f)
                 - 6.0 * c
             ) * inv_h2
-            self.T[f1, i, j, k] = c + dt * (-(U * ax + V * ay + W * az) + kappa * lap)
+            tval = c + dt * (-(U * ax + V * ay + W * az) + kappa * lap)
+            if has_solid == 1:
+                if self.solid[i, j, k] > 0.5:
+                    tval = self.T[f, i, j, k]  # insulated solid
+            self.T[f1, i, j, k] = tval
 
     # ------------------------------------------------------------------ #
     # Passive temperature advection helpers
@@ -553,11 +634,12 @@ class QDCFD3D:
                 self.nz,
                 self.h,
                 self._mask_out_np,
+                solid_mask=self._solid_np,
                 dtype=lu_dtype,
             )
             if self._use_direct:
                 self._direct_lu = spla.splu(self._mat.tocsc())
-        b = self._div_t.double().numpy().ravel()
+        b = self._div_t.double().numpy().ravel() * self._fluid_ravel
         if self._use_direct:
             x = self._direct_lu.solve(b)
             self._cg_iters = 0
@@ -581,8 +663,9 @@ class QDCFD3D:
         o = self.o
         inv_h = 1.0 / self.h
         inv_h2 = inv_h * inv_h
+        has_solid = 1 if self._has_solid else 0
         self._predict_bc_div(
-            dt, o.viscosity, inv_h, inv_h2, self.U_in, -1.0 / dt
+            dt, o.viscosity, inv_h, inv_h2, self.U_in, -1.0 / dt, has_solid
         )
         self._solve_pressure()
         self._project_swap_temp(
@@ -594,6 +677,7 @@ class QDCFD3D:
             self.T_in,
             self._t_frame,
             1 if o.advect_temperature else 0,
+            has_solid,
         )
         if o.advect_temperature:
             self._t_frame = 1 - self._t_frame
@@ -634,9 +718,7 @@ class QDCFD3D:
         v = self.v.to_numpy()
         w = self.w.to_numpy()
         div = (
-            (u[1:] - u[:-1])
-            + (v[:, 1:] - v[:, :-1])
-            + (w[:, :, 1:] - w[:, :, :-1])
+            (u[1:] - u[:-1]) + (v[:, 1:] - v[:, :-1]) + (w[:, :, 1:] - w[:, :, :-1])
         ) / self.h
         return float(np.abs(div).max())
 
@@ -645,11 +727,14 @@ class QDCFD3D:
         v = self.v.to_numpy()
         w = self.w.to_numpy()
         h3 = self.h**3
-        ke = 0.5 * (
-            (0.5 * (u[:-1] + u[1:])) ** 2
-            + (0.5 * (v[:, :-1] + v[:, 1:])) ** 2
-            + (0.5 * (w[:, :, :-1] + w[:, :, 1:])) ** 2
-        ).sum()
+        ke = (
+            0.5
+            * (
+                (0.5 * (u[:-1] + u[1:])) ** 2
+                + (0.5 * (v[:, :-1] + v[:, 1:])) ** 2
+                + (0.5 * (w[:, :, :-1] + w[:, :, 1:])) ** 2
+            ).sum()
+        )
         return float(ke) * h3
 
     # ------------------------------------------------------------------ #
@@ -662,6 +747,7 @@ class QDCFD3D:
             "T": self.T.to_numpy()[self._t_frame],
             "t": self.t,
             "n_steps": self.n_steps,
+            "solid": None if self._solid_np is None else self._solid_np.copy(),
         }
 
     def set_state(self, state: dict) -> None:
@@ -674,6 +760,8 @@ class QDCFD3D:
         self._t_frame = 0
         self.t = state["t"]
         self.n_steps = state["n_steps"]
+        if "solid" in state:
+            self.set_solid_mask(state["solid"])
 
 
 __all__ = ["QDCFD3D", "QDCFDOptions"]

@@ -22,9 +22,10 @@ Genesis 1.4 quirks handled here (same as the other solver plugins):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING
 
-import genesis as gs
+import numpy as np
 from genesis.engine.solvers.base_solver import Solver
 
 from plugins.solvers.cfd_coupling.core import (
@@ -68,6 +69,7 @@ def _make_cfd_core(cfd_options, backend: str):
                 raise
     return CFD3D(cfd_options)
 
+
 if TYPE_CHECKING:
     from genesis.engine.scene import Scene
     from genesis.engine.simulator import Simulator
@@ -75,6 +77,90 @@ if TYPE_CHECKING:
 
 class _MarkerEntity:
     """Dummy marker so ``n_entities > 0`` and Simulator.reset() restores state."""
+
+
+# --------------------------------------------------------------------- #
+# Obstacle bridge: CATIA/CAD meshes and genesis entities -> solid mask
+# --------------------------------------------------------------------- #
+def _placement_matrix(
+    position: tuple[float, float, float] | None,
+    rotation_euler: tuple[float, float, float] | None,
+    scale: float | tuple[float, float, float] | None,
+) -> np.ndarray | None:
+    """Compose the world-placement 4x4 (scale -> rotate -> translate)."""
+    if position is None and rotation_euler is None and scale is None:
+        return None
+    from scipy.spatial.transform import Rotation
+
+    mat = np.eye(4)
+    if scale is not None:
+        s = np.broadcast_to(np.asarray(scale, dtype=np.float64), (3,))
+        mat[:3, :3] = np.diag(s)
+    if rotation_euler is not None:
+        mat[:3, :3] = (
+            Rotation.from_euler("xyz", rotation_euler, degrees=True).as_matrix()
+            @ mat[:3, :3]
+        )
+    if position is not None:
+        mat[:3, 3] = np.asarray(position, dtype=np.float64)
+    return mat
+
+
+def _entity_to_trimesh(entity):
+    """Merge a built genesis RigidEntity's geoms into one world-frame mesh."""
+    import trimesh
+    from scipy.spatial.transform import Rotation
+
+    meshes = []
+    for link in entity.links:
+        for geom in link.geoms:
+            tm = geom.get_trimesh()
+            if tm is None or len(tm.vertices) == 0:
+                continue
+            pos = np.asarray(geom.get_pos(relative=False)).reshape(3)
+            quat = np.asarray(geom.get_quat(relative=False)).reshape(4)  # wxyz
+            mat = np.eye(4)
+            mat[:3, :3] = Rotation.from_quat(
+                [quat[1], quat[2], quat[3], quat[0]]
+            ).as_matrix()
+            mat[:3, 3] = pos
+            m = tm.copy()
+            m.apply_transform(mat)
+            meshes.append(m)
+    if not meshes:
+        raise ValueError(
+            f"entity {entity!r} yielded no meshes; pass a file path or a "
+            "trimesh.Trimesh instead"
+        )
+    return trimesh.util.concatenate(meshes)
+
+
+def _add_obstacle_to_core(cfd, source, position, rotation_euler, scale) -> np.ndarray:
+    """Rasterize ``source`` into a solid mask and union it into ``cfd``."""
+    from plugins.solvers.cfd_coupling.core.obstacles import (
+        combine_masks,
+        mask_from_mesh,
+    )
+
+    if isinstance(source, (str, bytes, Path)):
+        import trimesh
+
+        mesh = trimesh.load(str(source))
+        if isinstance(mesh, trimesh.Scene):
+            mesh = mesh.to_mesh()
+    elif hasattr(source, "links") and hasattr(source, "get_pos"):
+        mesh = _entity_to_trimesh(source)
+    elif hasattr(source, "vertices") and hasattr(source, "faces"):
+        mesh = source  # already a trimesh.Trimesh
+    else:
+        raise TypeError(
+            "source must be a mesh file path, a trimesh.Trimesh, or a built "
+            f"genesis RigidEntity, got {type(source)!r}"
+        )
+    transform = _placement_matrix(position, rotation_euler, scale)
+    mask = mask_from_mesh(mesh, tuple(cfd.o.domain), tuple(cfd.o.cells), transform)
+    cfd.set_solid_mask(combine_masks(cfd.solid_mask, mask))
+    return mask
 
 
 class _PluginSolverBase:
@@ -196,6 +282,29 @@ class CoupledCFDSolver(_PluginSolverBase, Solver):
     def cfd(self):
         return self._cfd
 
+    def add_obstacle(
+        self,
+        source,
+        position: tuple[float, float, float] | None = None,
+        rotation_euler: tuple[float, float, float] | None = None,
+        scale: float | tuple[float, float, float] | None = None,
+    ) -> np.ndarray:
+        """Add an immersed no-slip obstacle to the 3D CFD domain.
+
+        ``source`` is a mesh file path (STL/OBJ/GLB, e.g. exported from
+        CATIA), a ``trimesh.Trimesh``, or a built genesis RigidEntity.
+        ``position`` / ``rotation_euler`` (degrees, xyz) / ``scale`` place
+        the source into the CFD world frame (metres) on top of any
+        transform the source itself carries. Returns the mask this
+        obstacle contributed; masks of successive calls are unioned.
+
+        Obstacles must stay clear of the x = 0 / x = Lx faces. The mask is
+        static within a step; call again (e.g. after moving an entity) to
+        re-rasterize. Requires ``scene.build()`` to have happened when
+        ``source`` is an entity.
+        """
+        return _add_obstacle_to_core(self._cfd, source, position, rotation_euler, scale)
+
     def build(self) -> None:
         super().build()
         # genesis 1.4 Solver no longer provides TimeBasedMixin's _substep_dt.
@@ -293,6 +402,16 @@ class CFDSolver(_PluginSolverBase, Solver):
     def cfd(self):
         return self._cfd
 
+    def add_obstacle(
+        self,
+        source,
+        position: tuple[float, float, float] | None = None,
+        rotation_euler: tuple[float, float, float] | None = None,
+        scale: float | tuple[float, float, float] | None = None,
+    ) -> np.ndarray:
+        """Add an immersed no-slip obstacle; see CoupledCFDSolver.add_obstacle."""
+        return _add_obstacle_to_core(self._cfd, source, position, rotation_euler, scale)
+
     def build(self) -> None:
         super().build()
         self._substep_dt = self._sim.substep_dt
@@ -315,7 +434,9 @@ class CFDSolver(_PluginSolverBase, Solver):
 # --------------------------------------------------------------------- #
 # install() entry points
 # --------------------------------------------------------------------- #
-def install(scene: "Scene", options: CoupledSolverOptions | None = None) -> CoupledCFDSolver:
+def install(
+    scene: "Scene", options: CoupledSolverOptions | None = None
+) -> CoupledCFDSolver:
     """Inject a ``CoupledCFDSolver`` into ``scene`` before ``scene.build()``.
 
     The solver is also available as ``scene.sim.cfd_coupling_solver``.
@@ -327,7 +448,9 @@ def install(scene: "Scene", options: CoupledSolverOptions | None = None) -> Coup
     return solver
 
 
-def install_pipe(scene: "Scene", options: PipeSolverOptions | None = None) -> PipeSolver:
+def install_pipe(
+    scene: "Scene", options: PipeSolverOptions | None = None
+) -> PipeSolver:
     """Inject a standalone ``PipeSolver`` (1D MOC water hammer)."""
     options = options or PipeSolverOptions()
     solver = PipeSolver(scene, scene.sim, options)

@@ -27,6 +27,7 @@ Boundary conditions
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import torch
@@ -40,6 +41,7 @@ def build_poisson_csr(
     nz: int,
     h: float,
     outlet_mask: np.ndarray,
+    solid_mask: np.ndarray | None = None,
     dtype: Any = np.float64,
 ) -> tuple[Any, np.ndarray]:
     """Assemble the negative-Laplacian operator (Neumann + outlet Dirichlet).
@@ -51,12 +53,23 @@ def build_poisson_csr(
     Ghost accounting per direction pair: both neighbours present -> diagonal
     2 each; a Neumann (replicate) ghost -> contributes 1; a Dirichlet ghost
     at the open outlet cells -> contributes 3 (1 + 2).
+
+    With ``solid_mask`` (bool ``(nx, ny, nz)`` immersed obstacles):
+    solid cells become identity rows (p = 0, diagonal 1 after the 1/h^2
+    scaling, right-hand side must be zeroed by the caller); fluid cells
+    treat solid neighbours exactly like out-of-domain Neumann ghosts (no
+    off-diagonal, no diagonal contribution).
     """
     import scipy.sparse as sp
 
     h2 = h * h
     n = nx * ny * nz
     outlet = np.asarray(outlet_mask, dtype=bool).reshape(ny, nz)
+    solid = (
+        None
+        if solid_mask is None
+        else np.asarray(solid_mask, dtype=bool).reshape(nx, ny, nz)
+    )
     rows: list[int] = []
     cols: list[int] = []
     vals: list[float] = []
@@ -69,25 +82,38 @@ def build_poisson_csr(
         for j in range(ny):
             for k in range(nz):
                 c = idx(i, j, k)
+                if solid is not None and solid[i, j, k]:
+                    # Immersed solid: excluded from the solve (identity row).
+                    rows.append(c)
+                    cols.append(c)
+                    vals.append(h2)  # -> 1.0 after the global 1/h^2 scaling
+                    diag[c] = h2
+                    continue
                 d = 0.0
                 # x pair
                 cnt = 0
                 if i > 0:
-                    rows.append(c)
-                    cols.append(idx(i - 1, j, k))
-                    vals.append(-1.0)
-                    cnt += 1
+                    if solid is None or not solid[i - 1, j, k]:
+                        rows.append(c)
+                        cols.append(idx(i - 1, j, k))
+                        vals.append(-1.0)
+                        cnt += 1
                 if i < nx - 1:
-                    rows.append(c)
-                    cols.append(idx(i + 1, j, k))
-                    vals.append(-1.0)
-                    cnt += 1
+                    if solid is None or not solid[i + 1, j, k]:
+                        rows.append(c)
+                        cols.append(idx(i + 1, j, k))
+                        vals.append(-1.0)
+                        cnt += 1
                 elif outlet[j, k]:
                     d += 2.0  # Dirichlet ghost: 1 + 2 = 3
                 d += cnt
                 # y / z pairs: walls, always Neumann ghosts
                 for jj, kk in ((j - 1, k), (j + 1, k), (j, k - 1), (j, k + 1)):
-                    if 0 <= jj < ny and 0 <= kk < nz:
+                    if (
+                        0 <= jj < ny
+                        and 0 <= kk < nz
+                        and (solid is None or not solid[i, jj, kk])
+                    ):
                         rows.append(c)
                         cols.append(idx(i, jj, kk))
                         vals.append(-1.0)
@@ -96,9 +122,7 @@ def build_poisson_csr(
                 cols.append(c)
                 vals.append(d)
                 diag[c] = d
-    mat = sp.csr_matrix(
-        (np.array(vals) / h2, (rows, cols)), shape=(n, n), dtype=dtype
-    )
+    mat = sp.csr_matrix((np.array(vals) / h2, (rows, cols)), shape=(n, n), dtype=dtype)
     return mat, diag
 
 
@@ -190,6 +214,89 @@ class CFD3D:
             o.pressure_solver == "auto" and nx * ny * nz <= 30000
         )
 
+        # Immersed-obstacle state (see set_solid_mask): None = no obstacles,
+        # in which case every code path is bit-identical to the no-obstacle
+        # implementation.
+        self._solid_np: np.ndarray | None = None
+        self._solid: torch.Tensor | None = None  # bool (nx, ny, nz)
+        self._face_open_u: torch.Tensor | None = None  # float 1/0 masks
+        self._face_open_v: torch.Tensor | None = None
+        self._face_open_w: torch.Tensor | None = None
+        self._cg_diag: torch.Tensor | None = None  # operator diagonal (1/h^2)
+        self._cg_pair_x: torch.Tensor | None = None  # fluid-fluid pair masks
+        self._cg_pair_y: torch.Tensor | None = None
+        self._cg_pair_z: torch.Tensor | None = None
+
+    # ------------------------------------------------------------------ #
+    # Immersed obstacles (static solid mask)
+    # ------------------------------------------------------------------ #
+    @property
+    def solid_mask(self) -> np.ndarray | None:
+        """Current solid mask (bool ``(nx, ny, nz)``) or None."""
+        return None if self._solid_np is None else self._solid_np.copy()
+
+    def set_solid_mask(self, mask: np.ndarray | None) -> None:
+        """Set (or clear, with None) the immersed-solid cell mask.
+
+        Cells marked True become no-slip interior walls: velocity faces
+        touching a solid cell are pinned to zero, the pressure Poisson
+        excludes solid cells (identity rows) and treats solid boundaries as
+        Neumann walls, and the temperature field is held fixed inside solids.
+
+        Keep obstacles clear of the x = 0 / x = Lx faces: the inlet/outlet
+        patches are boundary-condition features and must stay unobstructed.
+        The mask is static within a step; call again to move an obstacle.
+        """
+        nx, ny, nz = self.nx, self.ny, self.nz
+        if mask is None:
+            self._solid_np = None
+            self._solid = None
+            self._face_open_u = self._face_open_v = self._face_open_w = None
+            self._cg_diag = self._cg_pair_x = self._cg_pair_y = None
+            self._cg_pair_z = None
+            self._direct_lu = None  # operator changed: rebuild on next solve
+            return
+        m = np.asarray(mask, dtype=bool)
+        if m.shape != (nx, ny, nz):
+            raise ValueError(f"solid mask shape {m.shape} != grid shape {(nx, ny, nz)}")
+        if m.all():
+            raise ValueError("solid mask must leave at least one fluid cell")
+        if m[0].any() or m[-1].any():
+            raise ValueError(
+                "solid mask must not touch the x = 0 / x = Lx faces "
+                "(keep the inlet/outlet patches unobstructed)"
+            )
+        self._solid_np = m.copy()
+        dev = self.device
+        s = torch.from_numpy(m).to(dev)
+        self._solid = s
+        # Faces between two fluid cells stay open; any face touching a solid
+        # cell is pinned to zero by _enforce_bc / skipped in the projection.
+        self._face_open_u = (~(s[:-1] | s[1:])).float()  # u[1:-1] faces
+        self._face_open_v = (~(s[:, :-1] | s[:, 1:])).float()  # v[:, 1:-1]
+        self._face_open_w = (~(s[:, :, :-1] | s[:, :, 1:])).float()  # w
+        fluid = ~m
+        # CG operator data: diagonal = fluid-neighbour count (+2 on the open
+        # outlet patch), off-diagonal -1 per fluid-fluid interior pair.
+        cnt = np.zeros((nx, ny, nz), dtype=np.float64)
+        cnt[1:] += fluid[:-1]
+        cnt[:-1] += fluid[1:]
+        cnt[:, 1:] += fluid[:, :-1]
+        cnt[:, :-1] += fluid[:, 1:]
+        cnt[:, :, 1:] += fluid[:, :, :-1]
+        cnt[:, :, :-1] += fluid[:, :, 1:]
+        outlet3 = np.zeros((nx, ny, nz), dtype=bool)
+        outlet3[-1] = self.outlet_mask_f.cpu().numpy()
+        cnt += 2.0 * outlet3
+        cnt[m] = 1.0  # solid identity rows
+        self._cg_diag = torch.from_numpy(cnt / (self.h * self.h)).to(dev).float()
+        self._cg_pair_x = torch.from_numpy(fluid[:-1] & fluid[1:]).to(dev).float()
+        self._cg_pair_y = torch.from_numpy(fluid[:, :-1] & fluid[:, 1:]).to(dev).float()
+        self._cg_pair_z = (
+            torch.from_numpy(fluid[:, :, :-1] & fluid[:, :, 1:]).to(dev).float()
+        )
+        self._direct_lu = None  # operator changed: rebuild on next solve
+
     # ------------------------------------------------------------------ #
     # Boundary conditions
     # ------------------------------------------------------------------ #
@@ -201,12 +308,20 @@ class CFD3D:
         v[:, -1, :] = 0.0
         w[:, :, 0] = 0.0
         w[:, :, -1] = 0.0
+        if self._solid is not None:
+            # No-slip on immersed solids: any interior face touching a solid
+            # cell is pinned to zero (boundary faces keep the BCs above).
+            u[1:-1] *= self._face_open_u
+            v[:, 1:-1] *= self._face_open_v
+            w[:, :, 1:-1] *= self._face_open_w
 
     # ------------------------------------------------------------------ #
     # Advection / diffusion helpers
     # ------------------------------------------------------------------ #
     @staticmethod
-    def _upwind(fp: torch.Tensor, U: torch.Tensor, V: torch.Tensor, W: torch.Tensor, h: float) -> torch.Tensor:
+    def _upwind(
+        fp: torch.Tensor, U: torch.Tensor, V: torch.Tensor, W: torch.Tensor, h: float
+    ) -> torch.Tensor:
         """First-order upwind divergence of a padded field fp at its faces."""
         c = fp[1:-1, 1:-1, 1:-1]
         ax = torch.where(U >= 0, c - fp[:-2, 1:-1, 1:-1], fp[2:, 1:-1, 1:-1] - c) / h
@@ -249,7 +364,9 @@ class CFD3D:
 
     def _cross_velocities(
         self,
-    ) -> tuple[tuple[torch.Tensor, ...], tuple[torch.Tensor, ...], tuple[torch.Tensor, ...]]:
+    ) -> tuple[
+        tuple[torch.Tensor, ...], tuple[torch.Tensor, ...], tuple[torch.Tensor, ...]
+    ]:
         """Interpolate cell-based velocities onto each component's faces."""
         u, v, w = self.u, self.v, self.w
         # x-padded cross components (for the u component)
@@ -309,15 +426,16 @@ class CFD3D:
                 self.nz,
                 self.h,
                 self.outlet_mask_f.cpu().numpy(),
+                solid_mask=self._solid_np,
             )
             self._direct_lu = spla.splu(mat.tocsc())
             self._direct_diag = diag
 
         b = -(rhs.cpu().numpy().ravel())
+        if self._solid_np is not None:
+            b[self._solid_np.ravel()] = 0.0  # solid identity rows: p = 0
         x = self._direct_lu.solve(b)
-        self.p = torch.from_numpy(x.reshape(self.nx, self.ny, self.nz)).to(
-            self.device
-        )
+        self.p = torch.from_numpy(x.reshape(self.nx, self.ny, self.nz)).to(self.device)
         self._cg_iters = 0
         return self.p
 
@@ -329,6 +447,12 @@ class CFD3D:
         start converges in a few tens of iterations.
         """
         h2 = self.h * self.h
+        if self._solid is None:
+            return self._solve_pressure_cg_open(rhs, h2)
+        return self._solve_pressure_cg_masked(rhs, h2)
+
+    def _solve_pressure_cg_open(self, rhs: torch.Tensor, h2: float) -> torch.Tensor:
+        """CG without obstacles (kept verbatim for parity/perf)."""
         diag = torch.full_like(rhs, 6.0 / h2)
         diag[-1, :, :] = torch.where(
             self.outlet_mask_f,
@@ -348,7 +472,53 @@ class CFD3D:
             px = _replicate_pad(px, 2)
             return -self._laplacian(px, self.h)
 
-        b = -rhs
+        return self._cg_loop(rhs, diag, minv, A)
+
+    def _solve_pressure_cg_masked(self, rhs: torch.Tensor, h2: float) -> torch.Tensor:
+        """CG with immersed solids: identity rows, Neumann solid boundaries.
+
+        The operator diagonal is the per-cell fluid-neighbour count (+2 on
+        the open outlet patch, 1.0 on solid identity rows); off-diagonals are
+        -1/h^2 per fluid-fluid interior pair (the pair masks).
+        """
+        diag = self._cg_diag
+        assert diag is not None
+        minv = 1.0 / diag
+        pair_x = self._cg_pair_x
+        pair_y = self._cg_pair_y
+        pair_z = self._cg_pair_z
+        assert pair_x is not None and pair_y is not None and pair_z is not None
+        outlet1 = self.outlet_mask1
+
+        def A(p: torch.Tensor) -> torch.Tensor:
+            """Negative Laplacian with Neumann ghosts at solid boundaries."""
+            inv_h2 = 1.0 / h2
+            acc = diag * p
+            acc[1:] -= p[:-1] * pair_x * inv_h2
+            acc[:-1] -= p[1:] * pair_x * inv_h2
+            acc[:, 1:] -= p[:, :-1] * pair_y * inv_h2
+            acc[:, :-1] -= p[:, 1:] * pair_y * inv_h2
+            acc[:, :, 1:] -= p[:, :, :-1] * pair_z * inv_h2
+            acc[:, :, :-1] -= p[:, :, 1:] * pair_z * inv_h2
+            # Dirichlet ghost p = 0 on the open outlet patch (+2 diagonal).
+            last = p.narrow(0, p.size(0) - 1, 1)
+            acc[-1:] += torch.where(outlet1, 2.0 * last, torch.zeros_like(last))
+            return acc
+
+        return self._cg_loop(rhs, diag, minv, A)
+
+    def _cg_loop(
+        self,
+        rhs: torch.Tensor,
+        diag: torch.Tensor,
+        minv: torch.Tensor,
+        A,
+    ) -> torch.Tensor:
+        """Shared Jacobi-preconditioned CG body (warm start from self.p)."""
+        if self._solid is not None:
+            b = -rhs * (~self._solid).float()
+        else:
+            b = -rhs
         x = self.p.clone()  # warm start
         r = b - A(x)
         z = r * minv
@@ -407,9 +577,26 @@ class CFD3D:
         ppx = torch.cat([p.narrow(0, 0, 1), p, p_right], dim=0)
         ppy = _replicate_pad(p, 1)
         ppz = _replicate_pad(p, 2)
-        self.u[1:] -= dt * (ppx[2:] - ppx[1:-1]) / h
-        self.v[:, 1:-1] -= dt * (ppy[:, 2:-1] - ppy[:, 1:-2]) / h
-        self.w[:, :, 1:-1] -= dt * (ppz[:, :, 2:-1] - ppz[:, :, 1:-2]) / h
+        if self._solid is None:
+            self.u[1:] -= dt * (ppx[2:] - ppx[1:-1]) / h
+            self.v[:, 1:-1] -= dt * (ppy[:, 2:-1] - ppy[:, 1:-2]) / h
+            self.w[:, :, 1:-1] -= dt * (ppz[:, :, 2:-1] - ppz[:, :, 1:-2]) / h
+        else:
+            # Faces touching a solid cell are no-slip: skip the pressure
+            # correction there (they are re-pinned by _enforce_bc anyway).
+            assert (
+                self._face_open_u is not None
+                and self._face_open_v is not None
+                and self._face_open_w is not None
+            )
+            self.u[1:-1] -= dt * (ppx[2:-1] - ppx[1:-2]) / h * self._face_open_u
+            self.u[-1:] -= dt * (ppx[-1:] - ppx[-2:-1]) / h
+            self.v[:, 1:-1] -= (
+                dt * (ppy[:, 2:-1] - ppy[:, 1:-2]) / h * self._face_open_v
+            )
+            self.w[:, :, 1:-1] -= (
+                dt * (ppz[:, :, 2:-1] - ppz[:, :, 1:-2]) / h * self._face_open_w
+            )
         self._enforce_bc(self.u, self.v, self.w)
 
         if self.o.advect_temperature:
@@ -430,10 +617,13 @@ class CFD3D:
         fp = torch.cat([left, T, right], dim=0)
         fp = _replicate_pad(fp, 1)
         fp = _replicate_pad(fp, 2)
-        self.T = T - dt * (
+        t_new = T - dt * (
             self._upwind(fp, U_c, V_c, W_c, h)
             - self.o.thermal_diffusivity * self._laplacian(fp, h)
         )
+        if self._solid is not None:
+            t_new = torch.where(self._solid, T, t_new)  # insulated solid
+        self.T = t_new
 
     # ------------------------------------------------------------------ #
     # Coupling probes
@@ -479,11 +669,14 @@ class CFD3D:
 
     def kinetic_energy(self) -> float:
         h3 = self.h**3
-        ke = 0.5 * (
-            (0.5 * (self.u[:-1] + self.u[1:])) ** 2
-            + (0.5 * (self.v[:, :-1] + self.v[:, 1:])) ** 2
-            + (0.5 * (self.w[:, :, :-1] + self.w[:, :, 1:])) ** 2
-        ).sum()
+        ke = (
+            0.5
+            * (
+                (0.5 * (self.u[:-1] + self.u[1:])) ** 2
+                + (0.5 * (self.v[:, :-1] + self.v[:, 1:])) ** 2
+                + (0.5 * (self.w[:, :, :-1] + self.w[:, :, 1:])) ** 2
+            ).sum()
+        )
         return float(ke) * h3
 
     # ------------------------------------------------------------------ #
@@ -496,6 +689,7 @@ class CFD3D:
             "T": self.T.clone(),
             "t": self.t,
             "n_steps": self.n_steps,
+            "solid": None if self._solid_np is None else self._solid_np.copy(),
         }
 
     def set_state(self, state: dict) -> None:
@@ -508,3 +702,5 @@ class CFD3D:
         )
         self.t = state["t"]
         self.n_steps = state["n_steps"]
+        if "solid" in state:
+            self.set_solid_mask(state["solid"])

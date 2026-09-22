@@ -300,3 +300,64 @@ class TestStandaloneSolvers:
             scene.step()
         scene.reset(state)
         assert solver.cfd.n_steps == 20
+
+
+class TestObstacles:
+    """Immersed-solid obstacles: qd/torch parity and entity rasterization."""
+
+    _BOX_CENTER = (0.1, 0.05, 0.05)
+    _BOX_SIZE = (0.04, 0.04, 0.04)
+
+    def _box_mask(self):
+        from plugins.solvers.cfd_coupling.core.obstacles import mask_from_box
+
+        return mask_from_box(
+            self._BOX_CENTER, self._BOX_SIZE, (0.2, 0.1, 0.1), (20, 10, 10)
+        )
+
+    def test_qd_torch_parity_with_obstacle(self):
+        from plugins.solvers.cfd_coupling.core.cfd3d import CFD3D
+        from plugins.solvers.cfd_coupling.core.cfd3d_qd import QDCFD3D, QDCFDOptions
+
+        mask = self._box_mask()
+        torch_cfd = CFD3D(CFDOptions(**_cfd_kwargs()))
+        qd_cfd = QDCFD3D(QDCFDOptions(**_cfd_kwargs()))
+        u = 5.8e-4 / torch_cfd.inlet_patch_area()
+        for cfd in (torch_cfd, qd_cfd):
+            cfd.set_solid_mask(mask)
+            cfd.set_inlet(u)
+        for _ in range(50):
+            torch_cfd.step(0.001)
+            qd_cfd.step(0.001)
+        assert qd_cfd.inlet_flow() == pytest.approx(torch_cfd.inlet_flow(), rel=1e-3)
+        assert qd_cfd.outlet_flow() == pytest.approx(torch_cfd.outlet_flow(), rel=1e-2)
+        assert qd_cfd.inlet_pressure_head() == pytest.approx(
+            torch_cfd.inlet_pressure_head(), rel=0.3
+        )
+        # No-slip on the quadrants backend too.
+        u_qd = qd_cfd.u.to_numpy()
+        u_cell = 0.5 * (u_qd[:-1] + u_qd[1:])
+        assert np.abs(u_cell[mask]).max() < 1e-6
+
+    def test_add_obstacle_from_box_entity(self):
+        scene = _make_scene()
+        solver = install_cfd(
+            scene,
+            CFDSolverOptions(cfd=_cfd_options(), inlet_velocity=0.5, backend="torch"),
+        )
+        scene.add_entity(gs.morphs.Box(size=self._BOX_SIZE, pos=self._BOX_CENTER))
+        scene.build()
+
+        box_entity = scene.entities[1]  # [0] is the ground plane
+        mask = solver.add_obstacle(box_entity)
+        assert mask.any()
+        # Rasterized where the entity actually sits.
+        idx = np.argwhere(mask)
+        centroid = (idx.mean(axis=0) + 0.5) * 0.01  # h = 0.01
+        assert np.allclose(centroid, self._BOX_CENTER, atol=0.02)
+
+        for _ in range(10):
+            scene.step()
+        u = solver.cfd.u.cpu().numpy()
+        u_cell = 0.5 * (u[:-1] + u[1:])
+        assert np.abs(u_cell[mask]).max() < 1e-9

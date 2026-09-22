@@ -2,6 +2,7 @@
 
 from .cfd3d import CFD3D, CFDOptions
 from .coupler import Coupler, CouplingOptions, MacroStepLog
+from .obstacles import cell_centers, combine_masks, mask_from_box, mask_from_mesh
 from .pipe1d import Pipe1D, PipeOptions
 
 __all__ = [
@@ -12,4 +13,8 @@ __all__ = [
     "MacroStepLog",
     "Pipe1D",
     "PipeOptions",
+    "cell_centers",
+    "combine_masks",
+    "mask_from_box",
+    "mask_from_mesh",
 ]

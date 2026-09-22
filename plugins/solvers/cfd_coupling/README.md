@@ -123,6 +123,38 @@ uv run python plugins/solvers/cfd_coupling/examples/run_valve_closure.py
 (median/p95/最小交换周期),并将历史保存到
 `outputs/cfd_coupling/valve_closure_history.npz`。
 
+## 浸入式固体障碍物（飞机/部件绕流）
+
+两个 3D 后端都支持静态固体障碍物：任意三角网格（如 CATIA 导出的
+STL/OBJ/GLB）栅格化为 cell 中心 solid mask 后，障碍物表面自动成为无滑移
+壁面（压力 Poisson 把固体边界当 Neumann 壁面、固体 cell 以恒等行排除），
+torch 与 quadrants 后端数值同构。
+
+```python
+import trimesh
+from plugins.solvers.cfd_coupling.core.obstacles import mask_from_mesh
+
+mesh = trimesh.load("wing.stl")   # CATIA: 另存为 STL，单位米
+cfd.set_solid_mask(mask_from_mesh(mesh, cfd.o.domain, cfd.o.cells))
+```
+
+Genesis 场景内可直接吃文件路径、trimesh 或刚体 entity：
+
+```python
+solver = install_cfd(scene, CFDSolverOptions(cfd=CFDOptions(...)))
+scene.build()
+solver.add_obstacle("wing.stl", position=(0.1, 0.05, 0.05),
+                    rotation_euler=(0, 0, 0), scale=1.0)
+solver.add_obstacle(scene.entities[1])   # 或一个已 build 的刚体
+```
+
+- `add_obstacle` 多次调用取并集；返回该障碍物本次贡献的 mask。
+- mask 在步进间是静态的；移动障碍物后重新调用即可（重新栅格化）。
+- 障碍物不得接触 x = 0 / x = Lx 面（入口/出口补丁须保持无遮挡）。
+- CATIA 原生格式（CATPart/CATProduct/STEP）不直接解析，请先导出网格。
+- 演示：`python plugins/solvers/cfd_coupling/examples/run_obstacle_flow.py`
+  （内置方柱；`--stl` 传外部网格，可选 `--save` 导出截面场）。
+
 ## 已知边界(原型范围)
 
 - 单管 1D(无分叉管网);相态参数以入口边界参数传递,无真两相流模型。
@@ -131,3 +163,5 @@ uv run python plugins/solvers/cfd_coupling/examples/run_valve_closure.py
 - 1D↔3D 面积不匹配通过补丁面积比处理,未做动量通量修正(界面动量
   守恒的精化处理是后续工作)。
 - 反传(autodiff)未实现:两个 3D 后端的梯度钩子均为 no-op。
+- 障碍物为静态 immersed mask（阶梯近似，固体表面有一阶散度残差）；
+  固体受力（气动力积分）尚未输出；>30k cell 时压力求解走 CG。
