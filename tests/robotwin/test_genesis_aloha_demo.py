@@ -15,6 +15,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from cloud_robotics_sim.robotwin.curobo_planner import is_curobo_planner_available
 from examples.robotwin.aloha_demo import (
     SYNTHETIC_ARM_URDF,
     _write_synthetic_arm,
@@ -111,6 +112,11 @@ class TestGenesisRealIntegration:
     ) -> None:
         """--planner curobo exits with code 3 when the package is missing."""
         pytest.importorskip("genesis")
+        if is_curobo_planner_available():
+            pytest.skip(
+                "curobo_hierarchical_planner is installed in this env; "
+                "strict mode no longer exits with code 3"
+            )
         rc = main_for(
             ["--steps", "10", "--planner", "curobo", "--out", str(tmp_path / "out")]
         )

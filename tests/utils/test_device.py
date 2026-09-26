@@ -84,7 +84,10 @@ class TestSetDefaultDevice:
     def test_set_default_device_musa_no_crash(self, monkeypatch):
         """set_default_device should not crash when MUSA is unavailable."""
         monkeypatch.setattr(device_utils, "is_musa_available", lambda: False)
-        assert device_utils.set_default_device("musa") == "cpu"
+        # The musa fallback follows the auto-selected device, which depends
+        # on whether CUDA hardware is present in this environment.
+        expected = "cuda" if device_utils.is_cuda_available() else "cpu"
+        assert device_utils.set_default_device("musa") == expected
 
 
 class TestDeviceFlags:

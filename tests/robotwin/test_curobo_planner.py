@@ -7,6 +7,8 @@ and the OMPL fallback path uses a mocked Genesis entity.
 
 from __future__ import annotations
 
+import sys
+import types
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -199,3 +201,56 @@ class TestPlanWithFallback:
         robot = _make_mocked_robot()
         with pytest.raises(ValueError, match="ee_link"):
             plan_with_fallback(robot, np.zeros(3), planner=None)
+
+
+class TestLegacyGpuMathdx:
+    """Pre-Ampere GPUs (sm_75) must fall back to warp native tile kernels."""
+
+    def _patch_device(self, monkeypatch, capability) -> types.ModuleType:
+        """Inject fake torch/warp.config modules and return the fake config."""
+        fake_torch = SimpleNamespace(
+            cuda=SimpleNamespace(
+                is_available=lambda: True,
+                get_device_capability=lambda idx: capability,
+            )
+        )
+        fake_warp_config = types.ModuleType("warp.config")
+        fake_warp_config.enable_mathdx_gemm = True
+        fake_warp_config.enable_mathdx_solver = True
+        fake_warp = types.ModuleType("warp")
+        fake_warp.config = fake_warp_config
+        monkeypatch.setitem(sys.modules, "torch", fake_torch)
+        monkeypatch.setitem(sys.modules, "warp", fake_warp)
+        monkeypatch.setitem(sys.modules, "warp.config", fake_warp_config)
+        return fake_warp_config
+
+    def test_disabled_on_turing(self, monkeypatch) -> None:
+        """sm_75 flips the gemm/solver flags off."""
+        self._patch_device(monkeypatch, (7, 5))
+        from cloud_robotics_sim.robotwin import curobo_planner as cp
+
+        cp._disable_mathdx_on_legacy_gpu("cuda:0")
+
+        config = sys.modules["warp.config"]
+        assert config.enable_mathdx_gemm is False
+        assert config.enable_mathdx_solver is False
+
+    def test_unchanged_on_ampere_and_newer(self, monkeypatch) -> None:
+        """sm_80+ leaves the libmathdx fast path enabled."""
+        config = self._patch_device(monkeypatch, (8, 6))
+        from cloud_robotics_sim.robotwin import curobo_planner as cp
+
+        cp._disable_mathdx_on_legacy_gpu("cuda:0")
+
+        assert config.enable_mathdx_gemm is True
+        assert config.enable_mathdx_solver is True
+
+    def test_noop_without_cuda_device(self, monkeypatch) -> None:
+        """CPU devices never touch the warp flags."""
+        config = self._patch_device(monkeypatch, (7, 5))
+        from cloud_robotics_sim.robotwin import curobo_planner as cp
+
+        cp._disable_mathdx_on_legacy_gpu("cpu")
+
+        assert config.enable_mathdx_gemm is True
+        assert config.enable_mathdx_solver is True

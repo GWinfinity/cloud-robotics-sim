@@ -26,6 +26,7 @@ from __future__ import annotations
 import importlib.util
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -62,6 +63,46 @@ class PlannerError(RuntimeError):
 def is_curobo_planner_available() -> bool:
     """Return True if the external planner package is importable."""
     return importlib.util.find_spec(_PACKAGE_NAME) is not None
+
+
+def _disable_mathdx_on_legacy_gpu(device: str) -> None:
+    """Fall back to warp native tile kernels on pre-Ampere GPUs (sm_75).
+
+    cuRobo v2's Levenberg-Marquardt IK uses ``wp.tile_matmul`` /
+    ``wp.tile_cholesky``; their libmathdx (cuBLASDx/cuSolverDx) LTO path does
+    not compile for Turing (GTX 16xx/RTX 20xx, capability 7.5). Disabling the
+    libmathdx gemm/solver flags makes warp use its scalar/cooperative
+    shared-memory fallbacks — slower per kernel, but functional end-to-end
+    (verified 2026-09-26 on a GTX 1650: full hierarchical pipeline tests
+    pass). No-op when warp is unavailable or the device is Ampere+.
+    """
+    try:
+        import torch
+
+        resolved = device
+        if resolved == "auto":
+            if torch.cuda.is_available():
+                resolved = "cuda:0"
+            else:
+                return  # CPU path uses native kernels anyway
+        if not resolved.startswith("cuda"):
+            return
+        index = resolved.split(":")[-1] if ":" in resolved else "0"
+        capability = torch.cuda.get_device_capability(int(index))
+        if capability[0] >= 8:
+            return
+        import warp.config as warp_config
+
+        warp_config.enable_mathdx_gemm = False
+        warp_config.enable_mathdx_solver = False
+        logger.info(
+            "Pre-Ampere GPU (sm_%d%d) detected: libmathdx tile kernels "
+            "disabled, using warp native fallbacks for cuRobo IK/TO.",
+            capability[0],
+            capability[1],
+        )
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.debug("mathdx legacy-GPU probe failed (ignored): %s", exc)
 
 
 @dataclass
@@ -145,8 +186,14 @@ class HierarchicalCuRoboPlanner:
         except ImportError as exc:  # pragma: no cover - defensive
             raise CuRoboPlannerUnavailableError(_INSTALL_HINT) from exc
 
+        _disable_mathdx_on_legacy_gpu(self.config.device)
+
+        # cuRobo v2 resolves relative URDF paths against its own content
+        # assets directory; absolutize so paths relative to the caller's cwd
+        # survive (observed 2026-09-26 via aloha_demo --planner curobo).
+        urdf_path = str(Path(self.config.urdf_path).resolve())
         robot_cfg = RobotModelConfig(
-            urdf_path=self.config.urdf_path,
+            urdf_path=urdf_path,
             base_link=self.config.base_link,
             ee_link=self.config.ee_link,
         )
@@ -225,7 +272,13 @@ class HierarchicalCuRoboPlanner:
         """
         planner = self._build()
         request = self._make_request(start_qpos, goal_pos, goal_quat)
-        result = planner.plan(request)
+        try:
+            result = planner.plan(request)
+        except Exception as exc:
+            # Translate external planner exceptions (IKError,
+            # WorkspacePlanningError, TrajoptError, ...) so callers only
+            # deal with this module's exception hierarchy.
+            raise PlannerError(f"Hierarchical planning raised: {exc}") from exc
         if not result.success:
             raise PlannerError(
                 f"Hierarchical planning failed: {result.message or 'no message'}"
