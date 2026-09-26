@@ -1,0 +1,90 @@
+# Task-level evaluation config — schema v1: two-cube stack (W2 converged pilot,
+# AnyTask Phase-0 contact-rich benchmark). Zero task-specific Python: the task
+# is fully described by this YAML (W1 loader) and evaluated by the W8 runner.
+
+version: 1
+
+task:
+  name: stack_cubes
+  type: pick_place            # registry task factory (reward shaping on red_cube)
+  robot: franka_panda
+  scene: empty_room
+  max_episode_steps: 200
+  object_name: red_cube
+  target_position: [0.5, 0.0, 0.105]   # top of the blue base cube
+
+scene:
+  size: [10.0, 10.0, 3.0]
+
+assets:
+  task_relevant:
+    - name: blue_cube         # base cube the red one must be stacked onto
+      shape_type: box
+      size: [0.04, 0.04, 0.04]
+      position: [0.5, 0.0, 0.04]
+      color: [0.2, 0.2, 0.9, 1.0]
+      mass: 0.1
+      static: false
+      friction: 0.6           # high friction: a stable stack must hold
+    - name: red_cube
+      shape_type: box
+      size: [0.05, 0.05, 0.05]
+      position: [0.5, 0.3, 0.05]
+      color: [0.9, 0.2, 0.2, 1.0]
+      mass: 0.08
+      static: false
+      friction: 0.6
+  distractors: []
+
+init_distribution:
+  # Only the manipulated cube is randomized; the base stays fixed so success
+  # windows remain meaningful across seeds.
+  object_poses:
+    red_cube:
+      position: [[0.4, 0.6], [0.2, 0.4], [0.05, 0.05]]
+  clutter_layout: null
+  articulation_states: {}
+
+randomization:
+  friction: [0.4, 0.8]        # contact-fidelity knob scanned by Phase 4
+  mass: null
+  com: null
+  lighting: null
+  background_texture: null
+
+cameras:
+  - name: eval_cam
+    pos: [1.5, 0.2, 1.2]
+    look_at: [0.5, 0.1, 0.05]
+    resolution: [640, 480]
+    fov: 60.0
+
+success:
+  # Staged condition: the stack must be complete AND the base undisturbed.
+  # Stage labels follow FAIL_STAGES so failure reports stay comparable with
+  # the grasp pipeline (grasp_fail = cube not placed on top; place_fail =
+  # base cube moved from its anchor).
+  type: staged
+  params:
+    stages:
+      - stage: grasp_fail
+        condition:
+          type: distance_threshold
+          params:
+            object: red_cube
+            target_position: [0.5, 0.0, 0.105]   # resting on the base cube
+            threshold: 0.02
+      - stage: place_fail
+        condition:
+          type: pose_window
+          params:
+            object: blue_cube
+            target_position: [0.5, 0.0, 0.04]
+            pos_threshold: 0.01
+
+evaluation:
+  seeds: [0, 1, 2]
+  episodes_per_seed: 2
+
+simulation:
+  headless: true

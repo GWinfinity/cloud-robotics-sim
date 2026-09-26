@@ -1,0 +1,98 @@
+# Task-level evaluation config — schema v1 (W1 of docs/ROBODOJO_P0_PLAN.md).
+# Defines a pick-and-place evaluation task with no task-specific Python.
+#
+# Layering: this file is the *task-level* view (what to evaluate, under which
+# initial distributions, with what success criterion). The environment-level
+# configs/franka_pickplace.yaml remains the *single-experiment* view consumed
+# by the improvement loop. Both share registry factory names (scene/robot/
+# task `type` fields) from cloud_robotics_sim.runtime.main.
+
+version: 1
+
+task:
+  name: pick_place_cube          # task identifier used in reports
+  type: pick_place               # registry task factory (runtime/main.py)
+  robot: franka_panda            # registry robot factory
+  scene: empty_room              # registry scene factory
+  max_episode_steps: 200
+  # remaining keys are forwarded verbatim to the task factory:
+  object_name: red_cube
+  target_position: [0.5, 0.0, 0.1]
+
+# Optional factory kwargs for the scene / robot (any keyword the factory accepts).
+scene:
+  size: [10.0, 10.0, 3.0]
+robot:
+  base_position: [0.0, 0.0, 0.0]
+
+assets:
+  task_relevant:
+    - name: red_cube
+      shape_type: box
+      size: [0.05, 0.05, 0.05]
+      position: [0.5, 0.0, 0.05]
+      color: [0.9, 0.2, 0.2, 1.0]
+      mass: 0.1
+      static: false
+      friction: 0.5
+  distractors:
+    - name: blue_cube
+      shape_type: box
+      size: [0.04, 0.04, 0.04]
+      position: [0.7, 0.15, 0.04]
+      color: [0.2, 0.2, 0.9, 1.0]
+      mass: 0.08
+      static: false
+      friction: 0.5
+
+init_distribution:
+  # Objects without an entry keep their fixed pose from `assets`.
+  # position: fixed [x, y, z] or per-axis ranges [[xlo, xhi], [ylo, yhi], [zlo, zhi]].
+  # orientation: fixed [w, x, y, z] or {yaw_deg: [lo, hi]} (degrees about +Z).
+  object_poses:
+    red_cube:
+      position: [[0.4, 0.6], [-0.2, 0.2], [0.05, 0.05]]
+  # Distractors without an explicit object_poses entry are scattered uniformly
+  # in region [xmin, xmax, ymin, ymax, z]; `objects` can restrict the list.
+  clutter_layout:
+    region: [0.6, 0.9, -0.3, 0.3, 0.04]
+  # Articulated assets only: joint -> fixed value or [lo, hi] range.
+  # Carried in sampled layouts; apply is a no-op until articulated assets land.
+  articulation_states: {}
+
+randomization:
+  # v1: parsed, validated and carried in the spec; application to the built
+  # scene lands with the evaluation runner (W8). Values are fixed numbers or
+  # [lo, hi] ranges.
+  friction: [0.3, 0.8]
+  mass: [0.08, 0.12]
+  com: null
+  lighting: null
+  background_texture: null
+
+# Consumed by the evaluation/rendering path (W8); not wired into compose() in v1.
+cameras:
+  - name: eval_cam
+    pos: [1.5, 0.0, 1.2]
+    look_at: [0.5, 0.0, 0.0]
+    resolution: [640, 480]
+    fov: 60.0
+
+success:
+  type: distance_threshold
+  params:
+    object: red_cube
+    target_position: [0.5, 0.0, 0.1]
+    threshold: 0.05
+    # failure_stage must be one of robotwin/grasp_report.py FAIL_STAGES
+    # (load_fail, plan_fail, grasp_fail, lift_fail, transport_fail,
+    # place_fail, error); it labels failures in evaluation reports.
+    failure_stage: place_fail
+
+evaluation:
+  seeds: [0, 1, 2, 3, 4]
+  episodes_per_seed: 2
+
+# Optional ComposerConfig overrides (dt, substeps, headless, num_envs, ...).
+simulation:
+  headless: true

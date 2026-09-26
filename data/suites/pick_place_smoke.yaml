@@ -1,0 +1,9 @@
+# Benchmark suite — schema v1 (W8 of docs/ROBODOJO_P0_PLAN.md).
+# A suite is an ordered list of task-level configs (core/task_loader.py schema
+# v1) evaluated over each task's own evaluation.seeds x episodes_per_seed
+# grid. Task paths are resolved relative to this file.
+
+version: 1
+name: pick-place-smoke
+tasks:
+  - ../../configs/tasks/pick_place_cube.yaml

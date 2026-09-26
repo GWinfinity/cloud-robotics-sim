@@ -117,6 +117,52 @@ class RobotEmbodiment(ABC):
         self._obs_dim: int = 0
         self._action_dim: int = 0
 
+    def _dof_velocity(self) -> np.ndarray | None:
+        """Joint velocities across genesis 1.4 API variants, or None.
+
+        RigidEntity exposes ``get_dofs_velocity()`` (not ``get_qvel``);
+        backend wrappers may advertise ``get_qvel`` but forward to an inner
+        entity that does not implement it, so each path is tried defensively.
+        """
+        entity = self.entity
+        if entity is None:
+            return None
+        candidates = [entity, getattr(entity, "_entity", entity)]
+        for candidate in candidates:
+            if hasattr(candidate, "get_dofs_velocity"):
+                try:
+                    return np.asarray(
+                        candidate.get_dofs_velocity(), dtype=float
+                    ).reshape(-1)
+                except (AttributeError, TypeError):
+                    continue
+            if hasattr(candidate, "get_qvel"):
+                try:
+                    return np.asarray(candidate.get_qvel(), dtype=float).reshape(-1)
+                except (AttributeError, TypeError):
+                    continue
+        return None
+
+    def _apply_pd_gains(self) -> None:
+        """Apply EmbodimentConfig stiffness/damping to the spawned entity.
+
+        Without explicit gains the URDF/MJCF defaults leave the arm
+        uncontrolled under gravity, and reset stabilization collapses into
+        NaN constraint forces (observed 2026-09-26 with the bundled franka
+        and UR5 on gs.cpu).
+        """
+        entity = self.entity
+        if entity is None or not hasattr(entity, "n_dofs") or entity.n_dofs <= 0:
+            return
+        try:
+            n_dofs = int(entity.n_dofs)
+            if hasattr(entity, "set_dofs_kp"):
+                entity.set_dofs_kp(np.full(n_dofs, self.config.joint_stiffness))
+            if hasattr(entity, "set_dofs_kv"):
+                entity.set_dofs_kv(np.full(n_dofs, self.config.joint_damping))
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning(f"Failed to apply PD gains: {exc}")
+
     @property
     def obs_dim(self) -> int:
         """Observation space dimension."""
@@ -201,6 +247,11 @@ class FrankaPanda(RobotEmbodiment):
         super().__init__(config)
         self._obs_dim = _FRANKA_OBS_DIM
         self._action_dim = _FRANKA_ACTION_DIM
+        # Asset-default joint configuration, captured at spawn time and
+        # restored by reset(). An all-zeros pose is a self-colliding
+        # singularity for the Franka URDF/MJCF and caused NaN constraint
+        # forces during reset stabilization (see W8 smoke, 2026-09-26).
+        self._default_qpos: np.ndarray | None = None
 
     def spawn(
         self,
@@ -228,7 +279,10 @@ class FrankaPanda(RobotEmbodiment):
                 if is_mjcf:
                     morph = gs.morphs.MJCF(file=model_path, pos=pos)
                 else:
-                    morph = gs.morphs.URDF(file=model_path, pos=pos)
+                    # fixed=True welds the base link: these arms are
+                    # fixed-base. A floating base drops at spawn and the
+                    # impact NaNs the constraint solver on gs.cpu.
+                    morph = gs.morphs.URDF(file=model_path, pos=pos, fixed=True)
                 self.entity = scene.add_entity(morph)
             except Exception as e:
                 logger.warning(f"Failed to load Franka from '{model_path}': {e}")
@@ -243,7 +297,9 @@ class FrankaPanda(RobotEmbodiment):
                 if is_mjcf:
                     self.entity = backend.load_mjcf(file=model_path, pos=pos)
                 else:
-                    self.entity = backend.load_urdf(file=model_path, pos=pos)
+                    self.entity = backend.load_urdf(
+                        file=model_path, pos=pos, fixed=True
+                    )
                 scene.add_articulation(self.entity)
             except Exception as e:
                 logger.warning(f"Failed to load Franka from '{model_path}': {e}")
@@ -257,6 +313,14 @@ class FrankaPanda(RobotEmbodiment):
                 "assets_genesis/embodiments/, or prefetch: python -m "
                 "cloud_robotics_sim.core.robot_assets)"
             )
+        if self.entity is not None and hasattr(self.entity, "get_qpos"):
+            try:
+                self._default_qpos = np.asarray(
+                    self.entity.get_qpos(), dtype=float
+                ).reshape(-1)
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning(f"Could not capture default Franka qpos: {exc}")
+        self._apply_pd_gains()
         self._initialize_cameras()
         logger.info(f"Franka Panda spawned at {pos} (asset={self.asset_source})")
         return self
@@ -285,16 +349,17 @@ class FrankaPanda(RobotEmbodiment):
             self.scene.add_entity(self.entity)
 
     def reset(self) -> None:
-        """Reset joint positions and velocities."""
+        """Reset joint positions and velocities to the asset's initial pose."""
         entity = self.entity
         if entity is None:
             return
         if hasattr(entity, "n_qs") and entity.n_qs > 0 and hasattr(entity, "set_qpos"):
-            # Reset to home configuration. The MJCF Franka has two
-            # independent finger DOFs, so the qpos size must match the
-            # entity rather than the 8-dim action space.
-            home_qpos = np.zeros(entity.n_qs)
-            entity.set_qpos(home_qpos)
+            # Restore the asset's own initial configuration rather than an
+            # all-zeros pose (self-colliding singularity for the Franka).
+            home = self._default_qpos
+            if home is None or home.shape[0] != entity.n_qs:
+                home = np.zeros(entity.n_qs)
+            entity.set_qpos(home)
 
     def apply_action(self, action: np.ndarray) -> None:
         """Apply joint position targets.
@@ -332,9 +397,12 @@ class FrankaPanda(RobotEmbodiment):
 
         entity = self.entity
         if entity is not None and hasattr(entity, "get_qpos"):
-            obs["joint_position"] = entity.get_qpos()[:7]
-            if hasattr(entity, "get_qvel"):
-                obs["joint_velocity"] = entity.get_qvel()[:7]
+            obs["joint_position"] = np.asarray(entity.get_qpos(), dtype=float).reshape(
+                -1
+            )[:7]
+        velocity = self._dof_velocity()
+        if velocity is not None:
+            obs["joint_velocity"] = velocity[:7]
 
         return obs
 
@@ -377,7 +445,7 @@ class UniversalRobotUR5(RobotEmbodiment):
 
         if _is_genesis_scene(scene):
             try:
-                morph = gs.morphs.URDF(file=model_path, pos=pos)
+                morph = gs.morphs.URDF(file=model_path, pos=pos, fixed=True)
                 self.entity = scene.add_entity(morph)
             except Exception as e:
                 logger.warning(f"Failed to load URDF UR5 from '{model_path}': {e}")
@@ -389,7 +457,7 @@ class UniversalRobotUR5(RobotEmbodiment):
                 raise RuntimeError("Scene backend is not available for spawning robots")
 
             try:
-                self.entity = backend.load_urdf(file=model_path, pos=pos)
+                self.entity = backend.load_urdf(file=model_path, pos=pos, fixed=True)
                 scene.add_articulation(self.entity)
             except Exception as e:
                 logger.warning(f"Failed to load URDF UR5 from '{model_path}': {e}")
@@ -403,6 +471,7 @@ class UniversalRobotUR5(RobotEmbodiment):
                 "assets_genesis/embodiments/, or prefetch: python -m "
                 "cloud_robotics_sim.core.robot_assets)"
             )
+        self._apply_pd_gains()
         self._initialize_cameras()
         logger.info(f"UR5 spawned at {pos} (asset={self.asset_source})")
         return self
@@ -457,9 +526,12 @@ class UniversalRobotUR5(RobotEmbodiment):
 
         entity = self.entity
         if entity is not None and hasattr(entity, "get_qpos"):
-            obs["joint_position"] = entity.get_qpos()[:6]
-            if hasattr(entity, "get_qvel"):
-                obs["joint_velocity"] = entity.get_qvel()[:6]
+            obs["joint_position"] = np.asarray(entity.get_qpos(), dtype=float).reshape(
+                -1
+            )[:6]
+        velocity = self._dof_velocity()
+        if velocity is not None:
+            obs["joint_velocity"] = velocity[:6]
 
         return obs
 

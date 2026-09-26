@@ -1,0 +1,11 @@
+# Contact-rich benchmark suite — schema v1 (W2 converged pilot of
+# docs/ROBODOJO_P0_PLAN.md, aligned with the AnyTask Phase-0 micro-benchmarks).
+# Drawer open/close is intentionally absent: articulated-asset spawning is not
+# supported by task schema v1 yet (articulation_states are sampled and carried
+# in layouts, but ObjectSpawn v1 has no articulated asset type).
+
+version: 1
+name: contact-rich-smoke
+tasks:
+  - ../../configs/tasks/pick_place_cube.yaml
+  - ../../configs/tasks/stack_cubes.yaml

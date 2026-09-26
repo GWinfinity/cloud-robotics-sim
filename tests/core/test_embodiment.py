@@ -188,7 +188,7 @@ class TestFrankaPanda:
         robot.spawn(scene)
 
         scene.backend.load_urdf.assert_called_once_with(
-            file=str(model.path), pos=(0.0, 0.0, 0.0)
+            file=str(model.path), pos=(0.0, 0.0, 0.0), fixed=True
         )
         assert robot.entity is articulation
         assert robot.asset_source == f"urdf:{model.path}"
@@ -321,6 +321,7 @@ class TestUniversalRobotUR5:
         scene.backend.load_urdf.assert_called_once_with(
             file="ur5/ur5.urdf",
             pos=(2.0, 0.0, 0.0),
+            fixed=True,
         )
         scene.add_articulation.assert_called_once_with(articulation)
 
