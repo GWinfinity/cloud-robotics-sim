@@ -82,7 +82,7 @@ class PluginManager:
                 plugin_file = plugin_dir / "plugin.yaml"
                 if plugin_file.exists():
                     try:
-                        with open(plugin_file) as f:
+                        with open(plugin_file, encoding="utf-8") as f:
                             metadata = yaml.safe_load(f)
 
                         plugin_info = PluginInfo(
@@ -186,7 +186,7 @@ class PluginManager:
 
         # Update plugin.yaml
         plugin_yaml = plugin_dir / "plugin.yaml"
-        with open(plugin_yaml, "w") as f:
+        with open(plugin_yaml, "w", encoding="utf-8") as f:
             yaml.dump(
                 {
                     "name": name,

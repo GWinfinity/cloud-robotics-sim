@@ -18,6 +18,28 @@ pm.discover_plugins()
 plugin = pm.load_plugin('controllers', 'mpc_wbc')
 ```
 
+## 命令行管理插件
+
+`cloud-robotics-sim plugins`（ discover 基于每个插件目录的 `plugin.yaml`）：
+
+```bash
+# 列出所有插件（category / name / version / 一句话介绍）
+cloud-robotics-sim plugins list [--category solvers] [-v]
+
+# 查看插件详情：介绍、导出、依赖、入口、配置默认值、README 使用说明
+cloud-robotics-sim plugins info wfc_scenes
+
+# 查看/设置插件用户配置（覆盖 plugin.yaml 的 config 默认值；
+# 覆盖值存于 ~/.cloud-robotics-sim/plugins/<name>.yaml，
+# 可用 CRS_PLUGIN_CONFIG_DIR 环境变量改位置）
+cloud-robotics-sim plugins config vr_bridge --set retarget.enabled=true
+cloud-robotics-sim plugins config vr_bridge --unset retarget.enabled
+cloud-robotics-sim plugins config vr_bridge --defaults   # 只看插件自带默认值
+```
+
+插件运行时用 `cloud_robotics_sim.core.plugin_config.get_plugin_config(name, defaults)`
+读取「plugin.yaml 默认值 + 用户覆盖值」的合并结果。
+
 ## 可用插件
 
 ### Controllers (控制器)

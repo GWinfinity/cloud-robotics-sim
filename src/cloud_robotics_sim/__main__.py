@@ -84,6 +84,184 @@ def _parse_kv_params(items: list[str]) -> dict[str, Any]:
     return params
 
 
+def _find_plugin_info(pm: Any, name: str, category: str | None = None) -> Any:
+    """按名字解析插件（跨类别重名时报错并列出候选）。"""
+    if category:
+        return pm.get_plugin_info(category, name)
+    matches = [
+        (cat, n) for cat, names in pm.list_plugins().items() for n in names if n == name
+    ]
+    if not matches:
+        available = ", ".join(n for names in pm.list_plugins().values() for n in names)
+        raise ValueError(f"plugin not found: {name!r}; available: {available}")
+    if len(matches) > 1:
+        cats = ", ".join(f"{cat}/{n}" for cat, n in matches)
+        raise ValueError(f"ambiguous plugin name {name!r}; specify --category: {cats}")
+    return pm.get_plugin_info(*matches[0])
+
+
+def plugins_list_command(args: argparse.Namespace) -> int:
+    """列出所有（或某类别下的）插件。"""
+    from cloud_robotics_sim.core.plugin_manager import get_plugin_manager
+
+    pm = get_plugin_manager()
+    rows = []
+    for cat, names in sorted(pm.list_plugins(args.category).items()):
+        for name in sorted(names):
+            info = pm.get_plugin_info(cat, name)
+            rows.append((cat, name, info.version, info.description))
+    if not rows:
+        print(f"no plugins found (category={args.category!r})")
+        return 0
+    w_cat = max(len(r[0]) for r in rows)
+    w_name = max(len(r[1]) for r in rows)
+    w_ver = max(len(r[2]) for r in rows)
+    desc_width = 72 - (w_cat + w_name + w_ver + 6)
+    for cat, name, ver, desc in rows:
+        short = desc if len(desc) <= desc_width else desc[: desc_width - 1] + "…"
+        print(f"{cat:<{w_cat}}  {name:<{w_name}}  {ver:<{w_ver}}  {short}")
+    if args.verbose:
+        print()
+        for cat, name, _, desc in rows:
+            info = pm.get_plugin_info(cat, name)
+            print(f"[{cat}/{name}] {info.path}")
+            if desc:
+                print(f"  {desc}")
+    return 0
+
+
+_USAGE_HEADINGS = ("使用", "用法", "usage", "getting started", "快速开始", "quickstart")
+
+
+def _extract_usage(readme_path: Path, max_lines: int = 40) -> list[str] | None:
+    """从插件 README 提取使用说明段（## 使用 / ## Usage 等标题到下一个 ## ）"""
+    if not readme_path.exists():
+        return None
+    lines = readme_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    start: int | None = None
+    for i, line in enumerate(lines):
+        if line.startswith("## ") and not line.startswith("### "):
+            heading = line[3:].strip().lower()
+            if any(h in heading for h in _USAGE_HEADINGS):
+                start = i + 1
+                break
+    if start is None:
+        return None
+    body: list[str] = []
+    for line in lines[start:]:
+        if line.startswith("## "):
+            break
+        body.append(line)
+    while body and not body[0].strip():
+        body.pop(0)
+    return body[:max_lines] or None
+
+
+def plugins_info_command(args: argparse.Namespace) -> int:
+    """查看插件详情：介绍、用法、导出、依赖、配置。"""
+    from cloud_robotics_sim.core.plugin_config import config_defaults, read_overrides
+    from cloud_robotics_sim.core.plugin_manager import get_plugin_manager
+
+    pm = get_plugin_manager()
+    try:
+        info = _find_plugin_info(pm, args.name, args.category)
+    except ValueError as exc:
+        logger.error(str(exc))
+        return 1
+
+    yaml_meta = info.config or {}
+    print(f"{info.name} ({info.category}) v{info.version}")
+    print(f"  path: {info.path}")
+    if info.description:
+        print(f"  description: {info.description}")
+    for key in ("source_project", "type", "author", "tags"):
+        if key in yaml_meta:
+            print(f"  {key}: {yaml_meta[key]}")
+    if info.exports:
+        print(f"  exports: {', '.join(str(e) for e in info.exports)}")
+
+    deps = yaml_meta.get("dependencies")
+    if isinstance(deps, dict):  # 新格式: required/optional
+        if deps.get("required"):
+            print(f"  deps(required): {', '.join(map(str, deps['required']))}")
+        if deps.get("optional"):
+            print(f"  deps(optional): {', '.join(map(str, deps['optional']))}")
+    elif deps:
+        print(f"  dependencies: {', '.join(map(str, deps))}")
+
+    entry_points = yaml_meta.get("entry_points")
+    if entry_points:
+        print(f"  entry_points: {entry_points}")
+
+    defaults = config_defaults(yaml_meta)
+    overrides = read_overrides(info.name)
+    if defaults or overrides:
+        print("  config:")
+        for key in sorted(set(defaults) | set(overrides)):
+            tag = "override" if key in overrides else "default"
+            value = overrides.get(key, defaults.get(key))
+            print(f"    {key} = {value!r}  ({tag})")
+
+    usage = _extract_usage(info.path / "README.md")
+    if usage:
+        print("\n  Usage (from README):")
+        for line in usage:
+            print(f"    {line}")
+    else:
+        print(f"\n  (no usage section in {info.path / 'README.md'})")
+    return 0
+
+
+def plugins_config_command(args: argparse.Namespace) -> int:
+    """查看/设置插件用户配置（覆盖 plugin.yaml 默认值）。"""
+    from cloud_robotics_sim.core.plugin_config import (
+        config_defaults,
+        get_plugin_config,
+        read_overrides,
+        set_override,
+        unset_override,
+    )
+    from cloud_robotics_sim.core.plugin_manager import get_plugin_manager
+
+    pm = get_plugin_manager()
+    try:
+        info = _find_plugin_info(pm, args.name, args.category)
+    except ValueError as exc:
+        logger.error(str(exc))
+        return 1
+
+    try:
+        for item in args.set or []:
+            if "=" not in item:
+                logger.error("--set must be KEY=VALUE, got: %r", item)
+                return 1
+            key, value = item.split("=", 1)
+            set_override(info.name, key, _parse_cli_value(value))
+        for key in args.unset or []:
+            unset_override(info.name, key)
+    except ValueError as exc:
+        logger.error(str(exc))
+        return 1
+
+    defaults = config_defaults(info.config)
+    overrides = read_overrides(info.name)
+    merged = get_plugin_config(info.name, defaults)
+
+    if args.defaults:
+        print(f"# defaults for {info.name} (from plugin.yaml)")
+        for key in sorted(defaults):
+            print(f"{key} = {defaults[key]!r}")
+        return 0
+
+    print(f"# config for {info.name} ({'defaults + ' if merged else ''}user overrides)")
+    if not merged:
+        print("(no config)")
+    for key in sorted(merged):
+        tag = "override" if key in overrides else "default"
+        print(f"{key} = {merged[key]!r}  ({tag})")
+    return 0
+
+
 def agent_command(args: argparse.Namespace) -> int:
     """Run an agent goal, a specific skill, or list available skills."""
     from cloud_robotics_sim.runtime.agent_hub import SimHub
@@ -226,6 +404,9 @@ Examples:
   %(prog)s worker --queue sim-tasks-cpu
   %(prog)s patents --list
   %(prog)s patents --run US821393 --param thrust=0.8 --param wind_speed=5
+  %(prog)s plugins list [--category solvers]
+  %(prog)s plugins info wfc_scenes
+  %(prog)s plugins config vr_bridge --set retarget.enabled=true
         """,
     )
 
@@ -419,6 +600,72 @@ Examples:
         help="Entity name for the camera to follow (e.g. aircraft for US821393)",
     )
     patents_parser.set_defaults(func=patents_command)
+
+    # Plugins command (list / info / config)
+    plugins_parser = subparsers.add_parser(
+        "plugins",
+        help="Discover plugins: list, show info/usage, manage per-plugin config",
+    )
+    plugins_sub = plugins_parser.add_subparsers(dest="plugins_command")
+
+    def _plugins_help_command(_args: argparse.Namespace) -> int:
+        plugins_parser.print_help()
+        return 0
+
+    plugins_parser.set_defaults(func=_plugins_help_command)
+
+    plugins_list = plugins_sub.add_parser("list", help="List discovered plugins")
+    plugins_list.add_argument(
+        "--category",
+        help="Only list plugins under this category (e.g. controllers, solvers)",
+    )
+    plugins_list.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Also print each plugin's path and full description",
+    )
+    plugins_list.set_defaults(func=plugins_list_command)
+
+    plugins_info = plugins_sub.add_parser(
+        "info", help="Show plugin description, usage, exports, deps and config"
+    )
+    plugins_info.add_argument(
+        "name", help="Plugin name (use --category to disambiguate)"
+    )
+    plugins_info.add_argument(
+        "--category",
+        help="Disambiguate when plugin names collide across categories",
+    )
+    plugins_info.set_defaults(func=plugins_info_command)
+
+    plugins_config = plugins_sub.add_parser(
+        "config",
+        help="Show or set per-plugin user config (overrides plugin.yaml defaults)",
+    )
+    plugins_config.add_argument("name", help="Plugin name")
+    plugins_config.add_argument(
+        "--category",
+        help="Disambiguate when plugin names collide across categories",
+    )
+    plugins_config.add_argument(
+        "--set",
+        action="append",
+        metavar="KEY=VALUE",
+        help="Set a config override (repeatable); numbers/bools/JSON auto-parsed",
+    )
+    plugins_config.add_argument(
+        "--unset",
+        action="append",
+        metavar="KEY",
+        help="Remove a config override (repeatable)",
+    )
+    plugins_config.add_argument(
+        "--defaults",
+        action="store_true",
+        help="Show only the plugin.yaml default config and exit",
+    )
+    plugins_config.set_defaults(func=plugins_config_command)
 
     args = parser.parse_args(argv)
 
