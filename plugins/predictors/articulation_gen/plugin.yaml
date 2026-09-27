@@ -1,0 +1,39 @@
+name: articulation_gen
+version: 0.1.0
+description: 关节资产自动标注 - 抽屉开合/柜门铰链的分割、关节参数估计与 URDF 导出
+
+category: predictors
+source_project: genesis-cloud-sim
+
+author:
+  name: genesis-cloud-sim
+  email: ""
+
+# 核心仅依赖 numpy + trimesh（均为项目基础依赖）；
+# 以下为图像路径的可选依赖，guard 导入，缺失时仅 annotate_from_images 不可用
+dependencies:
+  - numpy>=2.0.0
+  - trimesh>=4.0.0
+
+optional_dependencies:
+  - ultralytics>=8.0        # YOLO 家族检测器（含微调 YOLO26 权重）
+  - sam2>=1.0               # SAM2 mask 精修（或 ultralytics FastSAM 退化）
+
+exports:
+  - estimate_joints
+  - annotate_parts
+  - annotate_labeled_mesh
+  - annotate_from_images
+  - batch_annotate
+  - result_to_urdf
+  - validate_urdf
+  - ArticulatedPart
+  - JointSpec
+  - ArticulationResult
+
+tags:
+  - articulation
+  - hinge
+  - drawer
+  - urdf
+  - auto_annotation
