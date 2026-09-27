@@ -398,6 +398,8 @@ class TestObstacles:
         def pose_fn():
             mat = np.eye(4)
             mat[0, 3] = state["x"]
+            mat[1, 3] = 0.05
+            mat[2, 3] = 0.05
             return mat
 
         solver.add_obstacle(

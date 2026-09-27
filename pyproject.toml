@@ -199,6 +199,9 @@ warn_return_any = false
 minversion = "8.0"
 addopts = "-ra -q --strict-markers"
 testpaths = ["tests"]
+# 只收集 test_*.py，排除 examples/ab_test.py、*_integration_test.py 等
+# 脚本/模板（pytest 默认还会收 *_test.py）
+python_files = ["test_*.py"]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "gpu: marks tests that require GPU",

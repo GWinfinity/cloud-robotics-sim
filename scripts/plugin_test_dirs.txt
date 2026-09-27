@@ -1,0 +1,23 @@
+# Plugin test directories run by the `plugin-tests` CI job (ci.yml).
+# One pytest process per directory (most genesis plugins call gs.init at module
+# level; same-process double init interferes). CPU-only, no network.
+# To add a plugin: verify locally with `pytest <dir> -q -m "not slow"` against
+# core deps only (`pip install -e ".[dev]"`), then append its tests dir here.
+# See docs/guides/testing.md.
+plugins/predictors/articulation_gen/tests
+plugins/scenes/wfc_scenes/tests
+plugins/scenes/art_scenes/tests
+plugins/solvers/thermal/tests
+plugins/solvers/joule_heating/tests
+plugins/solvers/acoustics/tests
+plugins/solvers/cfd_coupling/tests
+plugins/envs/maniskill/tests
+plugins/controllers/mpc_wbc/tests
+plugins/controllers/wbc_lab/tests
+plugins/datasets/dreamdojo/tests
+plugins/sim2real/sim2real_dexterous/tests
+examples/costream/tests
+# 已知未入 CI（2026-09 本机实跑失败，修复后可加入）：
+#   plugins/teleop/vr_bridge/tests — test_e2e_genesis.py::test_genesis_franka_teleop_and_recording 环境相关失败
+#   plugins/do_as_i_do/tests — FileNotFoundError（缺 teleop/sharpa 资产）
+#   plugins/manipulation/dexterous_gnn_qp/tests — benchmark.py 环境相关断言失败

@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
 
 from cloud_robotics_sim.backend import (
     ArticulationBackend,
@@ -245,3 +246,26 @@ def make_mock_scene_backend() -> MagicMock:
     scene = MagicMock(spec=SceneBackend)
     scene.backend = backend
     return scene
+
+
+# ---------------------------------------------------------------------------
+# Fixture 包装（类本身保留，测试可继续直接实例化；fixture 供新测试使用）
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def mock_entity() -> MockEntity:
+    """独立 MockEntity 实例（每个测试一个）。"""
+    return MockEntity()
+
+
+@pytest.fixture()
+def mock_articulation() -> MockArticulation:
+    """7-dof MockArticulation 实例（每个测试一个）。"""
+    return MockArticulation()
+
+
+@pytest.fixture()
+def mock_scene_backend() -> MagicMock:
+    """带 mock simulator backend 的 SceneBackend MagicMock。"""
+    return make_mock_scene_backend()

@@ -84,3 +84,40 @@ jobs:
 
       - name: Test with pytest
         run: xvfb-run -a pytest tests/ -v --tb=short --cov=cloud_robotics_sim --cov-report=xml --cov-report=term-missing --cov-fail-under=70
+
+  plugin-tests:
+    name: Plugin tests (CPU, per-plugin process isolation)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1 xvfb
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir -e ".[dev]"
+
+      # 白名单内每个插件测试目录单独一个 pytest 进程：
+      # 多数 genesis 插件在模块级 gs.init，同进程多次 init 会互相干扰。
+      # 新插件测试入 CI：把目录加进 scripts/plugin_test_dirs.txt（每行一个）。
+      - name: Plugin tests
+        run: |
+          failed=0
+          while IFS= read -r dir; do
+            [ -z "$dir" ] && continue
+            case "$dir" in \#*) continue ;; esac
+            echo "::group::$dir"
+            xvfb-run -a pytest "$dir" -q -m "not slow" -p no:cacheprovider --tb=short || failed=1
+            echo "::endgroup::"
+          done < scripts/plugin_test_dirs.txt
+          exit $failed

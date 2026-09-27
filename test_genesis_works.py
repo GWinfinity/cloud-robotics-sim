@@ -1,59 +1,61 @@
-"""Test genesis-world init and Scene creation.
+"""Genesis 冒烟测试：init → 建 Scene → 加实体 → build → 步进。
 
-This test is focused on getting the project running.
+根目录保留此文件供"刚 clone 完验证环境"时显式运行：
+``pytest test_genesis_works.py -v``（testpaths=["tests"] 使默认收集不会带上它）。
 """
-import genesis as gs
+
+from __future__ import annotations
+
+import pytest
+
+try:
+    import genesis as gs
+
+    HAS_GENESIS = True
+except ImportError:  # pragma: no cover - 极简环境
+    gs = None  # type: ignore[assignment]
+    HAS_GENESIS = False
 
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
 
-# Test 1: init with CPU backend
-print("Test 1: gs.init with cpu backend...")
-try:
-    backend = get_genesis_backend("cpu")
-    gs.init(backend=backend, precision="32")
-    print("✅ gs.init OK")
-    print(f"   device: {gs.device}")
-except Exception as e:
-    print(f"❌ gs.init failed: {e}")
+pytestmark = pytest.mark.skipif(not HAS_GENESIS, reason="genesis-world not installed")
 
-# Test 2: basic scene
-print("\nTest 2: Scene creation...")
-try:
-    scene = gs.Scene(
-        sim_options=gs.options.SimOptions(
-            dt=0.01,
-            substeps=2,
-        ),
+_GS_READY = False
+
+
+@pytest.fixture(scope="module")
+def scene():
+    """进程内一次 gs.init（重复调用由 Genesis 自身去重）。"""
+    global _GS_READY
+    if not _GS_READY:
+        gs.init(backend=get_genesis_backend("cpu"), precision="32")
+        _GS_READY = True
+    sc = gs.Scene(
+        sim_options=gs.options.SimOptions(dt=0.01, substeps=2),
         viewer_options=gs.options.ViewerOptions(
             camera_pos=(3.0, 0.0, 3.0),
             camera_lookat=(0.0, 0.0, 0.5),
         ),
         show_viewer=False,
-        vis_options=gs.options.VisOptions(
-            show_world_frame=True,
-        ),
+        vis_options=gs.options.VisOptions(show_world_frame=True),
     )
-    print("✅ Scene created")
-    
-    # Add a box
+    yield sc
+
+
+def test_init_cpu_backend():
+    """CPU 后端可用（get_genesis_backend 返回有效 backend）。"""
+    backend = get_genesis_backend("cpu")
+    assert backend is not None
+
+
+def test_scene_create_build_step(scene):
+    """建 Scene → 加 Box → build → 步进 10 步 → 实体位姿可读。"""
     box = scene.add_entity(
         morph=gs.morphs.Box(size=(0.5, 0.5, 0.5), pos=(0.0, 0.0, 0.5)),
     )
-    print(f"✅ Box entity added: {box}")
-    
-    # Build scene
+    assert box is not None
     scene.build()
-    print("✅ Scene built")
-    
-    # Run a few steps
-    for i in range(10):
+    for _ in range(10):
         scene.step()
-    print("✅ 10 simulation steps completed")
-    
-    gs.destroy()
-    print("✅ gs.destroy() OK")
-except Exception as e:
-    print(f"❌ Failed: {e}")
-    import traceback
-    traceback.print_exc()
-    gs.destroy()
+    pos = box.get_pos()
+    assert pos is not None and len(pos) == 3
