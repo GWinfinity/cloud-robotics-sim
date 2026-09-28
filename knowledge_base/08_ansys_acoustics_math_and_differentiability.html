@@ -1,0 +1,377 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ansys Mechanical + Fluent / LS-DYNA 声学仿真：数学原理推导与可微性判定 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/knowledge_base/08_ansys_acoustics_math_and_differentiability.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Ansys Mechanical + Fluent / LS-DYNA 声学仿真：数学原理推导与可微性判定</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/knowledge_base/08_ansys_acoustics_math_and_differentiability.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ansys-mechanical-fluent-ls-dyna">
+<h1>Ansys Mechanical + Fluent / LS-DYNA 声学仿真：数学原理推导与可微性判定<a class="headerlink" href="#ansys-mechanical-fluent-ls-dyna" title="Link to this heading"></a></h1>
+<blockquote>
+<div><p>知识库条目 08。衔接前一篇《主流 3D 资产生成服务调研》与声学求解器插件实现
+（<code class="docutils literal notranslate"><span class="pre">plugins/solvers/acoustics</span></code>），给出三大商业求解器声学链路的完整数学推导，
+并对每个算子做可微性（autodiff）判定——既解释商业软件的梯度能力边界，
+也对照本项目 quadrants/Taichi AD 的实际限制（见
+<code class="docutils literal notranslate"><span class="pre">scripts/quadrants_issue_thermal_source_autodiff.md</span></code>）。</p>
+</div></blockquote>
+<section id="id1">
+<h2>1. 控制方程：从守恒律到声学方程<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="navierstokes">
+<h3>1.1 出发点是可压缩 Navier–Stokes<a class="headerlink" href="#navierstokes" title="Link to this heading"></a></h3>
+<p>质量、动量守恒（忽略体力）：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>∂ρ/∂t + ∇·(ρu) = 0                                    (1)
+∂(ρu_i)/∂t + ∂(ρu_i u_j)/∂x_j = -∂p/∂x_i + ∂τ_ij/∂x_j  (2)
+</pre></div>
+</div>
+<p>声学量 = 均值 + 涨落：<code class="docutils literal notranslate"><span class="pre">p</span> <span class="pre">=</span> <span class="pre">p₀</span> <span class="pre">+</span> <span class="pre">p'</span></code>，<code class="docutils literal notranslate"><span class="pre">ρ</span> <span class="pre">=</span> <span class="pre">ρ₀</span> <span class="pre">+</span> <span class="pre">ρ'</span></code>，<code class="docutils literal notranslate"><span class="pre">u</span> <span class="pre">=</span> <span class="pre">u₀</span> <span class="pre">+</span> <span class="pre">u'</span></code>。
+对<strong>静止均匀介质</strong>（u₀ = 0, ρ₀, c₀ 常数）做一阶线性化（保留 ρ’u’ 二阶项为零）：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>∂ρ'/∂t + ρ₀∇·u' = 0                                    (3)
+ρ₀ ∂u'/∂t = -∇p'                                       (4)
+</pre></div>
+</div>
+<p>配合等熵状态方程 <code class="docutils literal notranslate"><span class="pre">p'</span> <span class="pre">=</span> <span class="pre">c₀²ρ'</span></code>（<code class="docutils literal notranslate"><span class="pre">c₀²</span> <span class="pre">=</span> <span class="pre">(∂p/∂ρ)_s</span></code>），(3) 对时间求导代入 (4)：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>∂²p'/∂t² − c₀²∇²p' = 0                                 (5)  线性波动方程
+</pre></div>
+</div>
+<p>这就是 <strong>Mechanical 声学单元、LS-DYNA <code class="docutils literal notranslate"><span class="pre">*MAT_ACOUSTIC</span></code>、我们 leapfrog 插件</strong>
+共同求解的主方程。频域下取 <code class="docutils literal notranslate"><span class="pre">p'(x,t)</span> <span class="pre">=</span> <span class="pre">Re{p̂(x)e^{iωt}}</span></code> 得 <strong>Helmholtz 方程</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>∇²p̂ + k²p̂ = 0,   k = ω/c₀                              (6)
+</pre></div>
+</div>
+<p>这是 Mechanical 谐响应声学、LS-DYNA <code class="docutils literal notranslate"><span class="pre">*FREQUENCY_DOMAIN_ACOUSTIC_BEM/FEM</span></code> 的主方程。</p>
+</section>
+<section id="lighthill">
+<h3>1.2 有流动时：Lighthill 声学类比<a class="headerlink" href="#lighthill" title="Link to this heading"></a></h3>
+<p>有平均流时线性化得到 Lilley/Goldstein 型方程，工程上更常用 <strong>Lighthill 类比</strong>：
+把 (1)(2) 精确重排成以波动算子作用在 ρ’ 上的非齐次方程（<strong>不做任何近似</strong>，只是恒等变形）：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>∂²ρ'/∂t² − c₀²∇²ρ' = ∂²T_ij/∂x_i∂x_j,   T_ij = ρu_i u_j + (p' − c₀²ρ')δ_ij − τ_ij   (7)
+</pre></div>
+</div>
+<p>右端 <code class="docutils literal notranslate"><span class="pre">T_ij</span></code>（Lighthill 应力张量）在湍流剪切层内显著、在其外可忽略——这就是
+“近场 CFD 算源、远场波动方程传播”的<strong>混合法</strong>（hybrid approach）的理论基础。</p>
+</section>
+<section id="ffowcs-williamshawkings-fwh">
+<h3>1.3 Ffowcs Williams–Hawkings（FWH）：把固体边界变成面源<a class="headerlink" href="#ffowcs-williamshawkings-fwh" title="Link to this heading"></a></h3>
+<p>对控制面 <code class="docutils literal notranslate"><span class="pre">f(x,t)=0</span></code>（<code class="docutils literal notranslate"><span class="pre">f&gt;0</span></code> 为流体域）用广义函数延拓 (7)，分部积分后固体运动
+产生的声归结为两类<strong>面源</strong>（Ffowcs Williams &amp; Hawkings 1969）：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>□²p' = ∂²/∂x_i∂x_j [T_ij H(f)]            − ∂/∂x_i [L_i δ(f)]  + ∂/∂t [Q δ(f)]   (8)
+                          四极体源(湍流)      偶极面源(载荷)      单极面源(厚度/位移)
+L_i = (p' δ_ij − τ_ij)n_j + ρu_i(u_n − v_n),   Q = ρ(u_n − v_n) + ρ₀v_n
+</pre></div>
+</div>
+<p>自由场 Green 函数 <code class="docutils literal notranslate"><span class="pre">G</span> <span class="pre">=</span> <span class="pre">δ(t</span> <span class="pre">−</span> <span class="pre">τ</span> <span class="pre">−</span> <span class="pre">R/c₀)/(4πR)</span></code>（<code class="docutils literal notranslate"><span class="pre">R</span> <span class="pre">=</span> <span class="pre">|x</span> <span class="pre">−</span> <span class="pre">y|</span></code>）卷积得<strong>时域积分公式</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">p</span><span class="s1">'(x,t) = 1/(4π) ∫_S [ (1/R) ∂Q/∂t |τ* + (1/R²)·... dipole terms ... ] dS        (9)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">τ*</span></code> 为推迟时间（retarded time）。Fluent 的 FWH 模型 + 远场接收器就是 (9) 的数值实现
+（forward-time projection 避免存储全部源历史）。</p>
+</section>
+<section id="kirchhoff">
+<h3>1.4 Kirchhoff 积分：从近场解外推远场<a class="headerlink" href="#kirchhoff" title="Link to this heading"></a></h3>
+<p>若近场已求得波动方程解 <code class="docutils literal notranslate"><span class="pre">p',</span> <span class="pre">∂p'/∂n</span></code> 于封闭面 S 上，Kirchhoff–Helmholtz 积分直接给出
+面外任意点压力：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>p'(x,t) = ∫_S [ G·∂p'/∂n − p'·∂G/∂n ] dS                                            (10)
+</pre></div>
+</div>
+<p>Fluent 波动方程法的远场工具、LS-DYNA BEM 的 Kirchhoff 选项都源于此。</p>
+</section>
+</section>
+<section id="id2">
+<h2>2. 各求解器的离散化<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="ansys-mechanical-apdl-fem">
+<h3>2.1 Ansys Mechanical（APDL）：FEM 声学单元<a class="headerlink" href="#ansys-mechanical-apdl-fem" title="Link to this heading"></a></h3>
+<p>对 (6) 加权余量 + Green 第一恒等式得弱式（<code class="docutils literal notranslate"><span class="pre">δp</span></code> 为权函数）：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>∫_Ω ∇δp·∇p̂ dV − k² ∫_Ω δp·p̂ dV − ∫_Γ δp·(∂p̂/∂n) dS = 0                              (11)
+</pre></div>
+</div>
+<p>单元离散 <code class="docutils literal notranslate"><span class="pre">p̂</span> <span class="pre">=</span> <span class="pre">N</span> <span class="pre">p̃</span></code>（<code class="docutils literal notranslate"><span class="pre">N</span></code> 形函数）代入得单元矩阵：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(K_e − k²M_e) p̃ = f_e,   K_e = ∫∇Nᵀ∇N dV,  M_e = ∫NᵀN dV                            (12)
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">FLUID30</span></code>（3D 8 节点线性）、<code class="docutils literal notranslate"><span class="pre">FLUID220/221</span></code>（20/10 节点高阶）：就是 (12) 的实现，
+高阶单元在同样网格密度下相位误差更小（5 格/波长 vs 10 格/波长）；</p></li>
+<li><p><strong>FSI 界面</strong>：结构振动速度作为 Neumann 边界 <code class="docutils literal notranslate"><span class="pre">∂p̂/∂n</span> <span class="pre">=</span> <span class="pre">−ρ₀</span> <span class="pre">ω²</span> <span class="pre">u_n</span></code> 进入 <code class="docutils literal notranslate"><span class="pre">f_e</span></code>，
+声压反作用为结构载荷（强耦合）；</p></li>
+<li><p><strong>无限域截断</strong>：<code class="docutils literal notranslate"><span class="pre">FLUID129/130</span></code> 无限元（径向呈指数衰减插值）或 PML（复坐标伸展，
+<code class="docutils literal notranslate"><span class="pre">FLUID243/244</span></code>），等价于在 (11) 的 Γ 上施加无反射条件；</p></li>
+<li><p>求解器：谐响应直接/模态叠加（<code class="docutils literal notranslate"><span class="pre">HARFRQ</span></code>），或瞬态 Newmark。</p></li>
+</ul>
+</section>
+<section id="ansys-fluent">
+<h3>2.2 Ansys Fluent：气动声学<a class="headerlink" href="#ansys-fluent" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>模型</p></th>
+<th class="head"><p>数学对象</p></th>
+<th class="head"><p>关键点</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>直接法</p></td>
+<td><p>可压缩瞬态 N–S (1)(2)，低耗散格式</p></td>
+<td><p>分辨声波需网格/时间步满足声学 CFL，代价极高</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>FWH</strong></p></td>
+<td><p>(9) 的时域积分</p></td>
+<td><p>需瞬态流场；仅开放空间；面网格分辨率决定最高可信频率</p></td>
+</tr>
+<tr class="row-even"><td><p>宽频噪声源</p></td>
+<td><p>稳态 RANS → Proudman/Lighthill 源强云图</p></td>
+<td><p>统计量，无相位 → 不能合成远场 SPL</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>波动方程法</strong></p></td>
+<td><p>Ewert &amp; Schröder 声学扰动方程（APE）：<code class="docutils literal notranslate"><span class="pre">∂p'/∂t</span> <span class="pre">+</span> <span class="pre">ρc∇·(c</span> <span class="pre">u'/?)</span></code> 类线性欧拉展开 + 海绵层</p></td>
+<td><p>不可压缩流场算源、同网格传播；Kirchhoff 积分 (10) 外推远场</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="ls-dyna">
+<h3>2.3 LS-DYNA：两条路线<a class="headerlink" href="#ls-dyna" title="Link to this heading"></a></h3>
+<p><strong>(a) 显式 FEM 声学（时域，强耦合）</strong>：(5) 的空间 FEM + 中心差分（与结构显式积分
+共用时间步，FSI 在单元层面耦合）——冲击、爆炸、水下（USA 模块）。</p>
+<p><strong>(b) 频域卡片族（NVH 弱耦合）</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>结构瞬态响应 (*FREQUENCY_DOMAIN_SSD) → 表面速度 v(t) --FFT--&gt; ṽ(f)
+   → BEM 边界积分:  C(x)p̂(x) = ∫_S [ p̂ ∂G/∂n − G ∂p̂/∂n ] dS     (13)
+   → 远场点声压；FEM 变体 (*FREQUENCY_DOMAIN_ACOUSTIC_FEM) 解腔体 (6)
+</pre></div>
+</div>
+<p>BEM 只需表面网格且天然满足无穷远条件；<code class="docutils literal notranslate"><span class="pre">Rayleigh</span></code>（每单元独立活塞近似）与
+<code class="docutils literal notranslate"><span class="pre">Kirchhoff</span></code>（FEM 过渡层 + 积分）是无需求解线性系统的快速近似。</p>
+</section>
+</section>
+<section id="id3">
+<h2>3. 可微性判定<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<p>记号：● = 天然可微（AD 直接适用）；◐ = 可微但需特殊处理（伴随法/隐函数/
+checkpointing/平滑化）；○ = 实践中不可微或需另辟蹊径。</p>
+<section id="id4">
+<h3>3.1 按算子判定<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>算子</p></th>
+<th class="head"><p>数学结构</p></th>
+<th class="head"><p>梯度路径</p></th>
+<th class="head"><p>判定</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>FEM 组装 (12)</p></td>
+<td><p>K、M 为材料参数（c、ρ）与<strong>网格坐标</strong>的显式函数</p></td>
+<td><p>∂K/∂θ、∂M/∂θ 解析可得；形状导数需网格灵敏度</p></td>
+<td><p>●</p></td>
+</tr>
+<tr class="row-odd"><td><p>Helmholtz 求解</p></td>
+<td><p>稀疏线性系统 A(k)p̂ = f</p></td>
+<td><p>线性：∂p̂/∂θ = A⁻¹(∂f/∂θ − ∂A/∂θ·p̂)</p></td>
+<td><p>●</p></td>
+</tr>
+<tr class="row-even"><td><p>模态/特征值分析</p></td>
+<td><p>(K − ω²M)φ = 0</p></td>
+<td><p>特征值导数经典结果 ∂ω/∂θ = φᵀ(∂K/∂θ − ω²∂M/∂θ)φ/(2ωM̃)</p></td>
+<td><p>●</p></td>
+</tr>
+<tr class="row-odd"><td><p>时域显式步进（leapfrog/Newmark）</p></td>
+<td><p>线性递推 x_{n+1} = A x_n + b_n</p></td>
+<td><p>递推可微；内存爆炸 → checkpointing（revolve）</p></td>
+<td><p>●（配 checkpointing）</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>FFT</strong></p></td>
+<td><p>线性正交变换</p></td>
+<td><p>逐项可微（幅度谱在零处不可微，工程无碍）</p></td>
+<td><p>●</p></td>
+</tr>
+<tr class="row-odd"><td><p>FWH 积分 (9)</p></td>
+<td><p>对源历史的线性泛函 + 推迟时间</p></td>
+<td><p>对源项/接收器位置可微；<code class="docutils literal notranslate"><span class="pre">R→0</span></code> 奇点、跨音速 τ* 多值处除外</p></td>
+<td><p>●（远场）</p></td>
+</tr>
+<tr class="row-even"><td><p>Kirchhoff 积分 (10)</p></td>
+<td><p>线性边界积分</p></td>
+<td><p>同 FWH</p></td>
+<td><p>●</p></td>
+</tr>
+<tr class="row-odd"><td><p>Jacobi/不动点迭代到收敛</p></td>
+<td><p>x* = g(x*,θ)</p></td>
+<td><p><strong>隐函数定理</strong>：∂x*/∂θ = (I − J_g)⁻¹ ∂g/∂θ；有限步截断则对迭代次数分段可微</p></td>
+<td><p>◐</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>稳态 RANS 收敛解</strong></p></td>
+<td><p>非线性方程组残差为零的点</p></td>
+<td><p>离散伴随（adjoint）标准做法；<strong>非 AD 磁带适用</strong>（收敛判据、湍流切换点不光滑）</p></td>
+<td><p>◐（走伴随）</p></td>
+</tr>
+<tr class="row-odd"><td><p>LES/瞬态对流</p></td>
+<td><p>强非线性、多尺度</p></td>
+<td><p>理论上可微（连续伴随 / 离散 AD + checkpointing）；数值耗散格式引入阶数依赖梯度</p></td>
+<td><p>◐</p></td>
+</tr>
+<tr class="row-even"><td><p>接触/冲击（ penalty / 事件检测）</p></td>
+<td><p>法向间隙 g_n 的分段切换</p></td>
+<td><p>接触状态翻转处梯度不连续 → 需平滑惩罚或平滑激活函数</p></td>
+<td><p>○（需平滑化）</p></td>
+</tr>
+<tr class="row-odd"><td><p>网格重生/自适应</p></td>
+<td><p>离散拓扑变化</p></td>
+<td><p>拓扑变化处不可微</p></td>
+<td><p>○</p></td>
+</tr>
+<tr class="row-even"><td><p>单元消亡/侵蚀（LS-DYNA erosion）</p></td>
+<td><p>材料删除事件</p></td>
+<td><p>事件驱动，不可微</p></td>
+<td><p>○</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="ad-quadrants-taichi">
+<h3>3.2 对照本项目的 AD 限制（quadrants/Taichi）<a class="headerlink" href="#ad-quadrants-taichi" title="Link to this heading"></a></h3>
+<p>我们插件层实测过的限制，与上述判定一致：</p>
+<ol class="arabic simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">atomic_add</span></code> / 非确定性归约</strong>：FWH (9) 若用面单元并行累加到接收器时间bin，
+quadrants 反向不支持 → 与商业软件把 FWH 做成<strong>后处理</strong>（非梯度路径）的选择一致；</p></li>
+<li><p><strong>内核内 in-place 读写</strong>（<code class="docutils literal notranslate"><span class="pre">p[f+1]</span> <span class="pre">=</span> <span class="pre">f(p[f+1])</span></code>）：热耦合源项已绕过（前向注入
+宿主驱动，<code class="docutils literal notranslate"><span class="pre">TODO(MUSA/autodiff)</span></code>），等价于把源参数当作<strong>常数输入</strong>；</p></li>
+<li><p><strong>循环内 <code class="docutils literal notranslate"><span class="pre">break</span></code> / 数据依赖早退</strong>：Jacobi 残差早停（◐ 行）在 AD 磁带中必须
+固定迭代数——<code class="docutils literal notranslate"><span class="pre">joule_heating</span></code> 的 backward 固定回放 <code class="docutils literal notranslate"><span class="pre">max_iter</span></code> 次正是此法；</p></li>
+<li><p><strong>宿主预计算常量断链</strong>：<code class="docutils literal notranslate"><span class="pre">joule_heating</span></code> 的 <code class="docutils literal notranslate"><span class="pre">_r_field</span></code> 原为 host 端 from_numpy 常量，
+梯度到不了 ρ/cp/k；内联进内核后 AD 图接通（本项目已修复）。这对商业软件同样成立：
+<strong>任何”前处理算好、求解器当常量读”的参数都没有梯度</strong>。</p></li>
+</ol>
+</section>
+<section id="id5">
+<h3>3.3 结论<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>结构声学链路（振动→辐射）天然是 AD 友好区</strong>：线性 FEM/BEM + 线性传播 +
+FFT 后处理，全链路可微（Mechanical 的声压对结构尺寸/材料、LS-DYNA BEM 对表面
+速度的梯度都有解析/半解析路径）；</p></li>
+<li><p><strong>气动声学链路的瓶颈在流场</strong>：RANS 走伴随、LES 走 AD+checkpointing；FWH/ Kirchhoff
+传播段本身可微，但商业软件将其定位为后处理（无梯度接口）；</p></li>
+<li><p>冲击类问题（接触、侵蚀）在所有平台上都是可微性的硬边界，需平滑化技术
+（penalty 光滑化、sigmoid 激活、事件时刻连续化）。</p></li>
+</ul>
+</section>
+</section>
+<section id="id6">
+<h2>参考<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Ffowcs Williams, J. E. &amp; Hawkings, D. L. (1969). <em>Sound generation by turbulence and
+surfaces in arbitrary motion</em>. Proc. R. Soc. A 264.</p></li>
+<li><p>Lighthill, M. J. (1952). <em>On sound generated aerodynamically</em>. Proc. R. Soc. A 211.</p></li>
+<li><p>Ewert, R. &amp; Schröder, W. (2003). <em>Acoustic perturbation equations based on flow
+decomposition via source filtering</em>. J. Comput. Phys. 188.</p></li>
+<li><p>ANSYS Mechanical APDL <em>Acoustic Analysis Guide</em>（FLUID30/129/220/221、FSI、PML）。</p></li>
+<li><p>ANSYS Fluent <em>Theory Guide</em> §11（FWH、broadband、wave-equation acoustics）。</p></li>
+<li><p>LS-DYNA <em>Keyword User’s Manual</em>：<code class="docutils literal notranslate"><span class="pre">*MAT_ACOUSTIC</span></code>、<code class="docutils literal notranslate"><span class="pre">*FREQUENCY_DOMAIN_ACOUSTIC_BEM/FEM</span></code>、
+<code class="docutils literal notranslate"><span class="pre">*FREQUENCY_DOMAIN_SSD</span></code>；Hang, Souli &amp; Perez, <em>Simulation of acoustic and vibroacoustic
+problems in LS-DYNA using boundary element method</em>（9th European LS-DYNA Conference）。</p></li>
+<li><p>本项目：<code class="docutils literal notranslate"><span class="pre">plugins/solvers/acoustics</span></code>（leapfrog 实现）、
+<code class="docutils literal notranslate"><span class="pre">scripts/quadrants_issue_thermal_source_autodiff.md</span></code>（AD 限制实录）。</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

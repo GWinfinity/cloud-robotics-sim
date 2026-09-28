@@ -1,0 +1,375 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoboDojo 对标 P0 优先级计划 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/ROBODOJO_P0_PLAN.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">RoboDojo 对标 P0 优先级计划</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ROBODOJO_P0_PLAN.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="robodojo-p0">
+<h1>RoboDojo 对标 P0 优先级计划<a class="headerlink" href="#robodojo-p0" title="Link to this heading"></a></h1>
+<blockquote>
+<div><p>来源:<code class="docutils literal notranslate"><span class="pre">docs/ROBOTWIN_TO_ROBODOJO_GAP_ANALYSIS.md</span></code>(2026-08-26)
+P0 定义:<strong>解锁后续一切工作、且能端到端验证流水线</strong>的最小切片。
+原则:先做骨架和闭环,不做全量;全部建立在现有 <code class="docutils literal notranslate"><span class="pre">core/</span></code>(Registry / Composer / Task)与 <code class="docutils literal notranslate"><span class="pre">robotwin/</span></code>(recorder / seed_search / grasp_report)设施之上,不新造轮子。</p>
+<p>定稿核实:2026-09-26 对全部代码锚点逐条核实(记录见附录 A)。结论:P0 各工作项均未动工、设施类断言全部成立,唯一过时断言(franka_pickplace.yaml 无人消费)已在 W1 修正。</p>
+<p><strong>与 AnyTask 最小能力集方案的关系</strong>:<code class="docutils literal notranslate"><span class="pre">docs/IMPROVEMENT_PLAN.md</span></code>(2026-09-14,更新)把范围收敛到 AnyTask 最小能力集(约 8–12 人周),显式排除 gap 表 #2(42 任务全量)、#3(资产标注)、#6(VR 遥操作)、#10(RealEval)。两份方案重叠项裁决如下:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>本计划项</p></th>
+<th class="head"><p>AnyTask 方案对应</p></th>
+<th class="head"><p>裁决</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>W0 GPU 解锁</p></td>
+<td><p>Phase 0 前置</p></td>
+<td><p>同一事项,谁先行谁落地,不重复投入</p></td>
+</tr>
+<tr class="row-odd"><td><p>W1 任务 YAML 框架</p></td>
+<td><p>Phase 0/1 部分(gap #1)</p></td>
+<td><p>不冲突:W1 要的是任务级 schema,AnyTask 未覆盖(见 W1 修订说明)</p></td>
+</tr>
+<tr class="row-even"><td><p>W3 资产标注</p></td>
+<td><p>显式非目标(gap #3)</p></td>
+<td><p><strong>挂起</strong>:仅当路线决策转回“全量对标 RoboDojo”时恢复</p></td>
+</tr>
+<tr class="row-odd"><td><p>W4 cuRobo 端到端 + grasp/place</p></td>
+<td><p>Phase 2/3(gap #4)</p></td>
+<td><p>重叠,视为同一件事,不做两遍</p></td>
+</tr>
+<tr class="row-even"><td><p>W8 评测协议 + 聚合</p></td>
+<td><p>Phase 0 基准套件</p></td>
+<td><p>重叠:AnyTask 的 3 任务基准套件可视为 W8 的最小试点,向上兼容</p></td>
+</tr>
+<tr class="row-odd"><td><p>W2 pilot 任务 5–8</p></td>
+<td><p>非目标(gap #2)</p></td>
+<td><p><strong>收敛</strong>:AnyTask 路线下以 Phase 0 的 3 个 contact-rich 基准任务代替(见 W2 修订说明)</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<section id="p0">
+<h2>0. P0 范围划定<a class="headerlink" href="#p0" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>纳入 P0</p></th>
+<th class="head"><p>排除出 P0(留给 P1/P2)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>W0 GPU/CUDA 环境解锁(硬前置)</p></td>
+<td><p>42 个任务全量移植(P1,流水线验证后批量铺开)</p></td>
+</tr>
+<tr class="row-odd"><td><p>W1 配置驱动任务系统(loader + reset 采样 + 成功判定抽象)</p></td>
+<td><p>进程内异构并行架构改造(P1 先用多进程分片)</p></td>
+</tr>
+<tr class="row-even"><td><p>W3 资产标注 <strong>schema + 工具 + 10 类试点</strong>(非全量 129 类)</p></td>
+<td><p>全量资产标注(P1 数据工)</p></td>
+</tr>
+<tr class="row-odd"><td><p>W4 cuRobo 端到端打通 + grasp/place 两个技能原语</p></td>
+<td><p>其余 6 个技能(handover/insert/open/close/stack/push_up,P1)</p></td>
+</tr>
+<tr class="row-even"><td><p>W8 评测协议 + 结果聚合(复用 grasp_report 格式)</p></td>
+<td><p>XPolicyLab 完整策略服务器(P1)</p></td>
+</tr>
+<tr class="row-odd"><td><p>W2 <strong>5–8 个 pilot 任务</strong>端到端验证</p></td>
+<td><p>VR 遥操作(P2)、RealEval 真机平台(P2)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id1">
+<h2>1. 工作流分解(按依赖排序)<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="w0-gpu-cuda-0">
+<h3>W0 — GPU/CUDA 环境解锁(第 0 周,阻塞项)<a class="headerlink" href="#w0-gpu-cuda-0" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>内容:CUDA 或 MUSA 环境到位;<code class="docutils literal notranslate"><span class="pre">tools/install_torch.py</span></code> 选对 wheel;cuRobo v2 安装;LuisaRender / Madrona 后端冒烟。</p></li>
+<li><p>验收(2026-09-26 修订):原验收“<code class="docutils literal notranslate"><span class="pre">-k</span> <span class="pre">curobo</span></code> 不再全 skip”已失效——<code class="docutils literal notranslate"><span class="pre">tests/robotwin/test_curobo_planner.py</span></code> 现采用 stub 注入的 CUDA-free 设计(14 个用例无 CUDA 也照跑)。修订后验收 = <strong>真实 CUDA/MUSA 环境端到端</strong>:<code class="docutils literal notranslate"><span class="pre">examples/robotwin/aloha_demo.py</span> <span class="pre">--planner</span> <span class="pre">curobo</span></code> 跑通(退出码 0,非 3),并在至少一个真实抓取场景输出 cuRobo 优先、OMPL 兜底的成功率对比数据。</p></li>
+<li><p>工作量:0.5–1 人周(不含采购)。<strong>没有它,W4/W6 全部停摆。</strong></p></li>
+</ul>
+</section>
+<section id="w1-13-p0">
+<h3>W1 — 配置驱动任务系统(第 1–3 周,P0 核心)<a class="headerlink" href="#w1-13-p0" title="Link to this heading"></a></h3>
+<blockquote>
+<div><p><strong>状态(2026-09-26):已落地。</strong> 交付物 1–5 全部实现:<code class="docutils literal notranslate"><span class="pre">core/task_loader.py</span></code>(任务级 schema v1 + loader + 确定性 reset 采样 + <code class="docutils literal notranslate"><span class="pre">ConfigurableTask</span></code> 包装)、<code class="docutils literal notranslate"><span class="pre">core/success.py</span></code>(distance_threshold / pose_window / staged 三种判定器)、<code class="docutils literal notranslate"><span class="pre">configs/tasks/pick_place_cube.yaml</span></code>(schema v1 参考实现)。测试 <code class="docutils literal notranslate"><span class="pre">tests/core/test_success.py</span></code> + <code class="docutils literal notranslate"><span class="pre">tests/core/test_task_loader.py</span></code> 共 56 用例(Genesis-free)。偏差记录:schema 在计划字段之外新增了 <code class="docutils literal notranslate"><span class="pre">task.scene</span></code>/<code class="docutils literal notranslate"><span class="pre">task.type</span></code>(注册表工厂名,沿用 config_loader 惯例);<code class="docutils literal notranslate"><span class="pre">cameras</span></code>/<code class="docutils literal notranslate"><span class="pre">randomization</span></code> v1 仅解析携带,由 W8 消费;reset 采样与 <code class="docutils literal notranslate"><span class="pre">batched_seed_search</span></code> 的对接通过 <code class="docutils literal notranslate"><span class="pre">make_apply_seed_fn(spec,</span> <span class="pre">scenes)</span></code> 回调适配器完成。</p>
+</div></blockquote>
+<p>现状缺口(2026-09-26 核实修正):<code class="docutils literal notranslate"><span class="pre">core/registry.py</span></code>(装饰器注册)+ <code class="docutils literal notranslate"><span class="pre">core/composer.py</span></code>(<code class="docutils literal notranslate"><span class="pre">compose_from_registry</span></code>)+ <code class="docutils literal notranslate"><span class="pre">core/task.py</span></code>(gym 风格 Task ABC)已齐,<strong>任务级 YAML→loader 仍缺</strong>。</p>
+<blockquote>
+<div><p>⚠️ 原断言“<code class="docutils literal notranslate"><span class="pre">configs/franka_pickplace.yaml</span></code> 无任何代码消费”<strong>已过时</strong>:该 YAML 现已被 <code class="docutils literal notranslate"><span class="pre">core/config_loader.py::load_sim_config</span></code> 消费(improvement loop 经 <code class="docutils literal notranslate"><span class="pre">runtime/main.py::make_env_from_config</span></code> 调用,含 <code class="docutils literal notranslate"><span class="pre">environment.scene/robot/task/simulation</span></code> 结构校验),硬编码绝对路径问题亦已由 <code class="docutils literal notranslate"><span class="pre">core/robot_assets.py</span></code> 自动解析(<code class="docutils literal notranslate"><span class="pre">robot.urdf_path</span></code> 可为 null)解决。但现有 loader 是<strong>环境级</strong>配置(单实验视角),与本工作项要的<strong>任务级</strong> schema(<code class="docutils literal notranslate"><span class="pre">task/assets/init_distribution/randomization/success/evaluation</span></code>,批量评测视角)不同层。因此 W1 从“从零建 loader”收窄为“在 <code class="docutils literal notranslate"><span class="pre">config_loader.py</span></code> 旁新增任务级 schema 与 loader,两者字段不合并、各管一层”。</p>
+</div></blockquote>
+<p>交付物:</p>
+<ol class="arabic">
+<li><p><strong>任务 YAML schema v1</strong>(<code class="docutils literal notranslate"><span class="pre">configs/tasks/*.yaml</span></code>),对齐 RoboDojo 字段:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">task</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nv">name</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">robot</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">max_episode_steps</span><span class="p p-Indicator">}</span>
+<span class="nt">assets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">task_relevant</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">],</span><span class="nt"> distractors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]}</span><span class="w">   </span><span class="c1"># 指向 object_library + 标注</span>
+<span class="nt">init_distribution</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nv">object_poses</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">articulation_states</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">clutter_layout</span><span class="p p-Indicator">}</span>
+<span class="nt">randomization</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nv">friction</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">mass</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">com</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">lighting</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">background_texture</span><span class="p p-Indicator">}</span>
+<span class="nt">cameras</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">...</span><span class="p p-Indicator">]</span><span class="w">              </span><span class="c1"># 复用 robotwin CameraConfig</span>
+<span class="nt">success</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="nv">...</span><span class="p p-Indicator">,</span><span class="nt"> params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nv">...</span><span class="p p-Indicator">}}</span><span class="w">   </span><span class="c1"># 见交付物 3</span>
+<span class="nt">evaluation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nv">seeds</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">episodes_per_seed</span><span class="p p-Indicator">}</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Loader</strong>:<code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/core/task_loader.py</span></code> — YAML → <code class="docutils literal notranslate"><span class="pre">ComposerConfig</span></code> + Scene + Robot + Task,走现有 <code class="docutils literal notranslate"><span class="pre">AssetRegistry</span></code>/<code class="docutils literal notranslate"><span class="pre">compose_from_registry</span></code>(环境级路径解析复用 <code class="docutils literal notranslate"><span class="pre">core/config_loader.py</span></code>/<code class="docutils literal notranslate"><span class="pre">core/robot_assets.py</span></code>,不再重复解决)。明确<strong>选用装饰器 Registry 一套</strong>,plugin.yaml 体系不做桥接(P0 不碰)。</p></li>
+<li><p><strong>可配置成功判定器</strong>:<code class="docutils literal notranslate"><span class="pre">core/success.py</span></code> — 抽象 <code class="docutils literal notranslate"><span class="pre">SuccessCondition</span></code>(distance_threshold / pose_window / staged),staged 模式直接复用 <code class="docutils literal notranslate"><span class="pre">robotwin/grasp_report.py</span></code> 的 <code class="docutils literal notranslate"><span class="pre">FAIL_STAGES</span></code> 七级(现为 7 元素 tuple 而非 enum.Enum,<code class="docutils literal notranslate"><span class="pre">grasp_report.py:14-22</span></code>,可直接引用其字符串常量);替代各 Task 子类里硬编码的阈值逻辑(保持旧子类行为不变,仅新增)。</p></li>
+<li><p><strong>确定性 reset 采样器</strong>:按 <code class="docutils literal notranslate"><span class="pre">evaluation.seeds</span></code> 采样布局,复用 <code class="docutils literal notranslate"><span class="pre">batched_seed_search</span></code> 的回调接口;同一 seed 必现同一场景。</p></li>
+<li><p>测试:loader round-trip、seed 确定性(同 seed 两次 reset 状态全等)、每种 success type 各一个单测。</p></li>
+</ol>
+<p>工作量:<strong>3–4 人周</strong>。验收:一个 YAML 从零定义一个新任务,不写 Python;<code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">tests/core</span></code> 全绿 + ruff/black/mypy 过门禁。</p>
+</section>
+<section id="w3-schema-24-w1">
+<h3>W3 — 资产标注 schema + 工具 + 试点(第 2–4 周,与 W1 并行)<a class="headerlink" href="#w3-schema-24-w1" title="Link to this heading"></a></h3>
+<blockquote>
+<div><p><strong>状态(2026-09-26):挂起。</strong> AnyTask 最小能力集方案(<code class="docutils literal notranslate"><span class="pre">docs/IMPROVEMENT_PLAN.md</span></code>)已将资产标注(gap #3)列为显式非目标;本工作项仅在路线决策转回“全量对标 RoboDojo”时恢复。核实确认:仓库内无任何先行标注工作(仅 <code class="docutils literal notranslate"><span class="pre">tools/convert_assets.py</span></code> 透传 RoboTwin 源树关键点文件,非本项目标注 schema)。</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>标注 schema(<code class="docutils literal notranslate"><span class="pre">model_dataN.json</span></code> 扩展或旁挂 <code class="docutils literal notranslate"><span class="pre">annotations.yaml</span></code>):<code class="docutils literal notranslate"><span class="pre">graspable_regions</span> <span class="pre">/</span> <span class="pre">placement_regions</span> <span class="pre">/</span> <span class="pre">functional_parts</span> <span class="pre">/</span> <span class="pre">success_annotations</span></code>,字段对齐 RoboDojo affordance 层。</p></li>
+<li><p>工具:<code class="docutils literal notranslate"><span class="pre">tools/annotate_asset.py</span></code> — Genesis 可视化点击/框选标注,写回 JSON。</p></li>
+<li><p>试点:pilot 任务涉及的 <strong>~10 个物体类</strong>完成标注,验证 schema 够不够用。</p></li>
+<li><p>工作量:2–3 人周(schema+工具 1.5,试点标注 0.5–1)。全量 129 类标注是 P1 数据工,不在此列。</p></li>
+</ul>
+</section>
+<section id="w8-34">
+<h3>W8 — 评测协议 + 结果聚合(第 3–4 周)<a class="headerlink" href="#w8-34" title="Link to this heading"></a></h3>
+<blockquote>
+<div><p><strong>状态(2026-09-26):已落地并端到端验证。</strong> <code class="docutils literal notranslate"><span class="pre">core/benchmark.py</span></code>(EpisodeRecord 泛化记录、suite YAML v1 加载器、<code class="docutils literal notranslate"><span class="pre">run_episode</span></code>/<code class="docutils literal notranslate"><span class="pre">run_benchmark</span></code> 执行循环、leaderboard <code class="docutils literal notranslate"><span class="pre">summarize</span></code> + <code class="docutils literal notranslate"><span class="pre">report.json</span></code>/<code class="docutils literal notranslate"><span class="pre">report.md</span></code>/<code class="docutils literal notranslate"><span class="pre">episodes.jsonl</span></code> 三件套)+ <code class="docutils literal notranslate"><span class="pre">tools/run_benchmark.py</span></code> CLI + <code class="docutils literal notranslate"><span class="pre">data/suites/pick_place_smoke.yaml</span></code> 示例套件。策略可插拔,v1 内置 <code class="docutils literal notranslate"><span class="pre">zero</span></code>/种子化 <code class="docutils literal notranslate"><span class="pre">random</span></code>。关键设计:为满足”两次同 seed 运行 report.json 逐字节一致”,<code class="docutils literal notranslate"><span class="pre">report.json</span></code> 只含确定性字段(状态/步数/reward),墙钟耗时与轨迹路径只进 <code class="docutils literal notranslate"><span class="pre">episodes.jsonl</span></code>——<strong>已用真实 Genesis CPU 运行两次实测字节一致</strong>。测试 <code class="docutils literal notranslate"><span class="pre">tests/core/test_benchmark.py</span></code> 22 用例(fake-env 端到端含字节复现验证)。</p>
+<p><strong>顺带修复的预存阻塞</strong>(原改进回路同样 crash,与 W1/W8 无关):<code class="docutils literal notranslate"><span class="pre">core/embodiment.py</span></code> 三处——(1) franka/UR5 URDF 以浮置底座加载(<code class="docutils literal notranslate"><span class="pre">fixed=True</span></code> 缺失),机器人掉落触发约束求解器 NaN;(2) <code class="docutils literal notranslate"><span class="pre">reset()</span></code> 全零 qpos 是 franka 自碰撞奇异位形,改为恢复 spawn 时捕获的资源默认位形;(3) spawn 后未下发 PD 增益,手臂重力下失稳;(4) <code class="docutils literal notranslate"><span class="pre">get_qvel</span></code> 在 genesis 1.4 已改名,新增 <code class="docutils literal notranslate"><span class="pre">_dof_velocity()</span></code> 兼容层。真实烟跑:<code class="docutils literal notranslate"><span class="pre">run_benchmark.py</span> <span class="pre">--suite</span> <span class="pre">pick_place_smoke</span> <span class="pre">--episodes-limit</span> <span class="pre">2</span></code> 跑通 2 episodes x 200 步,place_fail 经 ConfigurableTask 正确传递。轨迹录制已补(<code class="docutils literal notranslate"><span class="pre">--save-trajectories</span></code>,per-episode actions/rewards JSON 落盘 <code class="docutils literal notranslate"><span class="pre">trajectories/</span></code> 并记入 episodes.jsonl,路径用 POSIX 分隔符保证跨平台一致)。剩余待办:按维度聚合(更多任务维度落地后)、真实机器人策略接入(依赖 W4)。</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>评测 runner:<code class="docutils literal notranslate"><span class="pre">tools/run_benchmark.py</span></code> — 读 suite YAML(参照 <code class="docutils literal notranslate"><span class="pre">data/suites/home_5s_suite.yaml</span></code> 的 recipes/assets/validation 三段式),按 <code class="docutils literal notranslate"><span class="pre">seeds</span> <span class="pre">×</span> <span class="pre">episodes</span></code> 跑任务,逐条写 <code class="docutils literal notranslate"><span class="pre">GraspRecord</span></code> 泛化版(任务名/seed/状态/耗时/轨迹路径)。</p></li>
+<li><p>聚合:<code class="docutils literal notranslate"><span class="pre">summarize</span></code> 扩展为 leaderboard 表(任务 × 维度 × 成功率 + failures_by_stage),输出 <code class="docutils literal notranslate"><span class="pre">report.json</span></code> + <code class="docutils literal notranslate"><span class="pre">report.md</span></code>,一键复现。</p></li>
+<li><p>工作量:1.5–2 人周。验收:两次同 seed 运行 report.json 逐字节一致。</p></li>
+</ul>
+<blockquote>
+<div><p>现状核实(2026-09-26):<code class="docutils literal notranslate"><span class="pre">tools/run_benchmark.py</span></code> 仍不存在;<code class="docutils literal notranslate"><span class="pre">grasp_report.summarize</span></code> 目前仅有按物体类别的单次抓取聚合(total/success_rate/failures_by_stage),无任务 × 维度 leaderboard——本工作项保持空缺、未动工。AnyTask 方案的 Phase 0 基准套件(固定 seed 成功率统计)若先落地,可直接作为本 runner 的第一个 suite 输入。</p>
+</div></blockquote>
+</section>
+<section id="w4-curobo-46-w0-w1-w3">
+<h3>W4 — cuRobo 端到端 + 两个技能原语(第 4–6 周,依赖 W0/W1/W3)<a class="headerlink" href="#w4-curobo-46-w0-w1-w3" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">HierarchicalCuRoboPlanner.plan_with_fallback</span></code> 端到端回归:cuRobo 优先、OMPL 兜底,对比成功率(阈值 −5pp,沿用迁移文档 M3 标准)。</p></li>
+<li><p>技能层 <code class="docutils literal notranslate"><span class="pre">core/skills/</span></code>:<code class="docutils literal notranslate"><span class="pre">grasp</span></code> + <code class="docutils literal notranslate"><span class="pre">place</span></code> 两个原语,从 W3 标注读 graspable/placement regions,技能编排器(有序技能序列 → 轨迹)先做最简版。注意命名冲突:仓库已有 <code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/runtime/skills.py</span></code>(agent 技能层,专利/仿真任务调度),与本处的机器人技能原语无关——新建目录建议用 <code class="docutils literal notranslate"><span class="pre">core/robot_skills/</span></code> 避免混淆。</p></li>
+<li><p>工作量:3–5 人周(含 CUDA 环境调试余量)。</p></li>
+</ul>
+</section>
+<section id="w2-pilot-58-58-w1-w3-w4">
+<h3>W2 — Pilot 任务 5–8 个(第 5–8 周,依赖 W1/W3/W4)<a class="headerlink" href="#w2-pilot-58-58-w1-w3-w4" title="Link to this heading"></a></h3>
+<blockquote>
+<div><p><strong>状态(2026-09-26):AnyTask 路线下收敛。</strong> AnyTask 方案以 3 个 contact-rich 基准任务(立方体抓取静置/叠方块/抽屉开合)作为 Phase 0 反馈环,与本工作项重叠;AnyTask 路线下 W2 收敛为这 3 个基准任务,5–8 个 YAML-only pilot 任务仅在转回全量对标路线时恢复(且仍需 W1 框架先行)。</p>
+<p><strong>落地进展(2026-09-26):</strong> 其中 2 个已用 W1 schema 零 Python 落地并被 W8 runner 端到端验证:<code class="docutils literal notranslate"><span class="pre">configs/tasks/pick_place_cube.yaml</span></code>(抓取放置,distance_threshold)+ <code class="docutils literal notranslate"><span class="pre">configs/tasks/stack_cubes.yaml</span></code>(双物堆叠,staged + pose_window 组合,成功验证 staged 判定的失败阶段归因:stack 未达成时报最早失败 stage grasp_fail)。套件 <code class="docutils literal notranslate"><span class="pre">data/suites/contact_rich_smoke.yaml</span></code>,真实 CPU 双跑 report.json 字节一致。<strong>抽屉开合阻塞</strong>:schema v1 的 <code class="docutils literal notranslate"><span class="pre">articulation_states</span></code> 已能采样并随布局携带,但 ObjectSpawn v1 无关节资产类型(PartNet-Mobility 类资产需要),留待 articulated spawn 支持后补。真实机器人策略(非 zero/random)仍依赖 W4。</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>选型原则:覆盖 RoboDojo 五维能力中的三维(Generalization / Precision / Long-Horizon),全部用已转换的 5 本体 + 已标注物体,如:单物 pick-place、杂乱场景 pick-place、双物 stack、双臂 handover(ALOHA)、抽屉开合(PartNet-Mobility 关节资产)。</p></li>
+<li><p>每个任务 = 1 个 YAML + 标注 + 成功判定配置,<strong>不允许写任务专用 Python</strong>(倒逼 W1 框架完备)。</p></li>
+<li><p>每个任务配回归测试(seed 级成功率门禁)。</p></li>
+<li><p>工作量:4–6 人周。这是 P0 的”验收仪式”:流水线能不能批量产任务,P1 能否直接铺 42 个,全看这一步。</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>2. 里程碑与时间线(2 名工程师基线)<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>周:     0    1    2    3    4    5    6    7    8
+W0 GPU  ██
+W1 框架      ████████
+W3 标注         ████████
+W8 评测              ████
+W4 技能                     ████████
+W2 Pilot                       ████████████
+              ↑              ↑              ↑
+            M-a            M-b            M-c(P0 完成)
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>M-a(第 2 周末)</strong>:任务 YAML schema v1 + loader 单测通过 —— 后续一切的接口冻结点。</p></li>
+<li><p><strong>M-b(第 4 周末)</strong>:标注工具可用 + 评测 runner 能出 report —— 数据工和批量评测可开工。</p></li>
+<li><p><strong>M-c(第 8 周末)</strong>:5–8 个 pilot 任务在评测 runner 上跑出 leaderboard,同 seed 完全可复现。</p></li>
+<li><p><strong>总计:约 13–20 人周;2 人 8 周 / 3 人 5–6 周。</strong></p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>3. 风险与对策<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>风险</p></th>
+<th class="head"><p>对策</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GPU 不到位,W0 滑期</p></td>
+<td><p>W1/W3/W8 全部不依赖 GPU,可先行;W4 是唯一被卡的,必要时用 OMPL 兜底先跑 pilot</p></td>
+</tr>
+<tr class="row-odd"><td><p>YAML schema 设计不足,任务写到一半要加字段</p></td>
+<td><p>M-a 后 schema 冻结但留 <code class="docutils literal notranslate"><span class="pre">extra:</span></code> 扩展字段;pilot 任务故意选 3 个维度倒逼 schema 完备</p></td>
+</tr>
+<tr class="row-even"><td><p>标注工具没人愿意用(体验差)</p></td>
+<td><p>工具本身预算 1 人周封顶;试点 10 类验证够用即可,全量标注 P1 再议(可考虑外包/半自动)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Genesis n_envs 同构限制,pilot 批量评测慢</p></td>
+<td><p>P0 接受慢;多进程分片(每进程一任务)是 P1 第一项</p></td>
+</tr>
+<tr class="row-even"><td><p>与 RoboDojo 语义对齐过度</p></td>
+<td><p>字段名对齐其论文附录 F.1 即可,不追求配置互导——目标是对标能力,不是兼容格式</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="p0-p1">
+<h2>4. P0 完成后(P1 入口条件)<a class="headerlink" href="#p0-p1" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>任务流水线已验证 → P1 批量移植剩余 ~35 任务(流水线作业,2–5 人天/个)</p></li>
+<li><p>全量资产标注(数据工,可外包)</p></li>
+<li><p>多进程任务分片 + 剩余 6 技能原语</p></li>
+<li><p>差异化投入启动:柔体任务维度(Genesis MPM/SPH,对标 RoboDojo 结构性弱点)</p></li>
+</ul>
+</section>
+<section id="a-2026-09-26">
+<h2>附录 A — 2026-09-26 定稿核实记录<a class="headerlink" href="#a-2026-09-26" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>计划断言</p></th>
+<th class="head"><p>核实结论</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>franka_pickplace.yaml 无人消费、有硬编码绝对路径</p></td>
+<td><p>❌ 已过时:已被 <code class="docutils literal notranslate"><span class="pre">core/config_loader.py::load_sim_config</span></code> 消费(improvement loop 经 <code class="docutils literal notranslate"><span class="pre">runtime/main.py::make_env_from_config</span></code>);路径已由 <code class="docutils literal notranslate"><span class="pre">core/robot_assets.py</span></code> 自动解析。W1 已改写</p></td>
+</tr>
+<tr class="row-odd"><td><p>Registry / Composer / Task ABC 已齐</p></td>
+<td><p>✅ <code class="docutils literal notranslate"><span class="pre">core/registry.py</span></code>(装饰器注册)、<code class="docutils literal notranslate"><span class="pre">core/composer.py:338</span></code> <code class="docutils literal notranslate"><span class="pre">compose_from_registry</span></code>、<code class="docutils literal notranslate"><span class="pre">core/task.py:41</span></code> <code class="docutils literal notranslate"><span class="pre">Task(ABC)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>任务级 loader、<code class="docutils literal notranslate"><span class="pre">core/success.py</span></code>、<code class="docutils literal notranslate"><span class="pre">tools/annotate_asset.py</span></code>、<code class="docutils literal notranslate"><span class="pre">tools/run_benchmark.py</span></code>、<code class="docutils literal notranslate"><span class="pre">configs/tasks/</span></code>、<code class="docutils literal notranslate"><span class="pre">core/skills/</span></code></p></td>
+<td><p>✅ 均不存在——W1/W3/W8/W4 技能层未动工</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">FAIL_STAGES</span></code> 七级枚举</p></td>
+<td><p>✅ 七级成立;类型为 7 元素 tuple 而非 enum.Enum(<code class="docutils literal notranslate"><span class="pre">grasp_report.py:14-22</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">data/suites/home_5s_suite.yaml</span></code> recipes/assets/validation 三段式</p></td>
+<td><p>✅ 成立</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">HierarchicalCuRoboPlanner.plan_with_fallback</span></code> cuRobo 优先/OMPL 兜底</p></td>
+<td><p>✅ <code class="docutils literal notranslate"><span class="pre">curobo_planner.py:247</span></code>;测试已改为 stub 注入 CUDA-free(14 用例),故 W0 验收标准已修订</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">aloha_demo.py</span> <span class="pre">--planner</span> <span class="pre">{auto,ompl,curobo}</span></code></p></td>
+<td><p>✅ 成立</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">batched_seed_search</span></code> 回调接口可复用</p></td>
+<td><p>✅ <code class="docutils literal notranslate"><span class="pre">seed_search.py:69</span></code>(apply_seed/rollout/evaluate 回调)</p></td>
+</tr>
+<tr class="row-even"><td><p>资产标注先行工作</p></td>
+<td><p>❌ 无(仅 convert_assets 透传 RoboTwin 关键点文件,非本项目标注 schema)</p></td>
+</tr>
+<tr class="row-odd"><td><p>测试规模</p></td>
+<td><p>✅ 全仓约 1050 个测试函数(tests/core ~187、tests/robotwin ~145)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">core/vectorized.py</span></code></p></td>
+<td><p>⚠️ 已被 AnyTask Phase 1 重写为真实批量入口(VecTask/<code class="docutils literal notranslate"><span class="pre">reset_idx</span></code>/物理参数透出,占位 <code class="docutils literal notranslate"><span class="pre">np.zeros</span></code> 已删);rsl-rl/LeRobot 接入未做(与 AnyTask 方案文档自述一致)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

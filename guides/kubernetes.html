@@ -1,0 +1,261 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kubernetes 部署指南 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/guides/kubernetes.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Kubernetes 部署指南</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guides/kubernetes.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kubernetes">
+<h1>Kubernetes 部署指南<a class="headerlink" href="#kubernetes" title="Link to this heading"></a></h1>
+<p>本文介绍如何在 Kubernetes 集群上部署 genesis-cloud-sim 仿真 worker，并使用
+<a class="reference external" href="https://keda.sh/">KEDA</a> 基于 Redis 任务队列长度实现自动扩缩容（空闲时缩到 0，
+有任务时按队列长度扩容）。</p>
+<section id="id1">
+<h2>架构概览<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>submit task (scripts/k8s_submit_task.py)
+        │  LPUSH
+        ▼
+┌──────────────┐      BRPOP        ┌──────────────────┐
+│ Redis 队列    │ ────────────────▶ │ sim-worker-cpu   │  KEDA ScaledObject
+│ sim-tasks-*  │                    │ sim-worker-gpu   │  (listLength 触发)
+└──────────────┘ ◀──────────────── └──────────────────┘
+        │  RPUSH (sim-results)
+        ▼
+   结果 JSON
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>CPU 和 GPU worker 使用<strong>独立的队列</strong>（<code class="docutils literal notranslate"><span class="pre">sim-tasks-cpu</span></code> / <code class="docutils literal notranslate"><span class="pre">sim-tasks-gpu</span></code>），
+避免同一条队列同时触发两类 worker 造成重复消费。</p></li>
+<li><p>每条队列对应一个 KEDA <code class="docutils literal notranslate"><span class="pre">ScaledObject</span></code>，队列中每积压 1 个任务扩容 1 个副本。</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>前置条件<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<ul>
+<li><p>Kubernetes 集群（≥ 1.25）</p></li>
+<li><p><a class="reference external" href="https://keda.sh/docs/latest/deploy/">KEDA</a> ≥ 2.9（redis scaler 默认启用）：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://github.com/kedacore/keda/releases/latest/download/keda.yaml
+</pre></div>
+</div>
+</li>
+<li><p>GPU worker 还需要 <a class="reference external" href="https://github.com/NVIDIA/k8s-device-plugin">NVIDIA device plugin</a>
+以及带 GPU 的节点（或 <a class="reference external" href="https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/index.html">GPU Operator</a>）</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>构建并推送镜像<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<p>复用仓库根目录的 <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># CPU 镜像</span>
+docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>&lt;registry&gt;/genesis-cloud-sim:cpu<span class="w"> </span>.
+docker<span class="w"> </span>push<span class="w"> </span>&lt;registry&gt;/genesis-cloud-sim:cpu
+
+<span class="c1"># GPU 镜像（CUDA）</span>
+docker<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-arg<span class="w"> </span><span class="nv">BASE_IMAGE</span><span class="o">=</span>nvidia/cuda:12.1.0-runtime-ubuntu22.04<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-arg<span class="w"> </span><span class="nv">TORCH_BACKEND</span><span class="o">=</span>cuda<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-t<span class="w"> </span>&lt;registry&gt;/genesis-cloud-sim:gpu<span class="w"> </span>.
+docker<span class="w"> </span>push<span class="w"> </span>&lt;registry&gt;/genesis-cloud-sim:gpu
+</pre></div>
+</div>
+<p>注意镜像内置了 <code class="docutils literal notranslate"><span class="pre">redis</span></code> 依赖（<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[dev]&quot;</span></code> 安装的是 <code class="docutils literal notranslate"><span class="pre">all</span></code> extra，
+已包含 <code class="docutils literal notranslate"><span class="pre">k8s</span></code>）。然后修改 <code class="docutils literal notranslate"><span class="pre">deploy/kubernetes/sim-worker-{cpu,gpu}.yaml</span></code> 中的
+<code class="docutils literal notranslate"><span class="pre">image</span></code> 字段为你的 registry 地址。</p>
+</section>
+<section id="id4">
+<h2>部署<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>deploy/kubernetes/
+<span class="c1"># 或逐个文件：kubectl apply -f deploy/kubernetes/ --recursive</span>
+</pre></div>
+</div>
+<p>验证组件就绪：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>-n<span class="w"> </span>genesis-sim<span class="w"> </span>get<span class="w"> </span>deploy,svc
+kubectl<span class="w"> </span>-n<span class="w"> </span>genesis-sim<span class="w"> </span>get<span class="w"> </span>scaledobject
+<span class="c1"># 空队列时 worker 副本数应为 0：</span>
+kubectl<span class="w"> </span>-n<span class="w"> </span>genesis-sim<span class="w"> </span>get<span class="w"> </span>pods
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h2>提交仿真任务<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<p>在本地（需要 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">cloud-robotics-sim[k8s]</span></code>）或集群内任一 Pod 中执行：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># CPU 队列</span>
+python<span class="w"> </span>scripts/k8s_submit_task.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--redis-url<span class="w"> </span>localhost:6379<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--queue<span class="w"> </span>sim-tasks-cpu<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--type<span class="w"> </span>patent<span class="w"> </span>--param<span class="w"> </span><span class="nv">run</span><span class="o">=</span>US821393<span class="w"> </span>--param<span class="w"> </span><span class="nv">steps</span><span class="o">=</span><span class="m">500</span>
+
+<span class="c1"># GPU 队列</span>
+python<span class="w"> </span>scripts/k8s_submit_task.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--redis-url<span class="w"> </span>localhost:6379<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--queue<span class="w"> </span>sim-tasks-gpu<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--type<span class="w"> </span>patent<span class="w"> </span>--param<span class="w"> </span><span class="nv">run</span><span class="o">=</span>US821393<span class="w"> </span>--param<span class="w"> </span><span class="nv">device</span><span class="o">=</span>cuda
+</pre></div>
+</div>
+<p>观察扩容过程：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>-n<span class="w"> </span>genesis-sim<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-w<span class="w">        </span><span class="c1"># worker pod 出现</span>
+kubectl<span class="w"> </span>-n<span class="w"> </span>genesis-sim<span class="w"> </span>logs<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>sim-worker<span class="w"> </span>-f
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h2>查看结果<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<p>结果以 JSON 追加到 Redis 的 <code class="docutils literal notranslate"><span class="pre">sim-results</span></code> 列表：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>-n<span class="w"> </span>genesis-sim<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>deploy/redis<span class="w"> </span>--<span class="w"> </span>redis-cli<span class="w"> </span>LRANGE<span class="w"> </span>sim-results<span class="w"> </span><span class="m">0</span><span class="w"> </span>-1
+</pre></div>
+</div>
+<p>也可以在集群内运行一个一次性 worker 处理任务并直接看日志：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>-n<span class="w"> </span>genesis-sim<span class="w"> </span>run<span class="w"> </span>worker-once<span class="w"> </span>--rm<span class="w"> </span>-i<span class="w"> </span>--restart<span class="o">=</span>Never<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--image<span class="o">=</span>&lt;registry&gt;/genesis-cloud-sim:cpu<span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim<span class="w"> </span>worker<span class="w"> </span>--queue<span class="w"> </span>sim-tasks-cpu
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h2>任务格式<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"task_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"uuid（可选，自动生成）"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"patent"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"run"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US821393"</span><span class="p">,</span><span class="w"> </span><span class="nt">"steps"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="nt">"device"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cuda"</span><span class="p">,</span><span class="w"> </span><span class="nt">"seed"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>当前内置的任务类型：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>type</p></th>
+<th class="head"><p>说明</p></th>
+<th class="head"><p>params</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">patent</span></code></p></td>
+<td><p>运行经典专利仿真（无头模式）</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">run</span></code>（必填，专利号）、<code class="docutils literal notranslate"><span class="pre">steps</span></code>、<code class="docutils literal notranslate"><span class="pre">dt</span></code>、<code class="docutils literal notranslate"><span class="pre">substeps</span></code>、<code class="docutils literal notranslate"><span class="pre">resolution</span></code>、<code class="docutils literal notranslate"><span class="pre">device</span></code>、<code class="docutils literal notranslate"><span class="pre">seed</span></code>、<code class="docutils literal notranslate"><span class="pre">record_path</span></code>、<code class="docutils literal notranslate"><span class="pre">follow</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>新增任务类型：在 <code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/runtime/queue_worker.py</span></code> 的
+<code class="docutils literal notranslate"><span class="pre">_TASK_HANDLERS</span></code> 中注册处理函数即可。</p>
+</section>
+<section id="id8">
+<h2>生产化注意事项<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Redis</strong>：manifest 中的 Redis 是无持久化的单实例，仅用于演示。生产环境请换成
+托管 Redis / Redis Sentinel，并通过 <code class="docutils literal notranslate"><span class="pre">deploy/kubernetes/secret.example.yaml</span></code>
+的方式以 Secret 注入带凭据的 <code class="docutils literal notranslate"><span class="pre">REDIS_URL</span></code>。</p></li>
+<li><p><strong>GPU 调度</strong>：按集群实际标签调整 <code class="docutils literal notranslate"><span class="pre">sim-worker-gpu.yaml</span></code> 的 <code class="docutils literal notranslate"><span class="pre">nodeSelector</span></code>
+（GPU Operator 常用 <code class="docutils literal notranslate"><span class="pre">nvidia.com/gpu.present:</span> <span class="pre">&quot;true&quot;</span></code>）；如需隔离 GPU 节点池，
+为 worker 添加对应的 <code class="docutils literal notranslate"><span class="pre">tolerations</span></code>。</p></li>
+<li><p><strong>资源配额</strong>：CPU worker 默认 requests 1 CPU / 2Gi，GPU worker 独占 1 张 GPU；
+请配合 Namespace <code class="docutils literal notranslate"><span class="pre">ResourceQuota</span></code> / <code class="docutils literal notranslate"><span class="pre">LimitRange</span></code> 防止队列任务过多时打满集群。</p></li>
+<li><p><strong>镜像拉取</strong>：生产集群中请将 <code class="docutils literal notranslate"><span class="pre">imagePullPolicy</span></code> 改为 <code class="docutils literal notranslate"><span class="pre">Always</span></code> 并使用私有
+registry 的 <code class="docutils literal notranslate"><span class="pre">imagePullSecret</span></code>。</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
