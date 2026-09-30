@@ -28,6 +28,8 @@ HAS_TRIMESH = has_module("trimesh")
 HAS_NUMPY = has_module("numpy")
 HAS_MCP = has_module("mcp")
 HAS_REDIS = has_module("redis")
+HAS_XUVDB = has_module("xuvdb")
 
 genesis_only = pytest.mark.skipif(not HAS_GENESIS, reason="genesis-world not installed")
 torch_only = pytest.mark.skipif(not HAS_TORCH, reason="torch not installed")
+xuvdb_only = pytest.mark.skipif(not HAS_XUVDB, reason="xuvdb not installed")

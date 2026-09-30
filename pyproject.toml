@@ -108,13 +108,26 @@ cad = [
     "cadquery>=2.4",
 ]
 
+# Editable sparse voxel volumes + native OpenVDB interop for the vdb module
+# (see src/cloud_robotics_sim/vdb/core/vdb_xuvdb.py).
+xuvdb = [
+    "xuvdb>=1.0",
+]
+
 all = [
-    "cloud-robotics-sim[dev,docs,k8s,cad]",
+    "cloud-robotics-sim[dev,docs,k8s,cad,xuvdb]",
 ]
 
 [[tool.uv.index]]
 url = "https://mirrors.aliyun.com/pypi/simple"
 default = true
+
+# pypi.org is consulted only for packages explicitly pinned to it (currently
+# just xuvdb — the Aliyun mirror does not carry it); see [tool.uv.sources].
+[[tool.uv.index]]
+name = "pypi-org"
+url = "https://pypi.org/simple"
+explicit = true
 
 [project.scripts]
 cloud-robotics-sim = "cloud_robotics_sim.__main__:main"
@@ -223,3 +236,5 @@ exclude_lines = [
 
 [tool.uv.sources]
 robomat = { path = "../robomat", editable = true }
+# Aliyun mirror does not carry xuvdb; resolve it from pypi.org instead.
+xuvdb = { index = "pypi-org" }

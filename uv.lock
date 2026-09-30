@@ -695,6 +695,7 @@ all = [
     { name = "sphinx", version = "9.0.4", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "sphinx", version = "9.1.0", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "sphinx-rtd-theme" },
+    { name = "xuvdb" },
     { name = "zarr", version = "2.18.3", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version < '3.11'" },
     { name = "zarr", version = "3.1.6", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "zarr", version = "3.3.0", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version >= '3.12'" },
@@ -730,12 +731,15 @@ k8s = [
 robomat = [
     { name = "robomat" },
 ]
+xuvdb = [
+    { name = "xuvdb" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
     { name = "cadquery", marker = "extra == 'cad'", specifier = ">=2.4" },
-    { name = "cloud-robotics-sim", extras = ["dev", "docs", "k8s", "cad"], marker = "extra == 'all'" },
+    { name = "cloud-robotics-sim", extras = ["dev", "docs", "k8s", "cad", "xuvdb"], marker = "extra == 'all'" },
     { name = "fastapi", specifier = ">=0.104.0" },
     { name = "genesis-world", specifier = "==1.4.0" },
     { name = "gymnasium", specifier = ">=1.0.0" },
@@ -772,11 +776,12 @@ requires-dist = [
     { name = "tqdm", specifier = ">=4.66.0" },
     { name = "trimesh", specifier = ">=4.0.0" },
     { name = "uvicorn", specifier = ">=0.24.0" },
+    { name = "xuvdb", marker = "extra == 'xuvdb'", specifier = ">=1.0", index = "https://pypi.org/simple" },
     { name = "zarr", marker = "python_full_version == '3.11.*' and extra == 'dev'", specifier = ">=3.0.8" },
     { name = "zarr", marker = "python_full_version < '3.11' and extra == 'dev'", specifier = ">=2.16,<3.0" },
     { name = "zarr", marker = "python_full_version >= '3.12' and extra == 'dev'", specifier = ">=3.2.1" },
 ]
-provides-extras = ["dev", "robomat", "docs", "k8s", "cad", "all"]
+provides-extras = ["dev", "robomat", "docs", "k8s", "cad", "xuvdb", "all"]
 
 [[package]]
 name = "cloudpickle"
@@ -5303,6 +5308,20 @@ dependencies = [
 sdist = { url = "https://mirrors.aliyun.com/pypi/packages/62/b2/12fc318d3563481fe01482dd8e925d38e83b62d64291ed16ab0b6d836a91/xacro-2.1.1.tar.gz", hash = "sha256:3e7adf33cdd90d9fbe8ca0d07d9118acf770a2ad8bf575977019a5c8a60d4d1b" }
 wheels = [
     { url = "https://mirrors.aliyun.com/pypi/packages/93/6b/3fcfd8589d0e319f5fb56f105acbe791198fd36bb54469a91fbe49d828c4/xacro-2.1.1-py3-none-any.whl", hash = "sha256:c3b330ebd984a3bce6d6482e0047eae5c5333fedd49b30b9b6df863a086b35f7" },
+]
+
+[[package]]
+name = "xuvdb"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "2.2.6", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "quadrants" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/75/9f/ad3d6e0f2896d9a63fff24dce491db4400eefa2a9e1f22191ead1a912760/xuvdb-1.2.0.tar.gz", hash = "sha256:1768982126d8e843e365a94105e33ebcea9e9d5eb132aac648c400a6c92d9a8a", size = 75546, upload-time = "2026-09-30T01:44:23.852Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/44/fa/d7e62747c2af97f7df1fb2d5b2cf87290f63bd9b9c7c776d909b5df4d475/xuvdb-1.2.0-py3-none-any.whl", hash = "sha256:fe5d4f93d78a2aaefc0346454cda67a8a589a48be292b9ddf084be70c503d6d5", size = 58196, upload-time = "2026-09-30T01:44:21.993Z" },
 ]
 
 [[package]]
