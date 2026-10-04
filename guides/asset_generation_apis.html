@@ -1,0 +1,224 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D 资产生成 API 使用指南 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/guides/asset_generation_apis.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Testing Guide" href="testing.html" />
+    <link rel="prev" title="Configuration Guide" href="configuration.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">3D 资产生成 API 使用指南</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">支持的服务商</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cli">CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-api">Python API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">接入对象库</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">测试</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">3D 资产生成 API 使用指南</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guides/asset_generation_apis.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="d-api">
+<h1>3D 资产生成 API 使用指南<a class="headerlink" href="#d-api" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">cloud_robotics_sim.asset_gen</span></code> 以统一接口调用四家商业文/图生 3D 服务，把生成的
+GLB 资产下载到本地 staging 目录（含 provenance JSON），可直接接入对象库入库管线
+（<code class="docutils literal notranslate"><span class="pre">scripts/expand_object_library.py</span></code>）。</p>
+<section id="id1">
+<h2>支持的服务商<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Provider</p></th>
+<th class="head"><p>服务商</p></th>
+<th class="head"><p>凭据环境变量</p></th>
+<th class="head"><p>备注</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tripo</span></code></p></td>
+<td><p>Tripo AI (VAST)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TRIPO_API_KEY</span></code></p></td>
+<td><p>V2 OpenAPI；V2 将于 2026-11-01 下线，届时用 <code class="docutils literal notranslate"><span class="pre">TRIPO_BASE_URL</span></code> 切 V3</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">meshy</span></code></p></td>
+<td><p>Meshy</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MESHY_API_KEY</span></code></p></td>
+<td><p>text-to-3d v2 / image-to-3d v1，PBR 纹理</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">hunyuan3d</span></code></p></td>
+<td><p>腾讯混元 3D</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TENCENTCLOUD_SECRET_ID</span></code> / <code class="docutils literal notranslate"><span class="pre">TENCENTCLOUD_SECRET_KEY</span></code></p></td>
+<td><p>腾讯云 <code class="docutils literal notranslate"><span class="pre">ai3d</span></code> 服务（API 版本 2025-05-13），模块内实现 TC3-HMAC-SHA256 签名</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rodin</span></code></p></td>
+<td><p>Rodin (Hyper3D)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">RODIN_API_KEY</span></code></p></td>
+<td><p>v2 API，multipart 提交，几何质量最高</p></td>
+</tr>
+</tbody>
+</table>
+<p>可选环境变量：<code class="docutils literal notranslate"><span class="pre">HY3D_REGION</span></code>（腾讯，默认 <code class="docutils literal notranslate"><span class="pre">ap-guangzhou</span></code>）、<code class="docutils literal notranslate"><span class="pre">TRIPO_BASE_URL</span></code>。</p>
+<p>安装了 <code class="docutils literal notranslate"><span class="pre">python-dotenv</span></code> 时会自动加载项目根目录的 <code class="docutils literal notranslate"><span class="pre">.env</span></code> 文件。</p>
+</section>
+<section id="cli">
+<h2>CLI<a class="headerlink" href="#cli" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 查看服务商配置状态</span>
+python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim.asset_gen<span class="w"> </span>providers
+
+<span class="c1"># 文生 3D</span>
+python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim.asset_gen<span class="w"> </span>text<span class="w"> </span><span class="s2">"一把中式木椅"</span><span class="w"> </span>--provider<span class="w"> </span>tripo
+
+<span class="c1"># 图生 3D（无纹理 / 四边形拓扑）</span>
+python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim.asset_gen<span class="w"> </span>image<span class="w"> </span>chair.png<span class="w"> </span>--provider<span class="w"> </span>meshy<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--no-texture<span class="w"> </span>--topology<span class="w"> </span>quad
+
+<span class="c1"># 腾讯混元极速版</span>
+python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim.asset_gen<span class="w"> </span>text<span class="w"> </span><span class="s2">"一个陶瓷花瓶"</span><span class="w"> </span>--provider<span class="w"> </span>hunyuan3d<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--timeout<span class="w"> </span><span class="m">300</span>
+</pre></div>
+</div>
+<p>输出默认落在 <code class="docutils literal notranslate"><span class="pre">outputs/asset_staging/gen3d/</span></code>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tripo_</span><span class="o">&lt;</span><span class="n">task_id</span><span class="o">&gt;.</span><span class="n">glb</span>     <span class="c1"># 模型文件</span>
+<span class="n">tripo_</span><span class="o">&lt;</span><span class="n">task_id</span><span class="o">&gt;.</span><span class="n">json</span>    <span class="c1"># provenance（provider/prompt/source_url/created_at）</span>
+</pre></div>
+</div>
+</section>
+<section id="python-api">
+<h2>Python API<a class="headerlink" href="#python-api" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.asset_gen</span><span class="w"> </span><span class="kn">import</span> <span class="n">AssetGenClient</span><span class="p">,</span> <span class="n">GenerationRequest</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">AssetGenClient</span><span class="p">(</span><span class="s2">"tripo"</span><span class="p">)</span>  <span class="c1"># 不传 provider 则选第一个已配置的</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+    <span class="n">GenerationRequest</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="s2">"a wooden dining chair"</span><span class="p">,</span> <span class="n">topology</span><span class="o">=</span><span class="s2">"quad"</span><span class="p">),</span>
+    <span class="n">out_dir</span><span class="o">=</span><span class="s2">"outputs/asset_staging/gen3d"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">model_file</span><span class="p">)</span>
+
+<span class="c1"># 低层接口：先提交、稍后再收结果</span>
+<span class="n">handle</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">GenerationRequest</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="s2">"a red vase"</span><span class="p">))</span>
+<span class="n">url</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>服务商专有参数经 <code class="docutils literal notranslate"><span class="pre">GenerationRequest(extra={...})</span></code> 透传，例如腾讯极速版
+<code class="docutils literal notranslate"><span class="pre">extra={&quot;rapid&quot;:</span> <span class="pre">True}</span></code>、Rodin 档位 <code class="docutils literal notranslate"><span class="pre">extra={&quot;tier&quot;:</span> <span class="pre">&quot;Gen-2.5-High&quot;}</span></code>。</p>
+<p>自定义服务商：实现 <code class="docutils literal notranslate"><span class="pre">asset_gen.base.Provider</span></code> 协议
+（<code class="docutils literal notranslate"><span class="pre">name</span></code>/<code class="docutils literal notranslate"><span class="pre">env_vars</span></code>/<code class="docutils literal notranslate"><span class="pre">configured()</span></code>/<code class="docutils literal notranslate"><span class="pre">submit()</span></code>/<code class="docutils literal notranslate"><span class="pre">poll()</span></code>），然后
+<code class="docutils literal notranslate"><span class="pre">register_provider(MyProvider())</span></code> 即可被门面与 CLI 使用。</p>
+</section>
+<section id="id2">
+<h2>接入对象库<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<p>staging 中的 <code class="docutils literal notranslate"><span class="pre">.glb</span></code> 可经现有管线入库：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>scripts/expand_object_library.py<span class="w"> </span>--staging<span class="w"> </span>outputs/asset_staging/gen3d<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--class-name<span class="w"> </span>025_chair<span class="w"> </span>--out<span class="w"> </span>outputs/asset_expansion
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>测试<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tests/asset_gen/</span></code> 中的 35 个测试全部零网络（monkeypatch HTTP 层），并用腾讯云
+官方签名示例向量校验 TC3-HMAC-SHA256 的正确性。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="configuration.html" class="btn btn-neutral float-left" title="Configuration Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="testing.html" class="btn btn-neutral float-right" title="Testing Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

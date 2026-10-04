@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AnyTask 最小能力集改善方案 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/IMPROVEMENT_PLAN.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">AnyTask 最小能力集改善方案</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/IMPROVEMENT_PLAN.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="anytask">
+<h1>AnyTask 最小能力集改善方案<a class="headerlink" href="#anytask" title="Link to this heading"></a></h1>
+<blockquote>
+<div><p>制定日期: 2026-09-14
+上游依据: <code class="docutils literal notranslate"><span class="pre">docs/ROBOTWIN_TO_ROBODOJO_GAP_ANALYSIS.md</span></code>(gap 表自估追平 RoboDojo 全集需 55–95 人周)
+总体思路: <strong>不追平 RoboDojo 全集,只收敛到 AnyTask 最小能力集</strong>;四个阶段串行推进,接触保真度单独走”基准驱动 + 止损判据”的旁路线,GPU 环境作为第一优先级前置解决。
+总量: 约 8–12 人周。
+状态(2026-09-14): Phase 1 第 1 条已完成——<code class="docutils literal notranslate"><span class="pre">GenesisVectorizedEnv</span></code> 已重写为真正的批量入口(新增 <code class="docutils literal notranslate"><span class="pre">VecTask</span></code> 批量任务接口、掩码式 <code class="docutils literal notranslate"><span class="pre">reset_idx</span></code>、物理参数透出到 <code class="docutils literal notranslate"><span class="pre">VecEnvConfig</span></code>),占位 <code class="docutils literal notranslate"><span class="pre">np.zeros</span></code> 实现已删除;GPU 上的 4096-envs 实测与 PPO 收敛验收仍待 GPU 环境到位。</p>
+</div></blockquote>
+<hr class="docutils" />
+<section id="gap">
+<h2>与 gap 文档的对齐关系<a class="headerlink" href="#gap" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>本方案阶段</p></th>
+<th class="head"><p>对应 gap 表条目</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Phase 0/1(数据流水线)</p></td>
+<td><p>#1 配置驱动任务系统(部分)、#9 前置解锁(GPU)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Phase 2(抓取管线)</p></td>
+<td><p>#4 技能库 + demo 合成(收敛为 grasp 单技能)</p></td>
+</tr>
+<tr class="row-even"><td><p>Phase 3(规划与渲染)</p></td>
+<td><p>#4 cuRobo 端到端、#7 策略接口(蒸馏 student 雏形)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Phase 4(接触保真度)</p></td>
+<td><p>#9 M6 性能/保真调优(以基准套件替代全量回归)</p></td>
+</tr>
+<tr class="row-even"><td><p>非目标</p></td>
+<td><p>显式排除 #2(42 任务)、#3(资产标注)、#6(VR 遥操作)、#10(RealEval)</p></td>
+</tr>
+</tbody>
+</table>
+<p>依赖关系: <code class="docutils literal notranslate"><span class="pre">Phase</span> <span class="pre">1</span> <span class="pre">→</span> <span class="pre">Phase</span> <span class="pre">2</span> <span class="pre">→</span> <span class="pre">(Phase</span> <span class="pre">3</span> <span class="pre">‖</span> <span class="pre">Phase</span> <span class="pre">4)</span></code>;Phase 0 的 GPU 前置贯穿始终。</p>
+</section>
+<hr class="docutils" />
+<section id="phase-0-1">
+<h2>Phase 0 — 前置与度量(约 1 周,与其他阶段部分并行)<a class="headerlink" href="#phase-0-1" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>事项</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>落实 GPU/CUDA 环境</p></td>
+<td><p>单卡 A100/H100 即可。它是三个 blocked 项(cuRobo 端到端、批量渲染、任务回归)的共同前置,不解决则 Phase 2/3 全部空转</p></td>
+</tr>
+<tr class="row-odd"><td><p>建 contact-rich 微基准套件</p></td>
+<td><p>立方体抓取静置、叠方块、抽屉开合三个任务,固定 seed、输出成功率统计。这是 Phase 4 调优的反馈环和止损判据的度量工具;工作流与 <code class="docutils literal notranslate"><span class="pre">examples/robotwin/</span></code>、<code class="docutils literal notranslate"><span class="pre">outputs/*_probe.txt</span></code> 这类探针同构,顺手</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="phase-1-p0-23">
+<h2>Phase 1 — 数据流水线(P0,约 2–3 周)<a class="headerlink" href="#phase-1-p0-23" title="Link to this heading"></a></h2>
+<p>目标: 把 <code class="docutils literal notranslate"><span class="pre">GenesisVectorizedEnv</span></code>(<code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/core/vectorized.py</span></code>,现为返回 <code class="docutils literal notranslate"><span class="pre">np.zeros((n_envs,</span> <span class="pre">23))</span></code> 的占位壳)变成真正的批量训练入口,这是其余四项中三项的地基。</p>
+<ol class="arabic simple">
+<li><p><strong>重写 <code class="docutils literal notranslate"><span class="pre">GenesisVectorizedEnv</span></code></strong>: 删掉占位实现,以 Genesis 官方 <code class="docutils literal notranslate"><span class="pre">examples/manipulation/grasp_env.py</span></code> 为模板——<code class="docutils literal notranslate"><span class="pre">scene.build(n_envs=...)</span></code>、<code class="docutils literal notranslate"><span class="pre">_reset_idx(envs_idx)</span></code> 掩码式 reset、obs/reward 全部 <code class="docutils literal notranslate"><span class="pre">(n_envs,</span> <span class="pre">...)</span></code> torch tensor 常驻 GPU。</p></li>
+<li><p><strong>接 rsl-rl</strong>: 照 Genesis 官方 <code class="docutils literal notranslate"><span class="pre">examples/locomotion/go2_train.py</span></code> 的 <code class="docutils literal notranslate"><span class="pre">OnPolicyRunner</span></code> + PPO 范式,不自建 gymnasium 封装。</p></li>
+<li><p><strong>数据落盘</strong>: 用 LeRobot 格式 writer 替换 <code class="docutils literal notranslate"><span class="pre">CRS_DATASET_PIPELINE</span></code> 现在的缓存清理占位(<code class="docutils literal notranslate"><span class="pre">cache_cleanup</span></code> 目前只 stage 目录、无数据集写出),打通”仿真→数据集→训练消费”。</p></li>
+<li><p><strong>接触参数暴露</strong>: 把 <code class="docutils literal notranslate"><span class="pre">RigidOptions</span></code> 的关键面(<code class="docutils literal notranslate"><span class="pre">noslip_iterations=5</span></code>、<code class="docutils literal notranslate"><span class="pre">integrator=implicitfast</span></code>、dt/substeps)透出为 cloud-sim 任务配置项。</p></li>
+</ol>
+<p><strong>验收</strong>: 4096 envs 下 step time 有实测数字;PPO 在抓取任务上收敛;与 IsaacLab 同任务吞吐比 ≥ 1/5(达不到就先做 profiler 再谈下一步)。</p>
+</section>
+<hr class="docutils" />
+<section id="phase-2-34-phase-1">
+<h2>Phase 2 — 抓取管线(约 3–4 周,依赖 Phase 1)<a class="headerlink" href="#phase-2-34-phase-1" title="Link to this heading"></a></h2>
+<p>目标: 把”单点天顶吸盘重放”升级为”候选生成 → 过滤 → 批量校验”的完整管线。</p>
+<ol class="arabic simple">
+<li><p><strong>候选生成</strong>: trimesh 上 antipodal 采样(夹爪)+ 表面法线聚类(吸盘),CPU 多进程,不进仿真热路径。</p></li>
+<li><p><strong>静力学过滤</strong>: 批量 IK 可达性(<code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/curobo_planner.py</span></code> 中 <code class="docutils literal notranslate"><span class="pre">inverse_kinematics</span></code> 现成,支持 <code class="docutils literal notranslate"><span class="pre">envs_idx</span></code> 批量)+ RRT 碰撞(<code class="docutils literal notranslate"><span class="pre">plugins/envs/sky/core/genesis/utils/path_planning.py</span></code> 的 GPU RRTConnect 现成)。</p></li>
+<li><p><strong>动力学校验</strong>: 候选塞进批量 scene 逐个跑 settle→lift→hold,success mask 汇总——骨架直接复用 <code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/seed_search.py</span></code> 的 <code class="docutils literal notranslate"><span class="pre">batched_seed_search</span></code>。</p></li>
+<li><p><strong>suction 模型升级</strong>: 给 <code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/suction_grasp.py</span></code> 加接触力阈值判据(<code class="docutils literal notranslate"><span class="pre">get_contacts</span></code> 现成),替代纯 <code class="docutils literal notranslate"><span class="pre">set_qpos</span></code> 钉住,否则 sim2real 会被骗。</p></li>
+</ol>
+<p><strong>验收</strong>: 单物体千级候选分钟级筛完;静力学过滤 top-k 与动力学校验结果的一致率有统计数字。</p>
+</section>
+<hr class="docutils" />
+<section id="phase-3-24-gpu">
+<h2>Phase 3 — 规划与渲染(约 2–4 周,依赖 GPU)<a class="headerlink" href="#phase-3-24-gpu" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>cuRobo 端到端打通</strong>: <code class="docutils literal notranslate"><span class="pre">curobo_planner.py</span></code> 已有分层(cuRobo 优先、OMPL 兜底),补的是端到端验证 + 产出轨迹在 Genesis 前向仿真中的执行校验闭环。</p></li>
+<li><p><strong>collision mask API</strong>: 在 fork 的 broadphase 加逐实体 bitmask(参考 MuJoCo 的 contype/conaffinity),这是五项里唯一的内核级新增;改动尽量做成可推上游的形态,控制 fork 维护面。</p></li>
+<li><p><strong>DP3 观测</strong>: <code class="docutils literal notranslate"><span class="pre">render_all_cameras</span></code>(返回 <code class="docutils literal notranslate"><span class="pre">(n_envs,H,W,3)</span></code>,见 <code class="docutils literal notranslate"><span class="pre">plugins/envs/sky/examples/rigid/single_franka_batch_render.py</span></code> 用法)+ torch batched unproject 出点云;训练策略走 <strong>privileged distillation</strong>——teacher 纯 state 零渲染,student 低频(5–10Hz)渲染蒸馏,把在线渲染需求降一个量级。</p></li>
+</ol>
+<p><strong>验收</strong>: cuRobo→Genesis 轨迹执行成功率;student 与 teacher 成功率差 ≤ 5 个百分点。</p>
+</section>
+<hr class="docutils" />
+<section id="phase-4-phase-2-3">
+<h2>Phase 4 — 接触保真度(持续,与 Phase 2/3 并行)<a class="headerlink" href="#phase-4-phase-2-3" title="Link to this heading"></a></h2>
+<p>用 Phase 0 的基准套件驱动参数扫描: <code class="docutils literal notranslate"><span class="pre">implicitfast</span></code> + <code class="docutils literal notranslate"><span class="pre">noslip=5</span></code> 起步,扫 dt/substeps、摩擦锥、coacd 凸分解、质量比约束;任务侧用 action 低通兜底。</p>
+<p><strong>止损判据(预先定死,不事后挪)</strong>: 调参后基准成功率仍 &lt; IsaacLab 同任务的 70% → 停止单引擎执念,转双引擎架构: IsaacLab 跑接触重的 RL,Genesis 保留可微物理(fork 的 PBD/grad 主线)与渲染卖点。</p>
+</section>
+<hr class="docutils" />
+<section id="id1">
+<h2>非目标(明确不做)<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>不自建 gymnasium/skrl 封装层——官方范式就是手写 env + rsl-rl;</p></li>
+<li><p>不把 Genesis 补成 PhysX——那是上游数年的路;</p></li>
+<li><p>不追 50 任务全量回归——先在 3 个基准任务上做到可信。</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>主要风险<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>风险</p></th>
+<th class="head"><p>缓解</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GPU 环境持续缺位</p></td>
+<td><p>Phase 0 单列;云上单卡成本可控,属组织决策不属技术问题</p></td>
+</tr>
+<tr class="row-odd"><td><p>接触保真度天花板</p></td>
+<td><p>止损判据已预定义(70% 线)</p></td>
+</tr>
+<tr class="row-even"><td><p>fork 与上游演进冲突</p></td>
+<td><p>内核改动只留 collision mask 一项,做上游可推形态</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id3">
+<h2>关键代码锚点(已核实,2026-09-14)<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>引用</p></th>
+<th class="head"><p>实际位置</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>占位 vectorized env</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/core/vectorized.py:88</span></code>(<code class="docutils literal notranslate"><span class="pre">np.zeros((n_envs,</span> <span class="pre">23))</span></code> 于 :139/:153)</p></td>
+</tr>
+<tr class="row-odd"><td><p>grasp_env / go2_train 模板</p></td>
+<td><p>Genesis 上游官方 examples(本仓库未 vendored)</p></td>
+</tr>
+<tr class="row-even"><td><p>GPU RRTConnect</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">plugins/envs/sky/core/genesis/utils/path_planning.py:650</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>cuRobo 分层规划器</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/curobo_planner.py</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>批量种子搜索</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/seed_search.py:69</span></code> <code class="docutils literal notranslate"><span class="pre">batched_seed_search</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>吸盘抓取</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/robotwin/suction_grasp.py</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>批量渲染</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">plugins/envs/sky/core/genesis/engine/scene.py</span></code> <code class="docutils literal notranslate"><span class="pre">render_all_cameras</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
