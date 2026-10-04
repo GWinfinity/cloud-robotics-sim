@@ -40,6 +40,24 @@ from cloud_robotics_sim.utils.robomat_compat import resolve_genesis_rigid_materi
 
 logger = logging.getLogger(__name__)
 
+
+def _to_numpy_f64(value: Any) -> np.ndarray:
+    """Convert a Genesis pose (numpy or torch tensor, any device) to float64.
+
+    GPU-backed scenes return CUDA tensors whose ``__array__`` refuses numpy
+    conversion; move to host first (mirrors ``robotwin.suction_grasp``).
+    """
+    try:
+        import torch
+
+        if isinstance(value, torch.Tensor):
+            result: np.ndarray = value.detach().cpu().numpy().astype(np.float64)
+            return result
+    except ImportError:  # pragma: no cover - torch always present in practice
+        pass
+    return np.asarray(value, dtype=np.float64)
+
+
 try:
     import genesis as gs
     import torch
@@ -90,15 +108,15 @@ class GenesisEntityBackend(EntityBackend):
     def get_pos(self) -> np.ndarray:
         entity = self._resolve_entity()
         if hasattr(entity, "get_pos"):
-            return np.asarray(entity.get_pos(), dtype=np.float64)
+            return _to_numpy_f64(entity.get_pos())
         # Deformable entities may not expose get_pos; fall back to the mean
         # particle position or the morph position.
         positions = getattr(entity, "get_positions", lambda: None)()
         if positions is not None:
-            return np.asarray(np.mean(positions, axis=0), dtype=np.float64)
+            return _to_numpy_f64(np.mean(positions, axis=0))
         morph_pos = getattr(self._morph, "pos", None)
         if morph_pos is not None:
-            return np.asarray(morph_pos, dtype=np.float64)
+            return _to_numpy_f64(morph_pos)
         return np.zeros(3, dtype=np.float64)
 
     def set_pos(self, pos: np.ndarray) -> None:
@@ -111,10 +129,10 @@ class GenesisEntityBackend(EntityBackend):
     def get_quat(self) -> np.ndarray:
         entity = self._resolve_entity()
         if hasattr(entity, "get_quat"):
-            return np.asarray(entity.get_quat(), dtype=np.float64)
+            return _to_numpy_f64(entity.get_quat())
         morph_quat = getattr(self._morph, "quat", None)
         if morph_quat is not None:
-            return np.asarray(morph_quat, dtype=np.float64)
+            return _to_numpy_f64(morph_quat)
         return np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float64)
 
     def set_quat(self, quat: np.ndarray) -> None:

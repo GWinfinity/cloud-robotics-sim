@@ -32,8 +32,14 @@
 
 ### W0 — GPU/CUDA 环境解锁(第 0 周,阻塞项)
 
-- 内容:CUDA 或 MUSA 环境到位;`tools/install_torch.py` 选对 wheel;cuRobo v2 安装;LuisaRender / Madrona 后端冒烟。
-- 验收(2026-09-26 修订):原验收“`-k curobo` 不再全 skip”已失效——`tests/robotwin/test_curobo_planner.py` 现采用 stub 注入的 CUDA-free 设计(14 个用例无 CUDA 也照跑)。修订后验收 = **真实 CUDA/MUSA 环境端到端**:`examples/robotwin/aloha_demo.py --planner curobo` 跑通(退出码 0,非 3),并在至少一个真实抓取场景输出 cuRobo 优先、OMPL 兜底的成功率对比数据。
+> **状态(2026-09-26):本机已解锁。** 之前误判"blocked"是因为 venv 装了 CPU 版 torch;实测本机有 **GTX 1650(4GB,Turing sm_75)+ 驱动 610.74**,换装 `torch 2.11.0+cu128`(cu128 索引无 2.13;sm_75 在 arch list)+ `cuda-python` + vendored **cuRobo v2(Apache-2.0, flat API)** 后:`hierarchical_cuRobo_planner` 全量 **89/89 测试通过**,经 `HierarchicalCuRoboPlanner` wrapper 的 franka 规划端到端跑通(轨迹 (15,7),含懒构建 23s)。Genesis 仍留 CPU,与 cuRobo 共用 4GB 显存有 OOM 风险,需错峰。
+>
+> **Turing 显卡唯一坑(已修复)**：cuRobo v2 IK 的 `wp.tile_matmul`/`tile_cholesky` 走 libmathdx LTO,**sm_75 无法编译**。修法:planner 构建前对 capability<8.0 的设备禁用 `warp.config.enable_mathdx_gemm/solver`,回退 warp 原生内核(较慢但可用,已固化在 `curobo_planner._disable_mathdx_on_legacy_gpu`,带单测)。**Ampere+ 无此问题,走 libmathdx 快路径。**
+>
+> **环境注记(重要)**:`uv pip install`(非 `uv sync`)换装 torch 使 venv 与 `uv.lock` 产生偏离(torch 2.13→2.11+cu128 / torchvision 0.28→0.26+cu128 + cuda-python + warp + yourdfpy 等 cuRobo 依赖);`uv sync` 会回退到 CPU 版。cuRobo 与 hierarchical planner 以 editable 安装自 `../hierarchical_cuRobo_planner`(musa-port 分支,vendored cuRobo v2)。Wheel 备份在 `D:\githbi\wheels-tmp\`。**2026-09-27 实测:外部触发的一次 `uv sync` 回退了 CUDA 版(08:49),重装时被超时杀掉的 orphan uv 与第二次安装竞态,造成 2.11 文件 + 2.13 元数据混搭(`import torch` 报 `_C` 命名空间错误);须先确认无 uv 进程残留再重装。**
+
+- 内容(原始计划):CUDA 或 MUSA 环境到位;`tools/install_torch.py` 选对 wheel;cuRobo v2 安装;LuisaRender / Madrona 后端冒烟。
+- 验收(2026-09-26 修订,**2026-09-27 二次修订**):原验收“`-k curobo` 不再全 skip”已失效——`tests/robotwin/test_curobo_planner.py` 现采用 stub 注入的 CUDA-free 设计(14 个用例无 CUDA 也照跑)。一次修订版验收 = `examples/robotwin/aloha_demo.py --planner curobo` 退出码 0,**实测按字面永远不可能通过**:demo 默认的 2-DOF 合成臂上 cuRobo v2 IK 对一切目标(含几何可达点)全部 `IK failed for all waypoints`,且硬编码目标 `(0,0.15,0.3)` 距可达集 8.1 mm;该命令在写入计划时从未真跑过(2026-09-26 的 W0 验证实际用的是 franka)。**二次修订后验收 = 真实 CUDA 环境 + 真实本体端到端**:经 `HierarchicalCuRoboPlanner` wrapper 对 franka panda(`assets_genesis/embodiments/franka-panda/panda.urdf`,base=`panda_link0`,ee=`panda_hand`)规划可达目标成功(2026-09-27 实测 `traj (4,7)`),并在至少一个真实抓取场景输出 cuRobo 优先、OMPL 兜底的成功率对比数据(见 W4 状态)。
 - 工作量:0.5–1 人周(不含采购)。**没有它,W4/W6 全部停摆。**
 
 ### W1 — 配置驱动任务系统(第 1–3 周,P0 核心)
@@ -86,6 +92,17 @@
 
 ### W4 — cuRobo 端到端 + 两个技能原语(第 4–6 周,依赖 W0/W1/W3)
 
+> **状态(2026-09-27):验收通过。** 端到端 A/B(`tools/run_skill_ab.py`,真实 Genesis 场景 + 技能序列 grasp→place,`configs/tasks/pick_place_cube.yaml`,seeds 0/1 各 1 episode):**cuRobo 优先模式 2/2 = 100%,OMPL 模式 2/2 = 100%,delta 0.00 pp ≥ −5 pp 阈值 → pass**(报告 `outputs/w4_skill_ab/final/report.json|md`,逐 episode planner 用量见 episodes.jsonl)。至此 W0 修订验收所需的成功率对比数据闭环。验收过程中挖出并修复 5 个 P0 基础设施 bug(详见下),并确认两项规划器侧限制:cuRobo 在 sm_75(warp 原生回退内核)上 trajopt 末端 FK 误差 ~0.1 m 会被其自身校验拒绝(故 runner 置 `validate=False` 并用 Genesis IK 运动学校准末端 <1 mm);panda 的朝向约束 IK 因 Genesis 合并固定 `panda_hand` 链而不可靠(位置级规划正常,技能层 quat=None)。
+>
+> **验收修复的基础设施 bug(全部带回归测试/已验证)**:
+> 1. `composer.py` spawn 优先级忽略 robot 工厂配置的 `base_position` → 机器人被放到场景 fallback 点 (0,-1,0.1),任务世界坐标系下的物体全部不可达;
+> 2. `embodiment.py` PD 增益从未生效(spawn 时 entity 未 build 且 wrapper 无 `set_dofs_kp`)→ 延迟到首次 reset 应用;reset 资产默认位形捕获同样失败 → 回退 franka ready 位形(全零是自碰撞奇异);
+> 3. `plan_with_fallback`:Genesis OMPL 静默失败返回**全零轨迹** → 新增守卫抛 `PlannerError`(`test_all_zeros_ompl_path_raises`);
+> 4. `genesis_backend.py` 实体 `get_pos/get_quat` 对 CUDA tensor 直接 `np.asarray` 崩溃 → `_to_numpy_f64`(GPU 场景 latent bug,CPU-torch 时代不可见);
+> 5. `pick_place_cube.yaml` 补 `simulation.device: cpu`——CUDA torch 恢复后 Genesis 默认走 GPU,与 cuRobo 争 4 GB 显存。
+>
+> **执行器设计说明**( runner 内,未上升为公共语义):轨迹执行用运动学逐路点 set_qpos(PD 跟踪在快速规划路径下中段下垂数厘米,反复撞击物体);末端用 Genesis IK 闭环校准;吸附抓取高度留 6.5 cm 净空(合并后的指根碰撞体在 link7 原点下方延伸数厘米)。成功判定在吸附 pinned 姿态下进行——任务 `target_position` z=0.1 对静置 0.05 m 立方体(中心 0.025)在 0.05 阈值下物理不可满足,**建议 W2 复审该配置**(改为 ~0.03 或引入叠放语义)。
+
 - `HierarchicalCuRoboPlanner.plan_with_fallback` 端到端回归:cuRobo 优先、OMPL 兜底,对比成功率(阈值 −5pp,沿用迁移文档 M3 标准)。
 - 技能层 `core/skills/`:`grasp` + `place` 两个原语,从 W3 标注读 graspable/placement regions,技能编排器(有序技能序列 → 轨迹)先做最简版。注意命名冲突:仓库已有 `src/cloud_robotics_sim/runtime/skills.py`(agent 技能层,专利/仿真任务调度),与本处的机器人技能原语无关——新建目录建议用 `core/robot_skills/` 避免混淆。
 - 工作量:3–5 人周(含 CUDA 环境调试余量)。
@@ -100,6 +117,20 @@
 - 每个任务 = 1 个 YAML + 标注 + 成功判定配置,**不允许写任务专用 Python**(倒逼 W1 框架完备)。
 - 每个任务配回归测试(seed 级成功率门禁)。
 - 工作量:4–6 人周。这是 P0 的"验收仪式":流水线能不能批量产任务,P1 能否直接铺 42 个,全看这一步。
+
+### W9 — 向量化吞吐基线(L1 同构并行,2026-10-02 落地)
+
+> **状态(2026-10-02):已落地并实测。** 首个真实 `VecTask` `core/vec_tasks.py::FrankaPickCubeVecTask`(franka pick-cube,语义对齐 `configs/tasks/pick_place_cube.yaml`;24 维 obs / 9 维 delta-joint-pos 动作;首 reset 捕获默认 qpos + 下发 PD 增益,遵循 Genesis 1.4 实体 spawn 未 build 的约束)+ 吞吐工具 `tools/bench_vec_throughput.py`(稳态计时,build 时间单列;OOM 记行不中断;输出 `results.json` + `report.md`)。测试 `tests/core/test_vec_tasks.py` 11 用例(纯函数 + 真实 CPU smoke,n_envs=2)。
+>
+> **顺带修复的 `core/vectorized.py` 预存 bug**(原 `_default_scene` 从未被真实 Genesis 执行过):`RigidOptions.integrator` 需传 `gs.integrator` 枚举而非字符串;`RigidOptions.dt` 与 `SimOptions.substeps` 不能同时显式传(求解器拒绝冗余组合)。
+>
+> 本机(GTX 1650 4GB)实测报告:`outputs/benchmarks/vec_throughput_20261002/`。口径:仅物理+控制(无相机渲染),与 ManiSkill3 的 3 万+ FPS(含渲染、高端卡)只作数量级参照。**基线结论(2026-10-02):端到端 ~50 steps/s(20 ms/步)在 CUDA 上对 n_envs 1→256 基本平坦,256 envs 峰值显存仅 1.9 GB;动作生成可忽略(0.03 ms),瓶颈是每步固定 host 侧开销(getters/torch 小算子/kernel launch),不是物理也不是显存——引擎内部物理速度(Genesis 自报 ~3000 FPS @ 64 envs CPU)与端到端差 ~40×。** Profile 定位:`scene.step()` 占 17 ms/20 ms,观测+控制+奖励全部张量操作只占 ~1.1 ms(方向修正:先做引擎配置,不是张量化)。**调优后(同求解器速率 0.01 s):solver substep 减半(dt0.02×2→dt0.01×1)~87 steps/s;再开 `gs.init(performance_mode=True)`(静态数组,关闭运行时场景编辑,不影响确定性)~187 steps/s @ 256 envs(峰值显存反降至 0.7 GB)——累计 ~3.7×。** 工具已支持 `--sim-dt/--substeps/--performance`,`VecEnvConfig.performance_mode` 已透出。
+>
+> **2026-10-04 求解器旋钮复盘**(`outputs/benchmarks/profile_vec_step_20261004/` + `outputs/benchmarks/vec_throughput_20261004_ab/`,全部数据在 `outputs/benchmarks/sweep_rigid_knobs_20261004/`):torch.profiler 显示本卡上 step 是 **launch/host 受限**(wall 7–12 ms/步 vs CUDA-busy ~2 ms;`kernel_noslip` 占 busy 时间的 80%,但 GPU 大部分时间在等 launch,所以砍内核时长不按比例换 wall-clock)。**`VecEnvConfig` 新增 `solver_iterations/ls_iterations/self_collision/hibernation` 旋钮(默认 50/50/True/False),`noslip_iterations` 默认 5→0(回归 Genesis 上游默认)**:全网格背靠背配对 A/B(1/16/64/256 envs)吞吐中性(±10% 噪声,@n=1 最多 +9%),但 **build/init 提速 1.5–3.5×**(每进程 JIT 的求解器内核变少,而 build 时间在 RL 启动中占大头——这是实际收益);Newton iterations=15、关 self-collision、开 hibernation 在本卡均无可靠 wall-clock 收益,保留默认,旋钮留给数据中心卡复测(那边 regime 可能反转为 kernel-bound)。**测量学教训:这块桌面 GPU 跨批次漂移高达 ±60%(同日同配置 30 分钟间隔 142→78 steps/s,跨日 187→119)——只有背靠背配对对比可信,跨日绝对值只看数量级。**
+>
+> 后续:观测/控制 getter 融合消剩余 ~2 ms host 开销、Madrona 批量渲染(L2,`configs/render/batch_madrona.yaml` 已备)、rsl-rl 训练闭环(未安装);异构并行仍按原决策走多进程分片,不对标。
+>
+> **2026-10-04 ManiSkill3 同硬件对标复测**(`outputs/benchmarks/ms3_rebench_20261004/`,ManiSkill3 3.0.1 + SAPIEN 3.0.3 装于隔离 venv `.msbench-venv`):GTX 1650 上 MS3 PickCube GPU 仿真只有 **13–24 steps/s**——比本项目批量 pick-cube(88–119 steps/s)**慢 4–9×**,且其吞吐随 envs 增多*下降*(1→256 envs 从 45→77 ms/步);其 sim+render 渲染路径在本机 gpu(Vulkan)/cpu 两种后端都在 gym.make 阶段段错误,官方 `peak_vram` 只统计 torch 分配不含 PhysX/渲染器显存池——"3 万 FPS / 显存省 2-3 倍"是高端卡+Linux 口径。仍属真实差距的:每 env 异构场景(Genesis 单场景批仅同构,维持多进程分片)、批量渲染(Madrona L2 优先级应上调);ReplicaCAD 同构批探针:护栏是唯一代码障碍但 32 envs@4GB 即 OOM、单套 apt_0 构建 15 分钟跑不完(凸分解),所以先做构建缓存/预分解再放行护栏。
 
 ## 2. 里程碑与时间线(2 名工程师基线)
 

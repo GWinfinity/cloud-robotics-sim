@@ -343,4 +343,14 @@ def plan_with_fallback(
     trajectory = robot.plan_path(
         np.asarray(q_goal).reshape(-1), num_waypoints=num_waypoints
     )
+    trajectory = np.asarray(trajectory, dtype=np.float64)
+    # Genesis' OMPL wrapper returns an all-zeros waypoint array on planning
+    # failure (observed 2026-09-27 on the W4 skill A/B: RRTConnect failing
+    # silently sent the arm to the singular zero pose). Treat that as a
+    # planning failure so callers fall back / report plan_fail instead of
+    # executing a garbage trajectory.
+    if trajectory.size == 0 or not np.all(np.isfinite(trajectory)):
+        raise PlannerError("OMPL returned an empty or non-finite path")
+    if trajectory.ndim == 2 and np.allclose(trajectory, 0.0):
+        raise PlannerError("OMPL returned an all-zeros path (silent failure)")
     return trajectory, "ompl"

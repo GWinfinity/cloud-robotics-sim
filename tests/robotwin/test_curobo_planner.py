@@ -40,7 +40,9 @@ def _make_mocked_robot(n_dofs: int = 2) -> GenesisArticulationBackend:
     entity.get_qpos.return_value = np.zeros(n_dofs)
     entity.n_dofs = n_dofs
     entity.inverse_kinematics.return_value = np.full(n_dofs, 0.5)
-    entity.plan_path.return_value = np.zeros((10, n_dofs))
+    # Non-zero: plan_with_fallback rejects all-zeros OMPL paths (real Genesis
+    # silent-failure signature).
+    entity.plan_path.return_value = np.full((10, n_dofs), 0.5)
     robot.bind(entity)
     return robot
 
@@ -201,6 +203,14 @@ class TestPlanWithFallback:
         robot = _make_mocked_robot()
         with pytest.raises(ValueError, match="ee_link"):
             plan_with_fallback(robot, np.zeros(3), planner=None)
+
+    def test_all_zeros_ompl_path_raises(self) -> None:
+        """Genesis OMPL returns an all-zeros path on silent RRT failure."""
+        robot = _make_mocked_robot()
+        robot._entity.plan_path.return_value = np.zeros((10, 2))
+
+        with pytest.raises(PlannerError, match="all-zeros"):
+            plan_with_fallback(robot, np.zeros(3), ee_link="link2")
 
 
 class TestLegacyGpuMathdx:

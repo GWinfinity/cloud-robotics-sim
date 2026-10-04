@@ -94,5 +94,8 @@ evaluation:
   episodes_per_seed: 2
 
 # Optional ComposerConfig overrides (dt, substeps, headless, num_envs, ...).
+# device: cpu keeps the scene on CPU — cuRobo owns the GPU (4 GB GTX 1650),
+# and CPU-torch CI must not silently diverge from local CUDA-torch runs.
 simulation:
   headless: true
+  device: cpu

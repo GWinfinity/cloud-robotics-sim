@@ -53,7 +53,9 @@ class _MockRobot:
         self.calls.append("plan_path")
         if "plan_path" in self.fail_methods:
             raise RuntimeError("mock OMPL failure")
-        return np.zeros((num_waypoints, 7))
+        # plan_with_fallback rejects all-zeros paths (real OMPL failure
+        # signature), so the mock returns a valid non-zero trajectory.
+        return np.linspace(0.1, 0.2, num=num_waypoints * 7).reshape(num_waypoints, 7)
 
 
 class _RecordingHooks:

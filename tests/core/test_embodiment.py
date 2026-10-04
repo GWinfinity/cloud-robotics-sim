@@ -11,7 +11,10 @@ from cloud_robotics_sim import (
     SensorConfig,
     UniversalRobotUR5,
 )
-from cloud_robotics_sim.core.embodiment import MobileManipulator
+from cloud_robotics_sim.core.embodiment import (
+    _FRANKA_READY_ARM_QPOS,
+    MobileManipulator,
+)
 from tests.conftest import MockArticulation, make_mock_scene_backend
 
 
@@ -217,13 +220,16 @@ class TestFrankaPanda:
         assert robot.asset_source == f"mjcf:{model.path}"
 
     def test_reset_with_dofs(self):
-        """Test reset sets qpos when DOFs exist."""
+        """Reset falls back to the ready pose when no default qpos was captured."""
         robot = FrankaPanda()
         robot.entity = MockArticulation(n_dofs=9, n_qs=9)
 
         robot.reset()
         assert len(robot.entity.set_qpos_calls) == 1
-        np.testing.assert_array_equal(robot.entity.set_qpos_calls[0], np.zeros(9))
+        home = robot.entity.set_qpos_calls[0]
+        # 7 arm joints take the 'ready' configuration; remaining DOFs are 0.
+        np.testing.assert_array_equal(home[:7], _FRANKA_READY_ARM_QPOS)
+        np.testing.assert_array_equal(home[7:], np.zeros(2))
 
     def test_reset_no_dofs(self):
         """Test reset skips qpos when no DOFs."""

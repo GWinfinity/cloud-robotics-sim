@@ -27,6 +27,14 @@ _is_genesis_scene = is_genesis_scene
 _FRANKA_JOINTS = 7
 _FRANKA_GRIPPER = 1
 _FRANKA_OBS_DIM = _FRANKA_JOINTS * 3 + 2  # joints + velocities + target + gripper
+
+#: Franka 'ready' arm configuration (rad) used as the reset fallback when no
+#: asset-default qpos was captured (Genesis entities are unbuilt at spawn
+#: time). The all-zeros pose is a self-colliding singularity for the panda
+#: URDF and settles non-deterministically.
+_FRANKA_READY_ARM_QPOS = np.array(
+    [0.0, -np.pi / 4.0, 0.0, -3.0 * np.pi / 4.0, 0.0, np.pi / 2.0, np.pi / 4.0]
+)
 _FRANKA_ACTION_DIM = _FRANKA_JOINTS + _FRANKA_GRIPPER
 
 # UR5 dimensions
@@ -156,10 +164,20 @@ class RobotEmbodiment(ABC):
             return
         try:
             n_dofs = int(entity.n_dofs)
-            if hasattr(entity, "set_dofs_kp"):
-                entity.set_dofs_kp(np.full(n_dofs, self.config.joint_stiffness))
-            if hasattr(entity, "set_dofs_kv"):
-                entity.set_dofs_kv(np.full(n_dofs, self.config.joint_damping))
+            set_kp = getattr(entity, "set_dofs_kp", None)
+            set_kv = getattr(entity, "set_dofs_kv", None)
+            if set_kp is not None and set_kv is not None:
+                set_kp(np.full(n_dofs, self.config.joint_stiffness))
+                set_kv(np.full(n_dofs, self.config.joint_damping))
+            elif hasattr(entity, "set_dofs_gains"):
+                # Genesis backend wrappers expose set_dofs_gains but not the
+                # raw set_dofs_kp/kv pair; without this branch the gains were
+                # silently never applied and the arm sagged ~0.1 m under
+                # gravity against position targets (W4 acceptance, 2026-09-27).
+                entity.set_dofs_gains(
+                    np.full(n_dofs, self.config.joint_stiffness),
+                    np.full(n_dofs, self.config.joint_damping),
+                )
         except Exception as exc:  # pragma: no cover - defensive
             logger.warning(f"Failed to apply PD gains: {exc}")
 
@@ -252,6 +270,9 @@ class FrankaPanda(RobotEmbodiment):
         # singularity for the Franka URDF/MJCF and caused NaN constraint
         # forces during reset stabilization (see W8 smoke, 2026-09-26).
         self._default_qpos: np.ndarray | None = None
+        # PD gains can only be applied once the entity is built (spawn runs
+        # before scene.build()); deferred to the first reset().
+        self._gains_applied = False
 
     def spawn(
         self,
@@ -353,12 +374,24 @@ class FrankaPanda(RobotEmbodiment):
         entity = self.entity
         if entity is None:
             return
+        if not self._gains_applied:
+            # The entity is built by reset time, unlike at spawn().
+            self._apply_pd_gains()
+            self._gains_applied = True
         if hasattr(entity, "n_qs") and entity.n_qs > 0 and hasattr(entity, "set_qpos"):
             # Restore the asset's own initial configuration rather than an
             # all-zeros pose (self-colliding singularity for the Franka).
             home = self._default_qpos
             if home is None or home.shape[0] != entity.n_qs:
+                # The spawn-time capture can fail for Genesis backends (the
+                # entity is not built until scene.build()), and the bundled
+                # panda URDF carries no joint defaults, leaving Genesis'
+                # neutral qpos0 at the singular all-zeros pose. Fall back to
+                # the well-known Franka 'ready' configuration (stable under
+                # PD gains, deterministic settle — W4 acceptance, 2026-09-27).
                 home = np.zeros(entity.n_qs)
+                n_arm = min(home.size, _FRANKA_READY_ARM_QPOS.size)
+                home[:n_arm] = _FRANKA_READY_ARM_QPOS[:n_arm]
             entity.set_qpos(home)
 
     def apply_action(self, action: np.ndarray) -> None:

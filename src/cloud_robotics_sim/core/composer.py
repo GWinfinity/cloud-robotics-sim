@@ -318,9 +318,18 @@ class EnvironmentComposer:
             sf_options=self.config.sf_options,
         )
 
-        # Build scene and spawn robot
+        # Build scene and spawn robot. Precedence: explicit compose() argument
+        # > the robot factory's configured base_position (task YAML `robot:`
+        # kwargs) > scene-provided spawn points. Ignoring the configured
+        # base_position silently placed the robot at the scene's fallback
+        # spawn point (0, -1, 0.1 for empty_room), rendering task-world
+        # coordinates (e.g. cube at x~0.5) unreachable (W4 acceptance,
+        # 2026-09-27).
         scene.build(scene_backend)
-        spawn_pos = spawn_position or self._select_spawn_position(scene)
+        configured_base = getattr(getattr(robot, "config", None), "base_position", None)
+        spawn_pos = (
+            spawn_position or configured_base or self._select_spawn_position(scene)
+        )
         robot.spawn(scene_backend, position=spawn_pos)
         scene_backend.build()
 
