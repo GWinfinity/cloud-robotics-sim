@@ -12,6 +12,7 @@ built with ``scene.build(n_envs=...)`` drives all environments, and a
 
 from __future__ import annotations
 
+import importlib.util
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -41,7 +42,15 @@ class VecEnvConfig:
         sim_dt: Physics timestep (seconds).
         sim_substeps: Simulation substeps per step.
         integrator: Rigid-body integrator (e.g. ``implicitfast``).
-        noslip_iterations: Noslip solver iterations (contact fidelity knob).
+        solver_iterations: Newton constraint-solver iterations (fidelity knob).
+        ls_iterations: Newton line-search iterations (fidelity knob).
+        noslip_iterations: Contact fidelity knob; Genesis' own default is 0
+            (the project's earlier default of 5 made the noslip kernel ~80%
+            of CUDA step time — see AGENTS.md Vectorized Throughput Baseline).
+        self_collision: Whether links of the same articulated entity collide
+            with each other (False saves broadphase/narrowphase work).
+        hibernation: Park envs whose bodies all move slower than the solver
+            threshold (skips their dynamics until re-awakened by contact).
         cache_dir: Genesis simulation cache directory.
         dataset_pipeline: Stage cache for a downstream dataset pipeline.
         dataset_pipeline_dir: Staging directory for the dataset pipeline.
@@ -56,11 +65,67 @@ class VecEnvConfig:
     sim_dt: float = 0.02
     sim_substeps: int = 2
     integrator: str = "implicitfast"
-    noslip_iterations: int = 5
+    solver_iterations: int = 50
+    ls_iterations: int = 50
+    # Genesis' own RigidOptions default is 0, and profiling on 2026-10-04
+    # (outputs/benchmarks/profile_vec_step_20261004) showed the noslip kernel
+    # alone was ~80% of CUDA step time at noslip=5 while the within-round
+    # A/B measurement showed noslip=0 consistently ~35-45% faster in wall
+    # clock. Fidelity trade-off is the caller's: bump this for sticky-contact
+    # tasks.
+    noslip_iterations: int = 0
+    self_collision: bool = True
+    hibernation: bool = False
+    # Throughput: gs.init(performance_mode=True) switches Genesis to static
+    # arrays (no per-step ndarray conversion). It does not imply
+    # non-determinism (that is gs.init's separate
+    # ``use_deterministic_algorithms`` flag), but it does disable runtime
+    # scene editing/rebuild — fine for batched data production.
+    performance_mode: bool = False
     # Cache cleanup / dataset pipeline hand-off.
     cache_dir: str | Path = "outputs/sim_cache"
     dataset_pipeline: bool = False
     dataset_pipeline_dir: str | Path = "outputs/dataset_pipeline/staging"
+    # Batched rendering (L2). ``render_config`` is a path to a yaml like
+    # ``configs/render/batch_madrona.yaml`` or an equivalent dict; ``mode:
+    # batch`` selects Genesis' BatchRenderer (Madrona). The optional package
+    # ``gs-madrona`` is Linux-only — on other platforms building a scene with
+    # a batch render config raises an actionable error.
+    render_config: "str | Path | dict[str, Any] | None" = None
+
+
+def load_render_config(
+    config: "str | Path | dict[str, Any] | None",
+) -> dict[str, Any] | None:
+    """Normalize a render config (yaml path or dict) to a plain dict.
+
+    Returns ``None`` when no rendering is configured. Raises ``ValueError``
+    for unknown modes or malformed configs.
+    """
+    if config is None:
+        return None
+    if isinstance(config, dict):
+        data = dict(config)
+    else:
+        import yaml
+
+        path = Path(config)
+        if not path.exists():
+            raise ValueError(f"render config not found: {path}")
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    mode = data.get("mode", "batch")
+    if mode != "batch":
+        raise ValueError(
+            f"unsupported render mode {mode!r} (only 'batch' is wired; "
+            f"got keys {sorted(data)})"
+        )
+    data["mode"] = mode
+    return data
+
+
+def batch_renderer_available() -> bool:
+    """Whether the optional ``gs-madrona`` batch renderer is importable."""
+    return importlib.util.find_spec("gs_madrona") is not None
 
 
 class VectorizedEnvironment:
@@ -242,7 +307,10 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
 
         from cloud_robotics_sim.utils.genesis_compat import ensure_genesis_initialized
 
-        ensure_genesis_initialized(use_cuda=self.config.use_cuda)
+        ensure_genesis_initialized(
+            use_cuda=self.config.use_cuda,
+            performance_mode=self.config.performance_mode,
+        )
         self.device = _torch.device(
             "cuda" if self.config.use_cuda and _torch.cuda.is_available() else "cpu"
         )
@@ -269,18 +337,51 @@ class GenesisVectorizedEnv(VectorizedEnvironment):
         """Create a default Genesis scene with contact options from config."""
         import genesis as gs
 
+        # Genesis 1.4 takes the integrator as the ``gs.integrator`` enum, not
+        # a string (``RigidOptions`` validates the instance type).
+        integrator = {
+            "euler": gs.integrator.Euler,
+            "implicitfast": gs.integrator.implicitfast,
+            "approximate_implicitfast": gs.integrator.approximate_implicitfast,
+        }.get(self.config.integrator.lower())
+        if integrator is None:
+            raise ValueError(f"unknown integrator {self.config.integrator!r}")
+
         sim_options = gs.options.SimOptions(
             dt=self.config.sim_dt,
             substeps=self.config.sim_substeps,
         )
+        # RigidOptions.dt defaults to the scene dt; passing it explicitly
+        # alongside SimOptions.substeps makes the solver reject the pair
+        # ("dt implies N substeps, conflicting with the requested substeps").
         rigid_options = gs.options.RigidOptions(
-            dt=self.config.sim_dt,
-            integrator=self.config.integrator,
+            integrator=integrator,
+            iterations=self.config.solver_iterations,
+            ls_iterations=self.config.ls_iterations,
             noslip_iterations=self.config.noslip_iterations,
+            enable_self_collision=self.config.self_collision,
+            use_hibernation=self.config.hibernation,
         )
+
+        renderer = None
+        render_cfg = load_render_config(self.config.render_config)
+        if render_cfg is not None:
+            if not batch_renderer_available():
+                raise RuntimeError(
+                    "render_config requests the Genesis batch renderer, but "
+                    "the optional 'gs-madrona' package is not importable. "
+                    "It is distributed as Linux-only wheels "
+                    "(pip install gs-madrona); run batched rendering on a "
+                    "Linux host or drop render_config for physics-only runs."
+                )
+            renderer = gs.renderers.BatchRenderer(
+                use_rasterizer=bool(render_cfg.get("batch_use_rasterizer", True))
+            )
+
         return gs.Scene(
             sim_options=sim_options,
             rigid_options=rigid_options,
+            renderer=renderer,
             show_viewer=False,
         )
 

@@ -114,6 +114,12 @@ xuvdb = [
     "xuvdb>=1.0",
 ]
 
+# rsl-rl PPO training loop for batched VecTask environments
+# (core/vec_rsl_rl.py; smoke-tested via tests/optional_deps.py guard).
+rl = [
+    "rsl-rl-lib>=2.0",
+]
+
 all = [
     "cloud-robotics-sim[dev,docs,k8s,cad,xuvdb]",
 ]

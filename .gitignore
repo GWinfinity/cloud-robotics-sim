@@ -105,6 +105,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.msbench-venv
 env/
 venv/
 ENV/
