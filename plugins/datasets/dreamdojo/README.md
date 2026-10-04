@@ -78,6 +78,21 @@ wrapper = GenesisDatasetWrapper(
 wrapper.generate_dataset("datasets/genesis_synthetic/data.hdf5")
 ```
 
+### Training Smoke on Pre-generated Data
+
+`examples/train_smoke.py` closes the record → synthesize → train loop: it
+serves any dreamdojo-layout HDF5 (e.g. teleop recordings or the variants
+produced by `plugins/teleop/vr_bridge/examples/replay_sdg.py`) through
+`GenesisDataset` and trains a tiny action-conditioned one-frame predictor
+(`frame_t + action_t → frame_{t+1}`) for a few optimizer steps. It is a
+data-usability smoke test (shapes, dtypes, normalization, gradient flow),
+not a production trainer:
+
+```bash
+uv run python plugins/datasets/dreamdojo/examples/train_smoke.py \
+    --data outputs/sdg.h5 --steps 20 --batch 4
+```
+
 ### Using with EnvironmentComposer
 
 ```python

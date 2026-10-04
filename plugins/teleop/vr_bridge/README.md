@@ -98,6 +98,45 @@ ds = GenesisDataset(
 sample = ds[0]             # video: (8,3,H,W), action: (8,D)
 ```
 
+### 回放式 SDG：一次示教，合成多变体
+
+`examples/replay_sdg.py` 是 Isaac Capture「episode 回放 + 合成数据生成」
+路径的 Genesis 版：读取 `run_teleop.py --record` 录制的 dreamdojo HDF5，
+重建 Genesis 场景（Franka + 地面 + 道具），对每帧关节目标做开环回放，
+每个变体随机化道具位姿（xy + yaw）与相机位姿（pos + lookat），重新渲染
+多相机 RGB/depth/segmentation 并落盘：
+
+```bash
+# 终端 1 录 20s 示教；终端 2 跑 mock 客户端
+uv run python plugins/teleop/vr_bridge/examples/run_teleop.py \
+    --record outputs/teleop.h5 --duration 20
+uv run python plugins/teleop/vr_bridge/examples/mock_client.py --mode script --duration 18
+
+# 录一次，合成 8 个随机化变体（可重复叠加 --variants 追加 episode）
+uv run python plugins/teleop/vr_bridge/examples/replay_sdg.py \
+    --input outputs/teleop.h5 --variants 8 --out outputs/sdg.h5
+
+# 校验：结构 / dreamdojo 可加载 / 变体间差异 / 拼贴图
+uv run python plugins/teleop/vr_bridge/examples/verify_sdg.py outputs/sdg.h5 outputs/sdg_rich
+```
+
+输出两份互补的数据：
+- `--out`：dreamdojo 布局（主相机视频 + qpos），与录制文件同格式，
+  `GenesisDataset(pre_generated_path=...)` 直接加载；
+- `--out-dir`（默认 `<out>_rich/`）：RoboTwin 布局逐变体 HDF5，经
+  `EpisodeRecorder` 落全相机 rgb/depth/segmentation、qpos、endpose 与
+  相机内/外参，供需要几何真值的训练管线使用。
+
+注意事项：
+- Genesis rasterizer 的场景灯光在 build 时固定（`add_light` 仅
+  BatchRenderer 可用），运行时只能随机化道具/相机位姿，光照域随机
+  需换 BatchRenderer 或后处理增强。
+- 源 episode 开头常含手柄 clutch 接合的位姿跳变（本仓库 E2E 样例前
+  ~45 帧），建议裁剪后再大规模回放（`--stride`/`--max-frames` 可
+  用于快速试跑）。
+- `--mp4` 预览导出依赖 ffmpeg 子进程，无头/受限 shell 下会自动跳过
+  （不影响 HDF5 数据）。
+
 ## 配置
 
 - `configs/vr_bridge.yaml`：网络、滤波、安全限幅、映射表选择、录制输出。
@@ -117,6 +156,9 @@ uv run python -m pytest plugins/teleop/vr_bridge/tests -q
 - M0：全链路骨架 + mock 客户端 + 测试。
 - M1：PICO Unity 客户端真机联调（协议 v1 已冻结）。
 - M2（当前）：`TeleopRecorder` 自动保存 dreamdojo 兼容 HDF5 进
-  `data/trajectories`，跨插件加载验证已覆盖（`tests/test_e2e_recording.py`）。
+  `data/trajectories`，跨插件加载验证已覆盖（`tests/test_e2e_recording.py`）；
+  回放式 SDG（`examples/replay_sdg.py` + `verify_sdg.py`）已打通：
+  录制 → 随机化回放 → dreamdojo/RoboTwin 双格式落盘，离线单测见
+  `tests/test_replay_sdg.py`。
 - M3：仿真画面/点云回传头显（引入 WebRTC）、灵巧手手势 retargeting
   （协议 v1.1 `hand_joints`）。
