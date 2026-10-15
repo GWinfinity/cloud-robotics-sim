@@ -31,6 +31,15 @@ jobs:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Genesis's vendored pyrender disables the pyglet shadow window itself;
+      # pre-disabling it avoids the import-time shadow-window GL context that
+      # crashes on headless runners ('NoneType' has no attribute 'Window').
+      # NOTE: do NOT set PYGLET_HEADLESS=1 — the headless backend requires the
+      # EGL library and, when missing, breaks `import genesis` with the exact
+      # NoneType-Window error it is meant to prevent. xvfb-run provides the
+      # display instead.
+      PYGLET_SHADOW_WINDOW: '0'
     strategy:
       fail-fast: false
       matrix:
@@ -73,7 +82,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # The `genesis` module is provided by the `genesis-world` project
+          # (pinned in pyproject.toml); install it first so no other PyPI
+          # project named `genesis` can shadow it.
+          pip install --no-cache-dir "genesis-world==1.4.0"
           pip install --no-cache-dir -e ".[dev]"
+          python -c "import genesis as gs; print('genesis from', gs.__file__); assert hasattr(gs, 'gpu') and hasattr(gs, 'options'), 'incompatible genesis package resolved'"
+          python -c "import pyglet; print('pyglet from', pyglet.__file__, pyglet.version, 'headless=', pyglet.options['headless'], 'shadow_window=', pyglet.options['shadow_window'])"
 
       - name: Type check
         run: mypy src/cloud_robotics_sim
@@ -89,6 +104,10 @@ jobs:
     name: Plugin tests (CPU, per-plugin process isolation)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # See the `test` job: disable the shadow window, and deliberately do NOT
+      # set PYGLET_HEADLESS (EGL may be absent; xvfb-run supplies the display).
+      PYGLET_SHADOW_WINDOW: '0'
     steps:
       - uses: actions/checkout@v4
 
@@ -105,7 +124,15 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # The `genesis` module is provided by the `genesis-world` project
+          # (pinned in pyproject.toml). Install it first from PyPI: it must not
+          # be replaced by some other PyPI project named `genesis` — a wrong
+          # package makes `import genesis` succeed but without gs.gpu/gs.options.
+          # Keep this version in sync with the genesis-world pin in pyproject.toml.
+          pip install --no-cache-dir "genesis-world==1.4.0"
           pip install --no-cache-dir -e ".[dev]"
+          python -c "import genesis as gs; print('genesis from', gs.__file__); assert hasattr(gs, 'gpu') and hasattr(gs, 'options'), 'incompatible genesis package resolved'"
+          python -c "import pyglet; print('pyglet from', pyglet.__file__, pyglet.version, 'headless=', pyglet.options['headless'], 'shadow_window=', pyglet.options['shadow_window'])"
 
       # 白名单内每个插件测试目录单独一个 pytest 进程：
       # 多数 genesis 插件在模块级 gs.init，同进程多次 init 会互相干扰。
