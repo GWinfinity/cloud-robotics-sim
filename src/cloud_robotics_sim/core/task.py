@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import cast
 
 import numpy as np
 
@@ -358,5 +357,5 @@ class ReachTask(Task):
             # Simplified: use robot base position
             pos = np.asarray(robot.entity.get_pos(), dtype=np.float64)
             offset = np.array([0.5, 0.0, 0.5], dtype=np.float64)
-            return cast(np.ndarray, pos + offset)
+            return pos + offset
         return None
