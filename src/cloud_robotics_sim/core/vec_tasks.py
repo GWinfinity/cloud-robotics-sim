@@ -169,9 +169,14 @@ class FrankaPickCubeVecTask(VecTask):
             self.robot = scene.add_entity(morph)
             logger.info("vec task robot asset: %s:%s", model.format, model.path)
         else:
-            # Last resort: Genesis' built-in model lookup.
+            # Last resort: Genesis' built-in model lookup. The asset lives
+            # under <genesis assets>/xml/ in genesis-world 1.4.0 — the bare
+            # 'franka_emika_panda/panda.xml' does not resolve against
+            # gs.utils.get_assets_dir().
             self.robot = scene.add_entity(
-                gs.morphs.MJCF(file="franka_emika_panda/panda.xml", pos=(0.0, 0.0, 0.0))
+                gs.morphs.MJCF(
+                    file="xml/franka_emika_panda/panda.xml", pos=(0.0, 0.0, 0.0)
+                )
             )
             logger.warning("vec task robot: genesis built-in franka fallback")
 

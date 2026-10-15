@@ -9,6 +9,15 @@ from __future__ import annotations
 import pytest
 
 from cloud_robotics_sim.devices import SafetyViolationError, SharpaHandDevice
+from cloud_robotics_sim.devices.sharpa_hand import _default_urdf
+
+# The Sharpa URDF bundle lives under a gitignored local checkout
+# (plugins/do_as_i_do/assets/sharpa-urdf-usd-xml-main/); skip the whole module
+# when it is absent rather than erroring at device construction.
+pytestmark = pytest.mark.skipif(
+    not _default_urdf("right").exists(),
+    reason="Sharpa URDF assets not present (gitignored local checkout)",
+)
 
 
 @pytest.fixture(scope="module")

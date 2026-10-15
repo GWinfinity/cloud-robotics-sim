@@ -90,9 +90,15 @@ def test_suite_index_points_at_real_files() -> None:
     assert suite["version"] == 1
     for recipe in suite["recipes"]:
         assert (SUITE_PATH.parent / recipe).resolve().is_file(), recipe
-    assert (REPO_ROOT / suite["assets"]["object_library"]).is_dir()
     assert (REPO_ROOT / suite["assets"]["expansion_workflow"]).is_file()
     assert (REPO_ROOT / suite["validation"]["benchmark_runner"]).is_file()
     assert (REPO_ROOT / suite["validation"]["mapping_test"]).is_file()
     license_gate = suite["validation"]["license_gate"].split()[0]
     assert (REPO_ROOT / license_gate).is_file()
+
+
+@pytest.mark.skipif(not OBJECTS_DIR.is_dir(), reason="RoboTwin assets not present")
+def test_suite_object_library_pointer_is_real() -> None:
+    """The suite's object library path resolves to a real directory."""
+    suite = yaml.safe_load(SUITE_PATH.read_text(encoding="utf-8"))
+    assert (REPO_ROOT / suite["assets"]["object_library"]).is_dir()
