@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 import signal
 import time
@@ -51,6 +52,19 @@ class TaskSpec:
     params: dict[str, Any] = field(default_factory=dict)
 
 
+def _reject_non_finite(name: str) -> Any:
+    """``json`` parse hook rejecting the non-standard NaN/Infinity literals."""
+    raise ValueError(f"non-finite literal {name!r} is not allowed in task payload")
+
+
+def _reject_non_finite_float(raw: str) -> float:
+    """``json`` parse hook rejecting floats that overflow to inf."""
+    value = float(raw)
+    if not math.isfinite(value):
+        raise ValueError(f"non-finite number {raw!r} is not allowed in task payload")
+    return value
+
+
 def parse_task(raw: bytes | str) -> TaskSpec:
     """Parse and validate a raw task payload.
 
@@ -61,8 +75,14 @@ def parse_task(raw: bytes | str) -> TaskSpec:
     if isinstance(raw, bytes):
         raw = raw.decode("utf-8")
     try:
-        data = json.loads(raw)
+        data = json.loads(
+            raw,
+            parse_constant=_reject_non_finite,
+            parse_float=_reject_non_finite_float,
+        )
     except json.JSONDecodeError as exc:
+        raise TaskError(f"invalid JSON task payload: {exc}") from exc
+    except ValueError as exc:
         raise TaskError(f"invalid JSON task payload: {exc}") from exc
     if not isinstance(data, dict):
         raise TaskError("task payload must be a JSON object")

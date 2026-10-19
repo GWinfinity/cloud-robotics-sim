@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import json
 import logging
+import math
+import os
 import re
 import time
 import uuid
@@ -294,14 +296,67 @@ _DEFAULT_EXTRACTORS: dict[str, Callable[[str], dict[str, Any]]] = {
 }
 
 
-def run_patent_task(params: dict[str, Any]) -> dict[str, Any]:
-    """Run a classic patent simulation headlessly (shared with queue worker)."""
-    from cloud_robotics_sim.patents import run_patent_simulation
+_PATENT_ID_RE = re.compile(r"^US\d{4,}$")
 
+# Single parameter model shared by every entry point (agent skill, queue
+# worker): unknown keys are rejected and every value is range-checked here,
+# so the two entry points cannot drift apart.
+_PATENT_STEPS_LIMIT = 100_000
+_PATENT_DT_RANGE = (1e-6, 1.0)
+_PATENT_SUBSTEPS_RANGE = (1, 64)
+_PATENT_RESOLUTION_RANGE = (64, 4096)
+_PATENT_SEED_RANGE = (0, 2**31 - 1)
+_PATENT_DEVICE_CHOICES = ("cpu", "cuda")
+_PATENT_FOLLOW_MAX_LEN = 256
+
+
+def _int_in_range(value: Any, name: str, lo: int, hi: int) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise SkillError(f"patent param {name} must be an integer, got {value!r}")
+    if not lo <= value <= hi:
+        raise SkillError(
+            f"patent param {name} must be within [{lo}, {hi}], got {value}"
+        )
+    return value
+
+
+def _finite_number(value: Any, name: str) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError) as exc:
+        raise SkillError(
+            f"patent param {name} must be a number, got {value!r}"
+        ) from exc
+    if not math.isfinite(number):
+        raise SkillError(f"patent param {name} must be finite, got {value!r}")
+    return number
+
+
+def record_root() -> Path:
+    """Directory that ``record_path`` values may not escape (``RECORD_ROOT``)."""
+    return Path(os.environ.get("RECORD_ROOT", "outputs/records")).expanduser().resolve()
+
+
+def _resolve_record_path(value: Any) -> str:
+    """Confine ``record_path`` to the record root and return the absolute path."""
+    if not isinstance(value, str) or not value.strip():
+        raise SkillError("patent param record_path must be a non-empty string")
+    root = record_root()
+    raw = Path(value).expanduser()
+    candidate = raw.resolve() if raw.is_absolute() else (root / raw).resolve()
+    if not candidate.is_relative_to(root):
+        raise SkillError(f"patent param record_path escapes RECORD_ROOT ({root})")
+    return str(candidate)
+
+
+def _validate_patent_params(params: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    """Validate raw patent task params and return (patent_id, sim kwargs)."""
     params = dict(params)
     patent_id = params.pop("run", None) or params.pop("patent_id", None)
-    if not isinstance(patent_id, str) or not patent_id:
-        raise SkillError("patent task requires params.run (patent id)")
+    if not isinstance(patent_id, str) or not _PATENT_ID_RE.match(patent_id):
+        raise SkillError(
+            f"patent task requires params.run (patent id), got {patent_id!r}"
+        )
     allowed = {
         "steps",
         "dt",
@@ -315,13 +370,65 @@ def run_patent_task(params: dict[str, Any]) -> dict[str, Any]:
     unknown = set(params) - allowed
     if unknown:
         raise SkillError(f"unknown patent params: {sorted(unknown)}")
-    resolution = params.get("resolution")
-    if resolution is not None:
-        params["resolution"] = tuple(resolution)
-    follow = params.pop("follow", None)
-    if follow is not None:
-        params["follow_entity"] = follow
-    state = run_patent_simulation(patent_id, headless=True, **params)
+
+    kwargs: dict[str, Any] = {}
+    if "steps" in params:
+        kwargs["steps"] = _int_in_range(
+            params["steps"], "steps", 1, _PATENT_STEPS_LIMIT
+        )
+    if "dt" in params:
+        dt = _finite_number(params["dt"], "dt")
+        lo, hi = _PATENT_DT_RANGE
+        if not lo <= dt <= hi:
+            raise SkillError(f"patent param dt must be within [{lo}, {hi}], got {dt}")
+        kwargs["dt"] = dt
+    if "substeps" in params:
+        lo, hi = _PATENT_SUBSTEPS_RANGE
+        kwargs["substeps"] = _int_in_range(params["substeps"], "substeps", lo, hi)
+    if "resolution" in params:
+        res = params["resolution"]
+        if not isinstance(res, (list, tuple)) or len(res) != 2:
+            raise SkillError(
+                f"patent param resolution must be [width, height], got {res!r}"
+            )
+        lo, hi = _PATENT_RESOLUTION_RANGE
+        width = _int_in_range(res[0], "resolution[0]", lo, hi)
+        height = _int_in_range(res[1], "resolution[1]", lo, hi)
+        kwargs["resolution"] = (width, height)
+    if "device" in params:
+        device = params["device"]
+        if device not in _PATENT_DEVICE_CHOICES:
+            raise SkillError(
+                f"patent param device must be one of {_PATENT_DEVICE_CHOICES}, "
+                f"got {device!r}"
+            )
+        kwargs["device"] = device
+    if "seed" in params:
+        lo, hi = _PATENT_SEED_RANGE
+        kwargs["seed"] = _int_in_range(params["seed"], "seed", lo, hi)
+    if "record_path" in params:
+        kwargs["record_path"] = _resolve_record_path(params["record_path"])
+    if "follow" in params:
+        follow = params["follow"]
+        if (
+            not isinstance(follow, str)
+            or not follow
+            or len(follow) > _PATENT_FOLLOW_MAX_LEN
+        ):
+            raise SkillError(
+                f"patent param follow must be a non-empty string "
+                f"of at most {_PATENT_FOLLOW_MAX_LEN} characters"
+            )
+        kwargs["follow_entity"] = follow
+    return patent_id, kwargs
+
+
+def run_patent_task(params: dict[str, Any]) -> dict[str, Any]:
+    """Run a classic patent simulation headlessly (shared with queue worker)."""
+    from cloud_robotics_sim.patents import run_patent_simulation
+
+    patent_id, kwargs = _validate_patent_params(params)
+    state = run_patent_simulation(patent_id, headless=True, **kwargs)
     return {
         "time": state.time,
         "parameters": state.parameters,
@@ -429,11 +536,43 @@ def default_skill_registry() -> SkillRegistry:
                             "type": "string",
                             "description": "Patent ID, e.g. US821393",
                         },
-                        "steps": {"type": "integer"},
-                        "dt": {"type": "number"},
-                        "device": {"type": "string"},
-                        "seed": {"type": "integer"},
-                        "record_path": {"type": "string"},
+                        "steps": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": _PATENT_STEPS_LIMIT,
+                        },
+                        "dt": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "maximum": _PATENT_DT_RANGE[1],
+                        },
+                        "substeps": {
+                            "type": "integer",
+                            "minimum": _PATENT_SUBSTEPS_RANGE[0],
+                            "maximum": _PATENT_SUBSTEPS_RANGE[1],
+                        },
+                        "resolution": {
+                            "type": "array",
+                            "items": {"type": "integer"},
+                            "minItems": 2,
+                            "maxItems": 2,
+                        },
+                        "device": {
+                            "type": "string",
+                            "enum": list(_PATENT_DEVICE_CHOICES),
+                        },
+                        "seed": {
+                            "type": "integer",
+                            "minimum": _PATENT_SEED_RANGE[0],
+                            "maximum": _PATENT_SEED_RANGE[1],
+                        },
+                        "record_path": {
+                            "type": "string",
+                            "description": (
+                                "Output video path, confined to RECORD_ROOT "
+                                "(default outputs/records)"
+                            ),
+                        },
                         "follow": {"type": "string"},
                     },
                     "required": ["run"],

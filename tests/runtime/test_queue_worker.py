@@ -77,6 +77,99 @@ class TestParseTask:
         with pytest.raises(TaskError, match="'params'"):
             parse_task(json.dumps({"type": "patent", "params": [1]}))
 
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            '{"type":"patent","params":{"run":"US821393","dt":NaN}}',
+            '{"type":"patent","params":{"run":"US821393","steps":Infinity}}',
+            '{"type":"patent","params":{"run":"US821393","steps":-Infinity}}',
+            '{"type":"patent","params":{"run":"US821393","steps":1e999}}',
+        ],
+    )
+    def test_non_finite_literals_rejected(self, payload: str) -> None:
+        with pytest.raises(TaskError, match="non-finite"):
+            parse_task(payload)
+
+
+class TestPatentParamValidation:
+    """Queue payloads must hit the same parameter model as the skill entry."""
+
+    def test_steps_out_of_range_rejected(self) -> None:
+        with pytest.raises(TaskError, match="steps"):
+            execute_task(
+                TaskSpec(
+                    task_id="t",
+                    type="patent",
+                    params={"run": "US821393", "steps": 10**9},
+                )
+            )
+
+    def test_resolution_out_of_range_rejected(self) -> None:
+        with pytest.raises(TaskError, match="resolution"):
+            execute_task(
+                TaskSpec(
+                    task_id="t",
+                    type="patent",
+                    params={"run": "US821393", "resolution": [-1, 10**9]},
+                )
+            )
+
+    def test_nan_dt_rejected(self) -> None:
+        with pytest.raises(TaskError, match="dt"):
+            execute_task(
+                TaskSpec(
+                    task_id="t",
+                    type="patent",
+                    params={"run": "US821393", "dt": float("nan")},
+                )
+            )
+
+    def test_bad_patent_id_rejected(self) -> None:
+        with pytest.raises(TaskError, match="params.run"):
+            execute_task(
+                TaskSpec(task_id="t", type="patent", params={"run": "../../x"})
+            )
+
+    def test_record_path_escape_rejected(self) -> None:
+        with pytest.raises(TaskError, match="record_path"):
+            execute_task(
+                TaskSpec(
+                    task_id="t",
+                    type="patent",
+                    params={
+                        "run": "US821393",
+                        "record_path": "../../../../workspace/x.mp4",
+                    },
+                )
+            )
+
+    def test_record_path_confined_to_root(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Any
+    ) -> None:
+        import cloud_robotics_sim.patents as patents
+
+        class FakeState:
+            time = 0.0
+            parameters: dict = {}
+            metrics: dict = {}
+
+        calls: dict[str, Any] = {}
+
+        def fake_run(patent_id: str, **kwargs: Any) -> FakeState:
+            calls["record_path"] = kwargs.get("record_path")
+            return FakeState()
+
+        monkeypatch.setattr(patents, "run_patent_simulation", fake_run)
+        monkeypatch.setenv("RECORD_ROOT", str(tmp_path))
+        execute_task(
+            TaskSpec(
+                task_id="t",
+                type="patent",
+                params={"run": "US821393", "record_path": "demo.mp4"},
+            )
+        )
+        assert calls["record_path"] == str(tmp_path / "demo.mp4")
+
 
 class TestExecuteTask:
     """Tests for execute_task dispatch."""

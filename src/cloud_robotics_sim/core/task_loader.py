@@ -19,6 +19,8 @@ Loading is layered so each layer stays testable without Genesis::
 from __future__ import annotations
 
 import logging
+import math
+import os
 from dataclasses import dataclass, field
 from dataclasses import fields as dataclass_fields
 from pathlib import Path
@@ -46,6 +48,12 @@ _TASK_KEYS = ("name", "type", "robot", "scene", "max_episode_steps")
 _SPAWN_FIELD_NAMES = {f.name for f in dataclass_fields(ObjectSpawn)}
 _SPAWN_SUPPORTED = _SPAWN_FIELD_NAMES - {"deformable_config"}
 _SHAPE_TYPES = ("box", "sphere", "cylinder", "mesh", "deformable")
+_MESH_EXTENSIONS = {".glb", ".gltf", ".obj", ".stl", ".dae", ".ply"}
+# Physical value ranges for object properties (guards against NaN/inf and
+# absurd magnitudes silently corrupting the physics).
+_MASS_RANGE = (1e-6, 1e4)  # kg
+_FRICTION_RANGE = (0.0, 5.0)
+_SCALE_RANGE = (1e-4, 1e3)
 _COMPOSER_FIELD_NAMES = {f.name for f in dataclass_fields(ComposerConfig)}
 _CAMERA_REQUIRED = ("name", "pos", "look_at", "resolution")
 
@@ -327,15 +335,27 @@ def _parse_object_spawn(
     if shape_type == "mesh" and not mesh_path:
         problems.append(f"{label}.mesh_path is required for shape_type='mesh'")
         return None
+    resolved_mesh_path = None
+    if mesh_path:
+        resolved_mesh_path = _resolve_mesh_path(mesh_path, label, problems)
+        if resolved_mesh_path is None:
+            return None
 
     try:
         size = _float_tuple(entry.get("size", (1.0, 1.0, 1.0)), None, f"{label}.size")
         color = _color_tuple(entry.get("color"), f"{label}.color")
         scale_value = entry.get("scale", (1.0, 1.0, 1.0))
         if isinstance(scale_value, (int, float)):
-            scale: tuple[float, float, float] | float = float(scale_value)
+            scale: tuple[float, float, float] | float = _bounded_float(
+                scale_value, f"{label}.scale", *_SCALE_RANGE
+            )
         else:
-            scale = _float_tuple(scale_value, 3, f"{label}.scale")
+            scale_xyz = _float_tuple(scale_value, 3, f"{label}.scale")
+            scale = (
+                _bounded_float(scale_xyz[0], f"{label}.scale[0]", *_SCALE_RANGE),
+                _bounded_float(scale_xyz[1], f"{label}.scale[1]", *_SCALE_RANGE),
+                _bounded_float(scale_xyz[2], f"{label}.scale[2]", *_SCALE_RANGE),
+            )
         tags = entry.get("tags", [])
         if not isinstance(tags, list):
             raise ConfigError(f"{label}.tags must be a list")
@@ -347,7 +367,7 @@ def _parse_object_spawn(
             shape_type=shape_type,
             size=size,
             scale=scale,
-            mesh_path=mesh_path,
+            mesh_path=resolved_mesh_path,
             position=_float_tuple(
                 entry.get("position", (0.0, 0.0, 0.0)), 3, f"{label}.position"
             ),
@@ -356,9 +376,11 @@ def _parse_object_spawn(
                 4,
                 f"{label}.orientation",
             ),
-            mass=float(entry.get("mass", 1.0)),
+            mass=_bounded_float(entry.get("mass", 1.0), f"{label}.mass", *_MASS_RANGE),
             static=bool(entry.get("static", True)),
-            friction=float(entry.get("friction", 0.5)),
+            friction=_bounded_float(
+                entry.get("friction", 0.5), f"{label}.friction", *_FRICTION_RANGE
+            ),
             material=str(entry.get("material", "default")),
             color=color,
             tags=[str(tag) for tag in tags],
@@ -390,9 +412,57 @@ def _float_tuple(value: Any, n: int | None, name: str) -> tuple[float, ...]:
         expected = f"{n} numbers" if n is not None else "a list of numbers"
         raise ConfigError(f"{name} must be {expected}, got {value!r}")
     try:
-        return tuple(float(v) for v in value)
+        out = tuple(float(v) for v in value)
     except (TypeError, ValueError) as exc:
         raise ConfigError(f"{name} must contain only numbers, got {value!r}") from exc
+    for v in out:
+        if not math.isfinite(v):
+            raise ConfigError(f"{name} must contain only finite numbers, got {value!r}")
+    return out
+
+
+def _bounded_float(value: Any, name: str, lo: float, hi: float) -> float:
+    """Parse a float that must be finite and within ``[lo, hi]``."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ConfigError(f"{name} must be a number, got {value!r}") from exc
+    if not math.isfinite(number):
+        raise ConfigError(f"{name} must be finite, got {value!r}")
+    if not lo <= number <= hi:
+        raise ConfigError(f"{name} must be within [{lo}, {hi}], got {value!r}")
+    return number
+
+
+def _mesh_root() -> Path:
+    """Root directory that ``mesh_path`` values may not escape."""
+    root = os.environ.get("CRS_ASSET_ROOT") or os.environ.get("ASSET_ROOT")
+    return Path(root).expanduser().resolve() if root else Path.cwd().resolve()
+
+
+def _resolve_mesh_path(mesh_path: Any, label: str, problems: list[str]) -> str | None:
+    """Confine ``mesh_path`` to the asset root with an extension whitelist."""
+    if not isinstance(mesh_path, str) or not mesh_path.strip():
+        problems.append(f"{label}.mesh_path must be a non-empty string")
+        return None
+    root = _mesh_root()
+    raw = Path(mesh_path).expanduser()
+    candidate = (raw if raw.is_absolute() else root / raw).resolve()
+    if not candidate.is_relative_to(root):
+        problems.append(
+            f"{label}.mesh_path escapes the asset root {root}: {mesh_path!r}"
+        )
+        return None
+    if candidate.suffix.lower() not in _MESH_EXTENSIONS:
+        problems.append(
+            f"{label}.mesh_path must use one of {sorted(_MESH_EXTENSIONS)} "
+            f"extensions, got {candidate.suffix!r}"
+        )
+        return None
+    if not candidate.is_file():
+        problems.append(f"{label}.mesh_path does not exist: {candidate}")
+        return None
+    return str(candidate)
 
 
 def _color_tuple(value: Any, name: str) -> tuple[float, float, float, float]:
@@ -414,13 +484,17 @@ def _color_tuple(value: Any, name: str) -> tuple[float, float, float, float]:
 def _sample_axis(value: Any, rng: np.random.Generator) -> float:
     """Sample one axis: a fixed number or a [lo, hi] range."""
     if isinstance(value, (int, float)):
-        return float(value)
+        return _bounded_float(value, "pose axis", -float("inf"), float("inf"))
     if (
         isinstance(value, (list, tuple))
         and len(value) == 2
         and all(isinstance(v, (int, float)) for v in value)
     ):
-        return float(rng.uniform(float(value[0]), float(value[1])))
+        lo = _bounded_float(value[0], "pose axis range lo", -float("inf"), float("inf"))
+        hi = _bounded_float(value[1], "pose axis range hi", -float("inf"), float("inf"))
+        if lo > hi:
+            raise ConfigError(f"pose axis range must have lo <= hi, got {value!r}")
+        return float(rng.uniform(lo, hi))
     raise ConfigError(f"pose axis must be a number or [lo, hi] range, got {value!r}")
 
 

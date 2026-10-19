@@ -213,6 +213,72 @@ class TestLoadTaskSpec:
         with pytest.raises(ConfigError, match="mesh_path is required"):
             parse_task_spec(data, source="test")
 
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("position", [float("nan"), 0.0, 0.0]),
+            ("mass", float("nan")),
+            ("scale", [float("inf"), 1.0, 1.0]),
+            ("friction", float("inf")),
+        ],
+    )
+    def test_non_finite_values_rejected(self, field, value):
+        """NaN/Infinity are rejected instead of silently polluting physics."""
+        data = yaml.safe_load(VALID_TASK_YAML)
+        data["assets"]["task_relevant"][0][field] = value
+        with pytest.raises(ConfigError, match="finite"):
+            parse_task_spec(data, source="test")
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [("mass", 1e9), ("friction", -1.0), ("scale", 1e6)],
+    )
+    def test_physical_ranges_enforced(self, field, value):
+        """mass/friction/scale must stay within physical bounds."""
+        data = yaml.safe_load(VALID_TASK_YAML)
+        data["assets"]["task_relevant"][0][field] = value
+        with pytest.raises(ConfigError, match="must be within"):
+            parse_task_spec(data, source="test")
+
+    def test_mesh_path_escape_rejected(self, tmp_path, monkeypatch):
+        """mesh_path may not escape the asset root."""
+        monkeypatch.setenv("CRS_ASSET_ROOT", str(tmp_path))
+        data = yaml.safe_load(VALID_TASK_YAML)
+        data["assets"]["task_relevant"][0]["shape_type"] = "mesh"
+        data["assets"]["task_relevant"][0]["mesh_path"] = "../escape.obj"
+        with pytest.raises(ConfigError, match="escapes the asset root"):
+            parse_task_spec(data, source="test")
+
+    def test_mesh_path_extension_whitelist(self, tmp_path, monkeypatch):
+        """Only mesh extensions are accepted."""
+        monkeypatch.setenv("CRS_ASSET_ROOT", str(tmp_path))
+        (tmp_path / "not_a_mesh.txt").write_text("x", encoding="utf-8")
+        data = yaml.safe_load(VALID_TASK_YAML)
+        data["assets"]["task_relevant"][0]["shape_type"] = "mesh"
+        data["assets"]["task_relevant"][0]["mesh_path"] = "not_a_mesh.txt"
+        with pytest.raises(ConfigError, match="must use one of"):
+            parse_task_spec(data, source="test")
+
+    def test_mesh_path_must_exist(self, tmp_path, monkeypatch):
+        """A missing mesh file is rejected at load time."""
+        monkeypatch.setenv("CRS_ASSET_ROOT", str(tmp_path))
+        data = yaml.safe_load(VALID_TASK_YAML)
+        data["assets"]["task_relevant"][0]["shape_type"] = "mesh"
+        data["assets"]["task_relevant"][0]["mesh_path"] = "missing.obj"
+        with pytest.raises(ConfigError, match="does not exist"):
+            parse_task_spec(data, source="test")
+
+    def test_mesh_path_accepted_inside_root(self, tmp_path, monkeypatch):
+        """A real mesh inside the asset root resolves to an absolute path."""
+        monkeypatch.setenv("CRS_ASSET_ROOT", str(tmp_path))
+        mesh = tmp_path / "cube.obj"
+        mesh.write_text("v 0 0 0\n", encoding="utf-8")
+        data = yaml.safe_load(VALID_TASK_YAML)
+        data["assets"]["task_relevant"][0]["shape_type"] = "mesh"
+        data["assets"]["task_relevant"][0]["mesh_path"] = "cube.obj"
+        spec = parse_task_spec(data, source="test")
+        assert spec.object_spawns[0].mesh_path == str(mesh)
+
     def test_invalid_success_block_reported(self):
         """A malformed success block is reported during parsing."""
         data = yaml.safe_load(VALID_TASK_YAML)
