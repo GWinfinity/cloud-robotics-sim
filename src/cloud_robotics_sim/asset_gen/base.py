@@ -5,23 +5,43 @@ the error hierarchy, a task-polling helper, and thin ``urllib.request``
 wrappers (``post_json`` / ``get_json`` / ``download_file``) that provider
 implementations build on. The wrappers are module-level functions so tests
 can monkeypatch them without touching the network.
+
+All URLs are screened by :func:`validate_url` before any connection is made
+(https-only, no userinfo, no non-public resolved addresses, optional host
+allowlist) and response bodies are size-capped so a hostile or broken endpoint
+cannot exhaust memory or reach internal services.
 """
 
 from __future__ import annotations
 
+import hashlib
+import ipaddress
 import json
 import logging
 import os
+import re
+import socket
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Protocol
+from typing import Any, Callable, NoReturn, Protocol
 
 logger = logging.getLogger(__name__)
 
 _CHUNK_SIZE = 1 << 20  # 1 MiB
+_MAX_RESPONSE_BYTES = 16 << 20  # 16 MiB — API JSON responses are small
+_DEFAULT_MAX_DOWNLOAD_BYTES = 256 << 20  # 256 MiB
+
+# Escape hatches for local testing only.
+_ENV_ALLOW_HTTP = "CRS_ASSET_GEN_ALLOW_HTTP"
+_ENV_ALLOW_PRIVATE = "CRS_ASSET_GEN_ALLOW_PRIVATE"
+_ENV_ALLOWED_HOSTS = "CRS_ASSET_GEN_ALLOWED_HOSTS"
+_ENV_MAX_DOWNLOAD_BYTES = "CRS_ASSET_GEN_MAX_BYTES"
+
+_TASK_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
 # ---------------------------------------------------------------------------
@@ -208,6 +228,166 @@ def poll_task(
 
 
 # ---------------------------------------------------------------------------
+# URL safety (SSRF guard)
+# ---------------------------------------------------------------------------
+
+
+def _env_flag(name: str) -> bool:
+    """Return True when the environment variable is exactly ``"1"``."""
+    return os.environ.get(name, "").strip() == "1"
+
+
+def _host_in_allowlist(host: str) -> bool:
+    """Return True when ``host`` passes the ``CRS_ASSET_GEN_ALLOWED_HOSTS`` check.
+
+    An empty allowlist means "no host restriction". Entries are compared
+    case-insensitively; an entry starting with ``"."`` also matches the bare
+    parent domain and any subdomain (``.example.com`` covers ``example.com``
+    and ``api.example.com``).
+    """
+    entries = [
+        entry.strip().lower().rstrip(".")
+        for entry in os.environ.get(_ENV_ALLOWED_HOSTS, "").split(",")
+        if entry.strip()
+    ]
+    if not entries:
+        return True
+    host = host.lower().rstrip(".")
+    for entry in entries:
+        if entry.startswith("."):
+            if host == entry[1:] or host.endswith(entry):
+                return True
+        elif host == entry:
+            return True
+    return False
+
+
+def _resolve_addresses(host: str) -> list[str]:
+    """Return every IP address ``host`` resolves to (A + AAAA)."""
+    try:
+        infos = socket.getaddrinfo(host, None, proto=socket.IPPROTO_TCP)
+    except OSError as exc:
+        raise AssetGenError(f"cannot resolve host {host!r}: {exc}") from exc
+    return [str(info[4][0]) for info in infos]
+
+
+def validate_url(url: str) -> None:
+    """Raise :class:`AssetGenError` unless ``url`` is safe to fetch.
+
+    Rules (SSRF hardening):
+
+    - only ``https``; ``http`` additionally requires ``CRS_ASSET_GEN_ALLOW_HTTP=1``
+    - no userinfo (``user:pass@host``) in the URL
+    - the host must match ``CRS_ASSET_GEN_ALLOWED_HOSTS`` when that whitelist
+      is set (comma-separated hostnames, ``.suffix`` entries allowed)
+    - every resolved IP address must be global/public; loopback, private,
+      link-local, reserved, multicast and unspecified (IPv4 + IPv6) are
+      rejected unless ``CRS_ASSET_GEN_ALLOW_PRIVATE=1``
+    """
+    parts = urllib.parse.urlsplit(url)
+    scheme = parts.scheme.lower()
+    if scheme != "https" and not (scheme == "http" and _env_flag(_ENV_ALLOW_HTTP)):
+        raise AssetGenError(f"refusing non-https URL: {url!r}")
+    if parts.username is not None or parts.password is not None:
+        raise AssetGenError(f"refusing URL with embedded credentials: {url!r}")
+    host = parts.hostname
+    if not host:
+        raise AssetGenError(f"URL has no hostname: {url!r}")
+    if not _host_in_allowlist(host):
+        raise AssetGenError(
+            f"host {host!r} is not allowed by {_ENV_ALLOWED_HOSTS}: {url!r}"
+        )
+    if _env_flag(_ENV_ALLOW_PRIVATE):
+        return
+    for addr in _resolve_addresses(host):
+        try:
+            ip = ipaddress.ip_address(addr.split("%", 1)[0])
+        except ValueError as exc:
+            raise AssetGenError(
+                f"host {host!r} resolved to unparseable address {addr!r}"
+            ) from exc
+        if (
+            ip.is_loopback
+            or ip.is_private
+            or ip.is_link_local
+            or ip.is_reserved
+            or ip.is_multicast
+            or ip.is_unspecified
+            or not ip.is_global
+        ):
+            raise AssetGenError(
+                f"refusing to contact host {host!r}: resolves to "
+                f"non-public address {addr}"
+            )
+
+
+def _max_download_bytes() -> int:
+    """Return the download size cap from ``CRS_ASSET_GEN_MAX_BYTES`` (default 256 MiB)."""
+    raw = os.environ.get(_ENV_MAX_DOWNLOAD_BYTES, "").strip()
+    if not raw:
+        return _DEFAULT_MAX_DOWNLOAD_BYTES
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise AssetGenError(
+            f"{_ENV_MAX_DOWNLOAD_BYTES} must be an integer, got {raw!r}"
+        ) from exc
+    if value <= 0:
+        raise AssetGenError(f"{_ENV_MAX_DOWNLOAD_BYTES} must be positive, got {value}")
+    return value
+
+
+def _declared_content_length(resp: Any) -> int | None:
+    """Return the response's ``Content-Length`` as int, or None when absent/invalid."""
+    raw = resp.headers.get("Content-Length")
+    if raw is None:
+        return None
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if value >= 0 else None
+
+
+def _raise_http_error(url: str, exc: urllib.error.HTTPError) -> NoReturn:
+    """Translate an ``HTTPError`` into the project error hierarchy."""
+    detail = ""
+    try:
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+    except Exception:  # noqa: BLE001 - best-effort error detail
+        pass
+    if exc.code in (401, 403):
+        raise AuthenticationError(f"HTTP {exc.code} for {url}: {detail or exc.reason}")
+    raise AssetGenError(f"HTTP {exc.code} for {url}: {detail or exc.reason}")
+
+
+# ---------------------------------------------------------------------------
+# Task id safety
+# ---------------------------------------------------------------------------
+
+
+def safe_task_id(raw: object, provider: str) -> str:
+    """Return ``raw`` when it is safe to use as a filename component.
+
+    Provider-supplied task ids are untrusted: anything outside
+    ``[A-Za-z0-9_-]{1,64}`` (path separators, ``..``, whitespace, ...) is
+    replaced with a 16-hex-char sha256 digest of its ``str()`` form so it can
+    never escape the staging directory.
+    """
+    text = str(raw)
+    if _TASK_ID_RE.fullmatch(text):
+        return text
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+    logger.warning(
+        "%s task id %r is not filename-safe; using digest %s",
+        provider,
+        text,
+        digest,
+    )
+    return digest
+
+
+# ---------------------------------------------------------------------------
 # HTTP helpers (module-level so tests can monkeypatch them)
 # ---------------------------------------------------------------------------
 
@@ -222,30 +402,34 @@ def _request(
 ) -> bytes:
     """Send an HTTP request and return the response body.
 
+    The URL is screened by :func:`validate_url` first; the body is read in
+    chunks and rejected beyond ``_MAX_RESPONSE_BYTES``.
+
     Raises:
         AuthenticationError: On HTTP 401/403.
         AssetGenError: On other HTTP errors, with the provider message.
     """
+    validate_url(url)
     req = urllib.request.Request(url, data=body, method=method)
     for key, value in (headers or {}).items():
         req.add_header(key, value)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data: bytes = resp.read()
-            return data
+            chunks: list[bytes] = []
+            received = 0
+            while True:
+                chunk = resp.read(_CHUNK_SIZE)
+                if not chunk:
+                    break
+                received += len(chunk)
+                if received > _MAX_RESPONSE_BYTES:
+                    raise AssetGenError(
+                        f"response body over {_MAX_RESPONSE_BYTES} bytes for {url}"
+                    )
+                chunks.append(chunk)
+            return b"".join(chunks)
     except urllib.error.HTTPError as exc:
-        detail = ""
-        try:
-            detail = exc.read().decode("utf-8", errors="replace")[:500]
-        except Exception:  # noqa: BLE001 - best-effort error detail
-            pass
-        if exc.code in (401, 403):
-            raise AuthenticationError(
-                f"HTTP {exc.code} for {url}: {detail or exc.reason}"
-            ) from exc
-        raise AssetGenError(
-            f"HTTP {exc.code} for {url}: {detail or exc.reason}"
-        ) from exc
+        _raise_http_error(url, exc)
     except urllib.error.URLError as exc:
         raise AssetGenError(f"connection error for {url}: {exc.reason}") from exc
 
@@ -283,20 +467,61 @@ def get_json(
     return result
 
 
-def download_file(url: str, dest: str | Path, *, timeout: float = 120.0) -> Path:
-    """Download ``url`` to ``dest`` atomically via a temp file."""
+def download_file(
+    url: str,
+    dest: str | Path,
+    *,
+    timeout: float = 120.0,
+    max_bytes: int | None = None,
+) -> Path:
+    """Stream ``url`` to ``dest`` atomically via a temp file.
+
+    The body is written incrementally (never materialized in memory) and
+    rejected once it exceeds ``max_bytes`` — which defaults to
+    ``CRS_ASSET_GEN_MAX_BYTES`` (256 MiB). A ``Content-Length`` that already
+    declares an oversized body is refused before any bytes are written.
+
+    Raises:
+        AssetGenError: Unsafe URL, HTTP errors, or an oversized body.
+        AuthenticationError: On HTTP 401/403.
+    """
     import tempfile
 
+    if max_bytes is None:
+        max_bytes = _max_download_bytes()
+    validate_url(url)
     dest_path = Path(dest)
     dest_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_fd, tmp_path = tempfile.mkstemp(suffix=".part", dir=str(dest_path.parent))
     tmp = Path(tmp_path)
     try:
-        body = _request("GET", url, timeout=timeout)
         with os.fdopen(tmp_fd, "wb") as fh:
-            for i in range(0, len(body), _CHUNK_SIZE):
-                fh.write(body[i : i + _CHUNK_SIZE])
+            req = urllib.request.Request(url, method="GET")
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                declared = _declared_content_length(resp)
+                if declared is not None and declared > max_bytes:
+                    raise AssetGenError(
+                        f"download of {url} declares {declared} bytes, "
+                        f"over the {max_bytes}-byte limit"
+                    )
+                received = 0
+                while True:
+                    chunk = resp.read(_CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    received += len(chunk)
+                    if received > max_bytes:
+                        raise AssetGenError(
+                            f"download of {url} exceeded the {max_bytes}-byte limit"
+                        )
+                    fh.write(chunk)
         tmp.replace(dest_path)
+    except urllib.error.HTTPError as exc:
+        tmp.unlink(missing_ok=True)
+        _raise_http_error(url, exc)
+    except urllib.error.URLError as exc:
+        tmp.unlink(missing_ok=True)
+        raise AssetGenError(f"connection error for {url}: {exc.reason}") from exc
     except Exception:
         tmp.unlink(missing_ok=True)
         raise
@@ -374,4 +599,6 @@ __all__ = [
     "image_to_data_uri",
     "poll_task",
     "post_json",
+    "safe_task_id",
+    "validate_url",
 ]

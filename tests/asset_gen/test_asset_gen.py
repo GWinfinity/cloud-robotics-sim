@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import socket
 from pathlib import Path
 
 import pytest
@@ -24,8 +25,14 @@ from cloud_robotics_sim.asset_gen import (
     rodin,
     tripo,
 )
+from cloud_robotics_sim.asset_gen import base as base_module
 from cloud_robotics_sim.asset_gen import client as client_module
-from cloud_robotics_sim.asset_gen.base import poll_task
+from cloud_robotics_sim.asset_gen.base import (
+    download_file,
+    poll_task,
+    safe_task_id,
+    validate_url,
+)
 
 # ---------------------------------------------------------------------------
 # Request validation
@@ -597,3 +604,298 @@ class TestCli:
         out = capsys.readouterr().out
         assert "tripo" in out and "meshy" in out
         assert "missing credentials" in out
+
+
+# ---------------------------------------------------------------------------
+# URL safety, size caps, and task-id sanitisation (audit H-2 / M-3)
+# ---------------------------------------------------------------------------
+
+
+def _stub_dns(monkeypatch, *addrs: str) -> None:
+    """Route ``socket.getaddrinfo`` to fixed addresses (keeps tests offline)."""
+
+    def fake_getaddrinfo(host, port, *args, **kwargs):
+        return [
+            (
+                socket.AF_INET6 if ":" in addr else socket.AF_INET,
+                socket.SOCK_STREAM,
+                socket.IPPROTO_TCP,
+                "",
+                (addr, 0, 0, 0) if ":" in addr else (addr, 0),
+            )
+            for addr in addrs
+        ]
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+
+
+@pytest.fixture(autouse=True)
+def _neutral_guard_env(monkeypatch):
+    """Clear asset_gen URL-guard env overrides for every test in this module."""
+    for var in (
+        "CRS_ASSET_GEN_ALLOW_HTTP",
+        "CRS_ASSET_GEN_ALLOW_PRIVATE",
+        "CRS_ASSET_GEN_ALLOWED_HOSTS",
+        "CRS_ASSET_GEN_MAX_BYTES",
+    ):
+        monkeypatch.delenv(var, raising=False)
+
+
+class _FakeResponse:
+    """Minimal urllib response stand-in: context manager + chunked ``read``."""
+
+    def __init__(
+        self,
+        data: bytes,
+        content_length: str | None = None,
+        max_chunk: int | None = None,
+    ):
+        self._data = data
+        self._pos = 0
+        self._max_chunk = max_chunk
+        self.reads: list[int] = []
+        self.headers: dict[str, str] = {}
+        if content_length is not None:
+            self.headers["Content-Length"] = content_length
+
+    def read(self, size: int = -1) -> bytes:
+        self.reads.append(size)
+        if self._max_chunk is not None and (size < 0 or size > self._max_chunk):
+            size = self._max_chunk
+        if size < 0:
+            size = len(self._data) - self._pos
+        chunk = self._data[self._pos : self._pos + size]
+        self._pos += len(chunk)
+        return chunk
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
+
+
+class TestValidateUrl:
+    """SSRF guard: scheme, userinfo, host allowlist, resolved addresses."""
+
+    def test_rejects_file_scheme(self):
+        with pytest.raises(AssetGenError, match="non-https"):
+            validate_url("file:///etc/passwd")
+
+    def test_http_rejected_without_env(self, monkeypatch):
+        monkeypatch.delenv("CRS_ASSET_GEN_ALLOW_HTTP", raising=False)
+        with pytest.raises(AssetGenError, match="non-https"):
+            validate_url("http://10.0.0.1/redis")
+
+    def test_http_allowed_with_env(self, monkeypatch):
+        monkeypatch.setenv("CRS_ASSET_GEN_ALLOW_HTTP", "1")
+        _stub_dns(monkeypatch, "93.184.216.34")
+        validate_url("http://example.com/x")
+
+    def test_rejects_userinfo(self):
+        with pytest.raises(AssetGenError, match="credentials"):
+            validate_url("https://user:pass@example.com/x")
+
+    def test_rejects_missing_hostname(self):
+        with pytest.raises(AssetGenError, match="hostname"):
+            validate_url("https:///path/only")
+
+    def test_rejects_literal_loopback(self):
+        with pytest.raises(AssetGenError, match="non-public"):
+            validate_url("https://127.0.0.1/x")
+
+    @pytest.mark.parametrize(
+        "ip",
+        [
+            "10.0.0.1",
+            "172.16.0.9",
+            "192.168.1.5",
+            "169.254.169.254",
+            "100.64.0.1",
+            "0.0.0.0",
+            "224.0.0.1",
+            "::1",
+            "fe80::1",
+            "fc00::1",
+            "ff02::1",
+            "::",
+        ],
+    )
+    def test_rejects_non_public_addresses(self, monkeypatch, ip):
+        _stub_dns(monkeypatch, ip)
+        with pytest.raises(AssetGenError, match="non-public"):
+            validate_url("https://api.example.com/x")
+
+    def test_rejects_when_any_resolved_address_is_private(self, monkeypatch):
+        _stub_dns(monkeypatch, "93.184.216.34", "10.0.0.5")
+        with pytest.raises(AssetGenError, match="non-public"):
+            validate_url("https://api.example.com/x")
+
+    def test_allows_public_addresses(self, monkeypatch):
+        _stub_dns(monkeypatch, "93.184.216.34", "2606:2800:220:1:248:1893:25c8:1946")
+        validate_url("https://api.example.com/x")
+
+    def test_private_allowed_with_env(self, monkeypatch):
+        monkeypatch.setenv("CRS_ASSET_GEN_ALLOW_PRIVATE", "1")
+        _stub_dns(monkeypatch, "10.0.0.5")
+        validate_url("https://api.example.com/x")
+
+    def test_allowlist(self, monkeypatch):
+        monkeypatch.setenv("CRS_ASSET_GEN_ALLOWED_HOSTS", "example.com,.tripo.dev")
+        _stub_dns(monkeypatch, "93.184.216.34")
+        with pytest.raises(AssetGenError, match="CRS_ASSET_GEN_ALLOWED_HOSTS"):
+            validate_url("https://evil.com/x")
+        validate_url("https://example.com/x")
+        validate_url("https://api.tripo.dev/x")
+
+    def test_allowlist_rejects_lookalike_suffix(self, monkeypatch):
+        monkeypatch.setenv("CRS_ASSET_GEN_ALLOWED_HOSTS", ".example.com")
+        with pytest.raises(AssetGenError, match="CRS_ASSET_GEN_ALLOWED_HOSTS"):
+            validate_url("https://notexample.com/x")
+
+
+class TestResponseSizeLimits:
+    """Bounded reads for API responses and streamed downloads."""
+
+    def test_default_response_cap_is_small(self):
+        assert base_module._MAX_RESPONSE_BYTES == 16 << 20
+
+    def test_request_rejects_oversized_body(self, monkeypatch):
+        _stub_dns(monkeypatch, "93.184.216.34")
+        monkeypatch.setattr(base_module, "_MAX_RESPONSE_BYTES", 1024)
+        monkeypatch.setattr(
+            "urllib.request.urlopen",
+            lambda req, timeout=60.0: _FakeResponse(b"x" * 2048),
+        )
+        with pytest.raises(AssetGenError, match="over 1024 bytes"):
+            base_module._request("GET", "https://example.com/api")
+
+    def test_request_reads_small_body(self, monkeypatch):
+        _stub_dns(monkeypatch, "93.184.216.34")
+        monkeypatch.setattr(
+            "urllib.request.urlopen",
+            lambda req, timeout=60.0: _FakeResponse(b'{"ok": 1}'),
+        )
+        assert base_module._request("GET", "https://example.com/api") == b'{"ok": 1}'
+
+    def test_request_never_opens_unsafe_url(self, monkeypatch):
+        opened: list[int] = []
+        monkeypatch.setattr(
+            "urllib.request.urlopen", lambda *args, **kwargs: opened.append(1)
+        )
+        with pytest.raises(AssetGenError, match="non-https"):
+            base_module._request("GET", "file:///etc/passwd")
+        assert opened == []
+
+    def test_download_streams_in_chunks(self, monkeypatch, tmp_path):
+        _stub_dns(monkeypatch, "93.184.216.34")
+        fake_resp = _FakeResponse(b"y" * 2048, max_chunk=512)
+        monkeypatch.setattr("urllib.request.urlopen", lambda req, timeout=0: fake_resp)
+        dest = download_file(
+            "https://example.com/m.glb", tmp_path / "m.glb", max_bytes=4096
+        )
+        assert dest.read_bytes() == b"y" * 2048
+        assert len(fake_resp.reads) >= 4  # chunked reads, never one full read
+
+    def test_download_truncates_over_max_bytes(self, monkeypatch, tmp_path):
+        _stub_dns(monkeypatch, "93.184.216.34")
+        monkeypatch.setattr(
+            "urllib.request.urlopen",
+            lambda req, timeout=0: _FakeResponse(b"x" * 4096),
+        )
+        with pytest.raises(AssetGenError, match="exceeded the 1024-byte limit"):
+            download_file(
+                "https://example.com/m.glb", tmp_path / "m.glb", max_bytes=1024
+            )
+        assert not (tmp_path / "m.glb").exists()
+        assert list(tmp_path.iterdir()) == []  # temp file cleaned up
+
+    def test_download_rejects_oversized_content_length(self, monkeypatch, tmp_path):
+        _stub_dns(monkeypatch, "93.184.216.34")
+        monkeypatch.setattr(
+            "urllib.request.urlopen",
+            lambda req, timeout=0: _FakeResponse(b"x" * 100, content_length="1000000"),
+        )
+        with pytest.raises(AssetGenError, match="declares 1000000 bytes"):
+            download_file(
+                "https://example.com/m.glb", tmp_path / "m.glb", max_bytes=1024
+            )
+        assert list(tmp_path.iterdir()) == []
+
+    def test_download_default_max_from_env(self, monkeypatch, tmp_path):
+        _stub_dns(monkeypatch, "93.184.216.34")
+        monkeypatch.setenv("CRS_ASSET_GEN_MAX_BYTES", "1024")
+        monkeypatch.setattr(
+            "urllib.request.urlopen",
+            lambda req, timeout=0: _FakeResponse(b"x" * 2048),
+        )
+        with pytest.raises(AssetGenError, match="1024-byte limit"):
+            download_file("https://example.com/m.glb", tmp_path / "m.glb")
+        assert list(tmp_path.iterdir()) == []
+
+    def test_download_rejects_file_url(self, tmp_path):
+        with pytest.raises(AssetGenError, match="non-https"):
+            download_file("file:///etc/passwd", tmp_path / "x.bin")
+
+
+class TestSafeTaskId:
+    """Filename sanitisation for provider-supplied task ids."""
+
+    def test_clean_ids_pass_through(self):
+        for raw in ("t-123", "job_1", "0", "A" * 64):
+            assert safe_task_id(raw, "meshy") == raw
+
+    def test_path_traversal_is_replaced_by_digest(self):
+        digest = safe_task_id("a/../../b", "meshy")
+        assert digest == hashlib.sha256(b"a/../../b").hexdigest()[:16]
+        assert "/" not in digest and "\\" not in digest
+
+    @pytest.mark.parametrize(
+        "raw", ["", "a b", "x" * 65, "id\n", "../x", "a\\b", "a:b", "a/../b"]
+    )
+    def test_unsafe_ids_hashed(self, raw):
+        out = safe_task_id(raw, "tripo")
+        assert out == hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+        assert all(c in "0123456789abcdef" for c in out)
+
+
+class _EvilProvider:
+    name = "evil"
+    env_vars = ()
+
+    def configured(self):
+        return True
+
+    def submit(self, request):
+        return TaskHandle("evil", "a/../../b", "text")
+
+    def poll(self, handle):
+        return "succeeded", "https://example.com/model.glb"
+
+
+class TestClientTaskIdSanitising:
+    """Staging filenames cannot be escaped by a hostile task id."""
+
+    def test_generate_contains_path_traversal(self, tmp_path, monkeypatch):
+        register_provider(_EvilProvider())
+
+        def fake_download(url, dest, *, timeout=120.0):
+            dest = Path(dest)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_bytes(b"glb-bytes")
+            return dest
+
+        monkeypatch.setattr(client_module, "download_file", fake_download)
+        client = AssetGenClient("evil", poll_timeout=5, poll_interval=0)
+        result = client.generate_text("木椅", out_dir=tmp_path)
+
+        digest = hashlib.sha256(b"a/../../b").hexdigest()[:16]
+        assert result.model_file == tmp_path / f"evil_{digest}.glb"
+        assert result.model_file.read_bytes() == b"glb-bytes"
+        assert result.task_id == "a/../../b"  # raw id kept for reconciliation
+        assert result.metadata["sanitized_task_id"] == digest
+        prov = json.loads(
+            (tmp_path / f"evil_{digest}.json").read_text(encoding="utf-8")
+        )
+        assert prov["task_id"] == "a/../../b"
+        assert not (tmp_path.parent / "b.glb").exists()

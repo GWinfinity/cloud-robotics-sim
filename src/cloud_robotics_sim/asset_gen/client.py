@@ -34,6 +34,7 @@ from .base import (
     TaskHandle,
     download_file,
     poll_task,
+    safe_task_id,
 )
 from .hunyuan3d import TencentProvider
 from .meshy import MeshyProvider
@@ -143,20 +144,24 @@ class AssetGenClient:
 
             <out_dir>/<provider>_<task_id>.glb
             <out_dir>/<provider>_<task_id>.json   # provenance
+
+        Provider-supplied ``task_id`` values are sanitised via
+        :func:`base.safe_task_id` before being used in file names (a hostile
+        id like ``a/../../b`` becomes a sha256 digest), so downloads can never
+        escape ``out_dir``. The provenance JSON keeps the raw ``task_id``.
         """
         handle = self.submit(request)
         logger.info("submitted %s task %s", handle.provider, handle.task_id)
         url = self.wait(handle)
         out_path = Path(out_dir)
-        model_file = download_file(
-            url, out_path / f"{handle.provider}_{handle.task_id}.glb"
-        )
+        safe_id = safe_task_id(handle.task_id, handle.provider)
+        model_file = download_file(url, out_path / f"{handle.provider}_{safe_id}.glb")
         result = GenerationResult(
             provider=handle.provider,
             task_id=handle.task_id,
             model_file=model_file,
             source_url=url,
-            metadata={"kind": handle.kind},
+            metadata={"kind": handle.kind, "sanitized_task_id": safe_id},
         )
         self._write_provenance(result, request, out_path)
         return result
@@ -199,7 +204,10 @@ class AssetGenClient:
             "license": "generated; see provider terms for commercial use",
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-        prov_file = out_dir / f"{result.provider}_{result.task_id}.json"
+        safe_id: str = result.metadata.get("sanitized_task_id") or safe_task_id(
+            result.task_id, result.provider
+        )
+        prov_file = out_dir / f"{result.provider}_{safe_id}.json"
         prov_file.write_text(
             json.dumps(provenance, ensure_ascii=False, indent=2), encoding="utf-8"
         )
