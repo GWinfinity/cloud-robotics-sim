@@ -27,10 +27,24 @@ spec:
         app: sim-worker
         tier: cpu
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: worker
           image: genesis-cloud-sim:cpu # replace with your registry/image:tag
           imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           command:
             - python
             - -m
@@ -39,8 +53,13 @@ spec:
             - --queue
             - sim-tasks-cpu
           env:
+            # Connection string (incl. password) from the Secret created from
+            # secret.example.yaml; both keys must carry the same password.
             - name: REDIS_URL
-              value: redis://redis:6379/0
+              valueFrom:
+                secretKeyRef:
+                  name: sim-redis
+                  key: url
             - name: QUEUE_NAME
               value: sim-tasks-cpu
             - name: GENESIS_BACKEND
@@ -57,8 +76,15 @@ spec:
               cpu: "4"
               memory: 8Gi
           volumeMounts:
+            # The root filesystem is read-only: the Genesis cache and the
+            # worker's record output need explicit writable mounts.
             - name: genesis-cache
               mountPath: /home/dev/.cache
+            - name: records
+              mountPath: /tmp/records
       volumes:
         - name: genesis-cache
           emptyDir: {}
+        - name: records
+          emptyDir:
+            sizeLimit: 4Gi

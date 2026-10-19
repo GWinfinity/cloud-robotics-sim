@@ -5,16 +5,22 @@ on:
     workflows: ["CI"]
     types:
       - completed
+    branches:
+      - main
 
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
 
 jobs:
   auto-fix:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'failure'
+    # Only react to CI failures on this repository's own main branch:
+    # ignore forks and other branches.
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     
     steps:
     - uses: actions/checkout@v4
@@ -61,10 +67,19 @@ jobs:
           echo "has_changes=false" >> "$GITHUB_OUTPUT"
         fi
     
-    - name: Direct commit fixes
+    - name: Commit fixes to a branch and open a PR
       if: steps.check-changes.outputs.has_changes == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        BRANCH="style/auto-fix-${GITHUB_RUN_ID}"
+        git checkout -b "$BRANCH"
         git add -A
-        git commit -m "style: Auto-fix lint and formatting issues [skip ci]"
-        git push origin HEAD:main
-        echo "✅ Changes committed directly to main"
+        git commit -m "style: Auto-fix lint and formatting issues"
+        git push origin "$BRANCH"
+        gh pr create \
+          --repo ${{ github.repository }} \
+          --title "style: Auto-fix lint and formatting issues" \
+          --body "Automated style fixes for the failed CI run ${GITHUB_RUN_ID}. Please review and merge if the changes look correct." \
+          --base main \
+          --head "$BRANCH" || echo "PR creation failed (maybe already open)"

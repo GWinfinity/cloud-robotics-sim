@@ -5,6 +5,8 @@ on:
     workflows: ["CI"]
     types:
       - completed
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -13,7 +15,12 @@ permissions:
 jobs:
   auto-fix-pr:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'failure'
+    # Only react to CI failures on this repository's own main branch:
+    # ignore forks and other branches.
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     
     steps:
     - uses: actions/checkout@v4

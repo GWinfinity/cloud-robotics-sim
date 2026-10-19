@@ -52,11 +52,24 @@ docker build \
 docker push <registry>/genesis-cloud-sim:gpu
 ```
 
-注意镜像内置了 `redis` 依赖（`pip install -e ".[dev]"` 安装的是 `all` extra，
-已包含 `k8s`）。然后修改 `deploy/kubernetes/sim-worker-{cpu,gpu}.yaml` 中的
-`image` 字段为你的 registry 地址。
+注意镜像按 `uv.lock` 锁文件安装依赖（`uv sync --frozen --extra dev`，见
+`Dockerfile`）；队列 worker 还需要 `k8s` extra 里的 `redis` 客户端，部署前请确认
+镜像里已安装（例如在 Dockerfile 的 `uv sync` 上追加 `--extra k8s`）。然后修改
+`deploy/kubernetes/sim-worker-{cpu,gpu}.yaml` 中的 `image` 字段为你的 registry 地址。
 
 ## 部署
+
+先创建 Redis 凭据 Secret（`redis.yaml` 的 `--requirepass`、worker 的 `REDIS_URL`
+都从这里取，两处密码必须一致；参考 `deploy/kubernetes/secret.example.yaml`）：
+
+```bash
+kubectl create secret generic sim-redis -n genesis-sim \
+  --from-literal=password='<PASSWORD>' \
+  --from-literal=url='redis://:<PASSWORD>@redis:6379/0'
+```
+
+再部署其余组件（含限制 Redis 访问来源的 `networkpolicy.yaml`，只放行
+`app: sim-worker` / `role: task-producer` 的 Pod）：
 
 ```bash
 kubectl apply -k deploy/kubernetes/
@@ -77,15 +90,15 @@ kubectl -n genesis-sim get pods
 在本地（需要 `pip install cloud-robotics-sim[k8s]`）或集群内任一 Pod 中执行：
 
 ```bash
-# CPU 队列
+# CPU 队列（Redis 已启用 requirepass，URL 需带密码）
 python scripts/k8s_submit_task.py \
-  --redis-url localhost:6379 \
+  --redis-url 'redis://:<PASSWORD>@localhost:6379/0' \
   --queue sim-tasks-cpu \
   --type patent --param run=US821393 --param steps=500
 
 # GPU 队列
 python scripts/k8s_submit_task.py \
-  --redis-url localhost:6379 \
+  --redis-url 'redis://:<PASSWORD>@localhost:6379/0' \
   --queue sim-tasks-gpu \
   --type patent --param run=US821393 --param device=cuda
 ```
@@ -102,7 +115,8 @@ kubectl -n genesis-sim logs -l app=sim-worker -f
 结果以 JSON 追加到 Redis 的 `sim-results` 列表：
 
 ```bash
-kubectl -n genesis-sim exec deploy/redis -- redis-cli LRANGE sim-results 0 -1
+kubectl -n genesis-sim exec deploy/redis -- \
+  redis-cli -a '<PASSWORD>' LRANGE sim-results 0 -1
 ```
 
 也可以在集群内运行一个一次性 worker 处理任务并直接看日志：
@@ -134,9 +148,12 @@ kubectl -n genesis-sim run worker-once --rm -i --restart=Never \
 
 ## 生产化注意事项
 
-- **Redis**：manifest 中的 Redis 是无持久化的单实例，仅用于演示。生产环境请换成
-  托管 Redis / Redis Sentinel，并通过 `deploy/kubernetes/secret.example.yaml`
-  的方式以 Secret 注入带凭据的 `REDIS_URL`。
+- **Redis**：manifest 中的 Redis 已启用 `--requirepass`（密码来自 `sim-redis`
+  Secret）并受 `networkpolicy.yaml` 保护，但仍是无持久化单实例，仅用于演示。
+  生产环境请换成托管 Redis / Redis Sentinel，并按
+  `deploy/kubernetes/secret.example.yaml` 以 Secret 注入带凭据的 `REDIS_URL`。
+  注意 NetworkPolicy 只放行 `app: sim-worker` / `role: task-producer` 的 Pod，
+  KEDA operator 需要另行放行才能读取队列长度（见 networkpolicy.yaml 注释）。
 - **GPU 调度**：按集群实际标签调整 `sim-worker-gpu.yaml` 的 `nodeSelector`
   （GPU Operator 常用 `nvidia.com/gpu.present: "true"`）；如需隔离 GPU 节点池，
   为 worker 添加对应的 `tolerations`。

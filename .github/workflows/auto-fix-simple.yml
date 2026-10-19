@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   auto-fix:
@@ -75,10 +76,19 @@ jobs:
         echo "Remote info:"
         git remote -v
     
-    - name: Commit and push directly
+    - name: Commit fixes to a branch and open a PR
       if: steps.check-changes.outputs.has_changes == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        BRANCH="style/auto-fix-${GITHUB_RUN_ID}"
+        git checkout -b "$BRANCH"
         git add -A
-        git commit -m "style: Auto-fix lint and formatting issues [skip ci]"
-        git push origin HEAD:main
-        echo "✅ Changes pushed successfully"
+        git commit -m "style: Auto-fix lint and formatting issues"
+        git push origin "$BRANCH"
+        gh pr create \
+          --repo ${{ github.repository }} \
+          --title "style: Auto-fix lint and formatting issues" \
+          --body "Automated style fixes. Please review and merge if the changes look correct." \
+          --base main \
+          --head "$BRANCH" || echo "PR creation failed (maybe already open)"

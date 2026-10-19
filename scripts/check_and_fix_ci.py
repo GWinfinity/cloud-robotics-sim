@@ -2,8 +2,10 @@
 """Run local quality checks and apply safe auto-fixes.
 
 This script runs ruff, black, and mypy locally. It will auto-fix lint issues
-and format code, but it never commits or pushes changes. Review the diff
-before committing.
+and format code in the working tree only — this script itself never commits
+or pushes anything. (The GitHub Actions auto-fix workflows are what commit
+style fixes, via a ``style/auto-fix-*`` branch and a pull request.) Review
+the diff before committing it yourself.
 """
 
 import subprocess

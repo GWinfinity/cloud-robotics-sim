@@ -39,15 +39,16 @@ dependencies = [
     # Core physics
     "genesis-world==1.4.0",
     "taichi>=1.7.0",
-    # Geometry & mesh processing
-    "trimesh>=4.0.0",
+    # Geometry & mesh processing (trimesh parses untrusted mesh files:
+    # upper-bound the major version to cap parser risk)
+    "trimesh>=4.0.0,<5",
     "pyglet<2",
     "networkx>=3.0",
     "scipy>=1.10",
     "shapely>=2.0",
-    # 3D & visualization
+    # 3D & visualization (pillow decodes untrusted images: cap major version)
     "pygltflib>=1.16.0",
-    "pillow>=10.0",
+    "pillow>=10.0,<13",
     "opencv-python>=4.8.0",
     "matplotlib>=3.8.0",
     # Deep learning
@@ -62,11 +63,7 @@ dependencies = [
     "pydantic>=2.5.0",
     "tqdm>=4.66.0",
     "python-dotenv>=1.0.0",
-    # Web & API
-    "fastapi>=0.104.0",
-    "uvicorn>=0.24.0",
     # Utilities
-    "requests>=2.31.0",
     "packaging>=24.0",
 ]
 
@@ -110,8 +107,21 @@ cad = [
 
 # Editable sparse voxel volumes + native OpenVDB interop for the vdb module
 # (see src/cloud_robotics_sim/vdb/core/vdb_xuvdb.py).
+# >=1.3.3: mesh_to_level_set / offset / smooth and the v1.3 SDF surface
+# operators (1.2.0 predates them). The Aliyun mirror lags PyPI on xuvdb, so
+# [tool.uv.sources] below pins it to the explicit pypi-org index; once the
+# mirror carries 1.3.3+, drop that source and this resolves from the
+# domestic mirror like everything else.
 xuvdb = [
-    "xuvdb>=1.0",
+    "xuvdb>=1.3.3",
+]
+
+# LEAP71 ShapeKernel Python port (sibling checkout) for the wfc_scenes SDF
+# bridge (plugins/scenes/wfc_scenes/sdf_bake.py). Guarded like robomat: the
+# plugin only needs it inside shapekernel_prims_to_sdf, and the uv source
+# below only resolves for uv users who opt into the extra.
+shapekernel = [
+    "shapekernel>=0.1",
 ]
 
 # rsl-rl PPO training loop for batched VecTask environments
@@ -242,5 +252,6 @@ exclude_lines = [
 
 [tool.uv.sources]
 robomat = { path = "../robomat", editable = true }
+shapekernel = { path = "../shapekernel", editable = true }
 # Aliyun mirror does not carry xuvdb; resolve it from pypi.org instead.
 xuvdb = { index = "pypi-org" }

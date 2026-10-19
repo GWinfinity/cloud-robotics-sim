@@ -7,6 +7,14 @@
 # maps 1:1 to the desired replica count (1 pending task -> 1 worker).
 # The CPU and GPU workers use SEPARATE queues (sim-tasks-cpu /
 # sim-tasks-gpu) so the same queue never scales both tiers at once.
+#
+# maxReplicaCount is deliberately conservative: with listLength=1, N queued
+# messages = N pods, so a burst (or garbage messages) can otherwise fill the
+# cluster. Adjust to your actual node capacity.
+#
+# REDIS_URL (via connectionFromEnv) must include the Redis password now that
+# redis.yaml enables --requirepass; point it at the `url` key of the
+# sim-redis Secret (see secret.example.yaml).
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -18,7 +26,9 @@ spec:
   scaleTargetRef:
     name: sim-worker-cpu
   minReplicaCount: 0
-  maxReplicaCount: 32
+  # Tune to your node capacity; listLength=1 means N queued messages -> N
+  # pods, so the cap is what keeps garbage messages from filling the cluster.
+  maxReplicaCount: 8
   pollingInterval: 15
   cooldownPeriod: 120
   triggers:
@@ -39,7 +49,8 @@ spec:
   scaleTargetRef:
     name: sim-worker-gpu
   minReplicaCount: 0
-  maxReplicaCount: 8
+  # Tune to your node capacity; see the note above.
+  maxReplicaCount: 4
   pollingInterval: 15
   cooldownPeriod: 120
   triggers:

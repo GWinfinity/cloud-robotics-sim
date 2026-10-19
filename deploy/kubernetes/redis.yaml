@@ -19,9 +19,44 @@ spec:
       labels:
         app: redis
     spec:
+      securityContext:
+        runAsNonRoot: true
+        # redis:7-alpine declares no image USER (its entrypoint drops to the
+        # redis user via gosu), so an explicit UID is required for
+        # runAsNonRoot. 999/1000 is the redis user in redis:7-alpine; adjust
+        # if you swap the image. fsGroup keeps the /data emptyDir writable.
+        runAsUser: 999
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: redis
           image: redis:7-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            # redis:7-alpine only writes to its /data directory (mounted as
+            # an emptyDir below), so a read-only root filesystem is safe.
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          # Password comes from the Secret (see secret.example.yaml) and must
+          # match the password embedded in the workers' REDIS_URL. noeviction:
+          # the queue must never silently drop tasks under memory pressure.
+          args:
+            - --requirepass
+            - $(REDIS_PASSWORD)
+            - --maxmemory
+            - 256mb
+            - --maxmemory-policy
+            - noeviction
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sim-redis
+                  key: password
           ports:
             - containerPort: 6379
           resources:
@@ -30,7 +65,17 @@ spec:
               memory: 64Mi
             limits:
               cpu: "1"
-              memory: 256Mi
+              # Headroom over --maxmemory 256mb for Redis overhead; a 256Mi
+              # limit would OOM-kill the pod at full --maxmemory.
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        # Redis persistence/working directory (required by the read-only
+        # root filesystem; no durability needed for the queue demo).
+        - name: data
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

@@ -1,0 +1,28 @@
+# NetworkPolicy: only sim-worker pods and task producers may reach Redis.
+#
+# NOTE: the KEDA operator (usually in the `keda` namespace) also needs
+# 6379/TCP access to read the queue length; if scaling stops after applying
+# this policy, add a namespaceSelector for the KEDA namespace to the `from`
+# list below (or run KEDA in genesis-sim).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-allow-workers
+  namespace: genesis-sim
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: sim-worker
+        - podSelector:
+            matchLabels:
+              role: task-producer
+      ports:
+        - protocol: TCP
+          port: 6379
