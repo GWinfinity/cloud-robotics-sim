@@ -209,7 +209,7 @@ def example_downstream_training():
 
 1. 加载预训练VAE
    vae = LatentActionVAE(action_dim=50, latent_dim=8)
-   vae.load_state_dict(torch.load('slac_pretrained.pt'))
+   vae.load_state_dict(torch.load('slac_pretrained.pt', weights_only=True))
    vae.eval()  # 冻结!
 
 2. 创建下游策略

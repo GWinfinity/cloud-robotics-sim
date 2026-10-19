@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import builtins
+import os
+import pickle
 import tempfile
 from pathlib import Path
 
@@ -114,3 +117,57 @@ class TestRobotwinBridge:
 
         frame = loader[0]
         np.testing.assert_array_equal(frame.robot_achieved_qpos, np.arange(14) + 0.5)
+
+
+class _EvilEval:
+    """Pickles as a ``builtins.eval`` call — classic ``__reduce__`` RCE."""
+
+    def __init__(self, expr: str) -> None:
+        self._expr = expr
+
+    def __reduce__(self):
+        return (builtins.eval, (self._expr,))
+
+
+class _EvilSystem:
+    """Pickles as an ``os.system`` call."""
+
+    def __init__(self, cmd: str) -> None:
+        self._cmd = cmd
+
+    def __reduce__(self):
+        return (os.system, (self._cmd,))
+
+
+class TestRestrictedUnpickling:
+    """``RobotwinBridge.load`` must refuse pickles outside the bridge graph."""
+
+    def test_load_rejects_reduce_to_eval(self) -> None:
+        """A pickle whose ``__reduce__`` calls ``builtins.eval`` is refused."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            marker = Path(tmpdir) / "pwned.txt"
+            path = Path(tmpdir) / "evil.pkl"
+            payload = _EvilEval(
+                f"__import__('pathlib').Path({str(marker)!r}).write_text('pwned')"
+            )
+            with open(path, "wb") as f:
+                pickle.dump(payload, f)
+
+            with pytest.raises(pickle.UnpicklingError):
+                RobotwinBridge.load(path)
+
+            assert not marker.exists(), "payload side effect must not run"
+
+    def test_load_rejects_reduce_to_os_system(self) -> None:
+        """A pickle whose ``__reduce__`` calls ``os.system`` is refused."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            marker = Path(tmpdir) / "pwned.txt"
+            path = Path(tmpdir) / "evil.pkl"
+            payload = _EvilSystem(f'echo pwned> "{marker}"')
+            with open(path, "wb") as f:
+                pickle.dump(payload, f)
+
+            with pytest.raises(pickle.UnpicklingError):
+                RobotwinBridge.load(path)
+
+            assert not marker.exists(), "payload side effect must not run"

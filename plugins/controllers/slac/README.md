@@ -79,7 +79,7 @@ from cloud_robotics_sim.plugins.controllers.slac import (
 
 # 加载预训练的潜在动作VAE
 latent_action_vae = LatentActionVAE(action_dim=50, latent_dim=8)
-latent_action_vae.load_state_dict(torch.load('slac_pretrained.pt'))
+latent_action_vae.load_state_dict(torch.load('slac_pretrained.pt', weights_only=True))
 
 # 创建下游策略 (在潜在空间学习)
 downstream_policy = DownstreamPolicy(

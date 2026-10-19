@@ -266,4 +266,4 @@ class PolicyDistillation:
     
     def load(self, path: str):
         """加载学生策略"""
-        self.student_policy.load_state_dict(torch.load(path))
+        self.student_policy.load_state_dict(torch.load(path, weights_only=True))

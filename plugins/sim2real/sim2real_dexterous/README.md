@@ -99,9 +99,9 @@ from cloud_robotics_sim.plugins.sim2real import PolicyDistillation
 
 # 加载单任务专家
 experts = {
-    'grasp_and_reach': torch.load('expert_grasp.pt'),
-    'box_lift': torch.load('expert_lift.pt'),
-    'bimanual_handover': torch.load('expert_handover.pt')
+    'grasp_and_reach': torch.load('expert_grasp.pt', weights_only=True),
+    'box_lift': torch.load('expert_lift.pt', weights_only=True),
+    'bimanual_handover': torch.load('expert_handover.pt', weights_only=True)
 }
 
 # 创建蒸馏器

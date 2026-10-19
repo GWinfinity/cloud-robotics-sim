@@ -347,7 +347,7 @@ class PPO:
     
     def load(self, path: str):
         """加载模型"""
-        checkpoint = torch.load(path, map_location=self.device)
+        checkpoint = torch.load(path, map_location=self.device, weights_only=True)
         self.policy.load_state_dict(checkpoint['policy_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.total_steps = checkpoint.get('total_steps', 0)

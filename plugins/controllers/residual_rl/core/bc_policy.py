@@ -277,7 +277,7 @@ class BCTrainer:
     
     def load(self, path: str):
         """加载策略"""
-        checkpoint = torch.load(path, map_location=self.device)
+        checkpoint = torch.load(path, map_location=self.device, weights_only=True)
         self.policy.load_state_dict(checkpoint['policy'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.train_step = checkpoint['train_step']

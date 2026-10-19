@@ -383,7 +383,7 @@ class ResidualSAC:
     
     def load(self, path: str):
         """加载模型"""
-        checkpoint = torch.load(path, map_location=self.device)
+        checkpoint = torch.load(path, map_location=self.device, weights_only=True)
         self.residual_network.load_state_dict(checkpoint['residual_network'])
         self.q1.load_state_dict(checkpoint['q1'])
         self.q2.load_state_dict(checkpoint['q2'])

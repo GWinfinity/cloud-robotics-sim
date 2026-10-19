@@ -318,7 +318,7 @@ class WBMTrainer:
     
     def load(self, path: str):
         """加载模型"""
-        checkpoint = torch.load(path)
+        checkpoint = torch.load(path, weights_only=True)
         self.teacher.load_state_dict(checkpoint['teacher'])
         self.student.load_state_dict(checkpoint['student'])
         self.teacher_optimizer.load_state_dict(checkpoint['teacher_optimizer'])

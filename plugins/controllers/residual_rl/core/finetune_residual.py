@@ -57,7 +57,7 @@ def finetune(args):
         visual_encoder=visual_encoder
     ).to(args.device)
     
-    checkpoint = torch.load(args.bc_checkpoint, map_location=args.device)
+    checkpoint = torch.load(args.bc_checkpoint, map_location=args.device, weights_only=True)
     bc_policy.load_state_dict(checkpoint['policy'])
     
     # 冻结BC策略

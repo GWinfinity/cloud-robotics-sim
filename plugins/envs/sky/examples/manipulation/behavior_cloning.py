@@ -218,6 +218,12 @@ class BehaviorCloning:
 
     def load(self, path: str) -> None:
         """Load model checkpoint."""
+        # weights_only=False is required here: this checkpoint is a full
+        # training state (model/optimizer state dicts + current_iter + the
+        # caller-supplied `config` object), which is not guaranteed to be
+        # weights-only loadable. Only feed checkpoints produced by this
+        # trainer's save() (i.e. your own training output) — never files from
+        # untrusted sources.
         checkpoint = torch.load(path, map_location=self._device, weights_only=False)
         self._policy.load_state_dict(checkpoint["model_state_dict"])
         self._optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
@@ -226,6 +232,9 @@ class BehaviorCloning:
 
     def load_finetuned_model(self, path: str) -> None:
         """Load a fine-tuned model checkpoint."""
+        # See load(): full-unpickle of a self-produced training checkpoint
+        # (model/optimizer state dicts + current_iter + `config`). Do not load
+        # untrusted checkpoints here.
         checkpoint = torch.load(path, map_location=self._device, weights_only=False)
         self._policy.load_state_dict(checkpoint["model_state_dict"])
         self._optimizer.load_state_dict(checkpoint["optimizer_state_dict"])

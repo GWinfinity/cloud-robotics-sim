@@ -304,7 +304,7 @@ class PPOTrainer:
     
     def load(self, path: str):
         """加载模型"""
-        checkpoint = torch.load(path, map_location=self.device)
+        checkpoint = torch.load(path, map_location=self.device, weights_only=True)
         
         self.policy.load_state_dict(checkpoint['policy'])
         self.value_net.load_state_dict(checkpoint['value'])

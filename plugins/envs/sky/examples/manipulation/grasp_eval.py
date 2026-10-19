@@ -86,7 +86,7 @@ def load_rl_policy(env, train_cfg, log_dir):
     )
     
     # Load the checkpoint state
-    state_dict = torch.load(checkpoint_path, map_location=gs.device)
+    state_dict = torch.load(checkpoint_path, map_location=gs.device, weights_only=True)
     policy.load_state_dict(state_dict)
     policy.to(gs.device)
     policy.eval()
@@ -138,7 +138,7 @@ def load_bc_policy(env, bc_cfg, log_dir):
     )
     
     # Load the checkpoint state
-    state_dict = torch.load(checkpoint_path, map_location=gs.device)
+    state_dict = torch.load(checkpoint_path, map_location=gs.device, weights_only=True)
     policy.load_state_dict(state_dict)
     policy.to(gs.device)
     policy.eval()

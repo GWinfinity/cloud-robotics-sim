@@ -207,7 +207,7 @@ def load_teacher_policy(env, rl_train_cfg, exp_name):
     )
     
     # Load the checkpoint state
-    state_dict = torch.load(last_ckpt, map_location=gs.device)
+    state_dict = torch.load(last_ckpt, map_location=gs.device, weights_only=True)
     policy.load_state_dict(state_dict["policy"])
     policy.to(gs.device)
     
