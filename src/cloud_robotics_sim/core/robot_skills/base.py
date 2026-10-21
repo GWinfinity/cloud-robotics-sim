@@ -17,6 +17,11 @@ Design notes:
 - Grasp candidates come from RoboTwin ``model_dataN.json``
   (``contact_points_pose``) via :mod:`grasp_points` — a deliberate bypass of
   the suspended W3 annotation layer (documented plan deviation).
+
+The P1 remainder of the RoboDojo skill library (handover/insert/open/close/
+stack/push_up) builds on the same ``SkillContext``; the environment
+capabilities they need (object extents, articulated-joint info/drive) enter
+as optional hooks defaulting to ``None``.
 """
 
 from __future__ import annotations
@@ -50,6 +55,32 @@ class SkillExecutionError(RuntimeError):
 
 
 @dataclass
+class JointInfo:
+    """Description of one revolute joint on a scene object.
+
+    Produced by the optional ``get_joint_info`` hook (real-harness wiring in
+    ``tools/run_skill_ab.py``); consumed by the ``open``/``close`` primitives.
+
+    Attributes:
+        name: Joint name as reported by the backend.
+        axis: Unit rotation axis ``(3,)`` in world coordinates.
+        anchor: Joint anchor / arc center ``(3,)`` in world coordinates.
+        dof_index: Local DOF index of the joint inside its entity.
+        position: Current joint position (rad).
+        lower: Lower position limit (rad).
+        upper: Upper position limit (rad).
+    """
+
+    name: str
+    axis: np.ndarray
+    anchor: np.ndarray
+    dof_index: int
+    position: float
+    lower: float
+    upper: float
+
+
+@dataclass
 class SkillContext:
     """Everything a skill primitive needs from the runtime environment.
 
@@ -70,6 +101,15 @@ class SkillContext:
         set_gripper: ``(value) -> None`` with 1.0 = open, 0.0 = closed.
         attach: ``(object_name) -> None`` bind object to the EE.
         detach: ``(object_name) -> None`` release it.
+        get_entity_extents: ``(name) -> half-extents (3,)`` — AABB radii
+            (not full sizes) of the entity in world coordinates. Optional;
+            required by stack/push_up unless explicit params are given.
+        get_joint_info: ``(object_name, joint_name) -> JointInfo`` for a
+            revolute joint; raise when missing / not revolute. Optional;
+            required by open/close.
+        drive_joint: ``(object_name, joint_name, target_position) -> None``
+            drive one revolute joint to a position (rad) and settle the
+            simulator; raise on failure. Optional; required by open/close.
     """
 
     robot: Any
@@ -80,6 +120,14 @@ class SkillContext:
     set_gripper: Callable[[float], None]
     attach: Callable[[str], None]
     detach: Callable[[str], None]
+
+    # -- optional environment capabilities (P1 primitives; default None) ----
+    # Absence of a hook a primitive needs yields a failed SkillResult with
+    # stage "error" (never an exception); a hook that raises maps to
+    # load_fail (asset/scene problem).
+    get_entity_extents: Optional[Callable[[str], np.ndarray]] = None
+    get_joint_info: Optional[Callable[[str, str], "JointInfo"]] = None
+    drive_joint: Optional[Callable[[str, str, float], None]] = None
 
     def plan(self, goal_pos: np.ndarray, goal_quat: Optional[np.ndarray]) -> np.ndarray:
         """Plan to an EE pose via plan_with_fallback (cuRobo first, OMPL)."""

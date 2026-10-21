@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Vectorized environment support for up to 4,096 parallel simulations
 - Gymnasium-compatible environment interface
 - GitHub Actions CI/CD pipeline
+- Six additional robot skill primitives in `core/robot_skills/`: `handover`, `insert`, `open`, `close`, `stack`, `push_up` (registry now holds 8 primitives; `open`/`close` share a `SwingJointSkill` base with Rodrigues arc-following that is itself not registered)
+- Three optional `SkillContext` hooks (`get_entity_extents`, `get_joint_info`, `drive_joint`, default `None` for backward compatibility) plus a `JointInfo` dataclass, wired to real Genesis implementations in `tools/run_skill_ab.py`
 
 ## [2.0.0] - 2025-03-11
 

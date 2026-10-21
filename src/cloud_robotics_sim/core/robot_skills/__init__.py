@@ -1,4 +1,5 @@
-"""Robot skill primitives (W4): grasp/place + orchestrator.
+"""Robot skill primitives: grasp/place (W4) + the P1 RoboDojo remainder
+(handover/insert/open/close/stack/push_up) + orchestrator.
 
 Note: this package is the *robot manipulation* skill layer (W4 of
 docs/ROBODOJO_P0_PLAN.md). It deliberately lives at ``core/robot_skills`` —
@@ -11,6 +12,7 @@ from cloud_robotics_sim.core.robot_skills.base import (
     DOWN_QUAT,
     GRIPPER_CLOSED,
     GRIPPER_OPEN,
+    JointInfo,
     SkillContext,
     SkillExecutionError,
     SkillPrimitive,
@@ -24,19 +26,34 @@ from cloud_robotics_sim.core.robot_skills.grasp_points import (
     load_grasp_candidates,
     score_candidates,
 )
+from cloud_robotics_sim.core.robot_skills.handover import HandoverSkill
+from cloud_robotics_sim.core.robot_skills.insert import InsertSkill
 from cloud_robotics_sim.core.robot_skills.orchestrator import SkillSequence, SkillStep
 from cloud_robotics_sim.core.robot_skills.place import PlaceSkill
+from cloud_robotics_sim.core.robot_skills.push_up import PushUpSkill
+from cloud_robotics_sim.core.robot_skills.stack import StackSkill
+from cloud_robotics_sim.core.robot_skills.swing import (
+    CloseSkill,
+    OpenSkill,
+    SwingJointSkill,
+)
 
 __all__ = [
     "candidate_in_world",
+    "CloseSkill",
     "DOWN_QUAT",
     "first_model_data",
     "GraspCandidate",
     "GraspSkill",
     "GRIPPER_CLOSED",
     "GRIPPER_OPEN",
+    "HandoverSkill",
+    "InsertSkill",
+    "JointInfo",
     "load_grasp_candidates",
+    "OpenSkill",
     "PlaceSkill",
+    "PushUpSkill",
     "score_candidates",
     "SkillContext",
     "SkillExecutionError",
@@ -44,4 +61,6 @@ __all__ = [
     "SkillResult",
     "SkillSequence",
     "SkillStep",
+    "StackSkill",
+    "SwingJointSkill",
 ]

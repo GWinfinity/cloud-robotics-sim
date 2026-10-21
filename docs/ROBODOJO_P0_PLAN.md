@@ -24,7 +24,7 @@
 | W0 GPU/CUDA 环境解锁(硬前置) | 42 个任务全量移植(P1,流水线验证后批量铺开) |
 | W1 配置驱动任务系统(loader + reset 采样 + 成功判定抽象) | 进程内异构并行架构改造(P1 先用多进程分片) |
 | W3 资产标注 **schema + 工具 + 10 类试点**(非全量 129 类) | 全量资产标注(P1 数据工) |
-| W4 cuRobo 端到端打通 + grasp/place 两个技能原语 | 其余 6 个技能(handover/insert/open/close/stack/push_up,P1) |
+| W4 cuRobo 端到端打通 + grasp/place 两个技能原语 | 其余 6 个技能(handover/insert/open/close/stack/push_up,P1)**——已于 2026-10-21 提前落地(见 §4 状态注记)** |
 | W8 评测协议 + 结果聚合(复用 grasp_report 格式) | XPolicyLab 完整策略服务器(P1) |
 | W2 **5–8 个 pilot 任务**端到端验证 | VR 遥操作(P2)、RealEval 真机平台(P2) |
 
@@ -165,8 +165,10 @@ W2 Pilot                       ████████████
 
 - 任务流水线已验证 → P1 批量移植剩余 ~35 任务(流水线作业,2–5 人天/个)
 - 全量资产标注(数据工,可外包)
-- 多进程任务分片 + 剩余 6 技能原语
+- 多进程任务分片 + 剩余 6 技能原语 **——6 原语已于 2026-10-21 提前落地(见下方状态注记),仅多进程分片留待 P1**
 - 差异化投入启动:柔体任务维度(Genesis MPM/SPH,对标 RoboDojo 结构性弱点)
+
+> **P1 提前落地进展(2026-10-21):剩余 6 个技能原语完成。** `core/robot_skills/` 新增 `handover`(自由空间交接释放)、`insert`(轴对齐插入)、`open`/`close`(关节摆动,基于 `SwingJointSkill` 基类 + Rodrigues 弧线跟踪,基类本身不注册)、`stack`(支撑面高度解析:显式参数 > extent 钩子 > error)、`push_up`(开爪直线推),注册表扩到 8 个原语;配套新增 3 个可选 `SkillContext` 钩子(`get_entity_extents` / `get_joint_info` / `drive_joint`,默认 None 向后兼容),`tools/run_skill_ab.py` 已接通真实 Genesis 实现。**Genesis-free 单测 58 通过**(`tests/core/test_robot_skills.py`,全量 `tests/core` 407 无回归);ruff/black/mypy(robot_skills 零错误)通过。**端到端部分验证(2026-10-21 晚,scene-level 回归已执行)**:`outputs/probe_p1_skills_scene.py` 通过 `tools/run_skill_ab.py` 的真实 `SkillContext` 接线(真实 AABB extents、真实 `get_joint_info`/`drive_joint`、OMPL + direct-IK 兜底)在 pick-cube 场景(CPU, seed 0)回归 6 原语,verdict=pass(`outputs/p1_skills_scene/report.json`):`handover`/`insert`/`push_up`/`stack` 全部 success(`stack` 落到真实 blue_cube 干扰物上,支撑/携带高度走 extents 钩子;`push_up` 真实接触推动物体 0.14 m;`insert` 6 个目标全由 OMPL 服务,`handover` 的 6 个目标走 direct-IK 兜底——OMPL 对自由空间位姿的静默失败是 W4 已记录模式,非 P1 接线问题);`open`/`close` 在无关节资产场景下按预期返回 `load_fail`(真实 Genesis 报错透传:`box_baselink_joint` 之外无关节),全程无异常。**仍留待 R-A 缺口**:开合/堆叠的**正向**端到端(真实关节资产 + link 级抓取)——当前吸附抓取绑定物体 base pose,无法握住抽屉把手,需要 PartNet-Mobility 类资产落地后补验。
 
 ## 附录 A — 2026-09-26 定稿核实记录
 

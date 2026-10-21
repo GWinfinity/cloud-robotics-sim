@@ -8,13 +8,24 @@ from typing import Any, Dict, List, Tuple
 
 from .base import STATUS_SUCCESS, SkillContext, SkillPrimitive, SkillResult
 from .grasp import GraspSkill
+from .handover import HandoverSkill
+from .insert import InsertSkill
 from .place import PlaceSkill
+from .push_up import PushUpSkill
+from .stack import StackSkill
+from .swing import CloseSkill, OpenSkill
 
 logger = logging.getLogger(__name__)
 
 _PRIMITIVES: Dict[str, SkillPrimitive] = {
+    CloseSkill.name: CloseSkill(),
     GraspSkill.name: GraspSkill(),
+    HandoverSkill.name: HandoverSkill(),
+    InsertSkill.name: InsertSkill(),
+    OpenSkill.name: OpenSkill(),
     PlaceSkill.name: PlaceSkill(),
+    PushUpSkill.name: PushUpSkill(),
+    StackSkill.name: StackSkill(),
 }
 
 

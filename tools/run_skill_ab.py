@@ -171,7 +171,7 @@ def _make_skill_context(
     steps_per_waypoint: int,
 ) -> Any:
     """Build a ``SkillContext`` backed by the real Genesis scene."""
-    from cloud_robotics_sim.core.robot_skills.base import SkillContext
+    from cloud_robotics_sim.core.robot_skills.base import JointInfo, SkillContext
     from cloud_robotics_sim.robotwin.curobo_planner import plan_with_fallback
 
     robot_be = loaded.env.robot.entity
@@ -285,6 +285,74 @@ def _make_skill_context(
         )
         grasper.detach()
 
+    def get_entity_extents(name: str) -> np.ndarray:
+        """Half-extents (radii) of an entity's world AABB (P1 extent hook)."""
+        entity = scene_entities[name]._entity
+        # CPU scene per configs/tasks/pick_place_cube.yaml; np.asarray matches
+        # this file's existing get_entity_pose convention (a GPU scene would
+        # need backends.genesis_backend's tensor conversion instead).
+        aabb = np.asarray(entity.get_AABB(), dtype=np.float64)
+        size = aabb[1] - aabb[0]
+        if not np.all(np.isfinite(size)) or np.any(size <= 1e-6):
+            raise ValueError(f"degenerate AABB for '{name}': {aabb.tolist()}")
+        return 0.5 * size
+
+    def get_joint_info(object_name_: str, joint_name: str) -> JointInfo:
+        """JointInfo for one revolute joint of a scene entity (P1 hook)."""
+        import genesis as gs
+
+        entity = scene_entities[object_name_]._entity
+        joint = entity.get_joint(joint_name)  # raises when the joint is absent
+        if joint.type != gs.JOINT_TYPE.REVOLUTE:
+            raise ValueError(
+                f"joint '{joint_name}' on '{object_name_}' is {joint.type}, "
+                "expected REVOLUTE"
+            )
+        dofs = np.asarray(joint.dofs_idx_local, dtype=np.int64).reshape(-1)
+        if dofs.size != 1:
+            raise ValueError(
+                f"joint '{joint_name}' drives {dofs.size} dofs, expected 1"
+            )
+        lower, upper = entity.get_dofs_limit(dofs)
+        axis = np.asarray(joint.get_anchor_axis(), dtype=np.float64).reshape(-1)
+        norm = float(np.linalg.norm(axis))
+        if norm < 1e-9:
+            raise ValueError(f"joint '{joint_name}' has a degenerate axis")
+        position = np.asarray(entity.get_dofs_position(dofs), dtype=np.float64)
+        return JointInfo(
+            name=joint.name,
+            axis=axis / norm,
+            anchor=np.asarray(joint.get_anchor_pos(), dtype=np.float64).reshape(-1),
+            dof_index=int(dofs[0]),
+            position=float(position.reshape(-1)[0]),
+            lower=float(np.asarray(lower, dtype=np.float64).reshape(-1)[0]),
+            upper=float(np.asarray(upper, dtype=np.float64).reshape(-1)[0]),
+        )
+
+    def drive_joint(object_name_: str, joint_name: str, target: float) -> None:
+        """Drive one revolute joint to ``target`` (rad) and settle (P1 hook)."""
+        entity = scene_entities[object_name_]._entity
+        joint = entity.get_joint(joint_name)
+        dofs = np.asarray(joint.dofs_idx_local, dtype=np.int64).reshape(-1)
+        lower, upper = entity.get_dofs_limit(dofs)
+        lo = float(np.asarray(lower, dtype=np.float64).reshape(-1)[0])
+        hi = float(np.asarray(upper, dtype=np.float64).reshape(-1)[0])
+        clamped = min(max(float(target), lo), hi)
+        entity.control_dofs_position(
+            np.array([clamped], dtype=np.float64), dofs_idx_local=dofs
+        )
+        for _ in range(20):
+            gs_scene.step()
+            # follow_step only rewrites the free base pose (qpos[:7]); joints
+            # are untouched, so an active suction pin elsewhere stays synced.
+            grasper.follow_step()
+        achieved = np.asarray(entity.get_dofs_position(dofs), dtype=np.float64)
+        if abs(float(achieved.reshape(-1)[0]) - clamped) > 0.05:
+            raise RuntimeError(
+                f"joint '{joint_name}' settled at "
+                f"{float(achieved.reshape(-1)[0]):.3f}, target {clamped:.3f}"
+            )
+
     context = SkillContext(
         robot=arm_view,
         planner=planner,
@@ -294,6 +362,9 @@ def _make_skill_context(
         set_gripper=set_gripper,
         attach=attach,
         detach=detach,
+        get_entity_extents=get_entity_extents,
+        get_joint_info=get_joint_info,
+        drive_joint=drive_joint,
     )
 
     def plan(goal_pos: np.ndarray, goal_quat: np.ndarray | None) -> np.ndarray:
