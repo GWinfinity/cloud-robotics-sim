@@ -64,16 +64,22 @@ DEFAULT_MAX_EPISODE_STEPS = 200
 _SUCCESS_BONUS = 1.0
 
 
-def cube_xy_from_uniform(u: torch.Tensor) -> torch.Tensor:
+def cube_xy_from_uniform(
+    u: torch.Tensor,
+    x_range: tuple[float, float] | None = None,
+    y_range: tuple[float, float] | None = None,
+) -> torch.Tensor:
     """Map uniform samples ``(n, 2)`` in ``[0, 1)`` to the cube init region.
 
     Pure function (no Genesis, no global RNG) so the reset distribution is
-    unit-testable and deterministic per seed.
+    unit-testable and deterministic per seed. ``x_range``/``y_range``
+    override the module-level :data:`INIT_X_RANGE`/:data:`INIT_Y_RANGE`
+    (``None`` keeps the historical defaults).
     """
     if u.ndim != 2 or u.shape[1] != 2:
         raise ValueError(f"expected (n, 2) uniform samples, got {tuple(u.shape)}")
-    lo_x, hi_x = INIT_X_RANGE
-    lo_y, hi_y = INIT_Y_RANGE
+    lo_x, hi_x = x_range if x_range is not None else INIT_X_RANGE
+    lo_y, hi_y = y_range if y_range is not None else INIT_Y_RANGE
     xy = torch.empty_like(u)
     xy[:, 0] = lo_x + (hi_x - lo_x) * u[:, 0]
     xy[:, 1] = lo_y + (hi_y - lo_y) * u[:, 1]
@@ -92,12 +98,45 @@ def pick_cube_reward(
     return -dist, dist < SUCCESS_THRESHOLD
 
 
+#: Guided-mode shaping weights (see :func:`pick_cube_guided_reward`).
+_GUIDED_LIFT_WEIGHT = 1.0
+_GUIDED_ACTION_PENALTY = 0.01
+
+
+def pick_cube_guided_reward(
+    cube_pos: torch.Tensor, actions: torch.Tensor, target: torch.Tensor
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Dense shaped reward on top of the sparse backbone.
+
+    The historical ``sparse`` reward already pays ``success - dist``;
+    ``guided`` adds a normalized lift-progress term (cube height from the
+    table surface toward the target height) and a small action-magnitude
+    penalty so the early reach/grasp phase carries gradient before the cube
+    gets anywhere near the target. Pure and device-agnostic — unit-testable
+    without Genesis.
+    """
+    dist = torch.linalg.vector_norm(cube_pos - target, dim=-1)
+    success = dist < SUCCESS_THRESHOLD
+    lift_span = (target[2] - CUBE_SIZE / 2.0).clamp(min=1e-6)
+    lift = ((cube_pos[:, 2] - CUBE_SIZE / 2.0) / lift_span).clamp(0.0, 1.0)
+    penalty = actions.pow(2).sum(dim=-1) * _GUIDED_ACTION_PENALTY
+    reward = success.float() - dist + _GUIDED_LIFT_WEIGHT * lift - penalty
+    return reward, success
+
+
 class FrankaPickCubeVecTask(VecTask):
     """Batched Franka pick-cube task on a single ``gs.Scene(n_envs=...)``.
 
     Class attributes:
         num_observations: 24 (see module docstring).
         num_actions: 9 delta joint-position targets.
+
+    Constructor extras over the base task:
+        reward_mode: ``"sparse"`` (historical ``success - dist``, default and
+            bit-for-bit the pre-mode behavior) or ``"guided"`` (adds
+            lift-progress + action-penalty shaping).
+        init_x_range/init_y_range: cube sampling region overrides (default
+            :data:`INIT_X_RANGE`/``INIT_Y_RANGE``).
     """
 
     num_observations = NUM_OBSERVATIONS
@@ -111,10 +150,33 @@ class FrankaPickCubeVecTask(VecTask):
         add_camera: bool = False,
         camera_res: tuple[int, int] = (256, 256),
         camera_fov: float = 60.0,
+        reward_mode: str = "sparse",
+        init_x_range: tuple[float, float] | None = None,
+        init_y_range: tuple[float, float] | None = None,
     ) -> None:
         self.target = torch.tensor(target, dtype=torch.float32)
         self.max_episode_steps = int(max_episode_steps)
         self.urdf_path = urdf_path
+        if reward_mode not in ("sparse", "guided"):
+            raise ValueError(
+                f"unknown reward_mode {reward_mode!r} "
+                "(expected 'sparse' or 'guided')"
+            )
+        #: "sparse" keeps the historical ``success - dist`` reward bit-for-bit;
+        #: "guided" adds lift-progress and action-penalty shaping.
+        self.reward_mode = reward_mode
+        self.init_x_range: tuple[float, float] = (
+            init_x_range if init_x_range is not None else INIT_X_RANGE
+        )
+        self.init_y_range: tuple[float, float] = (
+            init_y_range if init_y_range is not None else INIT_Y_RANGE
+        )
+        for name, rng in (
+            ("init_x_range", self.init_x_range),
+            ("init_y_range", self.init_y_range),
+        ):
+            if len(rng) != 2 or rng[0] > rng[1]:
+                raise ValueError(f"{name} must be a (lo, hi) pair, got {rng}")
         # Optional batched third-person camera (L2 render path). Renders every
         # step when present — pair with VecEnvConfig.render_config for the
         # Madrona batch renderer; without a batch renderer Genesis falls back
@@ -317,7 +379,9 @@ class FrankaPickCubeVecTask(VecTask):
         # Genesis sets torch's default device to the scene device inside its
         # device context, so the CPU-generator draw must pin device="cpu".
         u = torch.rand(n, 2, generator=gen, device="cpu")
-        xy = cube_xy_from_uniform(u).to(self.device)
+        xy = cube_xy_from_uniform(
+            u, x_range=self.init_x_range, y_range=self.init_y_range
+        ).to(self.device)
         cube_pos = torch.cat(
             [xy, torch.full((n, 1), CUBE_SIZE / 2.0, device=self.device)], dim=-1
         )
@@ -357,11 +421,14 @@ class FrankaPickCubeVecTask(VecTask):
 
         qpos, qvel, cube_pos, cube_vel = self._read_state(None)
         obs = self._write_obs(qpos, qvel, cube_pos, cube_vel)
-        # reward = -dist + 1.0 * success in as few launches as possible
-        # (semantic match with pick_cube_reward + _SUCCESS_BONUS).
+        # "sparse" keeps the historical formula (success - dist) with the
+        # op sequence unchanged; "guided" adds lift-progress + action penalty.
         dist = torch.linalg.vector_norm(cube_pos - self.target, dim=-1)
         success = dist < SUCCESS_THRESHOLD
-        reward = torch.sub(success.float(), dist)
+        if self.reward_mode == "sparse":
+            reward = torch.sub(success.float(), dist)
+        else:
+            reward, _ = pick_cube_guided_reward(cube_pos, actions, self.target)
 
         if self.camera is not None:
             # Batched render; last frame kept on device for training loops.
@@ -381,5 +448,6 @@ __all__ = [
     "NUM_OBSERVATIONS",
     "FrankaPickCubeVecTask",
     "cube_xy_from_uniform",
+    "pick_cube_guided_reward",
     "pick_cube_reward",
 ]
