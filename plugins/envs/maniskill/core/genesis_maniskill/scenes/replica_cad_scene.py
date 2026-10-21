@@ -18,9 +18,16 @@ Dataset layout (extracted under the dataset root)::
 
 Conventions (matching ManiSkill's port of the habitat dataset):
 
-- All ReplicaCAD assets are authored Y-up; every instance pose is left-multiplied
-  by a +90-degree rotation about X to obtain Genesis's Z-up world frame. Dataset
-  quaternions are (x, y, z, w); Genesis expects (w, x, y, z).
+- All ReplicaCAD assets are authored Y-up; every instance translation is
+  left-multiplied by a +90-degree rotation about X to obtain Genesis's Z-up
+  world frame. Dataset quaternions are (x, y, z, w); Genesis expects (w, x, y, z).
+  Genesis's glTF import already maps mesh files into a Z-up local frame
+  (equivalent to pre-multiplying the habitat mesh by that same rotation S),
+  so ENTITY poses must CONJUGATE the habitat rotation by S (``S q S^-1``):
+  left-multiplying (ManiSkill's semantics, correct for raw habitat-frame
+  meshes) would rotate the mesh geometry a second time and tip the scene.
+  The SDF bake consumes raw trimesh-loaded (habitat-frame) meshes, so it
+  keeps the left-multiplying variant (see :func:`habitat_pose_to_bake`).
 - DYNAMIC objects are simulated as rigid bodies; STATIC objects are fixed.
   For DYNAMIC objects the pre-decomposed convex collision GLB is used as the
   entity mesh (Genesis's own convex decomposition is then trivial). The rendered
@@ -29,6 +36,15 @@ Conventions (matching ManiSkill's port of the habitat dataset):
   convex decomposition at scene build time.
 - Articulated furniture is loaded from ``urdf/<name>/<name>.urdf``; door
   templates are skipped by default, matching ManiSkill.
+- ``config["static_mode"] == "sdf"`` selects the static three-way
+  classification (see the project AGENTS.md): the stage and STATIC object
+  meshes are dropped from the *collision* scene (optionally kept as
+  ``collision=False`` visual-only entities via ``sdf_visual``), baked into a
+  single queryable SDF (:class:`cloud_robotics_sim.vdb.XuvdbVolume`) exposed
+  as ``builder.static_sdf``, and a primitive floor slab (``sdf_ground``)
+  substitutes the contact surface. DYNAMIC objects and articulated furniture
+  are untouched. The SDF is query-only -- it never enters the Newton contact
+  path.
 """
 
 from __future__ import annotations
@@ -52,6 +68,8 @@ logger = logging.getLogger(__name__)
 # to ManiSkill's SAPIEN port).
 _SIN45 = math.sin(math.radians(45.0))
 _FRAME_QUAT_XYZW = np.array([_SIN45, 0.0, 0.0, _SIN45])
+# Inverse (unit conjugate) of the frame rotation, for S q S^-1 conjugation.
+_FRAME_QUAT_INV_XYZW = np.array([-_SIN45, 0.0, 0.0, _SIN45])
 
 
 # ---------------------------------------------------------------------------
@@ -63,7 +81,19 @@ def habitat_pose_to_genesis(
     translation: Any,
     rotation_xyzw: Any,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Convert a habitat pose into Genesis ``(pos, quat_wxyz)``.
+    """Convert a habitat pose into a Genesis ENTITY pose ``(pos, quat_wxyz)``.
+
+    Genesis's glTF import already maps the ReplicaCAD mesh files into a
+    Z-up local frame (equivalent to pre-multiplying the habitat mesh
+    geometry by the frame rotation S = RotX(+90°)). The entity pose must
+    therefore CONJUGATE the habitat orientation by S (``S q S^-1``), while
+    the translation still maps as ``S t``: composing the entity's own
+    rotation with S a second time would tip the imported Z-up geometry onto
+    its side (observed as the whole apartment lying on its side in the
+    Genesis world, with objects spawning outside the shell and free-falling
+    through it, zero collision contacts). Left-multiplication remains
+    correct only for RAW habitat-frame meshes — see
+    :func:`habitat_pose_to_bake` for that variant.
 
     Args:
         translation: (3,) habitat-frame position (meters).
@@ -84,7 +114,39 @@ def habitat_pose_to_genesis(
     frame = _FRAME_QUAT_XYZW
     # Rotate the translation by the frame rotation.
     pos = _rotate_vec_by_quat_xyzw(frame, t)
-    # Left-multiply orientations by the frame rotation (Hamilton product).
+    # Conjugate the orientation by the frame rotation (Hamilton product):
+    # re-expresses the habitat-frame rotation in the Z-up world frame
+    # WITHOUT rotating the mesh geometry again.
+    rot = _quat_mul_xyzw(_quat_mul_xyzw(frame, q), _FRAME_QUAT_INV_XYZW)
+    quat_wxyz = np.array([rot[3], rot[0], rot[1], rot[2]])
+    return pos, quat_wxyz
+
+
+def habitat_pose_to_bake(
+    translation: Any,
+    rotation_xyzw: Any,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Convert a habitat pose for RAW habitat-frame meshes (the SDF bake).
+
+    Left-multiplying variant of :func:`habitat_pose_to_genesis` for callers
+    that transform trimesh-loaded mesh vertices directly
+    (:func:`collect_static_files`): trimesh applies the GLB node transforms
+    but no axis conversion, so those vertices stay in the habitat Y-up
+    frame and entering Genesis's Z-up world requires left-multiplying the
+    whole rigid transform by S = RotX(+90°) — i.e. ``pos = S t`` and
+    ``quat = S ⊗ q``. Applying this to a Genesis-loaded entity instead
+    would double-rotate the mesh geometry (see habitat_pose_to_genesis).
+    """
+    t = np.asarray(translation, dtype=np.float64)
+    q = np.asarray(rotation_xyzw, dtype=np.float64)
+    if t.shape != (3,):
+        raise ValueError(f"expected (3,) translation, got {t.shape}")
+    if q.shape != (4,):
+        raise ValueError(f"expected (4,) rotation, got {q.shape}")
+    q = q / np.linalg.norm(q)
+
+    frame = _FRAME_QUAT_XYZW
+    pos = _rotate_vec_by_quat_xyzw(frame, t)
     rot = _quat_mul_xyzw(frame, q)
     quat_wxyz = np.array([rot[3], rot[0], rot[1], rot[2]])
     return pos, quat_wxyz
@@ -202,6 +264,61 @@ def resolve_articulated_urdf(dataset_path: str | Path, template_name: str) -> Pa
     return path
 
 
+def collect_static_files(
+    scene_config: dict,
+    dataset_path: str | Path,
+) -> list[tuple[Path, np.ndarray]]:
+    """Collect the stage + STATIC object meshes as world-frame pose entries.
+
+    Pure resolution (no mesh loading): returns ``(mesh_path, 4x4 world pose)``
+    for everything that ``static_mode="sdf"`` removes from the collision
+    scene. DYNAMIC objects and articulated furniture are excluded.
+
+    The returned pose left-multiplies the raw (trimesh-loaded, habitat-frame)
+    mesh vertices into the Genesis world — see :func:`habitat_pose_to_bake`.
+
+    Args:
+        scene_config: Parsed ``<scene>.scene_instance.json``.
+        dataset_path: Extracted ``replica_cad_dataset`` directory.
+
+    Returns:
+        Ordered list starting with the stage entry, then one entry per
+        STATIC object instance.
+    """
+    from ..utils.transforms import pose_to_matrix
+
+    dset = Path(dataset_path)
+    entries: list[tuple[Path, np.ndarray]] = []
+
+    stage_template = scene_config["stage_instance"]["template_name"]
+    stage_mesh = resolve_stage_mesh(dset, stage_template)
+    stage_pos, stage_quat = habitat_pose_to_bake([0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0])
+    entries.append(
+        (stage_mesh, pose_to_matrix(np.asarray(stage_pos), np.asarray(stage_quat)))
+    )
+
+    for obj_meta in scene_config.get("object_instances", []):
+        if obj_meta.get("motion_type", "DYNAMIC") == "DYNAMIC":
+            continue
+        pos, quat = habitat_pose_to_bake(obj_meta["translation"], obj_meta["rotation"])
+        meshes = resolve_object_meshes(dset, obj_meta["template_name"])
+        entries.append(
+            (meshes["body"], pose_to_matrix(np.asarray(pos), np.asarray(quat)))
+        )
+    return entries
+
+
+def ground_slab_spec() -> dict:
+    """Genesis Box morph kwargs for the world-frame floor substitute.
+
+    The ReplicaCAD apartment floor sits at z=0 after the habitat->Genesis
+    frame conversion; the slab top is flush with it. Stairs are NOT
+    reproduced -- scenes whose tasks use stairs must keep
+    ``static_mode="mesh"``.
+    """
+    return {"size": (30.0, 30.0, 0.1), "pos": (0.0, 0.0, -0.05), "fixed": True}
+
+
 # ---------------------------------------------------------------------------
 # Genesis scene builder
 # ---------------------------------------------------------------------------
@@ -227,6 +344,20 @@ class ReplicaCADSceneBuilder:
               supports ``scene.add_light``, e.g. the batch renderer;
               silently skipped otherwise). Ambient lighting is controlled by
               the caller through ``gs.options.VisOptions(ambient_light=...)``.
+            - ``static_mode`` (``"mesh"`` default | ``"sdf"``): ``"sdf"``
+              removes the stage and STATIC objects from the collision scene,
+              bakes them into ``self.static_sdf`` (cached on disk), and adds
+              a primitive floor slab per ``sdf_ground``. DYNAMIC objects and
+              articulated furniture are untouched.
+            - ``sdf_voxel_size`` (float, default 0.02), ``sdf_band`` (float,
+              default 3.0 voxels): bake parameters for ``static_mode="sdf"``.
+            - ``sdf_cache_dir`` (path, default the project vdb cache):
+              on-disk cache for the baked grid.
+            - ``sdf_ground`` (``"box"`` default | ``"none"``): floor slab
+              substitute when statics are removed.
+            - ``sdf_visual`` (bool, default True): keep the removed stage and
+              STATIC meshes as ``collision=False`` visual-only entities so
+              rendering keeps the apartment shell (no convex decomposition).
 
     Call :meth:`finalize` after ``scene.build()`` to apply object masses.
     """
@@ -249,6 +380,8 @@ class ReplicaCADSceneBuilder:
         self.movable_objects: dict[str, Any] = {}
         self.articulations: dict[str, Any] = {}
         self.background: Any = None
+        # static_mode="sdf": query-only SDF of the removed stage + STATIC meshes.
+        self.static_sdf: Any | None = None
         self._default_object_poses: list[tuple[Any, tuple]] = []
         self._movable_defaults: list[tuple[Any, tuple]] = []
         self._pending_masses: list[tuple[Any, float]] = []
@@ -275,6 +408,9 @@ class ReplicaCADSceneBuilder:
             raise NotImplementedError(
                 "ReplicaCADSceneBuilder currently supports num_envs=1 only"
             )
+        static_mode = str(self.config.get("static_mode", "mesh"))
+        if static_mode not in ("mesh", "sdf"):
+            raise ValueError(f"unknown static_mode: {static_mode!r}")
         dset = self._dataset_path()
         scene_config = load_scene_config(dset, self.scene_name)
         include_doors = bool(self.config.get("include_doors", False))
@@ -285,29 +421,65 @@ class ReplicaCADSceneBuilder:
         stage_pos, stage_quat = habitat_pose_to_genesis(
             [0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]
         )
-        self.background = self.scene.add_entity(
-            gs.morphs.Mesh(
-                file=str(stage_mesh),
-                pos=tuple(stage_pos),
-                quat=tuple(stage_quat),
-                fixed=True,
-                convexify=False,
+        if static_mode == "mesh":
+            self.background = self.scene.add_entity(
+                gs.morphs.Mesh(
+                    file=str(stage_mesh),
+                    pos=tuple(stage_pos),
+                    quat=tuple(stage_quat),
+                    fixed=True,
+                    convexify=False,
+                )
             )
-        )
+        elif bool(self.config.get("sdf_visual", True)):
+            # Visual-only shell: no collision geometry, no convex decomposition.
+            self.background = self.scene.add_entity(
+                gs.morphs.Mesh(
+                    file=str(stage_mesh),
+                    pos=tuple(stage_pos),
+                    quat=tuple(stage_quat),
+                    fixed=True,
+                    convexify=False,
+                    collision=False,
+                )
+            )
 
         # -- rigid objects ----------------------------------------------------
+        sdf_static_entries: list[tuple[Any, Any]] = []
         for obj_num, obj_meta in enumerate(scene_config.get("object_instances", [])):
             actor_name = f"{Path(obj_meta['template_name']).name}-{obj_num}"
             pos, quat = habitat_pose_to_genesis(
                 obj_meta["translation"], obj_meta["rotation"]
             )
             meshes = resolve_object_meshes(dset, obj_meta["template_name"])
+            is_dynamic = obj_meta.get("motion_type", "DYNAMIC") == "DYNAMIC"
+            if static_mode == "sdf" and not is_dynamic:
+                # Static three-way classification: dropped from the collision
+                # scene, baked into the query-only SDF below (optionally kept
+                # as a visual-only entity).
+                from ..utils.transforms import pose_to_matrix
+
+                sdf_static_entries.append(
+                    (meshes["body"], pose_to_matrix(np.asarray(pos), np.asarray(quat)))
+                )
+                if bool(self.config.get("sdf_visual", True)):
+                    self.scene_objects[actor_name] = self.scene.add_entity(
+                        gs.morphs.Mesh(
+                            file=str(meshes["body"]),
+                            pos=tuple(pos),
+                            quat=tuple(quat),
+                            fixed=True,
+                            convexify=False,
+                            collision=False,
+                        )
+                    )
+                continue
             common = {
                 "file": str(meshes["body"]),
                 "pos": tuple(pos),
                 "quat": tuple(quat),
             }
-            if obj_meta.get("motion_type", "DYNAMIC") == "DYNAMIC":
+            if is_dynamic:
                 entity = self.scene.add_entity(
                     gs.morphs.Mesh(fixed=False, convexify=True, **common)
                 )
@@ -348,6 +520,34 @@ class ReplicaCADSceneBuilder:
             self.articulations[name] = entity
             self.scene_objects[name] = entity
             self._default_object_poses.append((entity, (tuple(pos), tuple(quat))))
+
+        # -- static SDF bake + floor substitute (static_mode="sdf") ----------
+        if static_mode == "sdf":
+            from cloud_robotics_sim.vdb.core.static_scene import bake_static_scene
+
+            from ..utils.transforms import pose_to_matrix
+
+            stage_pose = pose_to_matrix(np.asarray(stage_pos), np.asarray(stage_quat))
+            files = [stage_mesh] + [p for p, _ in sdf_static_entries]
+            poses = [stage_pose] + [m for _, m in sdf_static_entries]
+            self.static_sdf = bake_static_scene(
+                files,
+                world_transforms=poses,
+                voxel_size=float(self.config.get("sdf_voxel_size", 0.02)),
+                band=float(self.config.get("sdf_band", 3.0)),
+                cache_dir=self.config.get("sdf_cache_dir"),
+                name=f"replicacad-{self.scene_name}",
+            )
+            report = self.static_sdf.memory_report()
+            logger.info(
+                "static SDF (%s): %d leaves, %d active voxels, %.1f MB leaf buffers",
+                self.scene_name,
+                report["n_leaves"],
+                report["active_voxels"],
+                report["leaf_bytes"] / 1e6,
+            )
+            if str(self.config.get("sdf_ground", "box")) == "box":
+                self.scene.add_entity(gs.morphs.Box(**ground_slab_spec()))
 
         logger.info(
             "ReplicaCAD scene %s: %d objects (%d movable), %d articulations",
@@ -426,6 +626,9 @@ class ReplicaCADSceneBuilder:
 
 __all__ = [
     "ReplicaCADSceneBuilder",
+    "collect_static_files",
+    "ground_slab_spec",
+    "habitat_pose_to_bake",
     "habitat_pose_to_genesis",
     "load_json_config",
     "load_scene_config",

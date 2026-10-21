@@ -163,14 +163,22 @@ class TestAssets:
 
 
 class TestPoseConversion:
-    """habitat (Y-up, xyzw) -> genesis (Z-up, wxyz) conversion."""
+    """habitat (Y-up, xyzw) -> genesis (Z-up, wxyz) conversion.
+
+    Genesis's glTF import already yields Z-up mesh geometry (the ReplicaCAD
+    GLBs carry the habitat->Z-up normalization in their node transforms), so
+    entity poses CONJUGATE the habitat rotation by the frame rotation S
+    (``S q S^-1``); left-multiplying would tip the imported geometry a
+    second time. Raw trimesh-loaded meshes keep the left-multiply variant
+    (``habitat_pose_to_bake``).
+    """
 
     def test_identity(self):
+        # Identity habitat pose -> identity genesis pose: the mesh geometry
+        # already arrives Z-up, nothing may rotate it.
         pos, quat = rcs.habitat_pose_to_genesis([0, 0, 0], [0, 0, 0, 1])
         np.testing.assert_allclose(pos, [0, 0, 0], atol=1e-12)
-        s = math.sin(math.radians(45))
-        c = math.cos(math.radians(45))
-        np.testing.assert_allclose(quat, [c, s, 0, 0], atol=1e-12)
+        np.testing.assert_allclose(quat, [1, 0, 0, 0], atol=1e-12)
 
     def test_up_axis_maps_to_z(self):
         # 1 m along habitat's Y-up becomes +Z in genesis.
@@ -185,6 +193,22 @@ class TestPoseConversion:
         pos, _ = rcs.habitat_pose_to_genesis([0, 0, 1], [0, 0, 0, 1])
         np.testing.assert_allclose(pos, [0, -1, 0], atol=1e-12)
 
+    def test_habitat_yaw_becomes_world_yaw(self):
+        # 90 deg about habitat up (Y) conjugates to 90 deg about genesis up
+        # (Z): a yaw stays a yaw, the imported geometry is not re-rotated.
+        s = math.sin(math.radians(45))
+        c = math.cos(math.radians(45))
+        _, quat = rcs.habitat_pose_to_genesis([0, 0, 0], [0, s, 0, c])
+        np.testing.assert_allclose(quat, [c, 0, 0, s], atol=1e-12)
+
+    def test_habitat_roll_stays_roll_about_x(self):
+        # 90 deg about habitat X (the frame axis) is invariant under the
+        # S q S^-1 conjugation up to sign convention on the axis.
+        s = math.sin(math.radians(45))
+        c = math.cos(math.radians(45))
+        _, quat = rcs.habitat_pose_to_genesis([0, 0, 0], [s, 0, 0, c])
+        np.testing.assert_allclose(np.abs(quat), [c, s, 0, 0], atol=1e-12)
+
     def test_unnormalized_quat_normalized(self):
         _, quat = rcs.habitat_pose_to_genesis([0, 0, 0], [0, 0, 0, 2])
         np.testing.assert_allclose(np.linalg.norm(quat), 1.0, atol=1e-12)
@@ -194,6 +218,26 @@ class TestPoseConversion:
             rcs.habitat_pose_to_genesis([0, 0], [0, 0, 0, 1])
         with pytest.raises(ValueError):
             rcs.habitat_pose_to_genesis([0, 0, 0], [0, 0, 1])
+
+    def test_bake_left_multiplies(self):
+        # The raw-mesh (SDF bake) variant keeps ManiSkill's left-multiply
+        # semantics: identity habitat pose -> the bare RotX(+90) frame
+        # rotation applied to the habitat-frame vertices.
+        pos, quat = rcs.habitat_pose_to_bake([0, 0, 0], [0, 0, 0, 1])
+        np.testing.assert_allclose(pos, [0, 0, 0], atol=1e-12)
+        s = math.sin(math.radians(45))
+        c = math.cos(math.radians(45))
+        np.testing.assert_allclose(quat, [c, s, 0, 0], atol=1e-12)
+
+    def test_bake_up_axis_maps_to_z(self):
+        pos, _ = rcs.habitat_pose_to_bake([0, 1, 0], [0, 0, 0, 1])
+        np.testing.assert_allclose(pos, [0, 0, 1], atol=1e-12)
+
+    def test_bake_bad_shapes_raise(self):
+        with pytest.raises(ValueError):
+            rcs.habitat_pose_to_bake([0, 0], [0, 0, 0, 1])
+        with pytest.raises(ValueError):
+            rcs.habitat_pose_to_bake([0, 0, 0], [0, 0, 1])
 
 
 # ---------------------------------------------------------------------------

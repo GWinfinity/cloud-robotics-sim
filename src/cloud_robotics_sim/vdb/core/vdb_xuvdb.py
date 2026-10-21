@@ -290,20 +290,44 @@ class XuvdbVolume:
         return self
 
     # ----- sampling ---------------------------------------------------- #
+    # The host ``VdbGrid.sample_*`` APIs are single-point: they silently
+    # truncate a batch to its first row. Batches therefore route through the
+    # kernel-side ``GpuVolume`` sampler (falling back to a per-point host
+    # loop for grids the kernel cannot pack: vector-valued / f16 / rotated).
+    # Callers doing per-step batch queries should hold a ``GpuVolume``.
+    _SAMPLE_HOST_NAMES = {
+        0: "sample_nearest",
+        1: "sample_linear",
+        2: "sample_quadratic",
+    }
+
+    def _sample(self, points: np.ndarray, order: int) -> np.ndarray:
+        pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
+        if pts.ndim != 2 or pts.shape[1] != 3:
+            raise ValueError(f"expected (n, 3) points, got shape {pts.shape}")
+        if len(pts) == 0:
+            return np.empty((0,), dtype=np.float64)
+        if len(pts) == 1:
+            host_fn = getattr(self._grid, self._SAMPLE_HOST_NAMES[order])
+            return np.asarray(host_fn(pts[0]))
+        try:
+            gpu = self._xuvdb.GpuVolume(self._grid)
+        except (TypeError, ValueError):
+            host_fn = getattr(self._grid, self._SAMPLE_HOST_NAMES[order])
+            return np.array([host_fn(p) for p in pts])
+        return np.asarray(gpu.sample(pts, order=order))
+
     def sample_linear(self, points: np.ndarray) -> np.ndarray:
-        return np.asarray(
-            self._grid.sample_linear(np.asarray(points, dtype=np.float32))
-        )
+        """Trilinear value per input point (one value per row, batch-aware)."""
+        return self._sample(points, 1)
 
     def sample_nearest(self, points: np.ndarray) -> np.ndarray:
-        return np.asarray(
-            self._grid.sample_nearest(np.asarray(points, dtype=np.float32))
-        )
+        """Nearest-voxel value per input point (batch-aware)."""
+        return self._sample(points, 0)
 
     def sample_quadratic(self, points: np.ndarray) -> np.ndarray:
-        return np.asarray(
-            self._grid.sample_quadratic(np.asarray(points, dtype=np.float32))
-        )
+        """Triquadratic value per input point (batch-aware)."""
+        return self._sample(points, 2)
 
     def sample_gradient(self, points: np.ndarray, order: int = 1) -> np.ndarray:
         return np.asarray(

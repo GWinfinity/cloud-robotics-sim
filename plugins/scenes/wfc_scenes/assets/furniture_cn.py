@@ -246,7 +246,7 @@ def _rgba(color: ColorType) -> tuple[int, int, int, int]:
 
 
 def prim_mesh(prim: Prim) -> Any:
-    """Build a colored trimesh for a prim (rotation applied to the mesh)."""
+    """Build a colored trimesh for a prim (rotation + position applied)."""
     if prim.kind == "box":
         mesh = trimesh.creation.box(extents=prim.size)
     elif prim.kind == "cylinder":
@@ -261,6 +261,7 @@ def prim_mesh(prim: Prim) -> Any:
         mesh.apply_transform(
             euler_matrix(*[math.radians(a) for a in prim.euler], axes="sxyz")
         )
+    mesh.apply_translation(prim.pos)
     rgba = _rgba(prim.color)
     mesh.visual.vertex_colors = [rgba] * len(mesh.vertices)
     return mesh

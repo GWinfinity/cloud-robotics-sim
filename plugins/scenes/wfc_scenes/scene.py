@@ -30,11 +30,13 @@ Integration hook for other plugins (DreamDojo / maniskill): call
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import random
+import warnings
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Mapping, Optional, Union
 
 try:  # Relative import inside the installed plugin package.
     from .assets.furniture_cn import (
@@ -635,35 +637,76 @@ class ChineseHomeScene:
     def structure_prims(self) -> list[Prim]:
         return build_structure_prims(self.layout, self.wall_height)
 
-    def furniture_prims(self) -> list[Prim]:
-        """Furniture prims for every tile (deterministic per layout seed)."""
+    def _cell_furniture_prims(self, k: int, cell: dict, tile: str) -> list[Prim]:
+        """Furniture prims for one cell, dressed as ``tile`` room type.
+
+        The RNG derives from ``(layout.seed, k)`` and mixes in a stable hash
+        of ``tile`` when overriding, so variants stay deterministic and the
+        layout JSON keeps replaying identically.
+        """
         layout = self.layout
+        i, j = cell["i"], cell["j"]
+        center = layout.cell_center(i, j)
+        seed = (layout.seed or 0) * 7919 + k
+        if tile != cell["tile"]:
+            digest = hashlib.sha1(tile.encode("utf-8")).hexdigest()
+            seed += int(digest[:8], 16) % (1 << 30)
+        rng = random.Random(seed)
+        return build_tile_prims(
+            tile,
+            center,
+            cell["rot"],
+            rng,
+            self.festival,
+            pattern=cell.get("pattern", 0),
+            half=layout.cell_half(i, j),
+        )
+
+    def furniture_prims(
+        self, tile_overrides: Optional[Mapping[int, str]] = None
+    ) -> list[Prim]:
+        """Furniture prims for every tile (deterministic per layout seed).
+
+        Args:
+            tile_overrides: Optional mapping of cell index (position in
+                ``layout.cells``) to a tile name, re-dressing that cell as a
+                different room type (客厅/厨房/卧室/...) for spatial domain
+                randomization. The cell geometry (center/rotation/half) is
+                kept — only furniture changes. Unknown names raise
+                ``ValueError``; cells smaller than the tile's ``min_edge``
+                warn (furniture may overflow).
+        """
+        layout = self.layout
+        overrides = dict(tile_overrides or {})
+        unknown = sorted(set(overrides.values()) - set(TILES))
+        if unknown:
+            raise ValueError(
+                f"unknown tile override(s) {unknown}; available: {sorted(TILES)}"
+            )
         prims: list[Prim] = []
         for k, cell in enumerate(layout.cells):
-            i, j = cell["i"], cell["j"]
-            center = layout.cell_center(i, j)
-            rng = random.Random((layout.seed or 0) * 7919 + k)
-            prims.extend(
-                build_tile_prims(
-                    cell["tile"],
-                    center,
-                    cell["rot"],
-                    rng,
-                    self.festival,
-                    pattern=cell.get("pattern", 0),
-                    half=layout.cell_half(i, j),
-                )
-            )
+            tile = overrides.get(k, cell["tile"])
+            if tile != cell["tile"]:
+                i, j = cell["i"], cell["j"]
+                span = min(layout.col_w(i), layout.row_h(j))
+                need = TILES[tile].min_edge
+                if span + 1e-6 < need:
+                    warnings.warn(
+                        f"cell {k} ({tile}) span {span:.2f}m < min_edge "
+                        f"{need:.2f}m; furniture may overflow the cell",
+                        stacklevel=2,
+                    )
+            prims.extend(self._cell_furniture_prims(k, cell, tile))
         return prims
 
     # -- offline artifacts ------------------------------------------------------
 
-    def build_trimesh(self) -> Any:
+    def build_trimesh(self, tile_overrides: Optional[Mapping[int, str]] = None) -> Any:
         """Whole home as a ``trimesh.Scene`` (no Genesis needed)."""
         if not HAS_TRIMESH:
             raise RuntimeError("trimesh is required for offline scene building")
         backend = TrimeshBackend()
-        for prim in self.structure_prims() + self.furniture_prims():
+        for prim in self.structure_prims() + self.furniture_prims(tile_overrides):
             backend.add(prim)
         return backend.scene
 

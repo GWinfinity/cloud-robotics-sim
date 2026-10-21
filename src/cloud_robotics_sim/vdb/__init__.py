@@ -23,11 +23,14 @@ from typing import Any
 from cloud_robotics_sim.vdb.core.vdb_torch import TorchSparseVolume
 
 __all__ = [
+    "SdfRayCaster",
     "TorchSparseVolume",
     "XuvdbVolume",
+    "bake_static_scene",
     "create_volume",
     "from_xuvdb",
     "has_xuvdb",
+    "meshes_to_sdf",
     "to_xuvdb",
 ]
 
@@ -67,8 +70,13 @@ def create_volume(backend: str = "auto", **kwargs: Any) -> Any:
 
 
 # Re-exported lazily-safe: vdb_xuvdb never imports xuvdb at module level.
+from cloud_robotics_sim.vdb.core.static_scene import (  # noqa: E402
+    bake_static_scene,
+    meshes_to_sdf,
+)
 from cloud_robotics_sim.vdb.core.vdb_xuvdb import (  # noqa: E402
     XuvdbVolume,
     from_xuvdb,
     to_xuvdb,
 )
+from cloud_robotics_sim.vdb.ray_caster import SdfRayCaster  # noqa: E402

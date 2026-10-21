@@ -58,6 +58,22 @@ class ReplicaCADEnv(BaseEnv):
         self.dataset_root = dataset_root
         self.include_doors = include_doors
         self._scene_built = False
+        # Optional gs.options.RigidOptions override (e.g.
+        # multiplier_collision_broad_phase for the ~120-entity apartments,
+        # whose broad-phase pair buffer overflows at the default 8 under
+        # contact-rich episodes).
+        self._rigid_options = kwargs.pop("rigid_options", None)
+        # Solver substeps per control step (SimOptions.substeps). Values >1
+        # shrink the solver dt and rescue high-speed thin objects that
+        # otherwise tunnel through their support within one step (probed:
+        # the apt_0 chopping board drops ~0.25 m, arrives at ~2 m/s = 2 cm
+        # per 0.01 s step, and at substeps=1 passes through the floor with
+        # impact contacts that never decelerate it; substeps=4 settles it).
+        # Control dt is unchanged (dt stays self.sim_dt); cost scales
+        # linearly with substeps.
+        self._sim_substeps = int(kwargs.pop("sim_substeps", 1))
+        if self._sim_substeps < 1:
+            raise ValueError("sim_substeps must be >= 1")
 
         scene_config = dict(kwargs.pop("scene_config", None) or {})
         scene_config.setdefault("include_doors", include_doors)
@@ -70,10 +86,15 @@ class ReplicaCADEnv(BaseEnv):
 
     def _build_scene(self):
         """Build the ReplicaCAD scene (deferred ``scene.build()``)."""
+        rigid_kwargs = (
+            {"rigid_options": self._rigid_options}
+            if self._rigid_options is not None
+            else {}
+        )
         self.scene = gs.Scene(
             sim_options=gs.options.SimOptions(
                 dt=self.sim_dt,
-                substeps=1,
+                substeps=self._sim_substeps,
             ),
             vis_options=gs.options.VisOptions(
                 ambient_light=(0.3, 0.3, 0.3),
@@ -83,6 +104,7 @@ class ReplicaCADEnv(BaseEnv):
                 camera_lookat=(0.0, 0.0, 0.5),
             ),
             show_viewer=self.render_mode == "human",
+            **rigid_kwargs,
         )
 
         self.scene_builder = ReplicaCADSceneBuilder(

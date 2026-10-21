@@ -56,6 +56,29 @@ def test_stamp_sphere_min_union_and_ray() -> None:
     assert grad.shape == (1, 3)
 
 
+def test_batch_sampling_returns_one_value_per_point() -> None:
+    """Batched sample_* calls return per-point values, not the first row.
+
+    Regression guard: the host ``VdbGrid.sample_*`` APIs truncate batches
+    to their first point; the wrapper must route batches through the
+    kernel-side sampler so every input point gets a value.
+    """
+    vol = _sdf_volume()
+    rng = np.random.default_rng(0)
+    pts = rng.uniform(-0.5, 0.9, size=(64, 3)).astype(np.float32)
+    for name in ("sample_nearest", "sample_linear", "sample_quadratic"):
+        fn = getattr(vol, name)
+        vals = fn(pts)
+        assert vals.shape == (64,), f"{name} returned {vals.shape}"
+        # Per-point agreement with the single-point host path.
+        expect = np.array([fn(p) for p in pts])
+        assert np.allclose(vals, expect, atol=1e-5), name
+    # Degenerate inputs.
+    assert vol.sample_linear(np.empty((0, 3), dtype=np.float32)).shape == (0,)
+    with pytest.raises(ValueError, match="expected"):
+        vol.sample_linear(np.zeros((4, 2), dtype=np.float32))
+
+
 def test_value_editing_ops() -> None:
     """Test value editing ops."""
     vol = _sdf_volume()
