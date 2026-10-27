@@ -9,6 +9,10 @@ import numpy as np
 import torch
 import genesis as gs
 from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend
+from cloud_robotics_sim.core.domain_rand import (
+    DomainRandomizer as _CoreRandomizer,
+)
+from cloud_robotics_sim.core.domain_rand import ParamSpec
 from typing import Optional
 
 
@@ -194,31 +198,50 @@ class HumanoidEnv:
 
 
 class DomainRandomizer:
-    """域随机化"""
-    
+    """域随机化
+
+    物理参数写入委托 ``cloud_robotics_sim.core.domain_rand``(seeded、
+    向量化、经 genesis 公开 setter);动作噪声保留本类实现。
+    """
+
     def __init__(self, config: Dict):
         self.config = config
         self.enabled = config.get('enabled', False)
-    
+        self._core = None
+
     def randomize(self, robot):
-        """随机化机器人参数"""
+        """随机化机器人参数
+
+        首次调用时以机器人为基线惰性绑定核心随机化器(场景需以
+        ``batch_links_info=True, batch_dofs_info=True`` 构建),随后采样并
+        写入 mass / friction_ratio。
+        """
         if not self.enabled:
             return
-        
-        # 质量随机化
-        if 'mass_scale' in self.config:
-            scale = np.random.uniform(*self.config['mass_scale'])
-            # 应用到机器人
-        
-        # 摩擦随机化
-        if 'friction_scale' in self.config:
-            scale = np.random.uniform(*self.config['friction_scale'])
-    
+
+        if self._core is None:
+            specs = []
+            if 'mass_scale' in self.config:
+                specs.append(
+                    ParamSpec("mass", "mass", *self.config['mass_scale'])
+                )
+            if 'friction_scale' in self.config:
+                specs.append(
+                    ParamSpec(
+                        "friction", "friction_ratio", *self.config['friction_scale'],
+                        scale="absolute",
+                    )
+                )
+            if specs:
+                self._core = _CoreRandomizer(robot, specs)
+        if self._core is not None:
+            self._core.sample()
+
     def add_action_noise(self, action: np.ndarray) -> np.ndarray:
         """添加动作噪声"""
         if not self.enabled:
             return action
-        
+
         noise_scale = self.config.get('action_noise', 0.0)
         noise = np.random.randn(*action.shape) * noise_scale
         return action + noise
