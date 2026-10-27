@@ -124,6 +124,7 @@
 | 热求解器可微迁移 | 06_thermal_solver_musa_autodiff.md |
 | 渲染伪影排查 | 07_rendering_shadow_artifact_investigation.md |
 | 声学仿真数学原理与可微性 | 08_ansys_acoustics_math_and_differentiability.md |
+| 可微仿真 backward 接触 NaN（上游 bug） | 09_differentiable_backward_contact_nan.md |
 
 ### 关键技术栈
 

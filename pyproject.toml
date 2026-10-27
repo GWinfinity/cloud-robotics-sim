@@ -135,8 +135,17 @@ rl = [
     "rsl-rl-lib>=2.0",
 ]
 
+# Deploy drift harness (plugins/sim2real/deploy_drift): ONNX export /
+# fp16 / dynamic-INT8 quantization and an ONNX Runtime operator wrapper.
+# All imports are lazy; missing packages only break the harness entry points.
+deploy = [
+    "onnx>=1.15",
+    "onnxruntime>=1.17",
+    "onnxconverter-common>=1.14",
+]
+
 all = [
-    "cloud-robotics-sim[dev,docs,k8s,cad,xuvdb]",
+    "cloud-robotics-sim[dev,docs,k8s,cad,xuvdb,deploy]",
 ]
 
 [[tool.uv.index]]

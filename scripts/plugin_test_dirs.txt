@@ -17,6 +17,7 @@ plugins/controllers/mpc_wbc/tests
 plugins/controllers/wbc_lab/tests
 plugins/datasets/dreamdojo/tests
 plugins/sim2real/sim2real_dexterous/tests
+plugins/sim2real/deploy_drift/tests
 examples/costream/tests
 # 已知未入 CI（2026-09 本机实跑失败，修复后可加入）：
 #   plugins/teleop/vr_bridge/tests — test_e2e_genesis.py::test_genesis_franka_teleop_and_recording 环境相关失败
