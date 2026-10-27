@@ -37,11 +37,12 @@ classifiers = [
 
 dependencies = [
     # Core physics
-    "genesis-world==1.4.0",
+    "genesis-world==1.4.5",
     "taichi>=1.7.0",
     # Geometry & mesh processing (trimesh parses untrusted mesh files:
-    # upper-bound the major version to cap parser risk)
-    "trimesh>=4.0.0,<5",
+    # upper-bound the major version to cap parser risk; genesis-world 1.4.5
+    # requires trimesh>=5)
+    "trimesh>=5.0.0,<6",
     "pyglet<2",
     "networkx>=3.0",
     "scipy>=1.10",
@@ -143,6 +144,15 @@ default = true
 [[tool.uv.index]]
 name = "pypi-org"
 url = "https://pypi.org/simple"
+explicit = true
+
+# CUDA-enabled torch/torchvision builds. The default Aliyun PyPI mirror only
+# hosts the CPU wheels, so resolve these two from the official PyTorch cu128
+# index instead. torch 2.12+ does not publish Windows CUDA wheels, so this
+# caps torch at 2.11.x+cu128 on Windows (the newest CUDA stack available).
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
 explicit = true
 
 [project.scripts]
@@ -255,3 +265,7 @@ robomat = { path = "../robomat", editable = true }
 shapekernel = { path = "../shapekernel", editable = true }
 # Aliyun mirror does not carry xuvdb; resolve it from pypi.org instead.
 xuvdb = { index = "pypi-org" }
+# CUDA builds (see the pytorch-cu128 index above); the default mirror only
+# carries the CPU wheels.
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }

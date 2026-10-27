@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 import genesis as gs
 import numpy as np
 import quadrants as qd
+import torch
 from genesis.engine.entities.base_entity import Entity
 from genesis.engine.solvers.base_solver import Solver
 
@@ -107,12 +108,19 @@ class ThermalSolverState:
     def __init__(self, scene: "Scene", solver: "ThermalSolver"):
         self._scene = scene
         self._s_global = solver.sim.cur_step_global
-        self.T = gs.zeros(
+        # Queried states are registered with the autograd bridge via
+        # ``grad_tensors`` when the solver appends them to ``_queried_states``
+        # (genesis-world 1.4.5); requires_grad is set by the bridge's tracking.
+        self.T = torch.zeros(
             (solver._B, *solver._shape),
             dtype=gs.tc_float,
-            requires_grad=scene.requires_grad,
-            scene=scene,
+            device=gs.device,
         )
+
+    @property
+    def grad_tensors(self):
+        """The tensors of the state that carry gradients."""
+        return (self.T,)
 
     def serializable(self) -> None:
         self._scene = None
@@ -183,7 +191,7 @@ class ThermalSolver(Solver):
         self._source_radii_np = np.zeros(self._max_sources, dtype=gs.np_float)
         self._source_rates_np = np.zeros(self._max_sources, dtype=gs.np_float)
 
-        self._ckpt: dict[str, dict[str, gs.Tensor]] = {}
+        self._ckpt: dict[str, dict[str, torch.Tensor]] = {}
 
     @property
     def is_active(self) -> bool:
@@ -596,31 +604,41 @@ class ThermalSolver(Solver):
     # Simulation lifecycle
     # --------------------------------------------------------------------------
 
-    def process_input(self, in_backward: bool = False) -> None:
-        pass
+    def process_input(self, in_backward: bool = False) -> list:
+        # genesis-world 1.4.5 iterates the return of every active solver's
+        # process_input; emit an empty list (no taped inputs).
+        return []
 
-    def process_input_grad(self) -> None:
-        """Populate queried-state gradients that torch autograd did not reach.
+    def process_input_grad(self) -> list:
+        """Deliver rewound step-0 field grads into the queried state tensors.
 
-        Queried states at the start of the current backward step correspond to
-        ``_T[0]`` after the checkpoint reload. Their gradients were computed by
-        the backward kernels into ``_T.grad[0]``, so we copy them out here.
+        ``scene.backward`` populates the step-1 queried state's ``.grad`` via
+        the autograd bridge (see ``grad_tensors`` / ``_queried_states``), and
+        ``add_grad_from_state`` seeds ``_T.grad`` with it; the reverse kernels
+        then accumulate ``_T.grad[0]``. The step-0 queried state is not part of
+        the loss graph, so its ``.grad`` only lands here - copy it out. The
+        simulator iterates this return, hence the empty list.
         """
         if not self._sim.requires_grad or self._T is None:
-            return
+            return []
 
         cur_step = self._sim.cur_step_global
-        queried = self._sim._queried_states
-        if cur_step not in queried:
-            return
+        queried = self._queried_states.get(cur_step)
+        if not queried:
+            return []
 
-        for sim_state in queried[cur_step]:
-            for solver_state in sim_state.solvers_state:
-                if not isinstance(solver_state, ThermalSolverState):
-                    continue
-                grad_out = gs.zeros_like(solver_state.T, requires_grad=False)
-                self._kernel_get_grad(0, grad_out)
-                solver_state.T.grad = grad_out
+        # genesis-world 1.4.5: QueriedStates.get returns the registered
+        # solver states directly (no SimState wrapper, unlike 1.4.0).
+        for solver_state in queried:
+            if not isinstance(solver_state, ThermalSolverState):
+                continue
+            if solver_state.T.grad is not None:
+                # The bridge already delivered this state's grad; keep it.
+                continue
+            grad_out = torch.zeros_like(solver_state.T, requires_grad=False)
+            self._kernel_get_grad(0, grad_out)
+            solver_state.T.grad = grad_out
+        return []
 
     @qd.kernel
     def _kernel_get_grad_2d(self, f: qd.i32, t_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
@@ -632,7 +650,7 @@ class ThermalSolver(Solver):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             t_grad[i_b, i, j, k] = self._T.grad[f, i_b, i, j, k]
 
-    def _kernel_get_grad(self, f: int, t_grad: gs.Tensor) -> None:
+    def _kernel_get_grad(self, f: int, t_grad: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_get_grad_2d(f, t_grad)
         else:
@@ -708,10 +726,10 @@ class ThermalSolver(Solver):
         if self._sim.requires_grad:
             if ckpt_name not in self._ckpt:
                 self._ckpt[ckpt_name] = {
-                    "T": gs.zeros(
+                    "T": torch.zeros(
                         (self._B, *self._shape),
                         dtype=gs.tc_float,
-                        scene=self._scene,
+                        device=gs.device,
                     ),
                 }
             self._kernel_get_state(0, self._ckpt[ckpt_name]["T"])
@@ -730,6 +748,9 @@ class ThermalSolver(Solver):
             return None
         state = ThermalSolverState(self._scene, self)
         self._kernel_get_state(f, state.T)
+        # genesis-world 1.4.5: registering the state wires grad_tensors into
+        # the autograd bridge so scene.backward populates state.T.grad.
+        self._queried_states.append(state)
         return state
 
     def set_state(
@@ -753,7 +774,6 @@ class ThermalSolver(Solver):
     def add_grad_from_state(self, state: ThermalSolverState | None) -> None:
         if state is None or self._T is None or state.T.grad is None:
             return
-        state.T.assert_contiguous()
         self._kernel_add_grad_from_t(self._sim.cur_substep_local, state.T.grad)
 
     def collect_output_grads(self) -> None:
@@ -825,7 +845,7 @@ class ThermalSolver(Solver):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             t_out[i_b, i, j, k] = self._T[f, i_b, i, j, k]
 
-    def _kernel_get_state(self, f: int, t_out: gs.Tensor) -> None:
+    def _kernel_get_state(self, f: int, t_out: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_get_state_2d(f, t_out)
         else:
@@ -845,7 +865,7 @@ class ThermalSolver(Solver):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             self._T[f, i_b, i, j, k] = t_in[i_b, i, j, k]
 
-    def _kernel_set_state(self, f: int, t_in: gs.Tensor) -> None:
+    def _kernel_set_state(self, f: int, t_in: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_set_state_2d(f, t_in)
         else:
@@ -865,7 +885,7 @@ class ThermalSolver(Solver):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             self._T.grad[f, i_b, i, j, k] += t_grad[i_b, i, j, k]
 
-    def _kernel_add_grad_from_t(self, f: int, t_grad: gs.Tensor) -> None:
+    def _kernel_add_grad_from_t(self, f: int, t_grad: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_add_grad_from_t_2d(f, t_grad)
         else:

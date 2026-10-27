@@ -10,6 +10,7 @@ import numpy as np
 import quadrants as qd
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
+import torch
 from genesis.engine.solvers.base_solver import Solver
 
 from .options import JouleHeatingOptions
@@ -88,7 +89,7 @@ class JouleHeatingSolver(Solver):
         self._k_field: qd.Field | None = None
         self._n_frames: int = 1
 
-        self._ckpt: dict[str, dict[str, gs.Tensor]] = {}
+        self._ckpt: dict[str, dict[str, torch.Tensor]] = {}
 
     @property
     def is_active(self) -> bool:
@@ -671,11 +672,15 @@ class JouleHeatingSolver(Solver):
     # Simulation lifecycle
     # --------------------------------------------------------------------------
 
-    def process_input(self, in_backward: bool = False) -> None:
-        pass
+    def process_input(self, in_backward: bool = False) -> list:
+        # genesis-world 1.4.5 iterates the return of every active solver's
+        # process_input; emit an empty list (no taped inputs).
+        return []
 
-    def process_input_grad(self) -> None:
-        pass
+    def process_input_grad(self) -> list:
+        # genesis-world 1.4.5 iterates the return of every active solver's
+        # process_input_grad; emit an empty list (no taped input pairs).
+        return []
 
     def substep_pre_coupling(self, f: int) -> None:
         # Solve electric potential for frame f+1.
@@ -812,13 +817,13 @@ class JouleHeatingSolver(Solver):
         if self._sim.requires_grad:
             if ckpt_name not in self._ckpt:
                 self._ckpt[ckpt_name] = {
-                    "V": gs.zeros(
-                        (self._B, *self._shape), dtype=gs.tc_float, scene=self._scene
+                    "V": torch.zeros(
+                        (self._B, *self._shape), dtype=gs.tc_float, device=gs.device
                     ),
                 }
                 if self._T is not None:
-                    self._ckpt[ckpt_name]["T"] = gs.zeros(
-                        (self._B, *self._shape), dtype=gs.tc_float, scene=self._scene
+                    self._ckpt[ckpt_name]["T"] = torch.zeros(
+                        (self._B, *self._shape), dtype=gs.tc_float, device=gs.device
                     )
             self._kernel_get_state(0, self._ckpt[ckpt_name]["V"])
             if self._T is not None:
@@ -1413,7 +1418,7 @@ class JouleHeatingSolver(Solver):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             v_out[i_b, i, j, k] = self._V[f, i_b, i, j, k]
 
-    def _kernel_get_state(self, f: int, v_out: gs.Tensor) -> None:
+    def _kernel_get_state(self, f: int, v_out: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_get_state_2d(f, v_out)
         else:
@@ -1429,7 +1434,7 @@ class JouleHeatingSolver(Solver):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             self._V[f, i_b, i, j, k] = v_in[i_b, i, j, k]
 
-    def _kernel_set_state(self, f: int, v_in: gs.Tensor) -> None:
+    def _kernel_set_state(self, f: int, v_in: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_set_state_2d(f, v_in)
         else:
@@ -1481,7 +1486,7 @@ class JouleHeatingSolver(Solver):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             t_out[i_b, i, j, k] = self._T[f, i_b, i, j, k]
 
-    def _kernel_get_t_state(self, f: int, t_out: gs.Tensor) -> None:
+    def _kernel_get_t_state(self, f: int, t_out: torch.Tensor) -> None:
         if self._T is None:
             return
         if self._dim == 2:
@@ -1499,7 +1504,7 @@ class JouleHeatingSolver(Solver):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             self._T[f, i_b, i, j, k] = t_in[i_b, i, j, k]
 
-    def _kernel_set_t_state(self, f: int, t_in: gs.Tensor) -> None:
+    def _kernel_set_t_state(self, f: int, t_in: torch.Tensor) -> None:
         if self._T is None:
             return
         if self._dim == 2:

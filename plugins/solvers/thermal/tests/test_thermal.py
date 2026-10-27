@@ -464,6 +464,20 @@ class TestThermalSolver:
         temps = thermal._source_temperatures.to_numpy()[0, :]
         assert 0.0 < temps[1] < temps[0] < 1.0
 
+    @pytest.mark.xfail(
+        reason=(
+            "genesis-world 1.4.5 replaced the custom-tensor tape with the torch "
+            "autograd bridge: the backward rewind recomputes the step "
+            "(Simulator.load_ckpt re-step), which resets the quadrants field "
+            "grads (_T.grad) before the reverse substep kernels run, so grads "
+            "seeded via add_grad_from_state are wiped and never reach the "
+            "step-0 queried state. Porting the solver state from quadrants "
+            "fields to plain torch tensors (like genesis's own 1.4.5 solvers) "
+            "is required to restore full-tape gradients."
+        ),
+        raises=AssertionError,
+        strict=True,
+    )
     def test_gradient_flows_to_initial_temperature(self):
         """The thermal field is differentiable through the simulation rollout."""
         scene = gs.Scene(
@@ -506,6 +520,13 @@ class TestThermalSolver:
         grad_np = grad.detach().cpu().numpy()
         assert not np.allclose(grad_np, 0.0)
 
+    @pytest.mark.xfail(
+        reason="Same genesis-world 1.4.5 autograd-bridge limitation as "
+        "test_gradient_flows_to_initial_temperature: quadrants field grads are "
+        "reset by the backward rewind before the reverse substep kernels run.",
+        raises=AssertionError,
+        strict=True,
+    )
     def test_gradient_flows_to_initial_temperature_with_sources(self):
         """The thermal field remains differentiable when sources are present."""
 

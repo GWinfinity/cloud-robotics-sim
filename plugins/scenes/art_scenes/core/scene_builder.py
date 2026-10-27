@@ -19,9 +19,12 @@ References:
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Union
 from pathlib import Path
 from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
 
 # Optional dependencies
 try:
@@ -413,33 +416,44 @@ class SceneBuilder:
         """
         if not HAS_GENESIS or self.scene is None:
             return
-            
+
         if config is None:
             config = LightingConfig()
-        
+
+        # genesis-world 1.2+ no longer exposes gs.lights; lighting is configured
+        # through VisOptions instead. Skip gracefully, like the core backend.
+        from cloud_robotics_sim.utils.genesis_compat import get_genesis_lights
+
+        lights = get_genesis_lights()
+        if lights is None:
+            logger.debug(
+                "Genesis version does not expose gs.lights; skipping lighting setup"
+            )
+            return
+
         # Ambient light
         self.scene.add_light(
-            gs.lights.AmbientLight(
+            lights.AmbientLight(
                 color=config.ambient_color,
                 intensity=config.ambient_intensity,
             )
         )
-        
+
         # Directional light
         self.scene.add_light(
-            gs.lights.DirectionalLight(
+            lights.DirectionalLight(
                 color=config.directional_color,
                 intensity=config.directional_intensity,
                 pos=config.directional_pos,
                 dir=config.directional_dir,
             )
         )
-        
+
         # Point lights
         if config.point_lights:
             for light_config in config.point_lights:
                 self.scene.add_light(
-                    gs.lights.PointLight(
+                    lights.PointLight(
                         color=light_config.get("color", (1.0, 1.0, 1.0)),
                         intensity=light_config.get("intensity", 0.8),
                         pos=light_config.get("pos", (0, 5, 0)),

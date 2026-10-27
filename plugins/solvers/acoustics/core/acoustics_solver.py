@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Callable
 import genesis as gs
 import numpy as np
 import quadrants as qd
+import torch
 from genesis.engine.solvers.base_solver import Solver
 
 from .options import AcousticsOptions
@@ -143,12 +144,24 @@ class AcousticsSolverState:
     def __init__(self, scene: "Scene", solver: "AcousticsSolver"):
         self._scene = scene
         self._s_global = solver.sim.cur_step_global
-        self.P = gs.zeros(
-            (solver._B, *solver._shape), dtype=gs.tc_float, requires_grad=scene.requires_grad, scene=scene
+        # Queried states are registered with the autograd bridge via
+        # ``grad_tensors`` when the solver appends them to ``_queried_states``
+        # (genesis-world 1.4.5); requires_grad is set by the bridge's tracking.
+        self.P = torch.zeros(
+            (solver._B, *solver._shape),
+            dtype=gs.tc_float,
+            device=gs.device,
         )
-        self.P_prev = gs.zeros(
-            (solver._B, *solver._shape), dtype=gs.tc_float, requires_grad=scene.requires_grad, scene=scene
+        self.P_prev = torch.zeros(
+            (solver._B, *solver._shape),
+            dtype=gs.tc_float,
+            device=gs.device,
         )
+
+    @property
+    def grad_tensors(self):
+        """The tensors of the state that carry gradients."""
+        return (self.P, self.P_prev)
 
     def serializable(self) -> None:
         self._scene = None
@@ -228,7 +241,7 @@ class AcousticsSolver(Solver):
         self._probe_active_np = np.zeros(mp, dtype=np.int32)
         self._probe_cells_np = np.zeros((mp, 3), dtype=np.int32)
 
-        self._ckpt: dict[str, dict[str, gs.Tensor]] = {}
+        self._ckpt: dict[str, dict[str, torch.Tensor]] = {}
 
     @property
     def is_active(self) -> bool:
@@ -502,23 +515,55 @@ class AcousticsSolver(Solver):
                 self._body_values.from_numpy(self._body_values_np.astype(gs.np_float))
                 self._body_pos.from_numpy(self._body_pos_np.astype(gs.np_float))
 
-    def process_input(self, in_backward: bool = False) -> None:
-        pass
+    def process_input(self, in_backward: bool = False) -> list:
+        # genesis-world 1.4.5 iterates the return of every active solver's
+        # process_input; emit an empty list (no taped inputs).
+        return []
 
-    def process_input_grad(self) -> None:
+    def process_input_grad(self) -> list:
+        """Deliver rewound step-0 field grads into the queried state tensors.
+
+        ``scene.backward`` populates the step-1 queried state's ``.grad`` via
+        the autograd bridge (see ``grad_tensors`` / ``_queried_states``), and
+        ``add_grad_from_state`` seeds ``_p.grad`` with it; the reverse kernels
+        then accumulate ``_p.grad[0]``. The step-0 queried state is not part of
+        the loss graph, so its ``.grad`` only lands here - copy it out. The
+        simulator iterates this return, hence the empty list.
+        """
         if not self._sim.requires_grad or self._p is None:
-            return
+            return []
         cur_step = self._sim.cur_step_global
-        queried = self._sim._queried_states
-        if cur_step not in queried:
-            return
-        for sim_state in queried[cur_step]:
-            for solver_state in sim_state.solvers_state:
-                if not isinstance(solver_state, AcousticsSolverState):
-                    continue
-                grad_out = gs.zeros_like(solver_state.P, requires_grad=False)
-                self._kernel_get_grad(0, grad_out)
-                solver_state.P.grad = grad_out
+        queried = self._queried_states.get(cur_step)
+        if not queried:
+            return []
+        # genesis-world 1.4.5: QueriedStates.get returns the registered
+        # solver states directly (no SimState wrapper, unlike 1.4.0).
+        for solver_state in queried:
+            if not isinstance(solver_state, AcousticsSolverState):
+                continue
+            if solver_state.P.grad is not None:
+                # The bridge already delivered this state's grad; keep it.
+                continue
+            grad_out = torch.zeros_like(solver_state.P, requires_grad=False)
+            self._kernel_get_grad(0, grad_out)
+            solver_state.P.grad = grad_out
+        return []
+
+    @qd.kernel
+    def _kernel_get_grad_2d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            p_grad[i_b, i, j] = self._p.grad[f, i_b, i, j]
+
+    @qd.kernel
+    def _kernel_get_grad_3d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            p_grad[i_b, i, j, k] = self._p.grad[f, i_b, i, j, k]
+
+    def _kernel_get_grad(self, f: int, p_grad: torch.Tensor) -> None:
+        if self._dim == 2:
+            self._kernel_get_grad_2d(f, p_grad)
+        else:
+            self._kernel_get_grad_3d(f, p_grad)
 
     def substep_pre_coupling(self, f: int) -> None:
         self._update_source_values()
@@ -612,11 +657,11 @@ class AcousticsSolver(Solver):
         if self._sim.requires_grad:
             if ckpt_name not in self._ckpt:
                 self._ckpt[ckpt_name] = {
-                    "P": gs.zeros(
-                        (self._B, *self._shape), dtype=gs.tc_float, scene=self._scene
+                    "P": torch.zeros(
+                        (self._B, *self._shape), dtype=gs.tc_float, device=gs.device
                     ),
-                    "P_prev": gs.zeros(
-                        (self._B, *self._shape), dtype=gs.tc_float, scene=self._scene
+                    "P_prev": torch.zeros(
+                        (self._B, *self._shape), dtype=gs.tc_float, device=gs.device
                     ),
                 }
             self._kernel_get_state(0, self._ckpt[ckpt_name]["P"], self._ckpt[ckpt_name]["P_prev"])
@@ -638,6 +683,9 @@ class AcousticsSolver(Solver):
             return None
         state = AcousticsSolverState(self._scene, self)
         self._kernel_get_state(f, state.P, state.P_prev)
+        # genesis-world 1.4.5: registering the state wires grad_tensors into
+        # the autograd bridge so scene.backward populates state.P.grad.
+        self._queried_states.append(state)
         return state
 
     def set_state(
@@ -654,7 +702,6 @@ class AcousticsSolver(Solver):
     def add_grad_from_state(self, state: AcousticsSolverState | None) -> None:
         if state is None or self._p is None or state.P.grad is None:
             return
-        state.P.assert_contiguous()
         self._kernel_add_grad_from_p(self._sim.cur_substep_local, state.P.grad)
 
     def collect_output_grads(self) -> None:
@@ -1090,7 +1137,7 @@ class AcousticsSolver(Solver):
             p_out[i_b, i, j, k] = self._p[f, i_b, i, j, k]
             pp_out[i_b, i, j, k] = self._p_prev[f, i_b, i, j, k]
 
-    def _kernel_get_state(self, f: int, p_out: gs.Tensor, pp_out: gs.Tensor) -> None:
+    def _kernel_get_state(self, f: int, p_out: torch.Tensor, pp_out: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_get_state_2d(f, p_out, pp_out)
         else:
@@ -1112,27 +1159,11 @@ class AcousticsSolver(Solver):
             self._p[f, i_b, i, j, k] = p_in[i_b, i, j, k]
             self._p_prev[f, i_b, i, j, k] = pp_in[i_b, i, j, k]
 
-    def _kernel_set_state(self, f: int, p_in: gs.Tensor, pp_in: gs.Tensor) -> None:
+    def _kernel_set_state(self, f: int, p_in: torch.Tensor, pp_in: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_set_state_2d(f, p_in, pp_in)
         else:
             self._kernel_set_state_3d(f, p_in, pp_in)
-
-    @qd.kernel
-    def _kernel_get_grad_2d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            p_grad[i_b, i, j] = self._p.grad[f, i_b, i, j]
-
-    @qd.kernel
-    def _kernel_get_grad_3d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            p_grad[i_b, i, j, k] = self._p.grad[f, i_b, i, j, k]
-
-    def _kernel_get_grad(self, f: int, p_grad: gs.Tensor) -> None:
-        if self._dim == 2:
-            self._kernel_get_grad_2d(f, p_grad)
-        else:
-            self._kernel_get_grad_3d(f, p_grad)
 
     @qd.kernel
     def _kernel_add_grad_from_p_2d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
@@ -1144,7 +1175,7 @@ class AcousticsSolver(Solver):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
             self._p.grad[f, i_b, i, j, k] += p_grad[i_b, i, j, k]
 
-    def _kernel_add_grad_from_p(self, f: int, p_grad: gs.Tensor) -> None:
+    def _kernel_add_grad_from_p(self, f: int, p_grad: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_add_grad_from_p_2d(f, p_grad)
         else:

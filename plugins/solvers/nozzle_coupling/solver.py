@@ -53,11 +53,15 @@ class _PluginSolverBase:
     back-propagation through the field solvers yet).
     """
 
-    def process_input(self, in_backward: bool = False) -> None:
-        pass
+    def process_input(self, in_backward: bool = False) -> list:
+        # genesis-world 1.4.5 iterates the return of every active solver's
+        # process_input{,_grad}; emit empty lists (no taped inputs / pairs).
+        return []
 
-    def process_input_grad(self) -> None:
-        pass
+    def process_input_grad(self) -> list:
+        # genesis-world 1.4.5 iterates the return of every active solver's
+        # process_input{,_grad}; emit empty lists (no taped inputs / pairs).
+        return []
 
     def substep_pre_coupling_grad(self, f: int) -> None:
         pass
