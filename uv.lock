@@ -759,7 +759,7 @@ requires-dist = [
     { name = "torchvision", specifier = ">=0.15.0", index = "https://download.pytorch.org/whl/cu128" },
     { name = "tqdm", specifier = ">=4.66.0" },
     { name = "trimesh", specifier = ">=5.0.0,<6" },
-    { name = "xuvdb", marker = "extra == 'xuvdb'", specifier = ">=1.3.3", index = "https://pypi.org/simple" },
+    { name = "xuvdb", marker = "extra == 'xuvdb'", specifier = ">=1.4.0,<1.5", index = "https://pypi.org/simple" },
     { name = "zarr", marker = "python_full_version == '3.11.*' and extra == 'dev'", specifier = ">=3.0.8" },
     { name = "zarr", marker = "python_full_version < '3.11' and extra == 'dev'", specifier = ">=2.16,<3.0" },
     { name = "zarr", marker = "python_full_version >= '3.12' and extra == 'dev'", specifier = ">=3.2.1" },
@@ -5643,16 +5643,16 @@ wheels = [
 
 [[package]]
 name = "xuvdb"
-version = "1.3.3"
+version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://mirrors.aliyun.com/pypi/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "quadrants" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/36/480233d4bf0a509b39eadb73255172f861a534d3faf6810d4cb4e6d87baf/xuvdb-1.3.3.tar.gz", hash = "sha256:dfde03808564e3f677904dd31b0a489b983bc9ddf08e4f9b13f49abe7d083187", size = 108678, upload-time = "2026-10-16T02:53:00.987Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/60/8a0b5b02edb333939390993006fde4d7d45f7206b5cdc25137a5f30197f1/xuvdb-1.4.0.tar.gz", hash = "sha256:9e746c1df62531398fe24c3f1e20e9f918b7b12afbd8a116c10ec5e24d09f56a", size = 139890, upload-time = "2026-10-26T03:18:25.355Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/51/31d153612a6c5f0b54e429bbba917e28e7e077e0fa2dfaa0acbdff2a5cb3/xuvdb-1.3.3-py3-none-any.whl", hash = "sha256:d3daf55e0229fff6f182defdeac1bb111537e218ecfc2bf9d2bd45507ef21d90", size = 83227, upload-time = "2026-10-16T02:52:59.51Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/bf/b2d8b020e4a42b4fad46fa6d89a02540a045e9d2f1bdc3cba73372398367/xuvdb-1.4.0-py3-none-any.whl", hash = "sha256:bd576b43dff774f8d9bd2fad0f4e7ae0926e06640b278cbeeecfdc0116953ba6", size = 104843, upload-time = "2026-10-26T03:18:23.601Z" },
 ]
 
 [[package]]

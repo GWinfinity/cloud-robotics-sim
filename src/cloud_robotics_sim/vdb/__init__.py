@@ -80,3 +80,28 @@ from cloud_robotics_sim.vdb.core.vdb_xuvdb import (  # noqa: E402
     to_xuvdb,
 )
 from cloud_robotics_sim.vdb.ray_caster import SdfRayCaster  # noqa: E402
+
+# genesis_contact pulls in genesis (a core dependency, but heavy); load it on
+# first attribute access so `import cloud_robotics_sim.vdb` stays light.
+_GENESIS_CONTACT_EXPORTS = {
+    "GENESIS_CONTACT_CACHE_VERSION",
+    "bake_sdf_grid",
+    "bridge_status",
+    "cached_closest_verts",
+    "clear_mesh_sdf",
+    "grid_fingerprint",
+    "install_bake_bridge",
+    "register_mesh_sdf",
+}
+
+
+def __getattr__(name: str) -> Any:
+    if name in _GENESIS_CONTACT_EXPORTS:
+        from cloud_robotics_sim.vdb.core import genesis_contact
+
+        return getattr(genesis_contact, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__() -> list[str]:
+    return sorted(__all__ + list(_GENESIS_CONTACT_EXPORTS))

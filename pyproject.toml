@@ -107,14 +107,18 @@ cad = [
 ]
 
 # Editable sparse voxel volumes + native OpenVDB interop for the vdb module
-# (see src/cloud_robotics_sim/vdb/core/vdb_xuvdb.py).
-# >=1.3.3: mesh_to_level_set / offset / smooth and the v1.3 SDF surface
-# operators (1.2.0 predates them). The Aliyun mirror lags PyPI on xuvdb, so
-# [tool.uv.sources] below pins it to the explicit pypi-org index; once the
-# mirror carries 1.3.3+, drop that source and this resolves from the
-# domestic mirror like everything else.
+# (see src/cloud_robotics_sim/vdb/core/vdb_xuvdb.py), and the Genesis contact
+# bake bridge (src/cloud_robotics_sim/vdb/core/genesis_contact.py).
+# >=1.4.0: mesh_to_level_set / offset / smooth, the v1.3 SDF surface
+# operators, and the 1.4 GpuVolume sampling API the contact bridge consumes
+# (1.3.x host samplers return per-point scalars; 1.2.0 predates the surface
+# operators). Upper-bounded to the 1.4 line: the bridge keys its on-disk cache
+# on the xuvdb version, but the API surface still moves between minor lines.
+# The Aliyun mirror lags PyPI on xuvdb, so [tool.uv.sources] below pins it to
+# the explicit pypi-org index; once the mirror carries 1.4.x, drop that source
+# and this resolves from the domestic mirror like everything else.
 xuvdb = [
-    "xuvdb>=1.3.3",
+    "xuvdb>=1.4.0,<1.5",
 ]
 
 # LEAP71 ShapeKernel Python port (sibling checkout) for the wfc_scenes SDF
