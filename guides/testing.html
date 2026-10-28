@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testing Guide &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/guides/testing.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Architecture Overview" href="../architecture/overview.html" />
+    <link rel="prev" title="3D 资产生成 API 使用指南" href="asset_generation_apis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Testing Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">测试布局</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">本地运行</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ci">插件测试入 CI 的流程</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">约定</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quality-gates-agents-md">Quality gates（与 AGENTS.md 一致）</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Testing Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guides/testing.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="testing-guide">
+<h1>Testing Guide<a class="headerlink" href="#testing-guide" title="Link to this heading"></a></h1>
+<p>测试布局、运行方式与 CI 约定。</p>
+<section id="id1">
+<h2>测试布局<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>位置</p></th>
+<th class="head"><p>数量</p></th>
+<th class="head"><p>CI 覆盖</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tests/</span></code></p></td>
+<td><p>~95 文件 / ~1100 函数</p></td>
+<td><p>✅ 主 Test job（Python 3.10/3.11/3.12 矩阵 + coverage ≥70%）</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">plugins/**/tests/</span></code></p></td>
+<td><p>~50 文件 / ~450 函数</p></td>
+<td><p>✅ plugin-tests job（Python 3.12，白名单制，见下）</p></td>
+</tr>
+<tr class="row-even"><td><p>根目录 <code class="docutils literal notranslate"><span class="pre">test_genesis_works.py</span></code></p></td>
+<td><p>2 函数</p></td>
+<td><p>手动冒烟用：<code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">test_genesis_works.py</span> <span class="pre">-v</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>收集规则：<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> 设了 <code class="docutils literal notranslate"><span class="pre">testpaths</span> <span class="pre">=</span> <span class="pre">[&quot;tests&quot;]</span></code> 与
+<code class="docutils literal notranslate"><span class="pre">python_files</span> <span class="pre">=</span> <span class="pre">[&quot;test_*.py&quot;]</span></code>——后者意味着 <code class="docutils literal notranslate"><span class="pre">*_test.py</span></code>（如
+<code class="docutils literal notranslate"><span class="pre">examples/ab_test.py</span></code> 模板、<code class="docutils literal notranslate"><span class="pre">speed_test.py</span></code> 脚本）<strong>不会被 pytest 收集</strong>，
+它们是示例/脚本，不是测试。</p>
+</section>
+<section id="id2">
+<h2>本地运行<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 主测试套件（与 CI 等价，去掉 coverage 参数）</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-q
+
+<span class="c1"># 冒烟测试（验证 genesis 环境）</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>test_genesis_works.py<span class="w"> </span>-v
+
+<span class="c1"># 单个插件的测试（必须单独进程：多数 genesis 插件在模块级 gs.init）</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>plugins/scenes/wfc_scenes/tests<span class="w"> </span>-q
+
+<span class="c1"># 一次跑多个插件（每目录一个进程，与 CI 行为一致）</span>
+bash<span class="w"> </span>scripts/check_plugin_tests.sh
+</pre></div>
+</div>
+</section>
+<section id="ci">
+<h2>插件测试入 CI 的流程<a class="headerlink" href="#ci" title="Link to this heading"></a></h2>
+<p>CI 的 <code class="docutils literal notranslate"><span class="pre">plugin-tests</span></code> job 按 <code class="docutils literal notranslate"><span class="pre">scripts/plugin_test_dirs.txt</span></code>（每行一个目录）
+逐个目录起一个 pytest 进程。入选标准：</p>
+<ol class="arabic simple">
+<li><p><strong>本机实跑全绿</strong>：<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pytest</span> <span class="pre">&lt;dir&gt;</span> <span class="pre">-q</span> <span class="pre">-m</span> <span class="pre">&quot;not</span> <span class="pre">slow&quot;</span></code>；</p></li>
+<li><p><strong>只依赖核心依赖</strong>（CI 用 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[dev]&quot;</span></code>，无插件 extras——
+可选推理库如 ultralytics/sam2 必须用 <code class="docutils literal notranslate"><span class="pre">pytest.importorskip</span></code> 或
+<code class="docutils literal notranslate"><span class="pre">tests/optional_deps.py</span></code> 守护）；</p></li>
+<li><p><strong>无网络访问</strong>（外部 API 一律 mock，参考 <code class="docutils literal notranslate"><span class="pre">tests/asset_gen/</span></code>）；</p></li>
+<li><p>CPU 可跑，或重测试已打 <code class="docutils literal notranslate"><span class="pre">pytest.mark.slow</span></code>（job 带 <code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">&quot;not</span> <span class="pre">slow&quot;</span></code>）。</p></li>
+</ol>
+<p>满足后把目录追加到 <code class="docutils literal notranslate"><span class="pre">scripts/plugin_test_dirs.txt</span></code> 即可。</p>
+<p>已知未入 CI 的插件测试（本机实跑失败，原因记录于此；修复后可移入
+<code class="docutils literal notranslate"><span class="pre">scripts/plugin_test_dirs.txt</span></code>）：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>目录</p></th>
+<th class="head"><p>失败原因（2026-09 本机实跑）</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">plugins/teleop/vr_bridge/tests</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">test_e2e_genesis.py::test_genesis_franka_teleop_and_recording</span></code> 环境相关失败（其余全绿）</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">plugins/do_as_i_do/tests</span></code></p></td>
+<td><p>3 个 FileNotFoundError（缺 teleop/sharpa 资产）</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">plugins/manipulation/dexterous_gnn_qp/tests</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">benchmark.py</span></code> 环境相关断言失败</p></td>
+</tr>
+</tbody>
+</table>
+<p>其余未列入的控制器训练类等插件测试，按上方流程验证后可补入。</p>
+</section>
+<section id="id3">
+<h2>约定<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>可选依赖守护</strong>：新测试文件从 <code class="docutils literal notranslate"><span class="pre">tests/optional_deps.py</span></code> 取
+<code class="docutils literal notranslate"><span class="pre">genesis_only</span></code> / <code class="docutils literal notranslate"><span class="pre">torch_only</span></code> 等 skip 标记；已有文件的
+<code class="docutils literal notranslate"><span class="pre">try/except</span> <span class="pre">HAS_*</span></code> 与 <code class="docutils literal notranslate"><span class="pre">pytest.importorskip</span></code> 风格继续有效，不必迁移。</p></li>
+<li><p><strong>禁网络</strong>：测试不允许真实 HTTP/下载；用 monkeypatch/mock（资产下载
+mock <code class="docutils literal notranslate"><span class="pre">download_component</span></code>/<code class="docutils literal notranslate"><span class="pre">ensure_for_path</span></code>，参考 <code class="docutils literal notranslate"><span class="pre">tests/robotwin/</span></code>）。</p></li>
+<li><p><strong>slow marker</strong>：超过几十秒的测试打 <code class="docutils literal notranslate"><span class="pre">&#64;pytest.mark.slow</span></code>，CI 的
+plugin-tests job 用 <code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">&quot;not</span> <span class="pre">slow&quot;</span></code> 跳过。<code class="docutils literal notranslate"><span class="pre">gpu</span></code> marker 已注册留给
+将来 GPU runner。</p></li>
+<li><p><strong>sys.path</strong>：仓库根 <code class="docutils literal notranslate"><span class="pre">conftest.py</span></code> 已把 repo root 加入 <code class="docutils literal notranslate"><span class="pre">sys.path</span></code>，
+插件测试直接 <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">plugins.x.y</span></code> / <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">plugins...</span></code> 即可，不要
+再在测试文件里 <code class="docutils literal notranslate"><span class="pre">sys.path.insert</span></code>。</p></li>
+<li><p><strong>genesis 进程隔离</strong>：<code class="docutils literal notranslate"><span class="pre">gs.init</span></code> 每个进程一次。同一插件的 genesis 测试
+保持在同一测试模块内；跨插件必须分进程（CI 已按目录分进程）。</p></li>
+</ul>
+</section>
+<section id="quality-gates-agents-md">
+<h2>Quality gates（与 AGENTS.md 一致）<a class="headerlink" href="#quality-gates-agents-md" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>src/<span class="w"> </span>tests/
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>black<span class="w"> </span>--check<span class="w"> </span>src/<span class="w"> </span>tests/
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>mypy<span class="w"> </span>src/cloud_robotics_sim
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="asset_generation_apis.html" class="btn btn-neutral float-left" title="3D 资产生成 API 使用指南" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../architecture/overview.html" class="btn btn-neutral float-right" title="Architecture Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
