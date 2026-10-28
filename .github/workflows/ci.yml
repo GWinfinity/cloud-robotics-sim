@@ -48,11 +48,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Free disk space
         uses: jlumbroso/free-disk-space@v1.3.1
         with:
@@ -66,6 +61,12 @@ jobs:
 
       - name: Aggressive disk cleanup
         run: |
+          # WARNING: this deletes /opt/hostedtoolcache — the very directory
+          # where actions/setup-python installs its Pythons. The "Set up
+          # Python" step MUST run AFTER this cleanup, otherwise the
+          # requested interpreter is gone and `python` silently falls back
+          # to the system Python (3.14 on ubuntu-26.04, which genesis-world
+          # does not support).
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /usr/share/swift
           sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/haskell
           sudo rm -rf /usr/local/share/powershell /usr/local/share/chromium
@@ -74,6 +75,14 @@ jobs:
           sudo rm -rf /var/lib/apt/lists/*
           df -h
 
+      # Must stay after "Aggressive disk cleanup": that step deletes
+      # /opt/hostedtoolcache, so setup-python has to (re)install the
+      # requested interpreter afterwards.
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -81,6 +90,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -c "import sys; v='${{ matrix.python-version }}'; assert f'{sys.version_info.major}.{sys.version_info.minor}' == v, f'wrong Python on PATH: {sys.version}, expected {v} (did cleanup delete the setup-python toolcache?)'"
           python -m pip install --upgrade pip
           # The `genesis` module is provided by the `genesis-world` project
           # (pinned in pyproject.toml); install it first so no other PyPI
