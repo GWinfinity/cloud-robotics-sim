@@ -104,6 +104,13 @@ jobs:
           python -c "import pyglet; print('pyglet from', pyglet.__file__, pyglet.version, 'headless=', pyglet.options['headless'], 'shadow_window=', pyglet.options['shadow_window'])"
 
       - name: Type check
+        # mypy config pins python_version="3.10", so the analysis is identical
+        # regardless of the running interpreter — but the matrix jobs install
+        # different numpy versions (3.10 caps at numpy 2.2.x, 3.11/3.12 use
+        # 2.4.x), and the stub differences make the same source alternate
+        # between "unused type: ignore" and "missing ignore" errors. Run it
+        # once on the interpreter that matches local dev (3.12 + numpy 2.4).
+        if: matrix.python-version == '3.12'
         run: mypy src/cloud_robotics_sim
 
       - name: Smoke test
