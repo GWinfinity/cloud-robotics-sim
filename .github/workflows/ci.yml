@@ -84,8 +84,11 @@ jobs:
           python -m pip install --upgrade pip
           # The `genesis` module is provided by the `genesis-world` project
           # (pinned in pyproject.toml); install it first so no other PyPI
-          # project named `genesis` can shadow it.
-          pip install --no-cache-dir "genesis-world==1.4.0"
+          # project named `genesis` can shadow it. Derive the version from
+          # pyproject.toml so this line cannot drift out of sync.
+          GENESIS_VER=$(grep -oP '(?<=genesis-world==)[0-9.]+' pyproject.toml | head -n1)
+          test -n "$GENESIS_VER" || { echo 'genesis-world pin not found in pyproject.toml'; exit 1; }
+          pip install --no-cache-dir "genesis-world==${GENESIS_VER}"
           pip install --no-cache-dir -e ".[dev]"
           python -c "import genesis as gs; print('genesis from', gs.__file__); assert hasattr(gs, 'gpu') and hasattr(gs, 'options'), 'incompatible genesis package resolved'"
           python -c "import pyglet; print('pyglet from', pyglet.__file__, pyglet.version, 'headless=', pyglet.options['headless'], 'shadow_window=', pyglet.options['shadow_window'])"
@@ -128,8 +131,10 @@ jobs:
           # (pinned in pyproject.toml). Install it first from PyPI: it must not
           # be replaced by some other PyPI project named `genesis` — a wrong
           # package makes `import genesis` succeed but without gs.gpu/gs.options.
-          # Keep this version in sync with the genesis-world pin in pyproject.toml.
-          pip install --no-cache-dir "genesis-world==1.4.0"
+          # Derive the version from pyproject.toml so this line cannot drift.
+          GENESIS_VER=$(grep -oP '(?<=genesis-world==)[0-9.]+' pyproject.toml | head -n1)
+          test -n "$GENESIS_VER" || { echo 'genesis-world pin not found in pyproject.toml'; exit 1; }
+          pip install --no-cache-dir "genesis-world==${GENESIS_VER}"
           pip install --no-cache-dir -e ".[dev]"
           python -c "import genesis as gs; print('genesis from', gs.__file__); assert hasattr(gs, 'gpu') and hasattr(gs, 'options'), 'incompatible genesis package resolved'"
           python -c "import pyglet; print('pyglet from', pyglet.__file__, pyglet.version, 'headless=', pyglet.options['headless'], 'shadow_window=', pyglet.options['shadow_window'])"
