@@ -215,6 +215,10 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # Re-exports are intentional
+# plugins/solvers/qd_rbd is a vendored scientific kernel archive: single-letter
+# names (B batch, K lanes, M mass matrix, q/v/a) are the domain notation used
+# throughout its REPORT/benchmarks and are kept verbatim on purpose.
+"plugins/solvers/qd_rbd/**/*.py" = ["N803", "N806"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
