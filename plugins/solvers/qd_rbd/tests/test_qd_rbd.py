@@ -379,6 +379,91 @@ def test_zero_state_gives_gravity_compensation(chain):
     assert np.abs(tau).max() > 0.0  # gravity is nonzero for this model
 
 
+# ------------------------------------------------------------------ external forces
+
+
+def _rand_fext(model, B, seed=17):
+    rng = np.random.default_rng(seed)
+    return rng.normal(size=(B, model.nj, 6))
+
+
+def test_pendulum_fext_matches_analytic():
+    """A unit world +y force at the com shifts the holding torque by -d*cos(q).
+
+    The world->body conversion is anchored here: a wrong rotation sense or
+    a flipped lever shift breaks the cos(q) factor, not just the magnitude.
+    """
+    model, m, d, _ = pendulum_model()
+    data = Data(model, 16)
+    rng = np.random.default_rng(11)
+    q = rng.uniform(-np.pi, np.pi, size=(16, 1))
+    fext = np.zeros((16, model.nj, 6))
+    fext[:, 1, 1] = 1.0  # unit world +y force at the com
+    tau = rnea(model, data, q, np.zeros((16, 1)), np.zeros((16, 1)), fext=fext)
+    ref = (m * 9.81 - 1.0) * d * np.cos(q)
+    assert np.abs(tau - ref).max() < TOL
+
+
+@pytest.mark.parametrize("model_name", ["chain", "branched"])
+def test_fext_antigravity_cancels_gravity(model_name, request):
+    """Per-link force F = -m*g at every com must cancel the gravity term."""
+    model = request.getfixturevalue(model_name)
+    B = 8
+    q, _, _ = _rand_state(model, B)
+    d = Data(model, B)
+    fext = np.zeros((B, model.nj, 6))
+    fext[:, :, :3] = -model.mass[None, :, None] * model.gravity[None, None, :]
+    hold = non_linear_effects(model, d, q, np.zeros((B, model.nv)))
+    assert np.abs(hold).max() > 0.0  # gravity is there to cancel
+    free = non_linear_effects(model, d, q, np.zeros((B, model.nv)), fext=fext)
+    assert np.abs(free).max() < TOL
+
+
+@pytest.mark.parametrize("model_name", ["chain", "branched"])
+def test_fext_bias_equals_rnea_at_zero_acc(model_name, request):
+    """non_linear_effects with fext is RNEA at a = 0 with the same fext."""
+    model = request.getfixturevalue(model_name)
+    B = 8
+    q, v, _ = _rand_state(model, B)
+    fext = _rand_fext(model, B)
+    d = Data(model, B)
+    bias = non_linear_effects(model, d, q, v, fext=fext)
+    zero_a = np.zeros((B, model.nv))
+    assert np.abs(rnea(model, d, q, v, zero_a, fext=fext) - bias).max() < TOL
+
+
+@pytest.mark.parametrize("model_name", ["chain", "branched"])
+def test_fext_aba_inverts_rnea(model_name, request):
+    """ABA must invert RNEA when both see the same external wrenches."""
+    model = request.getfixturevalue(model_name)
+    B = 8
+    q, v, a = _rand_state(model, B)
+    fext = _rand_fext(model, B)
+    d = Data(model, B)
+    tau = rnea(model, d, q, v, a, fext=fext)
+    qdd = aba(model, d, q, v, tau, fext=fext)
+    assert np.abs(qdd - a).max() < 1e-8
+
+
+def test_fext_shape_validation(chain):
+    """Fext must have shape (B, nj, 6); dtype is coerced like q/v/a."""
+    B = 4
+    q, v, a = _rand_state(chain, B)
+    z = np.zeros((B, chain.nv))
+    d = Data(chain, B)
+    with pytest.raises(ValueError):
+        rnea(chain, d, q, v, a, fext=np.zeros((B, chain.nj, 5)))
+    with pytest.raises(ValueError):
+        rnea(chain, d, q, v, a, fext=np.zeros((B + 1, chain.nj, 6)))
+    with pytest.raises(ValueError):
+        non_linear_effects(chain, d, q, v, fext=np.zeros((B, chain.nv, 6)))
+    with pytest.raises(ValueError):
+        aba(chain, d, q, v, z, fext=np.zeros((B, chain.nj, 3)))
+    ref = aba(chain, d, q, v, z)
+    f32 = np.zeros((B, chain.nj, 6), dtype=np.float32)
+    assert np.abs(aba(chain, d, q, v, z, fext=f32) - ref).max() < TOL
+
+
 def test_from_pinocchio_error_message_without_pin():
     """Without pinocchio, from_pinocchio raises a helpful ImportError."""
     if HAS_PINOCCHIO:

@@ -59,27 +59,64 @@ def _out(data, out, shape):
     return out
 
 
+def _check_fext(data, fext):
+    f = np.ascontiguousarray(fext, dtype=np.float64)
+    shape = (data.B, data.model.nj, 6)
+    if f.shape != shape:
+        raise ValueError(f"expected fext shape {shape}, got {f.shape}")
+    return f
+
+
+def _body_fext(model, data, q, fext):
+    """World-frame com wrenches -> body frame, once per call.
+
+    The conversion kernel accumulates world rotations into ``data.R_o``
+    (the same layout ``fk`` writes) and leaves the body-frame wrenches in
+    ``data.FB`` for the ``*_fext`` kernels to subtract, so callers hand
+    over sim contact forces as-is and no external FK is needed.
+    """
+    fw = _check_fext(data, fext)
+    data.kernels()["fext_body"](q, fw, data.FB, data.R_o, data.P, data.B)
+    return data.FB
+
+
 def _c_path(data):
     """True when this call should go to the C kernel (REPORT.md §12)."""
     return data.B >= ckern.MIN_BATCH and ckern.available()
 
 
-def rnea(model, data, q, v, a, out=None):
-    """Inverse dynamics: tau = M(q) a + b(q, v).  Reuse ``out`` in loops."""
+def rnea(model, data, q, v, a, out=None, fext=None):
+    """Inverse dynamics: tau = M(q) a + b(q, v) - J^T fext.
+
+    ``fext`` is a (B, nj, 6) array of per-link wrenches ``[force, torque]``
+    acting at each link's com in world axes -- the convention a sim's
+    contact solver emits; row 0 (the universe) is ignored.  A given fext
+    takes the Quadrants ``*_fext`` kernel, so the C backend does not apply.
+    Reuse ``out`` in loops.
+    """
     q, v, a = _check(data, q, v, a)
     tau = _out(data, out, (data.B, model.nv))
-    if _c_path(data):
+    if fext is not None:
+        fb = _body_fext(model, data, q, fext)
+        data.kernels()["rnea_fext"](q, v, a, fb, tau, data.P, data.S, data.B)
+    elif _c_path(data):
         model.cmodel().rnea(q, v, a, tau)
     else:
         data.kernels()["rnea"](q, v, a, tau, data.P, data.S, data.B)
     return tau
 
 
-def non_linear_effects(model, data, q, v, out=None):
-    """b(q, v) = RNEA at a = 0.  Cheaper than ``rnea`` by the qdd term only."""
+def non_linear_effects(model, data, q, v, out=None, fext=None):
+    """b(q, v) - J^T fext, i.e. RNEA at a = 0 with external wrenches.
+
+    Cheaper than ``rnea`` by the qdd term only; ``fext`` as in ``rnea``.
+    """
     q, v = _check(data, q, v)
     tau = _out(data, out, (data.B, model.nv))
-    if _c_path(data):
+    if fext is not None:
+        fb = _body_fext(model, data, q, fext)
+        data.kernels()["rnea_bias_fext"](q, v, fb, tau, data.P, data.S, data.B)
+    elif _c_path(data):
         model.cmodel().rnea(q, v, None, tau, bias=True)
     else:
         data.kernels()["rnea_bias"](q, v, tau, data.P, data.S, data.B)
@@ -107,11 +144,21 @@ def crba_apply(model, data, q, x, out=None):
     return out
 
 
-def aba(model, data, q, v, tau, out=None):
-    """Forward dynamics: qdd = M(q)^-1 (tau - b(q, v))."""
+def aba(model, data, q, v, tau, out=None, fext=None):
+    """Forward dynamics: qdd = M(q)^-1 (tau - b(q, v) + J^T fext).
+
+    ``fext`` is subtracted inside the sweep exactly as in ``rnea``, so
+    ``aba(model, data, q, v, rnea(..., fext=f), fext=f)`` returns ``a``.
+    """
     q, v, tau = _check(data, q, v, tau)
     qdd = _out(data, out, (data.B, model.nv))
-    data.kernels()["aba"](q, v, tau, qdd, data.P, data.S, data.IC, data.D2, data.B)
+    if fext is not None:
+        fb = _body_fext(model, data, q, fext)
+        data.kernels()["aba_fext"](
+            q, v, tau, fb, qdd, data.P, data.S, data.IC, data.D2, data.B
+        )
+    else:
+        data.kernels()["aba"](q, v, tau, qdd, data.P, data.S, data.IC, data.D2, data.B)
     return qdd
 
 

@@ -2,7 +2,8 @@ name: qd_rbd
 version: 0.1.0
 description: >
   Pinocchio 刚体动力学算法（RNEA/CRBA/ABA/M·x/FK）的 Quadrants 批量并行重构
-  （存档第八轮：scratch 打包 + C 后端），f64 数值与 Pinocchio 对齐
+  （存档第八轮：scratch 打包 + C 后端），f64 数值与 Pinocchio 对齐，
+  支持世界系外力 fext（FRAX/MJX 约定）
 category: solvers
 source_project: qd-rbd-archive (qd_rbd v8)
 author:

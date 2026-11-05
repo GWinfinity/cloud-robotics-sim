@@ -135,6 +135,8 @@ class Model:
         # 1 => CRBA fills this row completely, so it needs no zeroing
         self.f_row_full = qd.field(qd.i32, shape=self.nj)
         self.f_mc = qd.Vector.field(3, qd.f64, shape=self.nj)
+        # com lever arm in the body frame, for the fext world->body conversion
+        self.f_lever = qd.Vector.field(3, qd.f64, shape=self.nj)
         # gravity must live in a field: a Python float literal would be
         # folded to f32 by the compiler and spoil f64 agreement.
         self.f_grav = qd.field(qd.f64, shape=3)
@@ -153,6 +155,7 @@ class Model:
         self.f_leaf.from_numpy(self.leaf)
         self.f_row_full.from_numpy(self.row_full)
         self.f_mc.from_numpy(self.mass[:, None] * self.lever)
+        self.f_lever.from_numpy(self.lever)
         self.f_grav.from_numpy(self.gravity)
 
         self._kern = None

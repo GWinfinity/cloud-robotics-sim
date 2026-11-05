@@ -113,6 +113,58 @@ def test_fk(case):
         assert np.abs(p[i, j] - np.array(dd.oMi[j].translation)).max() < TOL
 
 
+def _pin_fext_list(m, R_i, fw_i):
+    """World com wrench -> pinocchio's local joint-frame forces for one instance.
+
+    Mirrors the kernel's ``k_fext_body`` conversion: force into the body
+    frame, torque shifted from com to joint origin by the lever arm.
+    """
+    return [
+        (
+            pin.Force(
+                R_i[j].T @ fw_i[j, :3],
+                R_i[j].T @ fw_i[j, 3:] + np.cross(m.lever[j], R_i[j].T @ fw_i[j, :3]),
+            )
+            if j > 0
+            else pin.Force.Zero()
+        )
+        for j in range(m.nj)
+    ]
+
+
+def test_rnea_fext(case):
+    """Batched RNEA with world com wrenches matches pinocchio's local fext."""
+    _, pm, m, d, q, v, a = case
+    fw = np.random.default_rng(23).normal(size=(B, m.nj, 6))
+    R, _ = rbd.forward_kinematics(m, d, q)
+    ref = np.stack(
+        [
+            pin.rnea(
+                pm, pm.createData(), q[i], v[i], a[i], _pin_fext_list(m, R[i], fw[i])
+            )
+            for i in range(B)
+        ]
+    )
+    assert np.abs(rbd.rnea(m, d, q, v, a, fext=fw) - ref).max() < TOL
+
+
+def test_aba_fext(case):
+    """ABA subtracts fext exactly like pinocchio's aba with local forces."""
+    _, pm, m, d, q, v, _ = case
+    fw = np.random.default_rng(29).normal(size=(B, m.nj, 6))
+    tau = np.random.default_rng(31).normal(size=(B, pm.nv))
+    R, _ = rbd.forward_kinematics(m, d, q)
+    ref = np.stack(
+        [
+            pin.aba(
+                pm, pm.createData(), q[i], v[i], tau[i], _pin_fext_list(m, R[i], fw[i])
+            )
+            for i in range(B)
+        ]
+    )
+    assert np.abs(rbd.aba(m, d, q, v, tau, fext=fw) - ref).max() < TOL
+
+
 def test_forward_dynamics_consistency(case):
     """M(q) qdd + nle(q, v) == tau, checked on the qd side only."""
     _, pm, m, d, q, v, _ = case

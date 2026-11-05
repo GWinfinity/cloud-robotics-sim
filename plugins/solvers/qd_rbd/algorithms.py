@@ -76,6 +76,10 @@ class Data:
         self.IC = np.zeros((B, nj, 9, 3))
         # per-joint scalars for ABA: d = S^T IA S, u = tau - S^T pA
         self.D2 = np.zeros((B, nj, 2))
+        # body-frame external wrenches, Featherstone [torque(3), force(3)]
+        # about the joint origin; written by ``fext_body``, read by the
+        # *_fext kernels.  Row 0 (universe) is never written or read.
+        self.FB = np.zeros((B, nj, 6))
         # world poses, only written by ``fk``
         self.R_o = np.zeros((B, nj, 3, 3))
         self.p_o = np.zeros((B, nj, 1, 3))
@@ -108,6 +112,7 @@ def _build(m):
     )
     fA0, fB0, fmass = m.f_A0, m.f_B0, m.f_mass
     f_leaf, f_mc = m.f_leaf, m.f_mc
+    f_lever = m.f_lever
     f_row_full = m.f_row_full
     fg = m.f_grav
 
@@ -289,12 +294,13 @@ def _build(m):
                 _fk_rel(q, P, b, i)
 
     # ------------------------------------------------------------------ RNEA
-    def _make_pass(use_accel):
+    def _make_pass(use_accel, use_fext):
         """Build one inverse-dynamics sweep.
 
-        ``use_accel`` is a *Python* bool captured by the closure, not a kernel
-        argument: the qdd terms are then traced out of the generated code for
-        the bias-only variant instead of being branched around at run time.
+        ``use_accel`` / ``use_fext`` are *Python* bools captured by the
+        closure, not kernel arguments: the qdd terms and the fext subtraction
+        are then traced out of the generated code for the variants that do
+        not need them instead of being branched around at run time.
         """
 
         @qd.func
@@ -304,6 +310,7 @@ def _build(m):
             qdin: qd.template(),
             qddin: qd.template(),
             tau: qd.template(),
+            fb: qd.template(),
             P: qd.template(),
             S: qd.template(),
         ):
@@ -344,23 +351,20 @@ def _build(m):
                 _stvs(S, A1, bn, i, a1)
                 _stvs(S, A2, bn, i, a2)
 
-                # f = I a + v x* (I v) in body coordinates
+                # f = I a + v x* (I v) - fext  (body coordinates)
                 Iv1 = fA0[i] @ v1 + fB0[i] @ v2
                 Iv2 = fB0[i].transpose() @ v1 + fmass[i] * v2
-                _stvs(
-                    S,
-                    F1,
-                    bn,
-                    i,
-                    (fA0[i] @ a1 + fB0[i] @ a2 + v1.cross(Iv1) + v2.cross(Iv2)),
-                )
-                _stvs(
-                    S,
-                    F2,
-                    bn,
-                    i,
-                    (fB0[i].transpose() @ a1 + fmass[i] * a2 + v1.cross(Iv2)),
-                )
+                f1 = fA0[i] @ a1 + fB0[i] @ a2 + v1.cross(Iv1) + v2.cross(Iv2)
+                f2 = fB0[i].transpose() @ a1 + fmass[i] * a2 + v1.cross(Iv2)
+                if qd.static(use_fext):
+                    f1 = f1 - qd.Vector(
+                        [fb[b, i, 0], fb[b, i, 1], fb[b, i, 2]], dt=qd.f64
+                    )
+                    f2 = f2 - qd.Vector(
+                        [fb[b, i, 3], fb[b, i, 4], fb[b, i, 5]], dt=qd.f64
+                    )
+                _stvs(S, F1, bn, i, f1)
+                _stvs(S, F2, bn, i, f2)
             for k in range(nj - 1):
                 i = nj - 1 - k
                 jt = fjt[i]
@@ -377,10 +381,28 @@ def _build(m):
                 _addvs(S, F1, bn, fp[i], n1)
                 _addvs(S, F2, bn, fp[i], n2)
 
-        return _rnea_pass
+        if use_fext:
+            return _rnea_pass
 
-    _pass_acc = _make_pass(True)
-    _pass_bias = _make_pass(False)
+        @qd.func
+        def _rnea_pass_nofb(
+            b,
+            q: qd.template(),
+            qdin: qd.template(),
+            qddin: qd.template(),
+            tau: qd.template(),
+            P: qd.template(),
+            S: qd.template(),
+        ):
+            # tau stands in for fb, which the no-fext variant never traces
+            _rnea_pass(b, q, qdin, qddin, tau, tau, P, S)
+
+        return _rnea_pass_nofb
+
+    _pass_acc = _make_pass(True, False)
+    _pass_bias = _make_pass(False, False)
+    _pass_acc_f = _make_pass(True, True)
+    _pass_bias_f = _make_pass(False, True)
 
     @qd.kernel
     def k_rnea(
@@ -402,6 +424,67 @@ def _build(m):
         for b in range(B):
             # qdin stands in for qddin, which is never traced in this variant
             _pass_bias(b, q, qdin, qdin, tau, P, S)
+
+    @qd.kernel
+    def k_rnea_fext(
+        q: _F64_2,
+        qdin: _F64_2,
+        qddin: _F64_2,
+        fb: _F64_3,
+        tau: _F64_2,
+        P: _F64_4,
+        S: _F64_3,
+        B: qd.i32,
+    ):
+        for b in range(B):
+            _pass_acc_f(b, q, qdin, qddin, tau, fb, P, S)
+
+    @qd.kernel
+    def k_rnea_bias_fext(
+        q: _F64_2,
+        qdin: _F64_2,
+        fb: _F64_3,
+        tau: _F64_2,
+        P: _F64_4,
+        S: _F64_3,
+        B: qd.i32,
+    ):
+        for b in range(B):
+            # qdin stands in for qddin, which is never traced in this variant
+            _pass_bias_f(b, q, qdin, qdin, tau, fb, P, S)
+
+    # ------------------------------------------------- external force conversion
+    @qd.kernel
+    def k_fext_body(
+        q: _F64_2, fw: _F64_3, fb: _F64_3, Ro: _F64_4, P: _F64_4, B: qd.i32
+    ):
+        """World-frame com wrench -> body-frame joint-origin wrench.
+
+        fw rows are [force(3), torque(3)] acting at the link com in world
+        axes -- the convention FRAX/MJX expose and a sim's contact solver
+        emits, so callers hand their forces over as-is.  fb rows are
+        Featherstone [torque(3), force(3)] about the joint origin in body
+        coordinates, which the *_fext kernels subtract from the link
+        forces.  World rotations accumulate into Ro (the same layout ``fk``
+        writes) and convert in a second loop, so the transform costs one FK
+        sweep instead of a per-pair transform chain.  Row 0 is skipped.
+        """
+        for b in range(B):
+            _st3(Ro, b, 0, 0, qd.Matrix.identity(qd.f64, 3))
+            for i in range(1, nj):
+                _fk_rel(q, P, b, i)
+                _st3(Ro, b, i, 0, _ld3(Ro, b, fp[i], 0) @ _ld3(P, b, i, P_R))
+            for i in range(1, nj):
+                E = _ld3(Ro, b, i, 0).transpose()
+                f = E @ qd.Vector([fw[b, i, 0], fw[b, i, 1], fw[b, i, 2]], dt=qd.f64)
+                n = E @ qd.Vector([fw[b, i, 3], fw[b, i, 4], fw[b, i, 5]], dt=qd.f64)
+                n = n + f_lever[i].cross(f)
+                fb[b, i, 0] = n[0]
+                fb[b, i, 1] = n[1]
+                fb[b, i, 2] = n[2]
+                fb[b, i, 3] = f[0]
+                fb[b, i, 4] = f[1]
+                fb[b, i, 5] = f[2]
 
     # ------------------------------------------------------------------ CRBA
     @qd.func
@@ -554,19 +637,27 @@ def _build(m):
                 _addvs(S, F2, bn, fp[i], n2)
 
     # ------------------------------------------------------------------- ABA
-    @qd.kernel
-    def k_aba(
-        q: _F64_2,
-        qdin: _F64_2,
-        tau: _F64_2,
-        qdd: _F64_2,
-        P: _F64_4,
-        S: _F64_3,
-        IC: _F64_4,
-        D2: _F64_3,
-        B: qd.i32,
-    ):
-        for b in range(B):
+    def _make_aba(use_fext):
+        """Build the forward-dynamics sweep.
+
+        ``use_fext`` is a trace-time bool like ``_make_pass``'s: the fext
+        subtraction is compiled out of the plain variant, which keeps its
+        kernel argument count (and launch cost) unchanged.
+        """
+
+        @qd.func
+        def _aba_pass(
+            b,
+            q: qd.template(),
+            qdin: qd.template(),
+            tau: qd.template(),
+            fb: qd.template(),
+            qdd: qd.template(),
+            P: qd.template(),
+            S: qd.template(),
+            IC: qd.template(),
+            D2: qd.template(),
+        ):
             bn = b * nj
             _stvs(S, V1, bn, 0, qd.Vector.zero(qd.f64, 3))
             _stvs(S, V2, bn, 0, qd.Vector.zero(qd.f64, 3))
@@ -602,8 +693,18 @@ def _build(m):
 
                 Iv1 = fA0[i] @ v1 + fB0[i] @ v2
                 Iv2 = fB0[i].transpose() @ v1 + fmass[i] * v2
-                _stvs(S, PA1, bn, i, v1.cross(Iv1) + v2.cross(Iv2))
-                _stvs(S, PA2, bn, i, v1.cross(Iv2))
+                pa1 = v1.cross(Iv1) + v2.cross(Iv2)
+                pa2 = v1.cross(Iv2)
+                if qd.static(use_fext):
+                    # pA plays the link-force role, so it carries -fext
+                    pa1 = pa1 - qd.Vector(
+                        [fb[b, i, 0], fb[b, i, 1], fb[b, i, 2]], dt=qd.f64
+                    )
+                    pa2 = pa2 - qd.Vector(
+                        [fb[b, i, 3], fb[b, i, 4], fb[b, i, 5]], dt=qd.f64
+                    )
+                _stvs(S, PA1, bn, i, pa1)
+                _stvs(S, PA2, bn, i, pa2)
                 _st3(IC, b, i, IC_A, fA0[i])
                 _st3(IC, b, i, IC_B, fB0[i])
                 _st3(IC, b, i, IC_C, qd.Matrix.identity(qd.f64, 3) * fmass[i])
@@ -712,12 +813,70 @@ def _build(m):
                     _stvs(S, A1, bn, i, a1)
                     _stvs(S, A2, bn, i, a2)
 
+        if use_fext:
+            return _aba_pass
+
+        @qd.func
+        def _aba_pass_nofb(
+            b,
+            q: qd.template(),
+            qdin: qd.template(),
+            tau: qd.template(),
+            qdd: qd.template(),
+            P: qd.template(),
+            S: qd.template(),
+            IC: qd.template(),
+            D2: qd.template(),
+        ):
+            # tau stands in for fb, which the no-fext variant never traces
+            _aba_pass(b, q, qdin, tau, tau, qdd, P, S, IC, D2)
+
+        return _aba_pass_nofb
+
+    _aba = _make_aba(False)
+    _aba_f = _make_aba(True)
+
+    @qd.kernel
+    def k_aba(
+        q: _F64_2,
+        qdin: _F64_2,
+        tau: _F64_2,
+        qdd: _F64_2,
+        P: _F64_4,
+        S: _F64_3,
+        IC: _F64_4,
+        D2: _F64_3,
+        B: qd.i32,
+    ):
+        for b in range(B):
+            _aba(b, q, qdin, tau, qdd, P, S, IC, D2)
+
+    @qd.kernel
+    def k_aba_fext(
+        q: _F64_2,
+        qdin: _F64_2,
+        tau: _F64_2,
+        fb: _F64_3,
+        qdd: _F64_2,
+        P: _F64_4,
+        S: _F64_3,
+        IC: _F64_4,
+        D2: _F64_3,
+        B: qd.i32,
+    ):
+        for b in range(B):
+            _aba_f(b, q, qdin, tau, fb, qdd, P, S, IC, D2)
+
     return dict(
         fk=k_fk,
         fk_rel=k_fk_rel,
         rnea=k_rnea,
         rnea_bias=k_rnea_bias,
+        rnea_fext=k_rnea_fext,
+        rnea_bias_fext=k_rnea_bias_fext,
+        fext_body=k_fext_body,
         crba=k_crba,
         crba_apply=k_crba_apply,
         aba=k_aba,
+        aba_fext=k_aba_fext,
     )

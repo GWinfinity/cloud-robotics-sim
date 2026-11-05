@@ -21,6 +21,11 @@ B=1 时比 Quadrants 后端快约 7×，大 batch 快 1.2–1.4×。
 - 精度：f64（与 Pinocchio 4.1 数值对齐到机器精度）。
 - 批量接口：`q/v/a/tau` 都是 `(B, nv)` numpy 数组，一次 kernel 调用算完整个 batch。
 - `crba_apply`：只要 `M(q)·x` 时不落盘 `(B, nv, nv)` 的 M，快 2–4×。
+- `fext=`：`rnea`/`non_linear_effects`/`aba` 支持外力，形状 `(B, nj, 6)`，
+  为每个连杆的世界系质心 wrench `[force, torque]`（与仿真器接触力输出
+  同约定，参考 FRAX/MJX）；内部一次 FK 扫掠转到体坐标系后由 sweep 减去，
+  调用方无需自己做 FK。传 `fext` 时走 Quadrants 的 `*_fext` kernel
+  （C 后端暂不支持外力）。
 - `out=`：四个入口都支持输出缓冲复用（热循环里还能省 launch 开销）。
 - 后端：RNEA 默认 C（`QD_RBD_C=0` 退回 Quadrants）；`crba`/`crba_apply`/`aba` 走 Quadrants。
 
@@ -42,6 +47,11 @@ tau = rnea(model, data, q, v, a)             # (4096, nv)
 M   = crba(model, data, q)                   # (4096, nv, nv)
 Mx  = crba_apply(model, data, q, v)          # (4096, nv)，不落盘 M，快 2–4×
 qdd = aba(model, data, q, v, tau)            # (4096, nv)
+
+fw = np.zeros((4096, model.nj, 6))           # 每个连杆的世界系外力
+fw[:, -1, :3] = contact_force_world          # 末端接触力（质心处，世界系）
+tau = rnea(model, data, q, v, a, fext=fw)    # tau = M a + b - Jᵀ fext
+qdd = aba(model, data, q, v, tau, fext=fw)   # 前向动力学同样接受 fext
 ```
 
 没有 pinocchio 时也可以直接用原始数组构造模型（`Model(parents, jtype,
@@ -76,10 +86,11 @@ pytest plugins/solvers/qd_rbd/tests -q -m "not slow"
 ```
 
 - `test_qd_rbd.py`：不依赖 pinocchio 的行为测试（直接从原始数组构造模型，
-  内部一致性：RNEA↔CRBA↔ABA、FK、batch 独立性、`out=` 契约）。
+  内部一致性：RNEA↔CRBA↔ABA、FK、batch 独立性、`out=` 契约、fext
+  的解析锚点/反重力抵消/RNEA↔ABA 往返）。
 - `test_c_kernel.py`：C 后端 vs Quadrants 后端一致性；无 C 编译器时自动跳过。
-- `test_pinocchio_equiv.py`：与 Pinocchio 4.1 的逐项数值对照；未安装
-  pinocchio 时自动跳过（Windows 上于 WSL 中运行）。
+- `test_pinocchio_equiv.py`：与 Pinocchio 4.1 的逐项数值对照（含 fext 的
+  世界系→局部系换算）；未安装 pinocchio 时自动跳过（Windows 上于 WSL 中运行）。
 
 ## 参考数据（存档 REPORT.md，Linux EPYC 9K65）
 
