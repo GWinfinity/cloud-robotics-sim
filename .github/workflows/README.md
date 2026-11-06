@@ -4,7 +4,7 @@
 
 | Workflow | File | Purpose | Trigger |
 |----------|------|---------|---------|
-| CI | `ci.yml` | Run tests on Python 3.10/3.11/3.12 | Push, PR |
+| CI | `ci.yml` | Run tests on Python 3.10/3.12 | Push, PR |
 | Documentation | `docs.yml` | Build and deploy docs | Push, PR |
 | Auto Fix | `auto-fix.yml` | Auto-fix lint issues and create PR | CI failure |
 | Auto Fix (Simple) | `auto-fix-simple.yml` | Direct commit fix (fallback) | CI failure |

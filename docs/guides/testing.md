@@ -6,7 +6,7 @@
 
 | 位置 | 数量 | CI 覆盖 |
 | --- | --- | --- |
-| `tests/` | ~95 文件 / ~1100 函数 | ✅ 主 Test job（Python 3.10/3.11/3.12 矩阵 + coverage ≥70%） |
+| `tests/` | ~95 文件 / ~1100 函数 | ✅ 主 Test job（Python 3.10/3.12 矩阵 + coverage ≥70%） |
 | `plugins/**/tests/` | ~50 文件 / ~450 函数 | ✅ plugin-tests job（Python 3.12，白名单制，见下） |
 | 根目录 `test_genesis_works.py` | 2 函数 | 手动冒烟用：`pytest test_genesis_works.py -v` |
 
