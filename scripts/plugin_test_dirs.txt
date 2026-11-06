@@ -13,6 +13,7 @@ plugins/solvers/acoustics/tests
 plugins/solvers/cfd_coupling/tests
 plugins/solvers/nozzle_coupling/tests
 plugins/solvers/qd_rbd/tests
+plugins/solvers/qd_ik/tests
 plugins/envs/maniskill/tests
 plugins/controllers/mpc_wbc/tests
 plugins/controllers/wbc_lab/tests

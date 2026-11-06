@@ -219,6 +219,9 @@ ignore = [
 # names (B batch, K lanes, M mass matrix, q/v/a) are the domain notation used
 # throughout its REPORT/benchmarks and are kept verbatim on purpose.
 "plugins/solvers/qd_rbd/**/*.py" = ["N803", "N806"]
+# qd_ik follows the same kernel notation as qd_rbd (B batch, P cost Hessian,
+# G/h constraint rows, J Jacobians) so the two solvers stay visually aligned.
+"plugins/solvers/qd_ik/**/*.py" = ["N803", "N806"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
