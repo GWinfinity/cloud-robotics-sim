@@ -51,7 +51,7 @@ except ImportError:  # rsl-rl-lib / tensordict not installed
     _RslRlVecEnv = object
     _RslRlMLPModel = None
     _RslRlOnPolicyRunner = object
-    TensorDict = None
+    TensorDict = None  # type: ignore[assignment, misc]
 
 _RL_EXTRA_HINT = (
     "rsl-rl support is an optional extra: install it with "

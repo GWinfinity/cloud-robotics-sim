@@ -1,0 +1,36 @@
+name: supermimic
+version: 0.1.0
+description: >
+  SuperMimic 风格的"可微世界模型 + 参考动作模仿"学习算法核心,从
+  supermimic-genesis(本仓作者的姊妹项目,算法源自 Motphys/Uni-SuperMimic,
+  Apache-2.0)移植并解耦:learner 只依赖 EnvProtocol / SuperMimicMdpProtocol
+  两个抽象,任务侧(机器人 MDP、参考动作库、仿真后端)由使用方实现。
+  与 PPO 等 on-policy RL 相比,样本效率高出量级(world model 想象 rollout
+  + 策略 BPTT,UTD>>1)。核心为纯 PyTorch,不依赖 genesis;genesis 后端
+  属于可选的任务实现。
+category: imitation_learning
+source_project: supermimic-genesis (Uni-SuperMimic, Apache-2.0)
+author:
+  name: Genesis Cloud Sim Team
+  email: team@example.com
+dependencies:
+  - numpy>=2.0.0
+  - torch>=2.9
+optional_dependencies:
+  - rich>=13.0        # 训练实时面板;缺失时禁用面板,CSV/TensorBoard 不受影响
+  - tensorboard>=2.16 # log_backend=tensorboard 时需要
+exports:
+  - SuperMimicConfig
+  - SuperMimicLearner
+  - WorldModel
+  - Policy
+  - Critic
+  - ReplayBuffer
+  - MuonAdam
+tags:
+  - imitation-learning
+  - world-model
+  - motion-tracking
+  - bptt
+  - supermimic
+  - sample-efficient

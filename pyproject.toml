@@ -218,6 +218,11 @@ ignore = [
 # qd_ik follows the same kernel notation as qd_rbd (B batch, P cost Hessian,
 # G/h constraint rows, J Jacobians) so the two solvers stay visually aligned.
 "plugins/solvers/qd_ik/**/*.py" = ["N803", "N806"]
+# supermimic is a port of the supermimic-genesis algorithm core (Uni-SuperMimic
+# lineage, Apache-2.0): upstream keeps domain notation (T time, N envs, B batch,
+# q quaternions) and omits docstrings on short numerical helpers and test
+# functions; kept verbatim on purpose, same policy as the qd_* kernels.
+"plugins/learn/supermimic/**/*.py" = ["D101", "D102", "D103", "N803", "N812"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
