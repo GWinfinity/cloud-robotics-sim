@@ -8,7 +8,7 @@ version = "2.0.0"
 description = "Cloud-native robotics simulation platform for RL/IL research"
 readme = "README.md"
 license = {text = "Apache-2.0"}
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.12,<3.14"
 authors = [
     {name = "Cloud Robotics Team", email = "contact@cloudrobotics.dev"},
 ]
@@ -26,7 +26,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -77,9 +76,7 @@ dev = [
     "mypy>=1.9.0",
     "pre-commit>=3.7.0",
     "pyarrow>=14.0.0",
-    "zarr>=2.16,<3.0; python_version<'3.11'",
-    "zarr>=3.0.8; python_version>='3.11' and python_version<'3.12'",
-    "zarr>=3.2.1; python_version>='3.12'",
+    "zarr>=3.2.1",
 ]
 
 # Optional local material library (not on PyPI; uv-only path source).
@@ -226,7 +223,7 @@ ignore = [
 convention = "google"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false

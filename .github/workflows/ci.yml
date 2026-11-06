@@ -43,9 +43,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 3.11 dropped: the next genesis-world release no longer supports it,
-        # so a 3.11 job would fail at install time once the pin moves.
-        python-version: ['3.10', '3.12']
+        # Only 3.12 is supported: genesis-world's next release drops 3.10/3.11.
+        python-version: ['3.12']
 
     steps:
       - uses: actions/checkout@v4
@@ -106,13 +105,8 @@ jobs:
           python -c "import pyglet; print('pyglet from', pyglet.__file__, pyglet.version, 'headless=', pyglet.options['headless'], 'shadow_window=', pyglet.options['shadow_window'])"
 
       - name: Type check
-        # mypy config pins python_version="3.10", so the analysis is identical
-        # regardless of the running interpreter — but the matrix jobs install
-        # different numpy versions (3.10 caps at numpy 2.2.x, 3.12 uses
-        # 2.4.x), and the stub differences make the same source alternate
-        # between "unused type: ignore" and "missing ignore" errors. Run it
-        # once on the interpreter that matches local dev (3.12 + numpy 2.4).
-        if: matrix.python-version == '3.12'
+        # mypy config pins python_version="3.12", the minimum supported
+        # interpreter, so the analysis matches what CI and local dev run.
         run: mypy src/cloud_robotics_sim
 
       - name: Smoke test
