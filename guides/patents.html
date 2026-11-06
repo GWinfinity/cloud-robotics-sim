@@ -1,0 +1,353 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classic Patent Simulations &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/guides/patents.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Classic Patent Simulations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guides/patents.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="classic-patent-simulations">
+<h1>Classic Patent Simulations<a class="headerlink" href="#classic-patent-simulations" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">cloud_robotics_sim.patents</span></code> package ports the interactive historical
+patent demonstrators from <a class="reference external" href="https://github.com/Dicklesworthstone/classic-patents.com">classic-patents.com</a>
+into Genesis World physics. It is designed as a standalone demonstrator
+framework, separate from the robotics Scene/Robot/Task composition API.</p>
+<section id="catalog">
+<h2>Catalog<a class="headerlink" href="#catalog" title="Link to this heading"></a></h2>
+<p>All 22 patents from classic-patents.com are registered and runnable. The
+metadata lives in
+<code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/patents/data/patents_catalog.yaml</span></code>.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Patent ID</p></th>
+<th class="head"><p>Title</p></th>
+<th class="head"><p>Status</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>US1647</strong></p></td>
+<td><p><strong>Electro-Magnetic Telegraph (Morse receiver)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>US3633</p></td>
+<td><p>India-Rubber Fabrics (Vulcanization)</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>US4750</strong></p></td>
+<td><p><strong>Sewing Machine (Howe lockstitch kinematics)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>US6469</p></td>
+<td><p>Buoying Vessels Over Shoals</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>US174465</strong></p></td>
+<td><p><strong>Improvement in Telegraphy (Bell magneto telephone)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>US223898</strong></p></td>
+<td><p><strong>Electric-Lamp (Edison carbon filament)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>US381968</strong></p></td>
+<td><p><strong>Electro-Magnetic Motor (Tesla two-phase induction)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>US586193</p></td>
+<td><p>Transmitting Electrical Signals</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>US593138</strong></p></td>
+<td><p><strong>Electrical Transformer (Tesla coil, coupled resonance)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>US821393</strong></p></td>
+<td><p><strong>Flying-Machine (Wright Flyer)</strong></p></td>
+<td><p><strong>full pilot</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>US1155986</strong></p></td>
+<td><p><strong>Rocket Apparatus (Goddard two-stage)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>US1781541</p></td>
+<td><p>Refrigeration</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>US1773980</strong></p></td>
+<td><p><strong>Television System (Farnsworth CRT raster)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>US2292387</p></td>
+<td><p>Secret Communication System</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>US2495429</strong></p></td>
+<td><p><strong>Method of Treating Foodstuffs (Spencer microwave oven)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>US2708656</strong></p></td>
+<td><p><strong>Neutronic Reactor (Fermi point kinetics)</strong></p></td>
+<td><p><strong>full</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>US2524035</p></td>
+<td><p>Three-Electrode Circuit Element</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-odd"><td><p>US2981877</p></td>
+<td><p>Semiconductor Device-and-Lead Structure</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-even"><td><p>US3541541</p></td>
+<td><p>X-Y Position Indicator</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-odd"><td><p>US3671542</p></td>
+<td><p>Wholly Aromatic Polycarbonamide Filaments</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-even"><td><p>US3923554</p></td>
+<td><p>3-Phase Charge-Coupled Device</p></td>
+<td><p>stub</p></td>
+</tr>
+<tr class="row-odd"><td><p>US4136359</p></td>
+<td><p>Microcomputer for Use with Video Display</p></td>
+<td><p>stub</p></td>
+</tr>
+</tbody>
+</table>
+<p>“Stub” simulations build a minimal Genesis scene and run, but do not yet model
+the underlying physics in detail. The Wright Flyer is fully implemented with a
+lumped aerodynamics model.</p>
+<section id="wright-flyer-parameters">
+<h3>Wright Flyer parameters<a class="headerlink" href="#wright-flyer-parameters" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wing_warp</span></code></p></td>
+<td><p>-1 .. 1</p></td>
+<td><p>0</p></td>
+<td><p>Differential wing twist (roll control)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rudder</span></code></p></td>
+<td><p>-1 .. 1</p></td>
+<td><p>0</p></td>
+<td><p>Yaw control (only used when <code class="docutils literal notranslate"><span class="pre">coupled=0</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">elevator</span></code></p></td>
+<td><p>-1 .. 1</p></td>
+<td><p>0</p></td>
+<td><p>Canard pitch control</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">thrust</span></code></p></td>
+<td><p>0 .. 1</p></td>
+<td><p>0</p></td>
+<td><p>Throttle</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wind_speed</span></code></p></td>
+<td><p>m/s</p></td>
+<td><p>0</p></td>
+<td><p>Ambient headwind</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">coupled</span></code></p></td>
+<td><p>0/1</p></td>
+<td><p>1</p></td>
+<td><p>Claim 18 linkage: rudder follows <code class="docutils literal notranslate"><span class="pre">0.27</span> <span class="pre">*</span> <span class="pre">wing_warp</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>With <code class="docutils literal notranslate"><span class="pre">coupled=1</span></code> (the historical default), the rudder is chained to the
+wing-warping cradle exactly as described in Claim 18 of the patent: the
+0.27 normalized ratio reproduces the original 0.45 deg/deg linkage over the
++/-15 deg warp and +/-25 deg rudder ranges.</p>
+</section>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+<section id="python-api">
+<h3>Python API<a class="headerlink" href="#python-api" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cloud_robotics_sim.patents</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_simulation</span><span class="p">,</span> <span class="n">PatentSimConfig</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">PatentSimConfig</span><span class="p">(</span>
+    <span class="n">patent_id</span><span class="o">=</span><span class="s2">"US821393"</span><span class="p">,</span>
+    <span class="n">headless</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">substeps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">"thrust"</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span> <span class="s2">"wind_speed"</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">},</span>
+<span class="p">)</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">create_simulation</span><span class="p">(</span><span class="s2">"US821393"</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span>
+
+<span class="n">sim</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="cli">
+<h3>CLI<a class="headerlink" href="#cli" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># List all patents</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim<span class="w"> </span>patents<span class="w"> </span>--list
+
+<span class="c1"># Run the Wright Flyer with custom parameters</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim<span class="w"> </span>patents<span class="w"> </span>--run<span class="w"> </span>US821393<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--param<span class="w"> </span><span class="nv">thrust</span><span class="o">=</span><span class="m">0</span>.7<span class="w"> </span>--param<span class="w"> </span><span class="nv">wind_speed</span><span class="o">=</span><span class="m">5</span><span class="w"> </span>--steps<span class="w"> </span><span class="m">500</span>
+
+<span class="c1"># Run a stub patent</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>cloud_robotics_sim<span class="w"> </span>patents<span class="w"> </span>--run<span class="w"> </span>US223898<span class="w"> </span>--steps<span class="w"> </span><span class="m">100</span>
+</pre></div>
+</div>
+</section>
+<section id="example-script">
+<h3>Example Script<a class="headerlink" href="#example-script" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>examples/patents/wright_flyer_demo.py<span class="w"> </span>--headless<span class="w"> </span>--steps<span class="w"> </span><span class="m">1000</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="implementing-a-new-patent-simulation">
+<h2>Implementing a New Patent Simulation<a class="headerlink" href="#implementing-a-new-patent-simulation" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Copy <code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/patents/sims/_template.py</span></code> to a new module.</p></li>
+<li><p>Replace <code class="docutils literal notranslate"><span class="pre">PATENT_ID</span></code>, metadata, class name, and title.</p></li>
+<li><p>Implement <code class="docutils literal notranslate"><span class="pre">build()</span></code>, <code class="docutils literal notranslate"><span class="pre">reset()</span></code>, and <code class="docutils literal notranslate"><span class="pre">step()</span></code> using Genesis primitives and
+any patent-specific analytical model.</p></li>
+<li><p>Add the patent to <code class="docutils literal notranslate"><span class="pre">data/patents_catalog.yaml</span></code>.</p></li>
+<li><p>Import the new module in <code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/patents/sims/__init__.py</span></code>.</p></li>
+<li><p>Add tests under <code class="docutils literal notranslate"><span class="pre">tests/patents/</span></code> and run the quality gates.</p></li>
+</ol>
+</section>
+<section id="architecture">
+<h2>Architecture<a class="headerlink" href="#architecture" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">base.py</span></code> — <code class="docutils literal notranslate"><span class="pre">PatentSimConfig</span></code>, <code class="docutils literal notranslate"><span class="pre">PatentSimulation</span></code> ABC, <code class="docutils literal notranslate"><span class="pre">SimState</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">StubPatentSimulation</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">registry.py</span></code> — <code class="docutils literal notranslate"><span class="pre">PatentRegistry</span></code> and decorators for discovery by ID.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">runner.py</span></code> — convenience function for headless/recorded execution.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sims/</span></code> — one module per patent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data/patents_catalog.yaml</span></code> — metadata for all 22 patents.</p></li>
+</ul>
+</section>
+<section id="scope-and-limitations">
+<h2>Scope and Limitations<a class="headerlink" href="#scope-and-limitations" title="Link to this heading"></a></h2>
+<p>The original classic-patents.com site uses dedicated WebAssembly physics
+kernels for aerodynamics, electromagnetics, nuclear kinetics, semiconductor
+transport, and polymer mechanics. Genesis 1.3.2 is primarily a rigid/soft-body
+simulator, so most patents are modeled as <strong>illustrative physical
+demonstrators</strong> rather than first-principles replicas. The framework is
+intentionally extensible: future fidelity improvements can be added
+incrementally inside each simulation module.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
