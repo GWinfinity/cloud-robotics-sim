@@ -1,0 +1,60 @@
+# 通用 Genesis 机器人（Franka 桌面）示例：抓起红方块放到目标点
+# 用法：
+#   python -m uni_robot_genesis serve --spec franka_table.yaml --port 18760
+
+instruction: >-
+  Pick up the red cube from the table and place it on the gray target zone.
+  Finish only when the cube rests inside the target zone.
+
+episode_id: franka-table-demo
+
+sim:
+  dt: 0.01
+  substeps: 2
+  use_cuda: null          # null = 自动（CI 强制 CPU）
+
+control:
+  frequency_hz: 20
+  max_episode_steps: 600
+
+arms:
+  - name: arm
+    preset: franka_panda  # 解析 assets_genesis/embodiments/franka-panda/panda.urdf
+    base_position: [0.0, 0.0, 0.0]
+    eef_link: panda_hand  # grasp site；null = 自动候选
+
+cameras:
+  - name: head
+    position: [1.0, 0.0, 1.2]
+    lookat: [0.0, 0.0, 0.35]
+    resolution: [640, 480]
+    fov: 60
+    provide_depth: true
+
+ground: true
+fixtures:
+  - name: table
+    size: [1.2, 0.8, 0.05]
+    position: [0.45, 0.0, 0.35]
+    color: [0.75, 0.72, 0.68, 1.0]
+    fixed: true
+  - name: target_zone
+    size: [0.12, 0.12, 0.005]
+    position: [0.55, 0.15, 0.378]
+    color: [0.4, 0.4, 0.45, 1.0]
+    fixed: true
+
+objects:
+  - name: red_cube
+    size: [0.04, 0.04, 0.04]
+    position: [0.35, -0.1, 0.395]
+    color: [0.85, 0.1, 0.1, 1.0]
+    fixed: false
+
+# 可选成功判据：显式启用后 finish() 才会给出 task_success；
+# 删除本节则为通用模式（task_success 恒为 None）。
+judge:
+  goals:
+    - object_name: red_cube
+      position: [0.55, 0.15, 0.40]
+      tolerance_m: 0.05

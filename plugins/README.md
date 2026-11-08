@@ -48,6 +48,12 @@ cloud-robotics-sim plugins config vr_bridge --defaults   # 只看插件自带默
 |-----|------|------|------|
 | [mpc_wbc](controllers/mpc_wbc/) | openloong | MPC + WBC 全身控制 | ✅ 可用 |
 
+### Agents (智能体)
+
+| 插件 | 来源 | 描述 | 状态 |
+|-----|------|------|------|
+| [uni_robot](agents/uni_robot/) | uni-robot-agent | 通用 LLM 机器人操作适配器：任意 Genesis 场景接入 uni-robot-agent 环境协议 | ✅ 可用 |
+
 ### Envs (环境)
 
 | 插件 | 来源 | 描述 | 状态 |

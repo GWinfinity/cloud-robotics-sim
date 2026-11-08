@@ -33,6 +33,7 @@ HAS_RSL_RL = has_module("rsl_rl")
 HAS_ONNX = has_module("onnx")
 HAS_ONNXRUNTIME = has_module("onnxruntime")
 HAS_ONNXCONVERTER_COMMON = has_module("onnxconverter_common")
+HAS_UNI_ROBOT_AGENT = has_module("uni_robot_agent")
 
 genesis_only = pytest.mark.skipif(not HAS_GENESIS, reason="genesis-world not installed")
 torch_only = pytest.mark.skipif(not HAS_TORCH, reason="torch not installed")
@@ -41,4 +42,8 @@ rsl_rl_only = pytest.mark.skipif(not HAS_RSL_RL, reason="rsl-rl-lib not installe
 deploy_only = pytest.mark.skipif(
     not (HAS_ONNX and HAS_ONNXRUNTIME and HAS_ONNXCONVERTER_COMMON),
     reason="deploy extra not installed (onnx/onnxruntime/onnxconverter-common)",
+)
+uni_robot_agent_only = pytest.mark.skipif(
+    not HAS_UNI_ROBOT_AGENT,
+    reason="agent extra not installed (uni-robot-agent)",
 )

@@ -1,0 +1,35 @@
+name: uni_robot
+version: 0.1.0
+description: 通用机器人智能体适配器——把任意 Genesis 场景接入 uni-robot-agent（LLM 操作智能体 harness）
+
+category: agents
+source_project: genesis-cloud-sim
+
+author:
+  name: Cloud Robotics Team
+  email: contact@cloudrobotics.dev
+
+dependencies:
+  - uni-robot-agent>=0.1.1
+  - genesis-world>=1.4.5
+  - numpy>=2.0
+  - pydantic>=2.5
+
+exports:
+  - SceneSpec
+  - ArmSpec
+  - CameraSpec
+  - GenesisEnvironmentBackend
+  - GenesisEpisodeHost
+  - build_scene
+  - register
+  - agent_main
+
+tags:
+  - agent
+  - llm
+  - robot-use
+  - genesis
+  - franka
+  - manipulation
+  - vlm

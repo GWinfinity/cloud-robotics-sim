@@ -140,8 +140,17 @@ deploy = [
     "onnxconverter-common>=1.14",
 ]
 
+# uni-robot-agent harness adapter (plugins/agents/uni_robot): exposes Genesis
+# scenes to LLM robot-use agents through the uni-robot-agent environment
+# protocol. All plugin imports are lazy; without the extra the base package is
+# unaffected and the plugin entry points raise a clear error. The hard-pinned
+# agent runtimes (openai-codex / claude-agent-sdk) stay isolated in this extra.
+agent = [
+    "uni-robot-agent>=0.1.1",
+]
+
 all = [
-    "cloud-robotics-sim[dev,docs,k8s,cad,xuvdb,deploy]",
+    "cloud-robotics-sim[dev,docs,k8s,cad,xuvdb,deploy,agent]",
 ]
 
 [[tool.uv.index]]
