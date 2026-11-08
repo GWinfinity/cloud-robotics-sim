@@ -163,3 +163,25 @@ apt_0、CPU、dt=0.01×1 substep：
 - Genesis 合并后，指尖 link 位于 `*_DP` distal-phalanx link，不再使用原独立 fingertip 名称。
 - Articulation 自动标注中，低置信度、验证失败和 verifier 异常分别进入 review/quarantine，不能静默接受。Genesis 相邻 link 默认无 self-collision，因此镜像 hinge-side 错误需要显式几何穿透检查才能发现。
 - `result_to_urdf` 输出 placeholder masses，需在 `scene.build()` 后调用 `set_mass()`。
+
+## 非凸 mesh 接触排查（2026-10-20）
+
+探针 `outputs/probe_nonconvex_contact.py`（CPU、genesis-world 1.4.5）：box/sphere 落到 `convexify=False` 的支撑 mesh 上，追踪 z/速度/接触。结论：非凸接触在两类场景会"从底部穿出"，凸碰撞体（box primitive 拼装）对照全部正常。
+
+### 机制一：薄板 + 冲击步长 > 板厚 → tunneling
+
+box 以 v 落到厚度 T 的非凸薄板上，若 `v*dt > T`，box 顶点一步从板上方跳到板下方外部，SDF 读数为正、接触永久丢失，直接穿透。2 cm 桌面、3 m/s、dt=0.01（每步 3 cm）必穿；4 cm 板同速度不穿；2 cm 板速度降到 2.1 m/s 不穿；**substeps=4 修复**（每步 0.75 cm）。凸 box-box 路径（EPA 形状级穿透）同条件能拉回。与 ReplicaCAD choppingboard 记录一致（1 cm 板、2 m/s、normal `[0,0,-1]` 不减速；substeps=4 后 0/510 穿透）。
+
+### 机制二：vertex-SDF 采样 miss 窄支撑
+
+非凸接触只生成"A 的顶点 vs B 的 SDF"，没有面-面/边-面路径。box 底面比支撑特征窄棱/薄壁顶/齿顶宽时，底面顶点全部悬空在支撑外 → 零向上接触 → 穿透（trace 里法向只剩刮侧棱的水平分量 `(+1,0,0)`）。壁厚扫描 2–10 cm 同样坠落；同样几何换 box primitive 拼装的凸碰撞体，box 稳定停在 2 cm 壁顶上。厚平板、坑底、凸台边缘、球在坑缘不受影响（顶点能命中支撑面）。
+
+### 稳定性问题：concave groove 内法向全水平
+
+box 卡入细齿谷（谷宽 4 cm）后 4 个接触法向 z 分量全为 0（两侧齿壁），垂直支撑完全靠摩擦，`|v|≈0.2` 持续振荡不衰减。粗 SDF（谷被糊平）反而稳定停在齿顶。
+
+### 缓解
+
+- 控制 `v*dt ≲ 板厚/2`（加 substeps，与 ReplicaCAD `sim_substeps=4` 一致）；
+- 薄板/窄棱场景不要用非凸 mesh 做碰撞体（凸分解、加厚，或改用凸 primitive 拼装）；
+- 避免让物体静止在凹谷/窄棱上（摩擦极限环抖动）。
