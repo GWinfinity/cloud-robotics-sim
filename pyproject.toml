@@ -8,7 +8,7 @@ version = "2.0.0"
 description = "Cloud-native robotics simulation platform for RL/IL research"
 readme = "README.md"
 license = {text = "Apache-2.0"}
-requires-python = ">=3.12,<3.14"
+requires-python = ">=3.12,<3.15"
 authors = [
     {name = "Cloud Robotics Team", email = "contact@cloudrobotics.dev"},
 ]
@@ -28,6 +28,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -35,10 +36,9 @@ classifiers = [
 
 dependencies = [
     # Core physics
-    "genesis-world==1.4.5",
-    "taichi>=1.7.0",
+    "genesis-world==1.4.6",
     # Geometry & mesh processing (trimesh parses untrusted mesh files:
-    # upper-bound the major version to cap parser risk; genesis-world 1.4.5
+    # upper-bound the major version to cap parser risk; genesis-world 1.4.6
     # requires trimesh>=5)
     "trimesh>=5.0.0,<6",
     "pyglet<2",
@@ -192,12 +192,12 @@ cloud_robotics_sim = ["py.typed"]
 
 [tool.black]
 line-length = 88
-target-version = ['py310', 'py311', 'py312']
+target-version = ['py312', 'py313']
 include = '\.pyi?$'
 
 [tool.ruff]
 line-length = 88
-target-version = "py310"
+target-version = "py312"
 exclude = [
     "plugins/do_as_i_do/assets/sharpa-urdf-usd-xml-main",
 ]

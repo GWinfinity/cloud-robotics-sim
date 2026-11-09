@@ -11,7 +11,7 @@ author:
 
 dependencies:
   - uni-robot-agent>=0.1.1
-  - genesis-world>=1.4.5
+  - genesis-world>=1.4.6
   - numpy>=2.0
   - pydantic>=2.5
 

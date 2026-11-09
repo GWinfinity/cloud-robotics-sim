@@ -168,6 +168,10 @@ apt_0、CPU、dt=0.01×1 substep：
 
 探针 `outputs/probe_nonconvex_contact.py`（CPU、genesis-world 1.4.5）：box/sphere 落到 `convexify=False` 的支撑 mesh 上，追踪 z/速度/接触。结论：非凸接触在两类场景会"从底部穿出"，凸碰撞体（box primitive 拼装）对照全部正常。
 
+> 记录基于 genesis-world 1.4.5；1.4.6 changelog 提到「非凸碰撞检测提速」与多项接触修复
+> （#3604 对称支撑面接触剪枝、#3612/#3539/#3541 MPR/GJK 接触放置），未重跑本探针，
+> 结论在 1.4.6 上可能变化。
+
 ### 机制一：薄板 + 冲击步长 > 板厚 → tunneling
 
 box 以 v 落到厚度 T 的非凸薄板上，若 `v*dt > T`，box 顶点一步从板上方跳到板下方外部，SDF 读数为正、接触永久丢失，直接穿透。2 cm 桌面、3 m/s、dt=0.01（每步 3 cm）必穿；4 cm 板同速度不穿；2 cm 板速度降到 2.1 m/s 不穿；**substeps=4 修复**（每步 0.75 cm）。凸 box-box 路径（EPA 形状级穿透）同条件能拉回。与 ReplicaCAD choppingboard 记录一致（1 cm 板、2 m/s、normal `[0,0,-1]` 不减速；substeps=4 后 0/510 穿透）。

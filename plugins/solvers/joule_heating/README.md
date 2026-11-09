@@ -1,6 +1,6 @@
 # JouleHeatingSolver
 
-Grid-based Joule-heating (electro-thermal) solver plugin for `genesis-world 1.3.2`.
+Grid-based Joule-heating (electro-thermal) solver plugin for `genesis-world 1.4.6`.
 
 The solver solves the quasi-static electric field
 

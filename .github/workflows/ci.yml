@@ -43,8 +43,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Only 3.12 is supported: genesis-world's next release drops 3.10/3.11.
-        python-version: ['3.12']
+        # genesis-world 1.4.6 dropped 3.10/3.11 and added 3.14 support; the
+        # project supports >=3.12,<3.15. 3.12 stays the lint/type-check anchor
+        # (mypy pins python_version=3.12); 3.14 proves the newest interpreter.
+        python-version: ['3.12', '3.14']
 
     steps:
       - uses: actions/checkout@v4
@@ -66,8 +68,9 @@ jobs:
           # where actions/setup-python installs its Pythons. The "Set up
           # Python" step MUST run AFTER this cleanup, otherwise the
           # requested interpreter is gone and `python` silently falls back
-          # to the system Python (3.14 on ubuntu-26.04, which genesis-world
-          # does not support).
+          # to the system Python (3.14 on ubuntu-26.04) regardless of the
+          # matrix version — the version assert in "Install dependencies"
+          # is what catches that.
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /usr/share/swift
           sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/share/haskell
           sudo rm -rf /usr/local/share/powershell /usr/local/share/chromium

@@ -10,8 +10,8 @@ import numpy as np
 import quadrants as qd
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
-import torch
 from genesis.engine.solvers.base_solver import Solver
+from genesis.utils.data import ArrayItem, DataKind
 
 from .options import JouleHeatingOptions
 
@@ -89,11 +89,23 @@ class JouleHeatingSolver(Solver):
         self._k_field: qd.Field | None = None
         self._n_frames: int = 1
 
-        self._ckpt: dict[str, dict[str, torch.Tensor]] = {}
+    # The fields hold the frames of one step in differentiable scenes and of
+    # one substep otherwise; the simulator rolls them generically (see
+    # 'Solver.has_frames' in genesis-world 1.4.6).
+    has_frames = True
+    # Gradients flow through the Jacobi solve and the J/Q/thermal kernels (in
+    # differentiable scenes the unfused kernels run so 'LaunchRecorder' can
+    # reverse each launch; see 'substep_pre_coupling').
+    is_differentiable = True
 
     @property
     def is_active(self) -> bool:
         return True
+
+    @property
+    def n_frames(self) -> int:
+        """Number of frames the fields hold (see 'Solver.has_frames')."""
+        return self._n_frames
 
     # --------------------------------------------------------------------------
     # Build / allocation
@@ -102,11 +114,16 @@ class JouleHeatingSolver(Solver):
     def build(self) -> None:
         super().build()
 
-        # genesis 1.4 Solver no longer provides TimeBasedMixin's _substep_dt.
+        # genesis 1.4.6 Solver does not mix in TimeBasedMixin.
         self._substep_dt = self._sim.substep_dt
 
-        self._n_frames = self._sim.substeps_local + 1
-        full_shape = (self._n_frames, self._B, *self._shape)
+        # Differentiable scenes hold the frames of every substep of one step
+        # (the backward pass replays the whole step); other scenes hold one
+        # substep in two frames (see 'Solver.has_frames').
+        self._n_frames = self._sim.substeps + 1 if self._sim.requires_grad else 2
+        # Framed field layout is (frames, *grid, B), the genesis batch-last
+        # convention; the unframed scratch fields keep (B, *grid).
+        full_shape = (self._n_frames, *self._shape, self._B)
 
         needs_grad = self._scene.requires_grad
         self._V = qd.field(dtype=gs.qd_float, shape=full_shape, needs_grad=needs_grad)
@@ -164,7 +181,7 @@ class JouleHeatingSolver(Solver):
     def _init_voltage(self) -> None:
         """Initialize the potential field to the Dirichlet boundary value."""
         arr = np.full(
-            (self._n_frames, self._B, *self._shape),
+            (self._n_frames, *self._shape, self._B),
             self._voltage_boundary_value,
             dtype=gs.np_float,
         )
@@ -245,7 +262,9 @@ class JouleHeatingSolver(Solver):
 
     def _init_temperature(self) -> None:
         arr = self._make_initial_temperature_array()
-        full = np.broadcast_to(arr[None, ...], (self._n_frames, *arr.shape)).copy()
+        full = np.broadcast_to(
+            np.moveaxis(arr, 0, -1)[None, ...], (self._n_frames, *self._shape, self._B)
+        ).copy()
         self._T.from_numpy(full)
 
     def _check_stability(self) -> None:
@@ -448,7 +467,7 @@ class JouleHeatingSolver(Solver):
 
         if self._direct_v_cache is not None:
             arr = self._V.to_numpy()
-            arr[f + 1, 0] = self._direct_v_cache
+            arr[f + 1, ..., 0] = self._direct_v_cache
             self._V.from_numpy(arr)
             return
 
@@ -471,7 +490,7 @@ class JouleHeatingSolver(Solver):
         v = v_flat.reshape(self._shape)
         self._direct_v_cache = v.copy()
         arr = self._V.to_numpy()
-        arr[f + 1, 0] = v
+        arr[f + 1, ..., 0] = v
         self._V.from_numpy(arr)
 
     # --------------------------------------------------------------------------
@@ -482,8 +501,8 @@ class JouleHeatingSolver(Solver):
         """Helper to return frame 0 and optionally squeeze the env dimension."""
         frame = arr[0]
         if squeeze_env and self._scene.n_envs == 0:
-            return np.asarray(frame[0])
-        return np.asarray(frame)
+            return np.asarray(frame[..., 0])
+        return np.asarray(np.moveaxis(frame, -1, 0))
 
     def get_voltage(self) -> np.ndarray:
         """Return the electric potential field [V]."""
@@ -503,8 +522,10 @@ class JouleHeatingSolver(Solver):
             )
         if self._scene.n_envs == 0:
             voltage = np.broadcast_to(voltage, (self._B, *self._shape)).copy()
+        # Field layout is (frames, *grid, B): move the batch axis last.
         full = np.broadcast_to(
-            voltage[None, ...], (self._n_frames, *voltage.shape)
+            np.moveaxis(voltage, 0, -1)[None, ...],
+            (self._n_frames, *self._shape, self._B),
         ).copy()
         self._V.from_numpy(full)
         self._direct_v_cache = None
@@ -549,8 +570,10 @@ class JouleHeatingSolver(Solver):
             )
         if self._scene.n_envs == 0:
             temperature = np.broadcast_to(temperature, (self._B, *self._shape)).copy()
+        # Field layout is (frames, *grid, B): move the batch axis last.
         full = np.broadcast_to(
-            temperature[None, ...], (self._n_frames, *temperature.shape)
+            np.moveaxis(temperature, 0, -1)[None, ...],
+            (self._n_frames, *self._shape, self._B),
         ).copy()
         self._T.from_numpy(full)
 
@@ -616,7 +639,9 @@ class JouleHeatingSolver(Solver):
             raise ValueError(f"unknown boundary name: {name}")
 
         sl = (slice(None),) + slices[name][1:]
-        arr[(slice(None),) + sl] = float(value)
+        # _V is (frames, *grid, B); mask/boundary_values are (B, *grid).
+        v_sl = (slice(None),) + slices[name][1:] + (slice(None),)
+        arr[v_sl] = float(value)
         boundary_values[sl] = float(value)
         mask[sl] = 1
         self._V.from_numpy(arr)
@@ -672,15 +697,15 @@ class JouleHeatingSolver(Solver):
     # Simulation lifecycle
     # --------------------------------------------------------------------------
 
-    def process_input(self, in_backward: bool = False) -> list:
-        # genesis-world 1.4.5 iterates the return of every active solver's
-        # process_input; emit an empty list (no taped inputs).
-        return []
-
-    def process_input_grad(self) -> list:
-        # genesis-world 1.4.5 iterates the return of every active solver's
-        # process_input_grad; emit an empty list (no taped input pairs).
-        return []
+    # genesis-world 1.4.6 drives solver substeps through 'substep_pre_coupling'
+    # / 'substep_post_coupling' alone; the backward pass of a differentiable
+    # scene replays them while recording the quadrants kernel launches, which
+    # 'LaunchRecorder' then reverses automatically. Differentiable scenes
+    # therefore run the unfused kernel sequence (the fused kernels fuse the
+    # same-field in-place updates that autodiff cannot reverse); plain scenes
+    # keep the fused kernels. 'substep_pre_coupling_grad' below is kept as the
+    # plugin's manual gradient API (used by the tests to pull gradients into
+    # material fields without a scene-level backward).
 
     def substep_pre_coupling(self, f: int) -> None:
         # Solve electric potential for frame f+1.
@@ -689,17 +714,15 @@ class JouleHeatingSolver(Solver):
             if self._sim.requires_grad:
                 # The direct solver does not yet support autodiff; fall back
                 # to the Jacobi kernels so gradients still flow.
-                if self._dim == 2:
-                    self._solve_v_2d(f)
-                else:
-                    self._solve_v_3d(f)
+                self._jacobi_solve_v(f)
             else:
                 self._solve_v_direct(f)
                 direct_path = True
+        elif self._sim.requires_grad:
+            self._jacobi_solve_v(f)
         else:
-            # Use the fused forward kernel to avoid Python dispatch overhead for
-            # each Jacobi iteration. The per-iteration kernels remain in use for
-            # the backward pass.
+            # Use the fused forward kernel to avoid Python dispatch overhead
+            # for each Jacobi iteration.
             if self._dim == 2:
                 self._solve_v_2d(f)
             else:
@@ -707,12 +730,20 @@ class JouleHeatingSolver(Solver):
 
         # Compute current density and heat source from the new potential.
         # For the direct solver path, use the fused kernel that reads from
-        # _V[f+1] directly, skipping the _V_tmp copy.
+        # _V[f+1] directly, skipping the _V_tmp copy. Differentiable scenes
+        # run the unfused pair so the recorded launches reverse one by one.
         if direct_path:
             if self._dim == 2:
                 self._compute_jq_from_v_2d(f)
             else:
                 self._compute_jq_from_v_3d(f)
+        elif self._sim.requires_grad:
+            if self._dim == 2:
+                self._compute_j_2d()
+                self._compute_q_2d(f)
+            else:
+                self._compute_j_3d()
+                self._compute_q_3d(f)
         else:
             if self._dim == 2:
                 self._compute_jq_2d(f)
@@ -738,7 +769,25 @@ class JouleHeatingSolver(Solver):
             else:
                 self._heat_step_3d(f)
 
+    def _jacobi_solve_v(self, f: int) -> None:
+        """Unfixed Jacobi solve: one recorded launch per iteration."""
+        self._copy_v_to_tmp(f)
+        for _ in range(self._max_iter):
+            if self._dim == 2:
+                self._jacobi_step_v_2d()
+            else:
+                self._jacobi_step_v_3d()
+        self._copy_tmp_to_v(f)
+
     def substep_pre_coupling_grad(self, f: int) -> None:
+        """Manually reverse one recorded substep (plugin gradient API).
+
+        genesis-world 1.4.6 no longer calls this from the simulator (a
+        scene-level backward reverses the recorded launches itself); it is
+        kept so callers can seed field adjoints by hand and pull gradients
+        into the material fields, exactly mirroring the recorded sequence of
+        'substep_pre_coupling' in reverse order.
+        """
         # Back-propagate through internal thermal step or cross-solver injection.
         if self._couple_to_thermal:
             thermal = getattr(self._sim, "thermal_solver", None)
@@ -808,47 +857,29 @@ class JouleHeatingSolver(Solver):
         if self._dt_over_rhocp_field is not None:
             self._dt_over_rhocp_field.grad.fill(0.0)
 
-    def save_ckpt(self, ckpt_name: str) -> None:
-        if self._V is None:
-            return
-        self.copy_frame(self._sim.substeps_local, 0)
-        if self._T is not None:
-            self._copy_t_frame(self._sim.substeps_local, 0)
-        if self._sim.requires_grad:
-            if ckpt_name not in self._ckpt:
-                self._ckpt[ckpt_name] = {
-                    "V": torch.zeros(
-                        (self._B, *self._shape), dtype=gs.tc_float, device=gs.device
-                    ),
-                }
-                if self._T is not None:
-                    self._ckpt[ckpt_name]["T"] = torch.zeros(
-                        (self._B, *self._shape), dtype=gs.tc_float, device=gs.device
-                    )
-            self._kernel_get_state(0, self._ckpt[ckpt_name]["V"])
-            if self._T is not None:
-                self._kernel_get_t_state(0, self._ckpt[ckpt_name]["T"])
+    # State snapshots round-trip through numpy host arrays keyed by field;
+    # get_state does not register autograd reads, so a scene-level backward
+    # never routes gradients through 'add_grad_from_state' (it stays a no-op
+    # kept only for base-class signature compatibility).
 
-    def load_ckpt(self, ckpt_name: str) -> None:
+    @property
+    def data(self):
+        """Yield the potential and temperature fields for checkpointing."""
         if self._V is None:
             return
-        self.copy_frame(0, self._sim.substeps_local)
-        self.copy_grad(0, self._sim.substeps_local)
+        yield ArrayItem("V", DataKind.STATE, self._V)
         if self._T is not None:
-            self._copy_t_frame(0, self._sim.substeps_local)
-            self._copy_t_grad(0, self._sim.substeps_local)
-        if self._sim.requires_grad:
-            self.reset_grad_till_frame(self._sim.substeps_local)
-            self._kernel_set_state(0, self._ckpt[ckpt_name]["V"])
-            if self._T is not None:
-                self._kernel_set_t_state(0, self._ckpt[ckpt_name]["T"])
+            yield ArrayItem("T", DataKind.STATE, self._T)
 
     def get_state(self, f: int) -> dict | None:
         if not self.is_active or self._V is None:
             return None
-        state: dict[str, np.ndarray] = {"V": self._V.to_numpy()[f].copy()}
+        # Fields are (frames, *grid, B); state dicts keep the public (B, *grid).
+        state: dict[str, np.ndarray] = {
+            "V": np.moveaxis(self._V.to_numpy()[0], -1, 0).copy()
+        }
         if self._T is not None:
-            state["T"] = self._T.to_numpy()[f].copy()
+            state["T"] = np.moveaxis(self._T.to_numpy()[0], -1, 0).copy()
         return state
 
     def set_state(
@@ -859,20 +890,18 @@ class JouleHeatingSolver(Solver):
     ) -> None:
         if state is None or self._V is None:
             return
-        # envs_idx could be supported later; for now we copy all envs.
+        # envs_idx could be supported later; for now we copy all envs. Between
+        # two steps the state sits in frame 0 (see 'Solver.has_frames').
         arr = self._V.to_numpy()
-        arr[f] = state["V"]
+        arr[0] = np.moveaxis(state["V"], 0, -1)
         self._V.from_numpy(arr)
         if self._T is not None and "T" in state:
             t_arr = self._T.to_numpy()
-            t_arr[f] = state["T"]
+            t_arr[0] = np.moveaxis(state["T"], 0, -1)
             self._T.from_numpy(t_arr)
 
-    def add_grad_from_state(self, state: dict | None) -> None:
-        pass
-
-    def collect_output_grads(self) -> None:
-        pass
+    def add_grad_from_state(self, grads, selection) -> None:
+        return
 
     # --------------------------------------------------------------------------
     # Quadrants kernels
@@ -881,12 +910,12 @@ class JouleHeatingSolver(Solver):
     @qd.kernel
     def _copy_v_to_tmp_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._V_tmp[i_b, i, j] = self._V[f, i_b, i, j]
+            self._V_tmp[i_b, i, j] = self._V[f, i, j, i_b]
 
     @qd.kernel
     def _copy_v_to_tmp_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._V_tmp[i_b, i, j, k] = self._V[f, i_b, i, j, k]
+            self._V_tmp[i_b, i, j, k] = self._V[f, i, j, k, i_b]
 
     def _copy_v_to_tmp(self, f: int) -> None:
         if self._dim == 2:
@@ -897,12 +926,12 @@ class JouleHeatingSolver(Solver):
     @qd.kernel
     def _copy_tmp_to_v_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._V[f + 1, i_b, i, j] = self._V_tmp[i_b, i, j]
+            self._V[f + 1, i, j, i_b] = self._V_tmp[i_b, i, j]
 
     @qd.kernel
     def _copy_tmp_to_v_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._V[f + 1, i_b, i, j, k] = self._V_tmp[i_b, i, j, k]
+            self._V[f + 1, i, j, k, i_b] = self._V_tmp[i_b, i, j, k]
 
     def _copy_tmp_to_v(self, f: int) -> None:
         if self._dim == 2:
@@ -922,7 +951,7 @@ class JouleHeatingSolver(Solver):
         adjoint limitations.
         """
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._V_tmp[i_b, i, j] = self._V[f, i_b, i, j]
+            self._V_tmp[i_b, i, j] = self._V[f, i, j, i_b]
         for _ in range(self._max_iter):
             for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
                 if self._voltage_boundary_mask[i_b, i, j] == 1:
@@ -949,7 +978,7 @@ class JouleHeatingSolver(Solver):
                         + sigma_ym * self._V_tmp[i_b, i, jm]
                     ) / denom
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._V[f + 1, i_b, i, j] = self._V_tmp[i_b, i, j]
+            self._V[f + 1, i, j, i_b] = self._V_tmp[i_b, i, j]
 
     @qd.kernel
     def _jacobi_step_v_2d(self):  # type: ignore[no-untyped-def]
@@ -985,7 +1014,7 @@ class JouleHeatingSolver(Solver):
     def _solve_v_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         """Fused forward Jacobi solve for 3D (see ``_solve_v_2d``)."""
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._V_tmp[i_b, i, j, k] = self._V[f, i_b, i, j, k]
+            self._V_tmp[i_b, i, j, k] = self._V[f, i, j, k, i_b]
         for _ in range(self._max_iter):
             for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
                 if self._voltage_boundary_mask[i_b, i, j, k] == 1:
@@ -1030,7 +1059,7 @@ class JouleHeatingSolver(Solver):
                         + sigma_zm * self._V_tmp[i_b, i, j, km]
                     ) / denom
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._V[f + 1, i_b, i, j, k] = self._V_tmp[i_b, i, j, k]
+            self._V[f + 1, i, j, k, i_b] = self._V_tmp[i_b, i, j, k]
 
     @qd.kernel
     def _jacobi_step_v_3d(self):  # type: ignore[no-untyped-def]
@@ -1116,14 +1145,14 @@ class JouleHeatingSolver(Solver):
     def _compute_q_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
-                self._Q[f, i_b, i, j] = gs.qd_float(0.0)
+                self._Q[f, i, j, i_b] = gs.qd_float(0.0)
             else:
                 j_vec = self._J[i_b, i, j]
                 jx = j_vec[0]
                 jy = j_vec[1]
                 sigma = self._sigma[i_b, i, j]
                 # Q = |J|^2 / sigma
-                self._Q[f, i_b, i, j] = (jx * jx + jy * jy) / (sigma + 1e-10)
+                self._Q[f, i, j, i_b] = (jx * jx + jy * jy) / (sigma + 1e-10)
 
     @qd.kernel
     def _compute_q_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -1136,14 +1165,14 @@ class JouleHeatingSolver(Solver):
                 or k == 0
                 or k == self._nz - 1
             ):
-                self._Q[f, i_b, i, j, k] = gs.qd_float(0.0)
+                self._Q[f, i, j, k, i_b] = gs.qd_float(0.0)
             else:
                 j_vec = self._J[i_b, i, j, k]
                 jx = j_vec[0]
                 jy = j_vec[1]
                 jz = j_vec[2]
                 sigma = self._sigma[i_b, i, j, k]
-                self._Q[f, i_b, i, j, k] = (jx * jx + jy * jy + jz * jz) / (
+                self._Q[f, i, j, k, i_b] = (jx * jx + jy * jy + jz * jz) / (
                     sigma + 1e-10
                 )
 
@@ -1159,7 +1188,7 @@ class JouleHeatingSolver(Solver):
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
                 self._J[i_b, i, j] = gs.qd_vec3(0.0, 0.0, 0.0)
-                self._Q[f, i_b, i, j] = gs.qd_float(0.0)
+                self._Q[f, i, j, i_b] = gs.qd_float(0.0)
             else:
                 sigma = self._sigma[i_b, i, j]
                 dvdx = (self._V_tmp[i_b, i + 1, j] - self._V_tmp[i_b, i - 1, j]) / (
@@ -1171,7 +1200,7 @@ class JouleHeatingSolver(Solver):
                 jx = -sigma * dvdx
                 jy = -sigma * dvdy
                 self._J[i_b, i, j] = gs.qd_vec3(jx, jy, 0.0)
-                self._Q[f, i_b, i, j] = (jx * jx + jy * jy) / (sigma + 1e-10)
+                self._Q[f, i, j, i_b] = (jx * jx + jy * jy) / (sigma + 1e-10)
 
     @qd.kernel
     def _compute_jq_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -1186,7 +1215,7 @@ class JouleHeatingSolver(Solver):
                 or k == self._nz - 1
             ):
                 self._J[i_b, i, j, k] = gs.qd_vec3(0.0, 0.0, 0.0)
-                self._Q[f, i_b, i, j, k] = gs.qd_float(0.0)
+                self._Q[f, i, j, k, i_b] = gs.qd_float(0.0)
             else:
                 sigma = self._sigma[i_b, i, j, k]
                 dvdx = (
@@ -1202,7 +1231,7 @@ class JouleHeatingSolver(Solver):
                 jy = -sigma * dvdy
                 jz = -sigma * dvdz
                 self._J[i_b, i, j, k] = gs.qd_vec3(jx, jy, jz)
-                self._Q[f, i_b, i, j, k] = (jx * jx + jy * jy + jz * jz) / (
+                self._Q[f, i, j, k, i_b] = (jx * jx + jy * jy + jz * jz) / (
                     sigma + 1e-10
                 )
 
@@ -1212,19 +1241,19 @@ class JouleHeatingSolver(Solver):
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
                 self._J[i_b, i, j] = gs.qd_vec3(0.0, 0.0, 0.0)
-                self._Q[f, i_b, i, j] = gs.qd_float(0.0)
+                self._Q[f, i, j, i_b] = gs.qd_float(0.0)
             else:
                 sigma = self._sigma[i_b, i, j]
-                dvdx = (self._V[f + 1, i_b, i + 1, j] - self._V[f + 1, i_b, i - 1, j]) / (
-                    2.0 * self._dx
-                )
-                dvdy = (self._V[f + 1, i_b, i, j + 1] - self._V[f + 1, i_b, i, j - 1]) / (
-                    2.0 * self._dx
-                )
+                dvdx = (
+                    self._V[f + 1, i + 1, j, i_b] - self._V[f + 1, i - 1, j, i_b]
+                ) / (2.0 * self._dx)
+                dvdy = (
+                    self._V[f + 1, i, j + 1, i_b] - self._V[f + 1, i, j - 1, i_b]
+                ) / (2.0 * self._dx)
                 jx = -sigma * dvdx
                 jy = -sigma * dvdy
                 self._J[i_b, i, j] = gs.qd_vec3(jx, jy, 0.0)
-                self._Q[f, i_b, i, j] = (jx * jx + jy * jy) / (sigma + 1e-10)
+                self._Q[f, i, j, i_b] = (jx * jx + jy * jy) / (sigma + 1e-10)
 
     @qd.kernel
     def _compute_jq_from_v_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -1239,87 +1268,91 @@ class JouleHeatingSolver(Solver):
                 or k == self._nz - 1
             ):
                 self._J[i_b, i, j, k] = gs.qd_vec3(0.0, 0.0, 0.0)
-                self._Q[f, i_b, i, j, k] = gs.qd_float(0.0)
+                self._Q[f, i, j, k, i_b] = gs.qd_float(0.0)
             else:
                 sigma = self._sigma[i_b, i, j, k]
                 dvdx = (
-                    self._V[f + 1, i_b, i + 1, j, k] - self._V[f + 1, i_b, i - 1, j, k]
+                    self._V[f + 1, i + 1, j, k, i_b] - self._V[f + 1, i - 1, j, k, i_b]
                 ) / (2.0 * self._dx)
                 dvdy = (
-                    self._V[f + 1, i_b, i, j + 1, k] - self._V[f + 1, i_b, i, j - 1, k]
+                    self._V[f + 1, i, j + 1, k, i_b] - self._V[f + 1, i, j - 1, k, i_b]
                 ) / (2.0 * self._dx)
                 dvdz = (
-                    self._V[f + 1, i_b, i, j, k + 1] - self._V[f + 1, i_b, i, j, k - 1]
+                    self._V[f + 1, i, j, k + 1, i_b] - self._V[f + 1, i, j, k - 1, i_b]
                 ) / (2.0 * self._dx)
                 jx = -sigma * dvdx
                 jy = -sigma * dvdy
                 jz = -sigma * dvdz
                 self._J[i_b, i, j, k] = gs.qd_vec3(jx, jy, jz)
-                self._Q[f, i_b, i, j, k] = (jx * jx + jy * jy + jz * jz) / (
+                self._Q[f, i, j, k, i_b] = (jx * jx + jy * jy + jz * jz) / (
                     sigma + 1e-10
                 )
 
     @qd.kernel
     def _apply_q_to_thermal_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._sim.thermal_solver._T[f + 1, i_b, i, j] += self._Q[
-                f, i_b, i, j
-            ] * self._substep_dt / (self._rho_field[i_b] * self._cp_field[i_b])
+            self._sim.thermal_solver._T[f + 1, i, j, i_b] += (
+                self._Q[f, i, j, i_b]
+                * self._substep_dt
+                / (self._rho_field[i_b] * self._cp_field[i_b])
+            )
 
     @qd.kernel
     def _apply_q_to_thermal_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._sim.thermal_solver._T[f + 1, i_b, i, j, k] += self._Q[
-                f, i_b, i, j, k
-            ] * self._substep_dt / (self._rho_field[i_b] * self._cp_field[i_b])
+            self._sim.thermal_solver._T[f + 1, i, j, k, i_b] += (
+                self._Q[f, i, j, k, i_b]
+                * self._substep_dt
+                / (self._rho_field[i_b] * self._cp_field[i_b])
+            )
 
     @qd.kernel
     def _heat_step_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         # NOTE: quadrants 1.3 rejects field aliases inside kernels
         # (`r_env = self._r_field`); index the fields directly instead.
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            t_old = self._T[f, i_b, i, j]
+            t_old = self._T[f, i, j, i_b]
             rho = self._rho_field[i_b]
             cp = self._cp_field[i_b]
             # Inlined from _init_thermal_constants so autodiff reaches the
             # scalar material fields (host-precomputed constants would not).
             r = self._k_field[i_b] / (rho * cp) * self._dt_over_dx2
-            heating = self._Q[f, i_b, i, j] * self._substep_dt / (rho * cp)
+            heating = self._Q[f, i, j, i_b] * self._substep_dt / (rho * cp)
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
                 im = qd.max(i - 1, 0)
                 ip = qd.min(i + 1, self._nx - 1)
                 jm = qd.max(j - 1, 0)
                 jp = qd.min(j + 1, self._ny - 1)
                 lap = (
-                    self._T[f, i_b, ip, j]
-                    + self._T[f, i_b, im, j]
-                    + self._T[f, i_b, i, jp]
-                    + self._T[f, i_b, i, jm]
+                    self._T[f, ip, j, i_b]
+                    + self._T[f, im, j, i_b]
+                    + self._T[f, i, jp, i_b]
+                    + self._T[f, i, jm, i_b]
                     - 4.0 * t_old
                 )
-                self._T[f + 1, i_b, i, j] = t_old + r * lap + heating
+                self._T[f + 1, i, j, i_b] = t_old + r * lap + heating
             else:
                 lap = (
-                    self._T[f, i_b, i + 1, j]
-                    + self._T[f, i_b, i - 1, j]
-                    + self._T[f, i_b, i, j + 1]
-                    + self._T[f, i_b, i, j - 1]
+                    self._T[f, i + 1, j, i_b]
+                    + self._T[f, i - 1, j, i_b]
+                    + self._T[f, i, j + 1, i_b]
+                    + self._T[f, i, j - 1, i_b]
                     - 4.0 * t_old
                 )
-                self._T[f + 1, i_b, i, j] = t_old + r * lap + heating
+                self._T[f + 1, i, j, i_b] = t_old + r * lap + heating
 
     @qd.kernel
     def _heat_step_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         # NOTE: quadrants 1.3 rejects field aliases inside kernels
         # (`r_env = self._r_field`); index the fields directly instead.
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            t_old = self._T[f, i_b, i, j, k]
+            t_old = self._T[f, i, j, k, i_b]
             rho = self._rho_field[i_b]
             cp = self._cp_field[i_b]
             # Inlined from _init_thermal_constants so autodiff reaches the
             # scalar material fields (host-precomputed constants would not).
             r = self._k_field[i_b] / (rho * cp) * self._dt_over_dx2
-            heating = self._Q[f, i_b, i, j, k] * self._substep_dt / (rho * cp)
+            heating = self._Q[f, i, j, k, i_b] * self._substep_dt / (rho * cp)
             if (
                 i == 0
                 or i == self._nx - 1
@@ -1335,26 +1368,26 @@ class JouleHeatingSolver(Solver):
                 km = qd.max(k - 1, 0)
                 kp = qd.min(k + 1, self._nz - 1)
                 lap = (
-                    self._T[f, i_b, ip, j, k]
-                    + self._T[f, i_b, im, j, k]
-                    + self._T[f, i_b, i, jp, k]
-                    + self._T[f, i_b, i, jm, k]
-                    + self._T[f, i_b, i, j, kp]
-                    + self._T[f, i_b, i, j, km]
+                    self._T[f, ip, j, k, i_b]
+                    + self._T[f, im, j, k, i_b]
+                    + self._T[f, i, jp, k, i_b]
+                    + self._T[f, i, jm, k, i_b]
+                    + self._T[f, i, j, kp, i_b]
+                    + self._T[f, i, j, km, i_b]
                     - 6.0 * t_old
                 )
-                self._T[f + 1, i_b, i, j, k] = t_old + r * lap + heating
+                self._T[f + 1, i, j, k, i_b] = t_old + r * lap + heating
             else:
                 lap = (
-                    self._T[f, i_b, i + 1, j, k]
-                    + self._T[f, i_b, i - 1, j, k]
-                    + self._T[f, i_b, i, j + 1, k]
-                    + self._T[f, i_b, i, j - 1, k]
-                    + self._T[f, i_b, i, j, k + 1]
-                    + self._T[f, i_b, i, j, k - 1]
+                    self._T[f, i + 1, j, k, i_b]
+                    + self._T[f, i - 1, j, k, i_b]
+                    + self._T[f, i, j + 1, k, i_b]
+                    + self._T[f, i, j - 1, k, i_b]
+                    + self._T[f, i, j, k + 1, i_b]
+                    + self._T[f, i, j, k - 1, i_b]
                     - 6.0 * t_old
                 )
-                self._T[f + 1, i_b, i, j, k] = t_old + r * lap + heating
+                self._T[f + 1, i, j, k, i_b] = t_old + r * lap + heating
 
     # --------------------------------------------------------------------------
     # State / checkpoint kernels
@@ -1363,151 +1396,33 @@ class JouleHeatingSolver(Solver):
     @qd.kernel
     def _copy_frame_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._V[target, i_b, i, j] = self._V[source, i_b, i, j]
+            self._V[target, i, j, i_b] = self._V[source, i, j, i_b]
 
     @qd.kernel
     def _copy_frame_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._V[target, i_b, i, j, k] = self._V[source, i_b, i, j, k]
+            self._V[target, i, j, k, i_b] = self._V[source, i, j, k, i_b]
 
     def copy_frame(self, source: int, target: int) -> None:
+        """Roll the framed fields (the simulator drives this generically)."""
+        if self._V is None:
+            return
         if self._dim == 2:
             self._copy_frame_2d(source, target)
         else:
             self._copy_frame_3d(source, target)
-
-    @qd.kernel
-    def _copy_grad_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._V.grad[target, i_b, i, j] = self._V.grad[source, i_b, i, j]
-
-    @qd.kernel
-    def _copy_grad_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._V.grad[target, i_b, i, j, k] = self._V.grad[source, i_b, i, j, k]
-
-    def copy_grad(self, source: int, target: int) -> None:
-        if self._dim == 2:
-            self._copy_grad_2d(source, target)
-        else:
-            self._copy_grad_3d(source, target)
-
-    @qd.kernel
-    def _reset_grad_till_frame_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
-        for i_f, i, j, i_b in qd.ndrange(f, self._nx, self._ny, self._B):
-            self._V.grad[i_f, i_b, i, j] = gs.qd_float(0.0)
-
-    @qd.kernel
-    def _reset_grad_till_frame_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
-        for i_f, i, j, k, i_b in qd.ndrange(f, self._nx, self._ny, self._nz, self._B):
-            self._V.grad[i_f, i_b, i, j, k] = gs.qd_float(0.0)
-
-    def reset_grad_till_frame(self, f: int) -> None:
-        if self._dim == 2:
-            self._reset_grad_till_frame_2d(f)
-        else:
-            self._reset_grad_till_frame_3d(f)
-
-    @qd.kernel
-    def _kernel_get_state_2d(self, f: qd.i32, v_out: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            v_out[i_b, i, j] = self._V[f, i_b, i, j]
-
-    @qd.kernel
-    def _kernel_get_state_3d(self, f: qd.i32, v_out: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            v_out[i_b, i, j, k] = self._V[f, i_b, i, j, k]
-
-    def _kernel_get_state(self, f: int, v_out: torch.Tensor) -> None:
-        if self._dim == 2:
-            self._kernel_get_state_2d(f, v_out)
-        else:
-            self._kernel_get_state_3d(f, v_out)
-
-    @qd.kernel
-    def _kernel_set_state_2d(self, f: qd.i32, v_in: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._V[f, i_b, i, j] = v_in[i_b, i, j]
-
-    @qd.kernel
-    def _kernel_set_state_3d(self, f: qd.i32, v_in: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._V[f, i_b, i, j, k] = v_in[i_b, i, j, k]
-
-    def _kernel_set_state(self, f: int, v_in: torch.Tensor) -> None:
-        if self._dim == 2:
-            self._kernel_set_state_2d(f, v_in)
-        else:
-            self._kernel_set_state_3d(f, v_in)
+        if self._T is not None:
+            if self._dim == 2:
+                self._copy_t_frame_2d(source, target)
+            else:
+                self._copy_t_frame_3d(source, target)
 
     @qd.kernel
     def _copy_t_frame_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._T[target, i_b, i, j] = self._T[source, i_b, i, j]
+            self._T[target, i, j, i_b] = self._T[source, i, j, i_b]
 
     @qd.kernel
     def _copy_t_frame_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._T[target, i_b, i, j, k] = self._T[source, i_b, i, j, k]
-
-    def _copy_t_frame(self, source: int, target: int) -> None:
-        if self._T is None:
-            return
-        if self._dim == 2:
-            self._copy_t_frame_2d(source, target)
-        else:
-            self._copy_t_frame_3d(source, target)
-
-    @qd.kernel
-    def _copy_t_grad_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._T.grad[target, i_b, i, j] = self._T.grad[source, i_b, i, j]
-
-    @qd.kernel
-    def _copy_t_grad_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._T.grad[target, i_b, i, j, k] = self._T.grad[source, i_b, i, j, k]
-
-    def _copy_t_grad(self, source: int, target: int) -> None:
-        if self._T is None:
-            return
-        if self._dim == 2:
-            self._copy_t_grad_2d(source, target)
-        else:
-            self._copy_t_grad_3d(source, target)
-
-    @qd.kernel
-    def _kernel_get_t_state_2d(self, f: qd.i32, t_out: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            t_out[i_b, i, j] = self._T[f, i_b, i, j]
-
-    @qd.kernel
-    def _kernel_get_t_state_3d(self, f: qd.i32, t_out: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            t_out[i_b, i, j, k] = self._T[f, i_b, i, j, k]
-
-    def _kernel_get_t_state(self, f: int, t_out: torch.Tensor) -> None:
-        if self._T is None:
-            return
-        if self._dim == 2:
-            self._kernel_get_t_state_2d(f, t_out)
-        else:
-            self._kernel_get_t_state_3d(f, t_out)
-
-    @qd.kernel
-    def _kernel_set_t_state_2d(self, f: qd.i32, t_in: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._T[f, i_b, i, j] = t_in[i_b, i, j]
-
-    @qd.kernel
-    def _kernel_set_t_state_3d(self, f: qd.i32, t_in: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._T[f, i_b, i, j, k] = t_in[i_b, i, j, k]
-
-    def _kernel_set_t_state(self, f: int, t_in: torch.Tensor) -> None:
-        if self._T is None:
-            return
-        if self._dim == 2:
-            self._kernel_set_t_state_2d(f, t_in)
-        else:
-            self._kernel_set_t_state_3d(f, t_in)
+            self._T[target, i, j, k, i_b] = self._T[source, i, j, k, i_b]

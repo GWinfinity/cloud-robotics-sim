@@ -1,4 +1,4 @@
-"""ThermalSolver plugin for genesis-world 1.3.2.
+"""ThermalSolver plugin for genesis-world 1.4.6.
 
 This plugin provides a grid-based heat-conduction solver that can be injected
 into a ``gs.Scene`` and stepped alongside the built-in Genesis solvers.

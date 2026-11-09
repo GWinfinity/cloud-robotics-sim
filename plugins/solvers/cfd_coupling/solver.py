@@ -1,4 +1,4 @@
-"""Genesis-world 1.4 integration for the cfd_coupling solvers.
+"""Genesis-world 1.4.6 integration for the cfd_coupling solvers.
 
 This module is the only part of the plugin that depends on genesis-world.
 The numerical cores in ``core/`` stay genesis-free; these thin wrappers
@@ -11,12 +11,19 @@ acoustics plugins:
   (1D MOC sub-cycling + 3D CFD step + fixed-point interface iteration).
 * ``install_pipe`` / ``install_cfd`` inject the standalone 1D / 3D cores.
 
-Genesis 1.4 quirks handled here (same as the other solver plugins):
+Genesis 1.4.6 quirks handled here (same as the other solver plugins):
 
 * ``Solver`` no longer mixes in ``TimeBasedMixin``: ``_substep_dt`` is set
   from ``sim.substep_dt`` in ``build()``.
 * A dummy entity marker makes ``Simulator.reset()`` restore our state through
   ``get_state`` / ``set_state``.
+* The simulator drives solver substeps through ``substep_pre_coupling`` /
+  ``substep_post_coupling`` alone; the old ``process_input*`` /
+  ``substep_*_grad`` / ``save_ckpt`` / ``load_ckpt`` hooks no longer exist in
+  genesis and these solvers never implemented them for real (no genesis
+  back-propagation). The solver state lives in host-side numpy cores, not
+  quadrants fields, so the generic framed-field machinery (``has_frames``,
+  ``data`` checkpoints, autograd reads) does not apply.
 """
 
 from __future__ import annotations
@@ -339,47 +346,18 @@ class _ObstacleMixin:
 
 
 class _PluginSolverBase:
-    """No-op lifecycle hooks the genesis Simulator calls on active solvers.
+    """Lifecycle surface the genesis 1.4.6 Simulator expects of active solvers.
 
-    Forward integration happens in ``substep_pre_coupling``; the remaining
-    hooks are intentionally inert (no coupling to genesis entities, no
-    back-propagation through the field solvers yet).
+    Forward integration happens in ``substep_pre_coupling`` (implemented by
+    each concrete solver); the coupling phase and gradient reset are inert.
+    The remaining lifecycle hooks of genesis 1.4.5 (``process_input*``,
+    ``substep_*_grad``, ``save_ckpt`` / ``load_ckpt``,
+    ``collect_output_grads``) no longer exist upstream, and these solvers hold
+    no quadrants state, so the generic checkpoint (``data``) and autograd-read
+    (``add_grad_from_state``) protocols of the base class never fire for them.
     """
 
-    def process_input(self, in_backward: bool = False) -> list:
-        # genesis-world 1.4.5 iterates the return of every active solver's
-        # process_input{,_grad}; emit empty lists (no taped inputs / pairs).
-        return []
-
-    def process_input_grad(self) -> list:
-        # genesis-world 1.4.5 iterates the return of every active solver's
-        # process_input{,_grad}; emit empty lists (no taped inputs / pairs).
-        return []
-
-    def substep_pre_coupling_grad(self, f: int) -> None:
-        pass
-
     def substep_post_coupling(self, f: int) -> None:
-        pass
-
-    def substep_post_coupling_grad(self, f: int) -> None:
-        pass
-
-    def save_ckpt(self, ckpt_name) -> None:
-        # Back-propagation through the field solvers is not supported; the
-        # forward pass needs no per-substep checkpoint of torch state.
-        pass
-
-    def load_ckpt(self, ckpt_name) -> None:
-        pass
-
-    def reset_grad(self) -> None:
-        pass
-
-    def collect_output_grads(self) -> None:
-        pass
-
-    def add_grad_from_state(self, state) -> None:
         pass
 
 

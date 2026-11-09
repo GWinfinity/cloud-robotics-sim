@@ -4,6 +4,12 @@
 **来源**: 调研仓库 newton（`ISSUE_backward_contact.md`，已按上游 issue 模板整理完毕，可直接提交 Genesis-Embodied-AI/genesis-world）；本仓库在升级 1.4.5 与收编 learned-dynamics 能力时复核复现。
 **结论**: genesis-world 1.4.5（quadrants 1.3.3）在「地面接触 + 基座速度注入 + `loss.backward()`」组合下必现 `INVALID_CONTACT_NAN`，属上游 solver 内部 bug，非本项目代码问题。可微训练路径需规避接触，或等待上游修复。
 
+> **2026-11 跟进（genesis-world 1.4.6）**: 1.4.6（quadrants 1.4.0）重做了可微架构
+> （梯度带改为逐 kernel 录制的 `LaunchRecorder` 回放反转），其 changelog 明确修复了多个
+> 接触路径梯度问题（#3625/#3737 球/胶囊/擦地平面接触梯度、#3729 平面接触位置、
+> #3720 静止关节零梯度）。本文的最小复现**尚未在 1.4.6 上重跑**；若复现消失，
+> 本节可归档为「上游已修复」。在此之前，可微训练仍按本节建议规避接触。
+
 ---
 
 ## 1. 现象与最小复现

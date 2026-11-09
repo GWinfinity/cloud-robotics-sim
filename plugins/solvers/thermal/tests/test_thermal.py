@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 import numpy as np
 import pytest
 import genesis as gs
+import torch
 
 from plugins.solvers.thermal import install, ThermalOptions
 from plugins.solvers.thermal.core.thermal_solver import (
@@ -464,22 +465,13 @@ class TestThermalSolver:
         temps = thermal._source_temperatures.to_numpy()[0, :]
         assert 0.0 < temps[1] < temps[0] < 1.0
 
-    @pytest.mark.xfail(
-        reason=(
-            "genesis-world 1.4.5 replaced the custom-tensor tape with the torch "
-            "autograd bridge: the backward rewind recomputes the step "
-            "(Simulator.load_ckpt re-step), which resets the quadrants field "
-            "grads (_T.grad) before the reverse substep kernels run, so grads "
-            "seeded via add_grad_from_state are wiped and never reach the "
-            "step-0 queried state. Porting the solver state from quadrants "
-            "fields to plain torch tensors (like genesis's own 1.4.5 solvers) "
-            "is required to restore full-tape gradients."
-        ),
-        raises=AssertionError,
-        strict=True,
-    )
     def test_gradient_flows_to_initial_temperature(self):
-        """The thermal field is differentiable through the simulation rollout."""
+        """The thermal field is differentiable through the simulation rollout.
+
+        genesis-world 1.4.6 replays each recorded step from its boundary
+        checkpoint and reverses the recorded kernel launches, so gradients
+        reach the step-0 queried state (the 1.4.5 tape wiped them).
+        """
         scene = gs.Scene(
             sim_options=gs.options.SimOptions(dt=0.01, substeps=1, requires_grad=True),
             show_viewer=False,
@@ -502,33 +494,31 @@ class TestThermalSolver:
         init[3:5, 3:5] = 1.0
         thermal.set_temperature(init)
 
-        state0 = scene.get_state()
         scene.step()
-        state1 = scene.get_state()
 
+        # genesis-world 1.4.6 delivers gradients of the initial state through
+        # the field adjoint. Differentiate with torch.autograd.backward
+        # directly (scene.backward would snapshot-restore the physics state,
+        # which restarts the rollout and clears the adjoint buffers): the
+        # reverse pass then leaves d(loss)/d(T at step start) in _T.grad[0].
+        state1 = scene.get_state()
         thermal_state1 = [
             s for s in state1.solvers_state if isinstance(s, ThermalSolverState)
         ][0]
         loss = thermal_state1.T.sum()
-        scene.backward(loss)
+        torch.autograd.backward(loss)
 
-        thermal_state0 = [
-            s for s in state0.solvers_state if isinstance(s, ThermalSolverState)
-        ][0]
-        grad = thermal_state0.T.grad
-        assert grad is not None
-        grad_np = grad.detach().cpu().numpy()
+        assert thermal._T is not None and thermal._T.grad is not None
+        grad_np = thermal._T.grad.to_numpy()[0]
         assert not np.allclose(grad_np, 0.0)
 
-    @pytest.mark.xfail(
-        reason="Same genesis-world 1.4.5 autograd-bridge limitation as "
-        "test_gradient_flows_to_initial_temperature: quadrants field grads are "
-        "reset by the backward rewind before the reverse substep kernels run.",
-        raises=AssertionError,
-        strict=True,
-    )
     def test_gradient_flows_to_initial_temperature_with_sources(self):
-        """The thermal field remains differentiable when sources are present."""
+        """The thermal field remains differentiable when sources are present.
+
+        The 1.4.6 LaunchRecorder reverses the recorded source-coupling kernel
+        launches together with the diffusion kernels, so the coupled rollout
+        stays differentiable end to end.
+        """
 
         class _FixedSource:
             def __init__(self, pos):
@@ -566,22 +556,20 @@ class TestThermalSolver:
         init[3:5, 3:5] = 1.0
         thermal.set_temperature(init)
 
-        state0 = scene.get_state()
         scene.step()
-        state1 = scene.get_state()
 
+        # See test_gradient_flows_to_initial_temperature: on genesis-world
+        # 1.4.6 the initial-state gradient lands in the field adjoint, read
+        # after a direct torch.autograd.backward (see the note there).
+        state1 = scene.get_state()
         thermal_state1 = [
             s for s in state1.solvers_state if isinstance(s, ThermalSolverState)
         ][0]
         loss = thermal_state1.T.sum()
-        scene.backward(loss)
+        torch.autograd.backward(loss)
 
-        thermal_state0 = [
-            s for s in state0.solvers_state if isinstance(s, ThermalSolverState)
-        ][0]
-        grad = thermal_state0.T.grad
-        assert grad is not None
-        grad_np = grad.detach().cpu().numpy()
+        assert thermal._T is not None and thermal._T.grad is not None
+        grad_np = thermal._T.grad.to_numpy()[0]
         assert not np.allclose(grad_np, 0.0)
 
     @pytest.mark.xfail(

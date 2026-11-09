@@ -1,5 +1,5 @@
 """真实 Genesis 冒烟测试（CPU backend，slow）：验证 builder/backend 对接
-genesis-world 1.4.5 的实际 API——URDF 加载、dof 检测、IK、相机渲染与标定。
+genesis-world 1.4.6 的实际 API——URDF 加载、dof 检测、IK、相机渲染与标定。
 
 默认插件 CI（-m "not slow"）不运行；本地或完整回归时显式运行：
     pytest plugins/agents/uni_robot/tests/test_genesis_smoke.py -v -m slow

@@ -1,4 +1,4 @@
-"""AcousticsSolver plugin for genesis-world 1.4.0.
+"""AcousticsSolver plugin for genesis-world 1.4.6.
 
 This plugin provides a grid-based time-domain acoustic (linear wave
 equation) solver that can be injected into a ``gs.Scene`` and stepped

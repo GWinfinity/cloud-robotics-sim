@@ -104,9 +104,24 @@ def test_bake_matches_stock_out_of_band() -> None:
     assert (
         in_dev.max() < 0.5 * cell
     ), f"in-band deviation {in_dev.max():.4f} exceeds half a cell"
+
+    # Out of band the baked field must remain the exact mesh distance.
+    # genesis 1.4.6 builds its stock SDF with libigl FAST_WINDING_NUMBER,
+    # which trades accuracy for run-to-run reproducibility and deviates from
+    # the exact distance by ~1.6e-4 on this lattice (1.4.5's default sign
+    # type matched the exact distance to machine precision), so the strict
+    # equality check compares against the exact mesh distance rather than the
+    # stock grid, and the stock grid gets its own documented tolerance.
+    sd_exact, _, _ = gc._mesh_distance(points, verts, faces, bool(sdf.has_grad))
+    out_exact = np.abs(baked_v.astype(np.float64) - np.asarray(sd_exact).reshape(-1))[
+        ~active
+    ]
     assert (
-        out_diff.max() < 1e-6
-    ), f"out-of-band field must be the exact mesh distance, got {out_diff.max():.2e}"
+        out_exact.max() < 1e-6
+    ), f"out-of-band field must be the exact mesh distance, got {out_exact.max():.2e}"
+    assert (
+        out_diff.max() < 2.5e-4
+    ), f"stock SDF (FAST_WINDING_NUMBER) deviates from exact by {out_diff.max():.2e}"
 
 
 def test_bake_overlay_deviates_from_stock_where_edited() -> None:

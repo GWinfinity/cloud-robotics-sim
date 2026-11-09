@@ -1,10 +1,10 @@
 # Thermal Solver Plugin
 
-A grid-based heat-conduction solver that runs as a plugin on top of `genesis-world==1.3.2`.
+A grid-based heat-conduction solver that runs as a plugin on top of `genesis-world 1.4.6`.
 
 ## Overview
 
-- **Backend**: `quadrants` (the same backend used by Genesis 1.3.2).
+- **Backend**: `quadrants` (the same backend used by genesis-world 1.4.6).
 - **Numerical method**: explicit FTCS (Forward-Time Centered-Space) for transient problems; optional steady-state Jacobi placeholder.
 - **Boundary conditions**: Dirichlet or Neumann (zero flux).
 - **Dimension**: 2D is fully implemented and tested; 3D kernels are present but not exhaustively tested.
@@ -60,7 +60,7 @@ T = thermal.get_temperature()  # np.ndarray of shape (64, 64)
 
 ## Installation / Registration
 
-`genesis-world 1.3.2` does not expose a public solver-registration API. This plugin therefore injects the solver into `scene.sim._solvers` before `scene.build()`. The simulator lifecycle then picks it up automatically.
+genesis-world does not expose a public solver-registration API. This plugin therefore injects the solver into `scene.sim._solvers` before `scene.build()`. The simulator lifecycle then picks it up automatically (on genesis-world 1.4.6 the solver joins the generic `substep_pre_coupling` / `substep_post_coupling` flow, frames its state via `has_frames`, checkpoints via the `data` protocol, and declares `is_differentiable` for gradient tape support).
 
 ## Thermal Coupling Model
 

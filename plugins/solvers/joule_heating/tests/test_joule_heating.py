@@ -469,9 +469,10 @@ class TestJouleHeatingSolver:
 
         # Seed a non-uniform loss gradient into the final temperature frame and
         # run the solver's backward pass. The gradient should reach rho/cp/k.
+        # _T is (frames, *grid, B) since genesis-world 1.4.6; seed env 0.
         t_grad = solver._T.grad.to_numpy()
         t_grad.fill(0.0)
-        t_grad[1] = np.indices((16, 8)).sum(axis=0).astype(float)
+        t_grad[1, ..., 0] = np.indices((16, 8)).sum(axis=0).astype(float)
         solver._T.grad.from_numpy(t_grad)
         solver.substep_pre_coupling_grad(0)
 

@@ -1,4 +1,4 @@
-"""Grid-based thermal conduction solver for genesis-world 1.3.2."""
+"""Grid-based thermal conduction solver plugin for genesis-world 1.4.6."""
 
 # mypy: ignore-errors
 from __future__ import annotations
@@ -12,6 +12,8 @@ import quadrants as qd
 import torch
 from genesis.engine.entities.base_entity import Entity
 from genesis.engine.solvers.base_solver import Solver
+from genesis.grad.bridge import custom_backward, no_grad
+from genesis.utils.data import ArrayItem, DataKind
 
 from .options import ThermalOptions
 
@@ -108,19 +110,11 @@ class ThermalSolverState:
     def __init__(self, scene: "Scene", solver: "ThermalSolver"):
         self._scene = scene
         self._s_global = solver.sim.cur_step_global
-        # Queried states are registered with the autograd bridge via
-        # ``grad_tensors`` when the solver appends them to ``_queried_states``
-        # (genesis-world 1.4.5); requires_grad is set by the bridge's tracking.
         self.T = torch.zeros(
             (solver._B, *solver._shape),
             dtype=gs.tc_float,
             device=gs.device,
         )
-
-    @property
-    def grad_tensors(self):
-        """The tensors of the state that carry gradients."""
-        return (self.T,)
 
     def serializable(self) -> None:
         self._scene = None
@@ -145,6 +139,16 @@ class ThermalSolver(Solver):
     - Overlapping source influence regions conserve total thermal energy to
       machine precision via a deterministic energy-correction step.
     """
+
+    # The field holds the frames of one step in differentiable scenes and of
+    # one substep otherwise; the simulator rolls them generically (see
+    # 'Solver.has_frames' in genesis-world 1.4.6).
+    has_frames = True
+    # Gradients flow through the diffusion kernels; the source-coupling
+    # kernels are declared gradient-free (see the @no_grad tags below): the
+    # coupling is treated as constant during back-propagation, matching the
+    # semantics this plugin has always documented.
+    is_differentiable = True
 
     def __init__(self, scene: "Scene", sim: "Simulator", options: ThermalOptions):
         super().__init__(scene, sim, options)
@@ -191,11 +195,14 @@ class ThermalSolver(Solver):
         self._source_radii_np = np.zeros(self._max_sources, dtype=gs.np_float)
         self._source_rates_np = np.zeros(self._max_sources, dtype=gs.np_float)
 
-        self._ckpt: dict[str, dict[str, torch.Tensor]] = {}
-
     @property
     def is_active(self) -> bool:
         return True
+
+    @property
+    def n_frames(self) -> int:
+        """Number of frames the field holds (see 'Solver.has_frames')."""
+        return self._n_frames
 
     # --------------------------------------------------------------------------
     # Build / allocation
@@ -204,15 +211,21 @@ class ThermalSolver(Solver):
     def build(self) -> None:
         super().build()
 
-        # genesis 1.4 Solver no longer provides TimeBasedMixin's _substep_dt.
+        # genesis 1.4.6: Solver no longer provides TimeBasedMixin's _substep_dt.
         self._substep_dt = self._sim.substep_dt
 
-        self._n_frames = self._sim.substeps_local + 1
-        full_shape = (self._n_frames, self._B, *self._shape)
+        # Differentiable scenes hold the frames of every substep of one step
+        # (the backward pass replays the whole step); other scenes hold one
+        # substep in two frames (see 'Solver.has_frames').
+        self._n_frames = self._sim.substeps + 1 if self._sim.requires_grad else 2
+        full_shape = (self._n_frames, *self._shape, self._B)
         self._T = qd.field(dtype=gs.qd_float, shape=full_shape, needs_grad=True)
 
         init = self._make_initial_array()
-        init_full = np.broadcast_to(init[None, ...], full_shape).copy()
+        # Field layout is (frames, *grid, B): move the batch axis last.
+        init_full = np.broadcast_to(
+            np.moveaxis(init, 0, -1)[None, ...], full_shape
+        ).copy()
         self._T.from_numpy(init_full)
 
         # Append a dummy entity so that Simulator.reset() restores our field
@@ -362,8 +375,8 @@ class ThermalSolver(Solver):
         arr = self._T.to_numpy()
         frame = arr[0]
         if self._scene.n_envs == 0:
-            return np.asarray(frame[0])
-        return np.asarray(frame)
+            return np.asarray(frame[..., 0])
+        return np.asarray(np.moveaxis(frame, -1, 0))
 
     def set_temperature(self, temperature: np.ndarray) -> None:
         """Set the current temperature field from a host array."""
@@ -377,8 +390,10 @@ class ThermalSolver(Solver):
             )
         if self._scene.n_envs == 0:
             temperature = np.broadcast_to(temperature, (self._B, *self._shape)).copy()
+        # Field layout is (frames, *grid, B): move the batch axis last.
         full = np.broadcast_to(
-            temperature[None, ...], (self._n_frames, *temperature.shape)
+            np.moveaxis(temperature, 0, -1)[None, ...],
+            (self._n_frames, *self._shape, self._B),
         ).copy()
         self._T.from_numpy(full)
 
@@ -603,58 +618,12 @@ class ThermalSolver(Solver):
     # --------------------------------------------------------------------------
     # Simulation lifecycle
     # --------------------------------------------------------------------------
-
-    def process_input(self, in_backward: bool = False) -> list:
-        # genesis-world 1.4.5 iterates the return of every active solver's
-        # process_input; emit an empty list (no taped inputs).
-        return []
-
-    def process_input_grad(self) -> list:
-        """Deliver rewound step-0 field grads into the queried state tensors.
-
-        ``scene.backward`` populates the step-1 queried state's ``.grad`` via
-        the autograd bridge (see ``grad_tensors`` / ``_queried_states``), and
-        ``add_grad_from_state`` seeds ``_T.grad`` with it; the reverse kernels
-        then accumulate ``_T.grad[0]``. The step-0 queried state is not part of
-        the loss graph, so its ``.grad`` only lands here - copy it out. The
-        simulator iterates this return, hence the empty list.
-        """
-        if not self._sim.requires_grad or self._T is None:
-            return []
-
-        cur_step = self._sim.cur_step_global
-        queried = self._queried_states.get(cur_step)
-        if not queried:
-            return []
-
-        # genesis-world 1.4.5: QueriedStates.get returns the registered
-        # solver states directly (no SimState wrapper, unlike 1.4.0).
-        for solver_state in queried:
-            if not isinstance(solver_state, ThermalSolverState):
-                continue
-            if solver_state.T.grad is not None:
-                # The bridge already delivered this state's grad; keep it.
-                continue
-            grad_out = torch.zeros_like(solver_state.T, requires_grad=False)
-            self._kernel_get_grad(0, grad_out)
-            solver_state.T.grad = grad_out
-        return []
-
-    @qd.kernel
-    def _kernel_get_grad_2d(self, f: qd.i32, t_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            t_grad[i_b, i, j] = self._T.grad[f, i_b, i, j]
-
-    @qd.kernel
-    def _kernel_get_grad_3d(self, f: qd.i32, t_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            t_grad[i_b, i, j, k] = self._T.grad[f, i_b, i, j, k]
-
-    def _kernel_get_grad(self, f: int, t_grad: torch.Tensor) -> None:
-        if self._dim == 2:
-            self._kernel_get_grad_2d(f, t_grad)
-        else:
-            self._kernel_get_grad_3d(f, t_grad)
+    # genesis-world 1.4.6 drives solver substeps through 'substep_pre_coupling'
+    # / 'substep_post_coupling' alone; the backward pass of a differentiable
+    # scene replays them while recording the quadrants kernel launches, which
+    # 'LaunchRecorder' then reverses automatically. The explicit
+    # process_input*/substep_*_grad/save_ckpt/load_ckpt hooks of genesis 1.4.5
+    # no longer exist, and state checkpoints go through the 'data' protocol.
 
     def substep_pre_coupling(self, f: int) -> None:
         if self._solver_type == "steady":
@@ -671,43 +640,15 @@ class ThermalSolver(Solver):
                 self._step_transient_3d_boundary_dirichlet(f)
             else:
                 self._step_transient_3d_boundary_neumann(f)
-        self._apply_sources()
-
-    def substep_pre_coupling_grad(self, f: int) -> None:
-        if self._solver_type == "steady":
-            return
-        has_sources = len(self._sources) > 0
-        # Source-coupling grad kernels are only invoked when sources are present.
-        # When no sources are registered the thermal field is still fully
-        # differentiable through the diffusion kernels.
-        # TODO(MUSA/autodiff): the full source-coupling backward path
-        # (_compute_source_equilibrium_*.grad and _apply_energy_correction_*.grad)
-        # is currently skipped because Quadrants/Taichi autodiff rejects the
-        # kernels (in-place read/write on _source_temperatures, conditional
-        # updates, atomic_add, etc.). Re-enable these grad kernels once the
-        # MUSA/Quadrants backend supports them, so source body temperature and
-        # fixed-position gradients propagate correctly.
-        if self._dim == 2:
-            if has_sources:
-                self._update_source_cells_2d.grad(f)
-            if self._is_dirichlet:
-                self._step_transient_2d_boundary_dirichlet.grad(f)
-            else:
-                self._step_transient_2d_boundary_neumann.grad(f)
-            self._step_transient_2d_interior.grad(f)
-        elif self._dim == 3:
-            if has_sources:
-                self._update_source_cells_3d.grad(f)
-            if self._is_dirichlet:
-                self._step_transient_3d_boundary_dirichlet.grad(f)
-            else:
-                self._step_transient_3d_boundary_neumann.grad(f)
-            self._step_transient_3d_interior.grad(f)
+        # The source coupling is gradient-free (see the @no_grad kernels in
+        # _apply_sources); grouping its launches into one recorded entry with
+        # no backward keeps the autodiff tape from trying to reverse the
+        # internal fill kernels, and the recorder still restores what the
+        # launches overwrote.
+        with custom_backward(None):
+            self._apply_sources()
 
     def substep_post_coupling(self, f: int) -> None:
-        pass
-
-    def substep_post_coupling_grad(self, f: int) -> None:
         pass
 
     def reset_grad(self) -> None:
@@ -718,39 +659,24 @@ class ThermalSolver(Solver):
             if self._source_positions is not None:
                 self._source_positions.grad.fill(0.0)
 
-    def save_ckpt(self, ckpt_name: str) -> None:
+    @property
+    def data(self):
+        """Yield the thermal field for the generic checkpoint protocol."""
         if self._T is None:
             return
-        # Roll the last computed frame into frame 0 for the next window.
-        self.copy_frame(self._sim.substeps_local, 0)
-        if self._sim.requires_grad:
-            if ckpt_name not in self._ckpt:
-                self._ckpt[ckpt_name] = {
-                    "T": torch.zeros(
-                        (self._B, *self._shape),
-                        dtype=gs.tc_float,
-                        device=gs.device,
-                    ),
-                }
-            self._kernel_get_state(0, self._ckpt[ckpt_name]["T"])
-
-    def load_ckpt(self, ckpt_name: str) -> None:
-        if self._T is None:
-            return
-        self.copy_frame(0, self._sim.substeps_local)
-        self.copy_grad(0, self._sim.substeps_local)
-        if self._sim.requires_grad:
-            self.reset_grad_till_frame(self._sim.substeps_local)
-            self._kernel_set_state(0, self._ckpt[ckpt_name]["T"])
+        yield ArrayItem("T", DataKind.STATE, self._T)
 
     def get_state(self, f: int) -> ThermalSolverState | None:
         if not self.is_active or self._T is None:
             return None
         state = ThermalSolverState(self._scene, self)
-        self._kernel_get_state(f, state.T)
-        # genesis-world 1.4.5: registering the state wires grad_tensors into
-        # the autograd bridge so scene.backward populates state.T.grad.
-        self._queried_states.append(state)
+        # Between two steps the state sits in frame 0 (see 'Solver.has_frames').
+        self._kernel_get_state(0, state.T)
+        # While a differentiable rollout is recorded, register the query with
+        # the autograd bridge so 'scene.backward()' routes the tensor gradients
+        # back through 'add_grad_from_state'.
+        if self.is_recording:
+            self.record_read((state.T,), (self._T,))
         return state
 
     def set_state(
@@ -762,7 +688,7 @@ class ThermalSolver(Solver):
         if state is None or self._T is None:
             return
         # envs_idx could be supported later; for now we copy all envs.
-        self._kernel_set_state(f, state.T)
+        self._kernel_set_state(0, state.T)
         # Reset coupled body temperatures to their initial values on a full reset.
         for source in self._sources:
             if source._initial_temperatures_np is not None:
@@ -771,13 +697,19 @@ class ThermalSolver(Solver):
                 source.temperature = source._initial_temperature
         self._sync_source_temperatures_to_device()
 
-    def add_grad_from_state(self, state: ThermalSolverState | None) -> None:
-        if state is None or self._T is None or state.T.grad is None:
-            return
-        self._kernel_add_grad_from_t(self._sim.cur_substep_local, state.T.grad)
+    def add_grad_from_state(self, grads, selection) -> None:
+        """Seed the frame-0 field adjoint with the gradients of a queried state.
 
-    def collect_output_grads(self) -> None:
-        pass
+        genesis-world 1.4.6 'ReadOperation.backward' hands the gradients of
+        the tensors 'get_state' returned (None for those the loss does not
+        reach). The field layout is (frames, B, *grid), so the (B, *grid)
+        gradient tensor maps onto frame 0 through the dedicated kernel.
+        """
+        if self._T is None:
+            return
+        for grad in grads:
+            if grad is not None and grad.numel() > 0:
+                self._kernel_add_grad_from_t(0, grad)
 
     # --------------------------------------------------------------------------
     # Quadrants kernels
@@ -786,12 +718,12 @@ class ThermalSolver(Solver):
     @qd.kernel
     def _copy_frame_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._T[target, i_b, i, j] = self._T[source, i_b, i, j]
+            self._T[target, i, j, i_b] = self._T[source, i, j, i_b]
 
     @qd.kernel
     def _copy_frame_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._T[target, i_b, i, j, k] = self._T[source, i_b, i, j, k]
+            self._T[target, i, j, k, i_b] = self._T[source, i, j, k, i_b]
 
     def copy_frame(self, source: int, target: int) -> None:
         if self._dim == 2:
@@ -800,50 +732,18 @@ class ThermalSolver(Solver):
             self._copy_frame_3d(source, target)
 
     @qd.kernel
-    def _copy_grad_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._T.grad[target, i_b, i, j] = self._T.grad[source, i_b, i, j]
-
-    @qd.kernel
-    def _copy_grad_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._T.grad[target, i_b, i, j, k] = self._T.grad[source, i_b, i, j, k]
-
-    def copy_grad(self, source: int, target: int) -> None:
-        if self._dim == 2:
-            self._copy_grad_2d(source, target)
-        else:
-            self._copy_grad_3d(source, target)
-
-    @qd.kernel
-    def _reset_grad_till_frame_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
-        for i_f, i, j, i_b in qd.ndrange(f, self._nx, self._ny, self._B):
-            self._T.grad[i_f, i_b, i, j] = gs.qd_float(0.0)
-
-    @qd.kernel
-    def _reset_grad_till_frame_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
-        for i_f, i, j, k, i_b in qd.ndrange(f, self._nx, self._ny, self._nz, self._B):
-            self._T.grad[i_f, i_b, i, j, k] = gs.qd_float(0.0)
-
-    def reset_grad_till_frame(self, f: int) -> None:
-        if self._dim == 2:
-            self._reset_grad_till_frame_2d(f)
-        else:
-            self._reset_grad_till_frame_3d(f)
-
-    @qd.kernel
     def _kernel_get_state_2d(  # type: ignore[no-untyped-def]
         self, f: qd.i32, t_out: qd.types.ndarray()
     ):
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            t_out[i_b, i, j] = self._T[f, i_b, i, j]
+            t_out[i_b, i, j] = self._T[f, i, j, i_b]
 
     @qd.kernel
     def _kernel_get_state_3d(  # type: ignore[no-untyped-def]
         self, f: qd.i32, t_out: qd.types.ndarray()
     ):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            t_out[i_b, i, j, k] = self._T[f, i_b, i, j, k]
+            t_out[i_b, i, j, k] = self._T[f, i, j, k, i_b]
 
     def _kernel_get_state(self, f: int, t_out: torch.Tensor) -> None:
         if self._dim == 2:
@@ -856,14 +756,14 @@ class ThermalSolver(Solver):
         self, f: qd.i32, t_in: qd.types.ndarray()
     ):
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._T[f, i_b, i, j] = t_in[i_b, i, j]
+            self._T[f, i, j, i_b] = t_in[i_b, i, j]
 
     @qd.kernel
     def _kernel_set_state_3d(  # type: ignore[no-untyped-def]
         self, f: qd.i32, t_in: qd.types.ndarray()
     ):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._T[f, i_b, i, j, k] = t_in[i_b, i, j, k]
+            self._T[f, i, j, k, i_b] = t_in[i_b, i, j, k]
 
     def _kernel_set_state(self, f: int, t_in: torch.Tensor) -> None:
         if self._dim == 2:
@@ -876,14 +776,14 @@ class ThermalSolver(Solver):
         self, f: qd.i32, t_grad: qd.types.ndarray()
     ):
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._T.grad[f, i_b, i, j] += t_grad[i_b, i, j]
+            self._T.grad[f, i, j, i_b] += t_grad[i_b, i, j]
 
     @qd.kernel
     def _kernel_add_grad_from_t_3d(  # type: ignore[no-untyped-def]
         self, f: qd.i32, t_grad: qd.types.ndarray()
     ):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._T.grad[f, i_b, i, j, k] += t_grad[i_b, i, j, k]
+            self._T.grad[f, i, j, k, i_b] += t_grad[i_b, i, j, k]
 
     def _kernel_add_grad_from_t(self, f: int, t_grad: torch.Tensor) -> None:
         if self._dim == 2:
@@ -897,19 +797,19 @@ class ThermalSolver(Solver):
             r = self._alpha * self._substep_dt / (self._dx * self._dx)
             ii = i + 1
             jj = j + 1
-            self._T[f + 1, i_b, ii, jj] = self._T[f, i_b, ii, jj] + r * (
-                self._T[f, i_b, ii + 1, jj]
-                + self._T[f, i_b, ii - 1, jj]
-                + self._T[f, i_b, ii, jj + 1]
-                + self._T[f, i_b, ii, jj - 1]
-                - 4.0 * self._T[f, i_b, ii, jj]
+            self._T[f + 1, ii, jj, i_b] = self._T[f, ii, jj, i_b] + r * (
+                self._T[f, ii + 1, jj, i_b]
+                + self._T[f, ii - 1, jj, i_b]
+                + self._T[f, ii, jj + 1, i_b]
+                + self._T[f, ii, jj - 1, i_b]
+                - 4.0 * self._T[f, ii, jj, i_b]
             )
 
     @qd.kernel
     def _step_transient_2d_boundary_dirichlet(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
-                self._T[f + 1, i_b, i, j] = self._boundary_value
+                self._T[f + 1, i, j, i_b] = self._boundary_value
 
     @qd.kernel
     def _step_transient_2d_boundary_neumann(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -921,13 +821,13 @@ class ThermalSolver(Solver):
                 jm = qd.max(j - 1, 0)
                 jp = qd.min(j + 1, self._ny - 1)
                 lap = (
-                    self._T[f, i_b, ip, j]
-                    + self._T[f, i_b, im, j]
-                    + self._T[f, i_b, i, jp]
-                    + self._T[f, i_b, i, jm]
-                    - 4.0 * self._T[f, i_b, i, j]
+                    self._T[f, ip, j, i_b]
+                    + self._T[f, im, j, i_b]
+                    + self._T[f, i, jp, i_b]
+                    + self._T[f, i, jm, i_b]
+                    - 4.0 * self._T[f, i, j, i_b]
                 )
-                self._T[f + 1, i_b, i, j] = self._T[f, i_b, i, j] + r * lap
+                self._T[f + 1, i, j, i_b] = self._T[f, i, j, i_b] + r * lap
 
     @qd.kernel
     def _step_transient_3d_interior(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -938,14 +838,14 @@ class ThermalSolver(Solver):
             ii = i + 1
             jj = j + 1
             kk = k + 1
-            self._T[f + 1, i_b, ii, jj, kk] = self._T[f, i_b, ii, jj, kk] + r * (
-                self._T[f, i_b, ii + 1, jj, kk]
-                + self._T[f, i_b, ii - 1, jj, kk]
-                + self._T[f, i_b, ii, jj + 1, kk]
-                + self._T[f, i_b, ii, jj - 1, kk]
-                + self._T[f, i_b, ii, jj, kk + 1]
-                + self._T[f, i_b, ii, jj, kk - 1]
-                - 6.0 * self._T[f, i_b, ii, jj, kk]
+            self._T[f + 1, ii, jj, kk, i_b] = self._T[f, ii, jj, kk, i_b] + r * (
+                self._T[f, ii + 1, jj, kk, i_b]
+                + self._T[f, ii - 1, jj, kk, i_b]
+                + self._T[f, ii, jj + 1, kk, i_b]
+                + self._T[f, ii, jj - 1, kk, i_b]
+                + self._T[f, ii, jj, kk + 1, i_b]
+                + self._T[f, ii, jj, kk - 1, i_b]
+                - 6.0 * self._T[f, ii, jj, kk, i_b]
             )
 
     @qd.kernel
@@ -959,7 +859,7 @@ class ThermalSolver(Solver):
                 or k == 0
                 or k == self._nz - 1
             ):
-                self._T[f + 1, i_b, i, j, k] = self._boundary_value
+                self._T[f + 1, i, j, k, i_b] = self._boundary_value
 
     @qd.kernel
     def _step_transient_3d_boundary_neumann(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -980,24 +880,25 @@ class ThermalSolver(Solver):
                 km = qd.max(k - 1, 0)
                 kp = qd.min(k + 1, self._nz - 1)
                 lap = (
-                    self._T[f, i_b, ip, j, k]
-                    + self._T[f, i_b, im, j, k]
-                    + self._T[f, i_b, i, jp, k]
-                    + self._T[f, i_b, i, jm, k]
-                    + self._T[f, i_b, i, j, kp]
-                    + self._T[f, i_b, i, j, km]
-                    - 6.0 * self._T[f, i_b, i, j, k]
+                    self._T[f, ip, j, k, i_b]
+                    + self._T[f, im, j, k, i_b]
+                    + self._T[f, i, jp, k, i_b]
+                    + self._T[f, i, jm, k, i_b]
+                    + self._T[f, i, j, kp, i_b]
+                    + self._T[f, i, j, km, i_b]
+                    - 6.0 * self._T[f, i, j, k, i_b]
                 )
-                self._T[f + 1, i_b, i, j, k] = self._T[f, i_b, i, j, k] + r * lap
+                self._T[f + 1, i, j, k, i_b] = self._T[f, i, j, k, i_b] + r * lap
 
     # --------------------------------------------------------------------------
     # Source-coupling quadrants kernels
     # --------------------------------------------------------------------------
 
+    @no_grad
     @qd.kernel
     def _gather_source_cells_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            t_cell = self._T[f + 1, i_b, i, j]
+            t_cell = self._T[f + 1, i, j, i_b]
             in_union = False
             for s in range(self._max_sources):
                 if self._source_active[s] == 0:
@@ -1016,10 +917,11 @@ class ThermalSolver(Solver):
                 )
                 qd.atomic_add(self._source_capacity_total[i_b], self._cell_capacity)
 
+    @no_grad
     @qd.kernel
     def _update_source_cells_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            t_cell = self._T[f + 1, i_b, i, j]
+            t_cell = self._T[f + 1, i, j, i_b]
             delta = gs.qd_float(0.0)
             for s in range(self._max_sources):
                 # Inactive sources have alpha == 0, so they do not contribute.
@@ -1031,8 +933,9 @@ class ThermalSolver(Solver):
                     delta += self._source_alpha[s, i_b] * (
                         self._source_t_eq[s, i_b] - t_cell
                     )
-            self._T[f + 1, i_b, i, j] = t_cell + delta
+            self._T[f + 1, i, j, i_b] = t_cell + delta
 
+    @no_grad
     @qd.kernel
     def _compute_source_equilibrium_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for s, i_b in qd.ndrange(self._max_sources, self._B):
@@ -1051,6 +954,7 @@ class ThermalSolver(Solver):
             self._source_alpha[s, i_b] = alpha
             self._source_temperatures[s, i_b] = t_b_old + alpha * (t_eq - t_b_old)
 
+    @no_grad
     @qd.kernel
     def _accumulate_source_body_energy_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for s, i_b in qd.ndrange(self._max_sources, self._B):
@@ -1061,10 +965,11 @@ class ThermalSolver(Solver):
             qd.atomic_add(self._source_energy_before[i_b], c_body * t_b_old)
             qd.atomic_add(self._source_capacity_total[i_b], c_body)
 
+    @no_grad
     @qd.kernel
     def _compute_energy_after_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            t_cell = self._T[f + 1, i_b, i, j]
+            t_cell = self._T[f + 1, i, j, i_b]
             in_union = False
             for s in range(self._max_sources):
                 if self._source_active[s] == 0:
@@ -1086,6 +991,7 @@ class ThermalSolver(Solver):
             t_b = self._source_temperatures[s, i_b]
             qd.atomic_add(self._source_energy_after[i_b], c_body * t_b)
 
+    @no_grad
     @qd.kernel
     def _compute_energy_correction_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i_b in qd.ndrange(self._B):
@@ -1098,6 +1004,7 @@ class ThermalSolver(Solver):
             else:
                 self._source_energy_correction[i_b] = gs.qd_float(0.0)
 
+    @no_grad
     @qd.kernel
     def _apply_energy_correction_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for s, i_b in qd.ndrange(self._max_sources, self._B):
@@ -1116,12 +1023,13 @@ class ThermalSolver(Solver):
                 if dx * dx + dy * dy <= radius * radius:
                     in_union = True
             if in_union:
-                self._T[f + 1, i_b, i, j] += self._source_energy_correction[i_b]
+                self._T[f + 1, i, j, i_b] += self._source_energy_correction[i_b]
 
+    @no_grad
     @qd.kernel
     def _gather_source_cells_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            t_cell = self._T[f + 1, i_b, i, j, k]
+            t_cell = self._T[f + 1, i, j, k, i_b]
             in_union = False
             for s in range(self._max_sources):
                 if self._source_active[s] == 0:
@@ -1141,10 +1049,11 @@ class ThermalSolver(Solver):
                 )
                 qd.atomic_add(self._source_capacity_total[i_b], self._cell_capacity)
 
+    @no_grad
     @qd.kernel
     def _update_source_cells_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            t_cell = self._T[f + 1, i_b, i, j, k]
+            t_cell = self._T[f + 1, i, j, k, i_b]
             delta = gs.qd_float(0.0)
             for s in range(self._max_sources):
                 # Inactive sources have alpha == 0, so they do not contribute.
@@ -1157,8 +1066,9 @@ class ThermalSolver(Solver):
                     delta += self._source_alpha[s, i_b] * (
                         self._source_t_eq[s, i_b] - t_cell
                     )
-            self._T[f + 1, i_b, i, j, k] = t_cell + delta
+            self._T[f + 1, i, j, k, i_b] = t_cell + delta
 
+    @no_grad
     @qd.kernel
     def _compute_source_equilibrium_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for s, i_b in qd.ndrange(self._max_sources, self._B):
@@ -1177,6 +1087,7 @@ class ThermalSolver(Solver):
             self._source_alpha[s, i_b] = alpha
             self._source_temperatures[s, i_b] = t_b_old + alpha * (t_eq - t_b_old)
 
+    @no_grad
     @qd.kernel
     def _accumulate_source_body_energy_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for s, i_b in qd.ndrange(self._max_sources, self._B):
@@ -1187,10 +1098,11 @@ class ThermalSolver(Solver):
             qd.atomic_add(self._source_energy_before[i_b], c_body * t_b_old)
             qd.atomic_add(self._source_capacity_total[i_b], c_body)
 
+    @no_grad
     @qd.kernel
     def _compute_energy_after_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            t_cell = self._T[f + 1, i_b, i, j, k]
+            t_cell = self._T[f + 1, i, j, k, i_b]
             in_union = False
             for s in range(self._max_sources):
                 if self._source_active[s] == 0:
@@ -1213,6 +1125,7 @@ class ThermalSolver(Solver):
             t_b = self._source_temperatures[s, i_b]
             qd.atomic_add(self._source_energy_after[i_b], c_body * t_b)
 
+    @no_grad
     @qd.kernel
     def _compute_energy_correction_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i_b in qd.ndrange(self._B):
@@ -1225,6 +1138,7 @@ class ThermalSolver(Solver):
             else:
                 self._source_energy_correction[i_b] = gs.qd_float(0.0)
 
+    @no_grad
     @qd.kernel
     def _apply_energy_correction_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for s, i_b in qd.ndrange(self._max_sources, self._B):
@@ -1244,4 +1158,4 @@ class ThermalSolver(Solver):
                 if dx * dx + dy * dy + dz * dz <= radius * radius:
                     in_union = True
             if in_union:
-                self._T[f + 1, i_b, i, j, k] += self._source_energy_correction[i_b]
+                self._T[f + 1, i, j, k, i_b] += self._source_energy_correction[i_b]

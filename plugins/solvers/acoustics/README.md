@@ -1,6 +1,6 @@
 # Acoustics Solver Plugin
 
-Grid-based **time-domain acoustics solver** for genesis-world 1.4.0, in the
+Grid-based **time-domain acoustics solver** for genesis-world 1.4.6, in the
 same plugin skeleton as [`plugins/solvers/thermal`](../thermal) and
 [`plugins/solvers/joule_heating`](../joule_heating).
 
@@ -82,9 +82,13 @@ body coupling, 3D).
 - Two time levels are stored (`_p`, `_p_prev`): memory ≈ 2× the thermal
   solver for the same grid.
 
-## Notes on genesis 1.4 compatibility
+## Notes on genesis compatibility
 
 `plugins/solvers/{thermal,joule_heating,acoustics}` were adapted to
-genesis-world 1.4.0 (`Solver` no longer mixes in `TimeBasedMixin`; install
-defaults `dt` from `scene._sim.dt`; quadrants 1.3 rejects field aliases
-inside kernels). All three plugins' tests pass on CPU.
+genesis-world 1.4.6 (`Solver` does not mix in `TimeBasedMixin`; install
+defaults `dt` from `scene._sim.dt`; quadrants rejects field aliases inside
+kernels). The 1.4.6 lifecycle is framed-state based: `has_frames` exposes
+the per-substep frame buffers, `data` feeds the generic checkpoint
+protocol, and differentiable scenes reverse the recorded kernel launches
+automatically (source/body coupling is grouped into one gradient-free
+entry via `custom_backward`). All three plugins' tests pass on CPU.

@@ -4,8 +4,10 @@
 
 - 使用 `uv` 管理依赖，锁文件为 `uv.lock`；修改 `pyproject.toml` 中的依赖后必须运行 `uv lock`。
 - 使用项目虚拟环境，避免使用系统 Python 或外部虚拟环境。Windows 解释器路径为 `.venv/Scripts/python.exe`。
-- 支持 Python `>=3.12,<3.14`（3.10/3.11 已移除：genesis-world 下个版本不再支持）；CI 覆盖 3.12。
-- 项目使用 `genesis-world==1.4.5`（quadrants 1.3.3），不要引入 Genesis 0.4.x API，也不要从核心代码导入 `plugins/envs/sky/core/genesis/` 中 vendored 的旧版本。
+- 支持 Python `>=3.12,<3.15`（3.10/3.11 已随 genesis-world 1.4.6 移除，1.4.6 起支持 3.14）；CI 覆盖 3.12 与 3.14。
+- 项目使用 `genesis-world==1.4.6`（quadrants 1.4.0），不要引入 Genesis 0.4.x API，也不要从核心代码导入 `plugins/envs/sky/core/genesis/` 中 vendored 的旧版本。
+- genesis-world 1.4.x 使用 quadrants 编译器（taichi 已移除）：核心依赖不含 taichi，仅 vendored 的 sky 插件需要（其 plugin.yaml 自行声明）。
+- genesis-world 1.4.6 的可微架构改为 `LaunchRecorder` 录制-回放：solver 插件通过 `has_frames`/`n_frames`/`data`/`is_differentiable` 接入框架（参考 plugins/solvers/ 下 thermal/acoustics/joule_heating 移植），1.4.5 的 `process_input*`/`substep_*_grad`/`save_ckpt`/`load_ckpt` 生命周期钩子已删除；帧化场的布局为 batch-last `(frames, *grid, B)`。
 - `genesis-world 1.4.5` 移除了自定义的 `gs.Tensor`（1.4.5 #3592），宿主侧张量注解用 `torch.Tensor`；`gs.tc_float`/`gs.tc_int` 仍存在，但仅在 `gs.init()` 之后才有值（即原生 `torch.dtype`）。
 - CUDA 版 torch/torchvision 经 `pyproject.toml` 中的 `pytorch-cu128` 显式索引解析（默认镜像只有 CPU 轮）；Windows 上 cu128 最高为 torch 2.11.x（2.12+ 不发 Windows CUDA 轮）。
 - Genesis 后端选择、光源创建和外力施加应使用 `src/cloud_robotics_sim/utils/genesis_compat.py` 中的兼容接口。

@@ -1,6 +1,6 @@
 name: acoustics
 version: 0.1.0
-description: Grid-based time-domain acoustics (linear wave equation) solver plugin for genesis-world 1.4.0
+description: Grid-based time-domain acoustics (linear wave equation) solver plugin for genesis-world 1.4.6
 
 category: solvers
 source_project: genesis-cloud-sim

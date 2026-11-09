@@ -1,4 +1,4 @@
-"""Grid-based time-domain acoustics solver for genesis-world 1.4.0.
+"""Grid-based time-domain acoustics solver for genesis-world 1.4.6.
 
 Solves the linear acoustic wave equation on a regular Cartesian grid with a
 second-order leapfrog scheme:
@@ -25,6 +25,8 @@ import numpy as np
 import quadrants as qd
 import torch
 from genesis.engine.solvers.base_solver import Solver
+from genesis.grad.bridge import custom_backward
+from genesis.utils.data import ArrayItem, DataKind
 
 from .options import AcousticsOptions
 
@@ -144,9 +146,6 @@ class AcousticsSolverState:
     def __init__(self, scene: "Scene", solver: "AcousticsSolver"):
         self._scene = scene
         self._s_global = solver.sim.cur_step_global
-        # Queried states are registered with the autograd bridge via
-        # ``grad_tensors`` when the solver appends them to ``_queried_states``
-        # (genesis-world 1.4.5); requires_grad is set by the bridge's tracking.
         self.P = torch.zeros(
             (solver._B, *solver._shape),
             dtype=gs.tc_float,
@@ -157,11 +156,6 @@ class AcousticsSolverState:
             dtype=gs.tc_float,
             device=gs.device,
         )
-
-    @property
-    def grad_tensors(self):
-        """The tensors of the state that carry gradients."""
-        return (self.P, self.P_prev)
 
     def serializable(self) -> None:
         self._scene = None
@@ -185,6 +179,16 @@ class AcousticsSolver(Solver):
     - Overlapping injection regions of multiple sources should be avoided:
       cell contributions are added without atomics.
     """
+
+    # The fields hold the frames of one step in differentiable scenes and of
+    # one substep otherwise; the simulator rolls them generically (see
+    # 'Solver.has_frames' in genesis-world 1.4.6).
+    has_frames = True
+    # Gradients flow through the leapfrog and boundary kernels; source/body
+    # injection and probe recording are grouped into one gradient-free
+    # recorded entry (see 'custom_backward' in substep_pre_coupling), matching
+    # the forward-only coupling this plugin has always documented.
+    is_differentiable = True
 
     def __init__(self, scene: "Scene", sim: "Simulator", options: AcousticsOptions):
         super().__init__(scene, sim, options)
@@ -241,11 +245,14 @@ class AcousticsSolver(Solver):
         self._probe_active_np = np.zeros(mp, dtype=np.int32)
         self._probe_cells_np = np.zeros((mp, 3), dtype=np.int32)
 
-        self._ckpt: dict[str, dict[str, torch.Tensor]] = {}
-
     @property
     def is_active(self) -> bool:
         return True
+
+    @property
+    def n_frames(self) -> int:
+        """Number of frames the fields hold (see 'Solver.has_frames')."""
+        return self._n_frames
 
     # ------------------------------------------------------------------
     # Helpers
@@ -254,7 +261,11 @@ class AcousticsSolver(Solver):
     def _cell_of(self, position: tuple[float, float, float]) -> tuple[int, int, int]:
         ci = int(np.clip(int(position[0] / self._dx), 0, self._nx - 1))
         cj = int(np.clip(int(position[1] / self._dx), 0, self._ny - 1))
-        ck = int(np.clip(int(position[2] / self._dx), 0, self._nz - 1)) if self._dim == 3 else 0
+        ck = (
+            int(np.clip(int(position[2] / self._dx), 0, self._nz - 1))
+            if self._dim == 3
+            else 0
+        )
         return ci, cj, ck
 
     def _cells_in_radius(self, radius: float) -> int:
@@ -281,29 +292,43 @@ class AcousticsSolver(Solver):
 
     def build(self) -> None:
         super().build()
-        # genesis 1.4 Solver no longer provides TimeBasedMixin's _substep_dt;
-        # the solver advances at its own options.dt per substep.
+        # genesis 1.4.6 Solver does not mix in TimeBasedMixin; the solver
+        # advances at its own options.dt per substep.
         self._substep_dt = float(self._options.dt)
         self._check_stability()
 
-        self._n_frames = self._sim.substeps_local + 1
-        full_shape = (self._n_frames, self._B, *self._shape)
+        # Differentiable scenes hold the frames of every substep of one step
+        # (the backward pass replays the whole step); other scenes hold one
+        # substep in two frames (see 'Solver.has_frames').
+        self._n_frames = self._sim.substeps + 1 if self._sim.requires_grad else 2
+        # Field layout is (frames, *grid, B), the genesis batch-last convention.
+        full_shape = (self._n_frames, *self._shape, self._B)
         self._p = qd.field(dtype=gs.qd_float, shape=full_shape, needs_grad=True)
         self._p_prev = qd.field(dtype=gs.qd_float, shape=full_shape, needs_grad=True)
         self._sig = qd.field(
             dtype=gs.qd_float,
-            shape=(self._n_frames, self._B, max(1, self._max_probes)),
+            shape=(self._n_frames, max(1, self._max_probes), self._B),
             needs_grad=False,
         )
 
         init = self._make_initial_array()
-        init_full = np.broadcast_to(init[None, ...], full_shape).copy()
+        init_full = np.broadcast_to(
+            np.moveaxis(init, 0, -1)[None, ...], full_shape
+        ).copy()
         self._p.from_numpy(init_full)
         self._p_prev.from_numpy(np.zeros(full_shape, dtype=gs.np_float))
-        self._sig.from_numpy(np.zeros((self._n_frames, self._B, max(1, self._max_probes)), dtype=gs.np_float))
+        self._sig.from_numpy(
+            np.zeros(
+                (self._n_frames, max(1, self._max_probes), self._B), dtype=gs.np_float
+            )
+        )
 
         # Source / body / probe slot fields.
-        ms, mb, mp = max(1, self._max_sources), max(1, self._max_bodies), max(1, self._max_probes)
+        ms, mb, mp = (
+            max(1, self._max_sources),
+            max(1, self._max_bodies),
+            max(1, self._max_probes),
+        )
         self._src_active = qd.field(dtype=qd.i32, shape=(ms,))
         self._src_pos = qd.field(dtype=gs.qd_float, shape=(ms, 3))
         self._src_cells = qd.field(dtype=qd.i32, shape=(ms,))
@@ -364,8 +389,8 @@ class AcousticsSolver(Solver):
         arr = self._p.to_numpy()
         frame = arr[0]
         if self._scene.n_envs == 0:
-            return np.asarray(frame[0])
-        return np.asarray(frame)
+            return np.asarray(frame[..., 0])
+        return np.asarray(np.moveaxis(frame, -1, 0))
 
     def set_pressure(self, pressure: np.ndarray) -> None:
         """Set the pressure field from a host array (all time levels)."""
@@ -379,7 +404,11 @@ class AcousticsSolver(Solver):
             )
         if self._scene.n_envs == 0:
             pressure = np.broadcast_to(pressure, (self._B, *self._shape)).copy()
-        full = np.broadcast_to(pressure[None, ...], (self._n_frames, *pressure.shape)).copy()
+        # Field layout is (frames, *grid, B): move the batch axis last.
+        full = np.broadcast_to(
+            np.moveaxis(pressure, 0, -1)[None, ...],
+            (self._n_frames, *self._shape, self._B),
+        ).copy()
         self._p.from_numpy(full)
 
     def get_signal(self, probe: AcousticProbe) -> np.ndarray:
@@ -505,9 +534,7 @@ class AcousticsSolver(Solver):
             accel = (vel - body._vel_prev) / dt
             body._vel_prev = vel.copy()
             self._body_pos_np[body._slot] = pos
-            self._body_values_np[body._slot] = (
-                body.amplitude * self._rho * accel[2]
-            )
+            self._body_values_np[body._slot] = body.amplitude * self._rho * accel[2]
         if self._p is not None:
             if self._src_values_np.size:
                 self._src_values.from_numpy(self._src_values_np.astype(gs.np_float))
@@ -515,99 +542,37 @@ class AcousticsSolver(Solver):
                 self._body_values.from_numpy(self._body_values_np.astype(gs.np_float))
                 self._body_pos.from_numpy(self._body_pos_np.astype(gs.np_float))
 
-    def process_input(self, in_backward: bool = False) -> list:
-        # genesis-world 1.4.5 iterates the return of every active solver's
-        # process_input; emit an empty list (no taped inputs).
-        return []
-
-    def process_input_grad(self) -> list:
-        """Deliver rewound step-0 field grads into the queried state tensors.
-
-        ``scene.backward`` populates the step-1 queried state's ``.grad`` via
-        the autograd bridge (see ``grad_tensors`` / ``_queried_states``), and
-        ``add_grad_from_state`` seeds ``_p.grad`` with it; the reverse kernels
-        then accumulate ``_p.grad[0]``. The step-0 queried state is not part of
-        the loss graph, so its ``.grad`` only lands here - copy it out. The
-        simulator iterates this return, hence the empty list.
-        """
-        if not self._sim.requires_grad or self._p is None:
-            return []
-        cur_step = self._sim.cur_step_global
-        queried = self._queried_states.get(cur_step)
-        if not queried:
-            return []
-        # genesis-world 1.4.5: QueriedStates.get returns the registered
-        # solver states directly (no SimState wrapper, unlike 1.4.0).
-        for solver_state in queried:
-            if not isinstance(solver_state, AcousticsSolverState):
-                continue
-            if solver_state.P.grad is not None:
-                # The bridge already delivered this state's grad; keep it.
-                continue
-            grad_out = torch.zeros_like(solver_state.P, requires_grad=False)
-            self._kernel_get_grad(0, grad_out)
-            solver_state.P.grad = grad_out
-        return []
-
-    @qd.kernel
-    def _kernel_get_grad_2d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            p_grad[i_b, i, j] = self._p.grad[f, i_b, i, j]
-
-    @qd.kernel
-    def _kernel_get_grad_3d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            p_grad[i_b, i, j, k] = self._p.grad[f, i_b, i, j, k]
-
-    def _kernel_get_grad(self, f: int, p_grad: torch.Tensor) -> None:
-        if self._dim == 2:
-            self._kernel_get_grad_2d(f, p_grad)
-        else:
-            self._kernel_get_grad_3d(f, p_grad)
+    # genesis-world 1.4.6 drives solver substeps through 'substep_pre_coupling'
+    # / 'substep_post_coupling' alone; the backward pass of a differentiable
+    # scene replays them while recording the quadrants kernel launches, which
+    # 'LaunchRecorder' then reverses automatically. The explicit
+    # process_input*/substep_*_grad/save_ckpt/load_ckpt hooks of genesis 1.4.5
+    # no longer exist, and state checkpoints go through the 'data' protocol.
 
     def substep_pre_coupling(self, f: int) -> None:
         self._update_source_values()
         if self._dim == 2:
             self._step_leapfrog_2d_interior(f)
             self._apply_boundary_2d(f)
-            self._inject_sources_2d(f)
-            self._inject_bodies_2d(f)
-            self._record_probes_2d(f)
         else:
             self._step_leapfrog_3d_interior(f)
             self._apply_boundary_3d(f)
-            self._inject_sources_3d(f)
-            self._inject_bodies_3d(f)
-            self._record_probes_3d(f)
+        # Source/body injection and probe recording are gradient-free; grouping
+        # their launches into one recorded entry with no backward keeps the
+        # autodiff tape from trying to reverse them, and the recorder still
+        # restores what they overwrote.
+        with custom_backward(None):
+            if self._dim == 2:
+                self._inject_sources_2d(f)
+                self._inject_bodies_2d(f)
+                self._record_probes_2d(f)
+            else:
+                self._inject_sources_3d(f)
+                self._inject_bodies_3d(f)
+                self._record_probes_3d(f)
         self._time += self._substep_dt
 
-    def substep_pre_coupling_grad(self, f: int) -> None:
-        # TODO(MUSA/autodiff): source/body injection is host-driven and its
-        # backward path is skipped for the same Quadrants/Taichi autodiff
-        # limitations as the thermal source coupling (atomic_add, in-place
-        # read/write). The linear leapfrog and boundary kernels below are
-        # differentiable.
-        if self._dim == 2:
-            if self._boundary_mode == "dirichlet":
-                self._boundary_dirichlet_2d.grad(f)
-            elif self._boundary_mode == "neumann":
-                self._boundary_neumann_2d.grad(f)
-            else:
-                self._boundary_absorbing_2d.grad(f)
-            self._step_leapfrog_2d_interior.grad(f)
-        else:
-            if self._boundary_mode == "dirichlet":
-                self._boundary_dirichlet_3d.grad(f)
-            elif self._boundary_mode == "neumann":
-                self._boundary_neumann_3d.grad(f)
-            else:
-                self._boundary_absorbing_3d.grad(f)
-            self._step_leapfrog_3d_interior.grad(f)
-
     def substep_post_coupling(self, f: int) -> None:
-        pass
-
-    def substep_post_coupling_grad(self, f: int) -> None:
         pass
 
     def reset_grad(self) -> None:
@@ -636,56 +601,48 @@ class AcousticsSolver(Solver):
             self._boundary_absorbing_3d(f)
 
     # ------------------------------------------------------------------
-    # Checkpoints / states
+    # Checkpoints / states (genesis-world 1.4.6 'data' protocol)
     # ------------------------------------------------------------------
 
-    def save_ckpt(self, ckpt_name: str) -> None:
+    @property
+    def data(self):
+        """Yield the pressure fields for the generic checkpoint protocol."""
         if self._p is None:
             return
-        # Harvest the probe frames recorded during the step that just ended.
-        # The guard makes backward replays (which re-run forward steps with a
-        # decreasing global clock) a no-op for the host-side history.
-        cur_step = self._sim.cur_step_global
-        if cur_step > self._last_harvest_step:
-            self._harvest_probes()
-            self._last_harvest_step = cur_step
-        # Roll the last computed frame into frame 0 for the next window.
-        last = self._sim.substeps_local
-        self._copy_frame_p(last, 0)
-        self._copy_frame_p_prev(last, 0)
-        self._copy_frame_sig(last, 0)
-        if self._sim.requires_grad:
-            if ckpt_name not in self._ckpt:
-                self._ckpt[ckpt_name] = {
-                    "P": torch.zeros(
-                        (self._B, *self._shape), dtype=gs.tc_float, device=gs.device
-                    ),
-                    "P_prev": torch.zeros(
-                        (self._B, *self._shape), dtype=gs.tc_float, device=gs.device
-                    ),
-                }
-            self._kernel_get_state(0, self._ckpt[ckpt_name]["P"], self._ckpt[ckpt_name]["P_prev"])
+        yield ArrayItem("P", DataKind.STATE, self._p)
+        yield ArrayItem("P_prev", DataKind.STATE, self._p_prev)
 
-    def load_ckpt(self, ckpt_name: str) -> None:
+    def copy_frame(self, source: int, target: int) -> None:
+        """Roll field frames; harvest probe history once per simulation step.
+
+        The simulator calls this with (n_frames - 1, 0) at the end of every
+        step (and, without gradients, at the end of every substep, since one
+        substep fits in the two frames it holds). The step-clock guard keeps
+        backward replays, which revisit the same step with a decreasing
+        clock, from appending duplicate history.
+        """
         if self._p is None:
             return
-        last = self._sim.substeps_local
-        self._copy_frame_p(0, last)
-        self._copy_frame_p_prev(0, last)
-        self._copy_frame_sig(0, last)
-        self._copy_grad_p(0, last)
-        if self._sim.requires_grad:
-            self.reset_grad_till_frame(last)
-            self._kernel_set_state(0, self._ckpt[ckpt_name]["P"], self._ckpt[ckpt_name]["P_prev"])
+        if source == self._n_frames - 1 and target == 0:
+            cur_step = self._sim.cur_step_global
+            if cur_step > self._last_harvest_step:
+                self._harvest_probes()
+                self._last_harvest_step = cur_step
+        self._copy_frame_p(source, target)
+        self._copy_frame_p_prev(source, target)
+        self._copy_frame_sig(source, target)
 
     def get_state(self, f: int) -> AcousticsSolverState | None:
         if not self.is_active or self._p is None:
             return None
         state = AcousticsSolverState(self._scene, self)
-        self._kernel_get_state(f, state.P, state.P_prev)
-        # genesis-world 1.4.5: registering the state wires grad_tensors into
-        # the autograd bridge so scene.backward populates state.P.grad.
-        self._queried_states.append(state)
+        # Between two steps the state sits in frame 0 (see 'Solver.has_frames').
+        self._kernel_get_state(0, state.P, state.P_prev)
+        # While a differentiable rollout is recorded, register the query with
+        # the autograd bridge so the tensor gradients route back through
+        # 'add_grad_from_state'.
+        if self.is_recording:
+            self.record_read((state.P, state.P_prev), (self._p, self._p_prev))
         return state
 
     def set_state(
@@ -696,16 +653,25 @@ class AcousticsSolver(Solver):
     ) -> None:
         if state is None or self._p is None:
             return
-        self._kernel_set_state(f, state.P, state.P_prev)
+        self._kernel_set_state(0, state.P, state.P_prev)
         self._time = 0.0
 
-    def add_grad_from_state(self, state: AcousticsSolverState | None) -> None:
-        if state is None or self._p is None or state.P.grad is None:
-            return
-        self._kernel_add_grad_from_p(self._sim.cur_substep_local, state.P.grad)
+    def add_grad_from_state(self, grads, selection) -> None:
+        """Seed the frame-0 field adjoints with queried-state gradients.
 
-    def collect_output_grads(self) -> None:
-        pass
+        genesis-world 1.4.6 'ReadOperation.backward' hands the gradients of
+        the tensors 'get_state' returned (None for those the loss does not
+        reach); the field layout is (frames, *grid, B), so the (B, *grid)
+        gradient tensors map onto frame 0 through the dedicated kernels.
+        """
+        if self._p is None:
+            return
+        for grad, kernel in zip(
+            grads,
+            (self._kernel_add_grad_from_p, self._kernel_add_grad_from_p_prev),
+        ):
+            if grad is not None and grad.numel() > 0:
+                kernel(0, grad)
 
     # ------------------------------------------------------------------
     # Probe harvesting
@@ -714,8 +680,11 @@ class AcousticsSolver(Solver):
     def _harvest_probes(self) -> None:
         if self._sig is None or self._probe_history is None:
             return
-        arr = self._sig.to_numpy()  # (n_frames, B, max_probes)
-        new = np.asarray(arr[1 : self._n_frames + 1], dtype=np.float64)
+        arr = self._sig.to_numpy()  # (n_frames, max_probes, B)
+        # History layout is (steps, B, max_probes).
+        new = np.moveaxis(
+            np.asarray(arr[1 : self._n_frames + 1], dtype=np.float64), -1, 1
+        )
         if self._probe_history.shape[0] == 0:
             self._probe_history = new.copy()
         else:
@@ -730,47 +699,55 @@ class AcousticsSolver(Solver):
         for i, j, i_b in qd.ndrange(self._nx - 2, self._ny - 2, self._B):
             ii = i + 1
             jj = j + 1
-            r2 = self._c * self._c * self._substep_dt * self._substep_dt / (
-                self._dx * self._dx
+            r2 = (
+                self._c
+                * self._c
+                * self._substep_dt
+                * self._substep_dt
+                / (self._dx * self._dx)
             )
             lap = (
-                self._p[f, i_b, ii + 1, jj]
-                + self._p[f, i_b, ii - 1, jj]
-                + self._p[f, i_b, ii, jj + 1]
-                + self._p[f, i_b, ii, jj - 1]
-                - 4.0 * self._p[f, i_b, ii, jj]
+                self._p[f, ii + 1, jj, i_b]
+                + self._p[f, ii - 1, jj, i_b]
+                + self._p[f, ii, jj + 1, i_b]
+                + self._p[f, ii, jj - 1, i_b]
+                - 4.0 * self._p[f, ii, jj, i_b]
             )
-            self._p[f + 1, i_b, ii, jj] = (
-                2.0 * self._p[f, i_b, ii, jj]
-                - self._p_prev[f, i_b, ii, jj]
-                + r2 * lap
+            self._p[f + 1, ii, jj, i_b] = (
+                2.0 * self._p[f, ii, jj, i_b] - self._p_prev[f, ii, jj, i_b] + r2 * lap
             )
-            self._p_prev[f + 1, i_b, ii, jj] = self._p[f, i_b, ii, jj]
+            self._p_prev[f + 1, ii, jj, i_b] = self._p[f, ii, jj, i_b]
 
     @qd.kernel
     def _step_leapfrog_3d_interior(self, f: qd.i32):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx - 2, self._ny - 2, self._nz - 2, self._B):
+        for i, j, k, i_b in qd.ndrange(
+            self._nx - 2, self._ny - 2, self._nz - 2, self._B
+        ):
             ii = i + 1
             jj = j + 1
             kk = k + 1
-            r2 = self._c * self._c * self._substep_dt * self._substep_dt / (
-                self._dx * self._dx
+            r2 = (
+                self._c
+                * self._c
+                * self._substep_dt
+                * self._substep_dt
+                / (self._dx * self._dx)
             )
             lap = (
-                self._p[f, i_b, ii + 1, jj, kk]
-                + self._p[f, i_b, ii - 1, jj, kk]
-                + self._p[f, i_b, ii, jj + 1, kk]
-                + self._p[f, i_b, ii, jj - 1, kk]
-                + self._p[f, i_b, ii, jj, kk + 1]
-                + self._p[f, i_b, ii, jj, kk - 1]
-                - 6.0 * self._p[f, i_b, ii, jj, kk]
+                self._p[f, ii + 1, jj, kk, i_b]
+                + self._p[f, ii - 1, jj, kk, i_b]
+                + self._p[f, ii, jj + 1, kk, i_b]
+                + self._p[f, ii, jj - 1, kk, i_b]
+                + self._p[f, ii, jj, kk + 1, i_b]
+                + self._p[f, ii, jj, kk - 1, i_b]
+                - 6.0 * self._p[f, ii, jj, kk, i_b]
             )
-            self._p[f + 1, i_b, ii, jj, kk] = (
-                2.0 * self._p[f, i_b, ii, jj, kk]
-                - self._p_prev[f, i_b, ii, jj, kk]
+            self._p[f + 1, ii, jj, kk, i_b] = (
+                2.0 * self._p[f, ii, jj, kk, i_b]
+                - self._p_prev[f, ii, jj, kk, i_b]
                 + r2 * lap
             )
-            self._p_prev[f + 1, i_b, ii, jj, kk] = self._p[f, i_b, ii, jj, kk]
+            self._p_prev[f + 1, ii, jj, kk, i_b] = self._p[f, ii, jj, kk, i_b]
 
     # ------------------------------------------------------------------
     # Boundary kernels
@@ -780,8 +757,8 @@ class AcousticsSolver(Solver):
     def _boundary_dirichlet_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
-                self._p[f + 1, i_b, i, j] = 0.0
-                self._p_prev[f + 1, i_b, i, j] = 0.0
+                self._p[f + 1, i, j, i_b] = 0.0
+                self._p_prev[f + 1, i, j, i_b] = 0.0
 
     @qd.kernel
     def _boundary_dirichlet_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -794,33 +771,35 @@ class AcousticsSolver(Solver):
                 or k == 0
                 or k == self._nz - 1
             ):
-                self._p[f + 1, i_b, i, j, k] = 0.0
-                self._p_prev[f + 1, i_b, i, j, k] = 0.0
+                self._p[f + 1, i, j, k, i_b] = 0.0
+                self._p_prev[f + 1, i, j, k, i_b] = 0.0
 
     @qd.kernel
     def _boundary_neumann_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
-                r2 = self._c * self._c * self._substep_dt * self._substep_dt / (
-                    self._dx * self._dx
+                r2 = (
+                    self._c
+                    * self._c
+                    * self._substep_dt
+                    * self._substep_dt
+                    / (self._dx * self._dx)
                 )
                 im = qd.max(i - 1, 0)
                 ip = qd.min(i + 1, self._nx - 1)
                 jm = qd.max(j - 1, 0)
                 jp = qd.min(j + 1, self._ny - 1)
                 lap = (
-                    self._p[f, i_b, ip, j]
-                    + self._p[f, i_b, im, j]
-                    + self._p[f, i_b, i, jp]
-                    + self._p[f, i_b, i, jm]
-                    - 4.0 * self._p[f, i_b, i, j]
+                    self._p[f, ip, j, i_b]
+                    + self._p[f, im, j, i_b]
+                    + self._p[f, i, jp, i_b]
+                    + self._p[f, i, jm, i_b]
+                    - 4.0 * self._p[f, i, j, i_b]
                 )
-                self._p[f + 1, i_b, i, j] = (
-                    2.0 * self._p[f, i_b, i, j]
-                    - self._p_prev[f, i_b, i, j]
-                    + r2 * lap
+                self._p[f + 1, i, j, i_b] = (
+                    2.0 * self._p[f, i, j, i_b] - self._p_prev[f, i, j, i_b] + r2 * lap
                 )
-                self._p_prev[f + 1, i_b, i, j] = self._p[f, i_b, i, j]
+                self._p_prev[f + 1, i, j, i_b] = self._p[f, i, j, i_b]
 
     @qd.kernel
     def _boundary_neumann_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -833,8 +812,12 @@ class AcousticsSolver(Solver):
                 or k == 0
                 or k == self._nz - 1
             ):
-                r2 = self._c * self._c * self._substep_dt * self._substep_dt / (
-                    self._dx * self._dx
+                r2 = (
+                    self._c
+                    * self._c
+                    * self._substep_dt
+                    * self._substep_dt
+                    / (self._dx * self._dx)
                 )
                 im = qd.max(i - 1, 0)
                 ip = qd.min(i + 1, self._nx - 1)
@@ -843,28 +826,32 @@ class AcousticsSolver(Solver):
                 km = qd.max(k - 1, 0)
                 kp = qd.min(k + 1, self._nz - 1)
                 lap = (
-                    self._p[f, i_b, ip, j, k]
-                    + self._p[f, i_b, im, j, k]
-                    + self._p[f, i_b, i, jp, k]
-                    + self._p[f, i_b, i, jm, k]
-                    + self._p[f, i_b, i, j, kp]
-                    + self._p[f, i_b, i, j, km]
-                    - 6.0 * self._p[f, i_b, i, j, k]
+                    self._p[f, ip, j, k, i_b]
+                    + self._p[f, im, j, k, i_b]
+                    + self._p[f, i, jp, k, i_b]
+                    + self._p[f, i, jm, k, i_b]
+                    + self._p[f, i, j, kp, i_b]
+                    + self._p[f, i, j, km, i_b]
+                    - 6.0 * self._p[f, i, j, k, i_b]
                 )
-                self._p[f + 1, i_b, i, j, k] = (
-                    2.0 * self._p[f, i_b, i, j, k]
-                    - self._p_prev[f, i_b, i, j, k]
+                self._p[f + 1, i, j, k, i_b] = (
+                    2.0 * self._p[f, i, j, k, i_b]
+                    - self._p_prev[f, i, j, k, i_b]
                     + r2 * lap
                 )
-                self._p_prev[f + 1, i_b, i, j, k] = self._p[f, i_b, i, j, k]
+                self._p_prev[f + 1, i, j, k, i_b] = self._p[f, i, j, k, i_b]
 
     @qd.kernel
     def _boundary_absorbing_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
             d = qd.min(qd.min(i, self._nx - 1 - i), qd.min(j, self._ny - 1 - j))
             if d < self._sponge_layers:
-                r2 = self._c * self._c * self._substep_dt * self._substep_dt / (
-                    self._dx * self._dx
+                r2 = (
+                    self._c
+                    * self._c
+                    * self._substep_dt
+                    * self._substep_dt
+                    / (self._dx * self._dx)
                 )
                 s = 1.0 - d / self._sponge_layers
                 xi = self._sponge_max_damping * s * s
@@ -873,19 +860,17 @@ class AcousticsSolver(Solver):
                 jm = qd.max(j - 1, 0)
                 jp = qd.min(j + 1, self._ny - 1)
                 lap = (
-                    self._p[f, i_b, ip, j]
-                    + self._p[f, i_b, im, j]
-                    + self._p[f, i_b, i, jp]
-                    + self._p[f, i_b, i, jm]
-                    - 4.0 * self._p[f, i_b, i, j]
+                    self._p[f, ip, j, i_b]
+                    + self._p[f, im, j, i_b]
+                    + self._p[f, i, jp, i_b]
+                    + self._p[f, i, jm, i_b]
+                    - 4.0 * self._p[f, i, j, i_b]
                 )
                 p_next = (
-                    2.0 * self._p[f, i_b, i, j]
-                    - self._p_prev[f, i_b, i, j]
-                    + r2 * lap
+                    2.0 * self._p[f, i, j, i_b] - self._p_prev[f, i, j, i_b] + r2 * lap
                 )
-                self._p[f + 1, i_b, i, j] = p_next / (1.0 + xi * self._substep_dt)
-                self._p_prev[f + 1, i_b, i, j] = self._p[f, i_b, i, j]
+                self._p[f + 1, i, j, i_b] = p_next / (1.0 + xi * self._substep_dt)
+                self._p_prev[f + 1, i, j, i_b] = self._p[f, i, j, i_b]
 
     @qd.kernel
     def _boundary_absorbing_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -895,10 +880,16 @@ class AcousticsSolver(Solver):
                 qd.min(k, self._nz - 1 - k),
             )
             if d < self._sponge_layers:
-                r2 = self._c * self._c * self._substep_dt * self._substep_dt / (
-                    self._dx * self._dx
+                r2 = (
+                    self._c
+                    * self._c
+                    * self._substep_dt
+                    * self._substep_dt
+                    / (self._dx * self._dx)
                 )
-                s = 1.0 - qd.cast(d, gs.qd_float) / qd.cast(self._sponge_layers, gs.qd_float)
+                s = 1.0 - qd.cast(d, gs.qd_float) / qd.cast(
+                    self._sponge_layers, gs.qd_float
+                )
                 xi = self._sponge_max_damping * s * s
                 im = qd.max(i - 1, 0)
                 ip = qd.min(i + 1, self._nx - 1)
@@ -907,21 +898,21 @@ class AcousticsSolver(Solver):
                 km = qd.max(k - 1, 0)
                 kp = qd.min(k + 1, self._nz - 1)
                 lap = (
-                    self._p[f, i_b, ip, j, k]
-                    + self._p[f, i_b, im, j, k]
-                    + self._p[f, i_b, i, jp, k]
-                    + self._p[f, i_b, i, jm, k]
-                    + self._p[f, i_b, i, j, kp]
-                    + self._p[f, i_b, i, j, km]
-                    - 6.0 * self._p[f, i_b, i, j, k]
+                    self._p[f, ip, j, k, i_b]
+                    + self._p[f, im, j, k, i_b]
+                    + self._p[f, i, jp, k, i_b]
+                    + self._p[f, i, jm, k, i_b]
+                    + self._p[f, i, j, kp, i_b]
+                    + self._p[f, i, j, km, i_b]
+                    - 6.0 * self._p[f, i, j, k, i_b]
                 )
                 p_next = (
-                    2.0 * self._p[f, i_b, i, j, k]
-                    - self._p_prev[f, i_b, i, j, k]
+                    2.0 * self._p[f, i, j, k, i_b]
+                    - self._p_prev[f, i, j, k, i_b]
                     + r2 * lap
                 )
-                self._p[f + 1, i_b, i, j, k] = p_next / (1.0 + xi * self._substep_dt)
-                self._p_prev[f + 1, i_b, i, j, k] = self._p[f, i_b, i, j, k]
+                self._p[f + 1, i, j, k, i_b] = p_next / (1.0 + xi * self._substep_dt)
+                self._p_prev[f + 1, i, j, k, i_b] = self._p[f, i, j, k, i_b]
 
     # ------------------------------------------------------------------
     # Source / body injection and probe recording
@@ -942,7 +933,7 @@ class AcousticsSolver(Solver):
                     ii = ci + di - r
                     jj = cj + dj - r
                     if ii >= 0 and ii < self._nx and jj >= 0 and jj < self._ny:
-                        self._p[f + 1, i_b, ii, jj] += val
+                        self._p[f + 1, ii, jj, i_b] += val
 
     @qd.kernel
     def _inject_sources_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -969,7 +960,7 @@ class AcousticsSolver(Solver):
                         and kk >= 0
                         and kk < self._nz
                     ):
-                        self._p[f + 1, i_b, ii, jj, kk] += val
+                        self._p[f + 1, ii, jj, kk, i_b] += val
 
     @qd.kernel
     def _inject_bodies_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -986,7 +977,7 @@ class AcousticsSolver(Solver):
                     ii = ci + di - r
                     jj = cj + dj - r
                     if ii >= 0 and ii < self._nx and jj >= 0 and jj < self._ny:
-                        self._p[f + 1, i_b, ii, jj] += val
+                        self._p[f + 1, ii, jj, i_b] += val
 
     @qd.kernel
     def _inject_bodies_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -1013,7 +1004,7 @@ class AcousticsSolver(Solver):
                         and kk >= 0
                         and kk < self._nz
                     ):
-                        self._p[f + 1, i_b, ii, jj, kk] += val
+                        self._p[f + 1, ii, jj, kk, i_b] += val
 
     @qd.kernel
     def _record_probes_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -1021,7 +1012,7 @@ class AcousticsSolver(Solver):
             if self._probe_active[s] == 1:
                 pi = self._probe_cells[s, 0]
                 pj = self._probe_cells[s, 1]
-                self._sig[f + 1, i_b, s] = self._p[f + 1, i_b, pi, pj]
+                self._sig[f + 1, s, i_b] = self._p[f + 1, pi, pj, i_b]
 
     @qd.kernel
     def _record_probes_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
@@ -1030,7 +1021,7 @@ class AcousticsSolver(Solver):
                 pi = self._probe_cells[s, 0]
                 pj = self._probe_cells[s, 1]
                 pk = self._probe_cells[s, 2]
-                self._sig[f + 1, i_b, s] = self._p[f + 1, i_b, pi, pj, pk]
+                self._sig[f + 1, s, i_b] = self._p[f + 1, pi, pj, pk, i_b]
 
     # ------------------------------------------------------------------
     # Frame copies
@@ -1039,12 +1030,12 @@ class AcousticsSolver(Solver):
     @qd.kernel
     def _copy_frame_p_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._p[target, i_b, i, j] = self._p[source, i_b, i, j]
+            self._p[target, i, j, i_b] = self._p[source, i, j, i_b]
 
     @qd.kernel
     def _copy_frame_p_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._p[target, i_b, i, j, k] = self._p[source, i_b, i, j, k]
+            self._p[target, i, j, k, i_b] = self._p[source, i, j, k, i_b]
 
     def _copy_frame_p(self, source: int, target: int) -> None:
         if self._dim == 2:
@@ -1055,12 +1046,12 @@ class AcousticsSolver(Solver):
     @qd.kernel
     def _copy_frame_p_prev_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._p_prev[target, i_b, i, j] = self._p_prev[source, i_b, i, j]
+            self._p_prev[target, i, j, i_b] = self._p_prev[source, i, j, i_b]
 
     @qd.kernel
     def _copy_frame_p_prev_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._p_prev[target, i_b, i, j, k] = self._p_prev[source, i_b, i, j, k]
+            self._p_prev[target, i, j, k, i_b] = self._p_prev[source, i, j, k, i_b]
 
     def _copy_frame_p_prev(self, source: int, target: int) -> None:
         if self._dim == 2:
@@ -1071,12 +1062,12 @@ class AcousticsSolver(Solver):
     @qd.kernel
     def _copy_frame_sig_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, s, i_b in qd.ndrange(self._nx, self._max_probes, self._B):
-            self._sig[target, i_b, s] = self._sig[source, i_b, s]
+            self._sig[target, s, i_b] = self._sig[source, s, i_b]
 
     @qd.kernel
     def _copy_frame_sig_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
         for i, s, i_b in qd.ndrange(self._nx, self._max_probes, self._B):
-            self._sig[target, i_b, s] = self._sig[source, i_b, s]
+            self._sig[target, s, i_b] = self._sig[source, s, i_b]
 
     def _copy_frame_sig(self, source: int, target: int) -> None:
         # The signal buffer has no spatial axes; a 1-D copy suffices for both dims.
@@ -1084,38 +1075,6 @@ class AcousticsSolver(Solver):
             self._copy_frame_sig_2d(source, target)
         else:
             self._copy_frame_sig_3d(source, target)
-
-    @qd.kernel
-    def _copy_grad_p_2d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
-        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._p.grad[target, i_b, i, j] = self._p.grad[source, i_b, i, j]
-
-    @qd.kernel
-    def _copy_grad_p_3d(self, source: qd.i32, target: qd.i32):  # type: ignore[no-untyped-def]
-        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._p.grad[target, i_b, i, j, k] = self._p.grad[source, i_b, i, j, k]
-
-    def _copy_grad_p(self, source: int, target: int) -> None:
-        if self._dim == 2:
-            self._copy_grad_p_2d(source, target)
-        else:
-            self._copy_grad_p_3d(source, target)
-
-    @qd.kernel
-    def _reset_grad_till_frame_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
-        for i_f, i, j, i_b in qd.ndrange(f, self._nx, self._ny, self._B):
-            self._p.grad[i_f, i_b, i, j] = gs.qd_float(0.0)
-
-    @qd.kernel
-    def _reset_grad_till_frame_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
-        for i_f, i, j, k, i_b in qd.ndrange(f, self._nx, self._ny, self._nz, self._B):
-            self._p.grad[i_f, i_b, i, j, k] = gs.qd_float(0.0)
-
-    def reset_grad_till_frame(self, f: int) -> None:
-        if self._dim == 2:
-            self._reset_grad_till_frame_2d(f)
-        else:
-            self._reset_grad_till_frame_3d(f)
 
     # ------------------------------------------------------------------
     # State get/set and grad export
@@ -1126,18 +1085,20 @@ class AcousticsSolver(Solver):
         self, f: qd.i32, p_out: qd.types.ndarray(), pp_out: qd.types.ndarray()
     ):
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            p_out[i_b, i, j] = self._p[f, i_b, i, j]
-            pp_out[i_b, i, j] = self._p_prev[f, i_b, i, j]
+            p_out[i_b, i, j] = self._p[f, i, j, i_b]
+            pp_out[i_b, i, j] = self._p_prev[f, i, j, i_b]
 
     @qd.kernel
     def _kernel_get_state_3d(  # type: ignore[no-untyped-def]
         self, f: qd.i32, p_out: qd.types.ndarray(), pp_out: qd.types.ndarray()
     ):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            p_out[i_b, i, j, k] = self._p[f, i_b, i, j, k]
-            pp_out[i_b, i, j, k] = self._p_prev[f, i_b, i, j, k]
+            p_out[i_b, i, j, k] = self._p[f, i, j, k, i_b]
+            pp_out[i_b, i, j, k] = self._p_prev[f, i, j, k, i_b]
 
-    def _kernel_get_state(self, f: int, p_out: torch.Tensor, pp_out: torch.Tensor) -> None:
+    def _kernel_get_state(
+        self, f: int, p_out: torch.Tensor, pp_out: torch.Tensor
+    ) -> None:
         if self._dim == 2:
             self._kernel_get_state_2d(f, p_out, pp_out)
         else:
@@ -1148,18 +1109,20 @@ class AcousticsSolver(Solver):
         self, f: qd.i32, p_in: qd.types.ndarray(), pp_in: qd.types.ndarray()
     ):
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._p[f, i_b, i, j] = p_in[i_b, i, j]
-            self._p_prev[f, i_b, i, j] = pp_in[i_b, i, j]
+            self._p[f, i, j, i_b] = p_in[i_b, i, j]
+            self._p_prev[f, i, j, i_b] = pp_in[i_b, i, j]
 
     @qd.kernel
     def _kernel_set_state_3d(  # type: ignore[no-untyped-def]
         self, f: qd.i32, p_in: qd.types.ndarray(), pp_in: qd.types.ndarray()
     ):
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._p[f, i_b, i, j, k] = p_in[i_b, i, j, k]
-            self._p_prev[f, i_b, i, j, k] = pp_in[i_b, i, j, k]
+            self._p[f, i, j, k, i_b] = p_in[i_b, i, j, k]
+            self._p_prev[f, i, j, k, i_b] = pp_in[i_b, i, j, k]
 
-    def _kernel_set_state(self, f: int, p_in: torch.Tensor, pp_in: torch.Tensor) -> None:
+    def _kernel_set_state(
+        self, f: int, p_in: torch.Tensor, pp_in: torch.Tensor
+    ) -> None:
         if self._dim == 2:
             self._kernel_set_state_2d(f, p_in, pp_in)
         else:
@@ -1168,15 +1131,31 @@ class AcousticsSolver(Solver):
     @qd.kernel
     def _kernel_add_grad_from_p_2d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
         for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
-            self._p.grad[f, i_b, i, j] += p_grad[i_b, i, j]
+            self._p.grad[f, i, j, i_b] += p_grad[i_b, i, j]
 
     @qd.kernel
     def _kernel_add_grad_from_p_3d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
         for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
-            self._p.grad[f, i_b, i, j, k] += p_grad[i_b, i, j, k]
+            self._p.grad[f, i, j, k, i_b] += p_grad[i_b, i, j, k]
 
     def _kernel_add_grad_from_p(self, f: int, p_grad: torch.Tensor) -> None:
         if self._dim == 2:
             self._kernel_add_grad_from_p_2d(f, p_grad)
         else:
             self._kernel_add_grad_from_p_3d(f, p_grad)
+
+    @qd.kernel
+    def _kernel_add_grad_from_p_prev_2d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            self._p_prev.grad[f, i, j, i_b] += p_grad[i_b, i, j]
+
+    @qd.kernel
+    def _kernel_add_grad_from_p_prev_3d(self, f: qd.i32, p_grad: qd.types.ndarray()):  # type: ignore[no-untyped-def]
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            self._p_prev.grad[f, i, j, k, i_b] += p_grad[i_b, i, j, k]
+
+    def _kernel_add_grad_from_p_prev(self, f: int, p_grad: torch.Tensor) -> None:
+        if self._dim == 2:
+            self._kernel_add_grad_from_p_prev_2d(f, p_grad)
+        else:
+            self._kernel_add_grad_from_p_prev_3d(f, p_grad)
