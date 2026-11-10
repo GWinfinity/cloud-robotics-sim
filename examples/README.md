@@ -24,6 +24,12 @@ need specific assets/backends.
 Electromagnetic/thermal motor physics demos (`demo_01`–`demo_04`, or
 `run_all.py` for the full sweep; PNG outputs written next to the scripts).
 
+## Cable / 绳缆（`cable_sim/`）
+
+| File | Status | Description |
+|---|---|---|
+| `xpbd_rope_demo.py` | experimental | XPBD 粒子链绳缆 + 稀疏 SDF 碰撞（xuvdb 烘场 / 解析场双后端）：拖动钉使绳披覆球障碍物，输出 GIF 动画与逐步耗时/穿透/拉伸诊断。 |
+
 ## Data & migration
 
 | Path | Status | Description |

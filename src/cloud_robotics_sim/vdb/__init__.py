@@ -24,14 +24,19 @@ from cloud_robotics_sim.vdb.core.vdb_torch import TorchSparseVolume
 
 __all__ = [
     "SdfRayCaster",
+    "SdfField",
     "TorchSparseVolume",
     "XuvdbVolume",
+    "XpbdRope",
     "bake_static_scene",
     "create_volume",
     "from_xuvdb",
+    "ground_field",
     "has_xuvdb",
     "meshes_to_sdf",
+    "sphere_field",
     "to_xuvdb",
+    "union_fields",
 ]
 
 
@@ -80,6 +85,15 @@ from cloud_robotics_sim.vdb.core.vdb_xuvdb import (  # noqa: E402
     to_xuvdb,
 )
 from cloud_robotics_sim.vdb.ray_caster import SdfRayCaster  # noqa: E402
+from cloud_robotics_sim.vdb.rope_xpbd import (  # noqa: E402
+    AnalyticSdfField,
+    SdfField,
+    XpbdRope,
+    XuvdbSdfField,
+    ground_field,
+    sphere_field,
+    union_fields,
+)
 
 # genesis_contact pulls in genesis (a core dependency, but heavy); load it on
 # first attribute access so `import cloud_robotics_sim.vdb` stays light.

@@ -133,6 +133,19 @@ apt_0、CPU、dt=0.01×1 substep：
 - xuvdb host `VdbGrid.sample_linear/nearest/quadratic` 曾将 batched input 截断到第一个点。项目的 `XuvdbVolume.sample_*` 已改为 batch-aware：单点走 host path，批量走 kernel-side `GpuVolume.sample`，无法 pack 的 grid（例如 f64 ShapeKernel bridge）使用 per-point host fallback。不要直接用原始 host API 处理 batch。
 - `RandomizedRoomSDF` 通过同一 kernel-side 路径查询；回归测试位于 `tests/vdb/test_xuvdb_interop.py`。
 - ShapeKernel 在 mm world 中构造，union 后 `rescale_grid(1e-3)`；values、voxel_size、origin、background 均线性缩放。
+- 绳缆（`rope_xpbd.py`）：`XuvdbSdfField` 每子步经 numpy 进出 xuvdb kernel（host 往返）；碰撞 margin 应保持在窄带半宽（band×voxel）内，带外点法向为零向量、投影自动跳过。初始形状不得与场相交——深埋粒子会被单步投影猛烈弹出。
+
+### XPBD 绳缆性能（2026-11，本机 GTX 1650）
+
+50 粒子绳、8 substeps × 4 Jacobi 迭代、含逐步诊断采样：
+
+| 后端 | 设备 | 每步耗时 |
+|---|---|---|
+| 解析场 | CPU | ~11 ms |
+| 解析场 | CUDA | ~45 ms |
+| xuvdb 烘场 (voxel 4mm, 1.3M active voxels) | CPU + quadrants x64 | ~19 ms |
+
+CUDA 慢于 CPU 的原因：每步 ~700 个小 kernel 发射、GTX 1650 + WDDM 每次 ~60–100µs，launch 开销主导；xuvdb 采样本身在 host 侧（numpy API），CPU 绳零拷贝衔接。规模上 CUDA 的路径：批量绳（B×N 摊薄开销）或把整个子步循环融合成 quadrants kernel + kernel graph（genesis 1.4.x solver 的做法）。
 
 ## Grid solver / CFD / nozzle
 
