@@ -1,0 +1,228 @@
+# 80 平户型家务物品物理分类与生成路线
+#
+# 把 home_5s.yaml 任务涉及的物品按物理性质三分类（rigid / fragile_rigid /
+# soft_body），并为缺口资产指定生成路线：
+#   trimesh          程序化参数化网格（build_batches 指定批次生成器），
+#                    旋转体/组合体小件首选，尺寸精确、watertight、无网络依赖
+#   mesh_import      外部 mesh 导入（Objaverse 许可子集 / 已有资产库），
+#                    有机外形或线框镂空结构大件
+#   articulated_urdf 带关节刚体（门/抽屉/翻盖），参数化 URDF 拼装
+#   cloth_sim        Genesis 布料/XPBD 求解器 + 折叠态初始网格
+# 静态场景层（墙/地/柜体/水槽）不在物品层，走 xuvdb 整屋 SDF 烘焙
+# （outputs/wfc_sdf/ 的 home42.xuvdb 路线），见文末 scene_statics。
+#
+# 路线判定规则（评估结论）：
+#   - 薄壁物品（杯壁/盘缘/刀刃 ≤3mm）不做 xuvdb SDF：体素 ≥5mm 时薄壳消失
+#   - fragile_rigid = 普通刚体几何 + 冲击阈值判定 + Voronoi 预破碎碎片；
+#     SDF CSG 表达不了拓扑分离的碎片
+#   - soft_body 的环境碰撞走 vdb/rope_xpbd.py 的 SdfField 协议
+#     （XuvdbSdfField 包一层烘焙场）
+#   - 鸡蛋/果酱罐等库内已覆盖的易碎品直接用 covered_by 资产 + 破碎标注
+#
+# 校验：tests/data/test_home_physics_assets.py
+
+version: 1
+name: home-physics-assets
+description: 80 平家务物品物理分类（刚体/易碎刚体/柔软体）与生成路线（trimesh/mesh 导入/布料/xuvdb 场景场）映射
+object_library: assets/robotwin/objects/objects
+related_recipes: data/recipes/home_5s.yaml
+
+physics_kinds:
+  rigid: 耐用刚体，冲击下不产生碎片语义
+  fragile_rigid: 几何为刚体，带破碎语义（阈值判定 + 预破碎碎片切换）
+  soft_body: 必须形变（布料/XPBD），刚体近似与 SDF 均不适用
+
+generation_routes: [trimesh, mesh_import, articulated_urdf, cloth_sim]
+
+# dims_m 统一为 XYZ/Z-up；RoboTwin GLB 写出时对应为 [x, z, y]/Y-up。
+build_batches:
+  - {id: trimesh_batch_1, generator: tools/build_home_physics_assets.py,
+     output_dir: outputs/home_physics_assets/objects,
+     items: [glass_cup, dustpan, mop_bucket, sponge, hanger, clothes_clip]}
+
+dynamics_batches:
+  - {id: cup_fracture_v1, kind: voronoi_rigid_fracture, target: glass_cup,
+     generator: tools/build_home_dynamics_assets.py,
+     runtime: examples/household/fragile_cup_drop.py,
+     fragment_count: 12, impulse_threshold_Ns: 0.08, scene_rebuild: true}
+  - {id: household_cloth_v1, kind: genesis_pbd_cloth, items: [rag, towel],
+     generator: tools/build_home_dynamics_assets.py,
+     runtime: examples/household/pbd_cloth_drop.py, dt_s: 0.004, substeps: 10}
+
+zones: [玄关, 客厅, 餐厅, 厨房, 卧室, 卫生间, 阳台, 全屋]
+
+items:
+  # ---------------- 厨房 · 餐具（易碎刚体为主） ----------------
+  - {id: ceramic_bowl, name_zh: 陶瓷碗, zone: 厨房, physics_kind: fragile_rigid,
+     status: covered, covered_by: [002_bowl], related_tasks: [cabinet_tidy],
+     note: 库内已有；补冲击阈值 + Voronoi 碎片}
+  - {id: ceramic_plate, name_zh: 陶瓷盘, zone: 厨房, physics_kind: fragile_rigid,
+     status: covered, covered_by: [003_plate], related_tasks: [cabinet_tidy],
+     thin_walled: true, note: 盘缘 ~3mm，禁止走 SDF}
+  - {id: glass_cup, name_zh: 玻璃杯, zone: 厨房, physics_kind: fragile_rigid,
+     status: gap, route: trimesh, dims_m: [0.07, 0.07, 0.12],
+     related_tasks: [item_return, cabinet_tidy],
+     thin_walled: true, note: 杯壁 ~2mm，旋转体；021_cup 为近似占位}
+  - {id: mug, name_zh: 马克杯, zone: 厨房, physics_kind: fragile_rigid,
+     status: covered, covered_by: [039_mug], related_tasks: [item_return, cabinet_tidy],
+     note: 带把手，非旋转体；库内已有}
+  - {id: egg, name_zh: 鸡蛋（单枚）, zone: 厨房, physics_kind: fragile_rigid,
+     status: covered, covered_by: [166_egg_set], related_tasks: [cabinet_tidy],
+     note: 低阈值破碎，碎片不飞溅（蛋液可省略）}
+  - {id: jam_jar, name_zh: 玻璃果酱罐, zone: 厨房, physics_kind: fragile_rigid,
+     status: covered, covered_by: [031_jam-jar], related_tasks: [cabinet_tidy],
+     thin_walled: true, note: 玻璃罐身 + 金属盖}
+  - {id: pot_lid, name_zh: 锅盖, zone: 厨房, physics_kind: fragile_rigid,
+     status: covered, covered_by: [170_pot_lid], related_tasks: [cabinet_tidy],
+     thin_walled: true, note: 玻璃视窗易碎，金属包边}
+  - {id: chopsticks, name_zh: 筷子, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [164_chopsticks], related_tasks: [cabinet_tidy]}
+  - {id: soup_spoon, name_zh: 汤勺, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [173_spoon], related_tasks: [cabinet_tidy]}
+  - {id: kitchen_pot, name_zh: 不锈钢锅, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [060_kitchenpot], related_tasks: [cabinet_tidy]}
+  - {id: skillet, name_zh: 平底锅, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [106_skillet], related_tasks: [cabinet_tidy]}
+  - {id: steamer, name_zh: 蒸锅, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [067_steamer], related_tasks: [cabinet_tidy]}
+  - {id: kettle, name_zh: 烧水壶, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [009_kettle], related_tasks: [cabinet_tidy]}
+  - {id: kitchen_knife, name_zh: 菜刀, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [034_knife], related_tasks: [cabinet_tidy],
+     thin_walled: true, note: 刀刃 ~2mm；抓取注意刃口朝向约束}
+  - {id: cutting_board, name_zh: 砧板, zone: 厨房, physics_kind: rigid,
+     status: gap, route: trimesh, dims_m: [0.38, 0.25, 0.02],
+     related_tasks: [cabinet_tidy], note: 木质/塑料圆角矩形}
+  - {id: utensil_set, name_zh: 锅铲汤勺套装, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [149_kitchen_utensil_set], related_tasks: [cabinet_tidy]}
+  - {id: sauce_bottle, name_zh: 玻璃调味瓶, zone: 厨房, physics_kind: fragile_rigid,
+     status: covered, covered_by: [065_soy-sauce], related_tasks: [cabinet_tidy],
+     thin_walled: true, note: 065/066/029 同族；塑料款降为 rigid}
+  - {id: milk_box, name_zh: 利乐包牛奶, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [038_milk-box], related_tasks: [cabinet_tidy],
+     note: 纸盒近似刚体，空盒可压扁属进阶}
+  - {id: fridge, name_zh: 冰箱, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [125_fridge], related_tasks: [cabinet_tidy],
+     articulated: true, note: 双开门 prismatic 关节（关节语义见 asset_gap_list）}
+  - {id: microwave, name_zh: 微波炉, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [044_microwave], related_tasks: [cabinet_tidy],
+     articulated: true, note: 炉门翻盖关节}
+  - {id: oven, name_zh: 烤箱, zone: 厨房, physics_kind: rigid,
+     status: covered, covered_by: [016_oven], related_tasks: [cabinet_tidy],
+     articulated: true, note: 下拉门关节}
+
+  # ---------------- 清洁工具（刚体为主） ----------------
+  - {id: broom, name_zh: 扫帚, zone: 全屋, physics_kind: rigid,
+     status: covered, covered_by: [122_mop_broom_set], related_tasks: [countertop_cleaning],
+     note: 长杆件，长径比大，抓取点在中段}
+  - {id: dustpan, name_zh: 簸箕, zone: 全屋, physics_kind: rigid,
+     status: gap, route: trimesh, dims_m: [0.3, 0.28, 0.12],
+     related_tasks: [countertop_cleaning], note: 手柄 + 斗身组合体}
+  - {id: mop, name_zh: 拖把, zone: 全屋, physics_kind: rigid,
+     status: covered, covered_by: [122_mop_broom_set], related_tasks: [countertop_cleaning],
+     note: 布头为软体，首版可刚体近似}
+  - {id: mop_bucket, name_zh: 拖把桶, zone: 阳台, physics_kind: rigid,
+     status: gap, route: trimesh, dims_m: [0.48, 0.28, 0.3],
+     related_tasks: [countertop_cleaning], note: 双桶旋转拖桶，含脱水篮}
+  - {id: vacuum_cleaner, name_zh: 吸尘器, zone: 全屋, physics_kind: rigid,
+     status: gap, route: mesh_import, related_tasks: [countertop_cleaning],
+     note: 有机外形，trimesh 性价比低；软管为软体进阶}
+  - {id: toilet_brush, name_zh: 马桶刷, zone: 卫生间, physics_kind: rigid,
+     status: covered, covered_by: [137_toilet_brush], related_tasks: [countertop_cleaning]}
+  - {id: cleaner_spray, name_zh: 清洁剂瓶, zone: 全屋, physics_kind: rigid,
+     status: covered, covered_by: [096_cleaner], related_tasks: [countertop_cleaning]}
+  - {id: sponge, name_zh: 海绵擦, zone: 厨房, physics_kind: rigid,
+     status: gap, route: trimesh, dims_m: [0.11, 0.07, 0.04],
+     related_tasks: [countertop_cleaning], note: 高形变但小尺寸，刚体近似可接受}
+  - {id: rag, name_zh: 抹布, zone: 全屋, physics_kind: soft_body,
+     status: gap, route: cloth_sim, related_tasks: [countertop_cleaning],
+     note: 擦拭任务核心软体，折叠态初始网格}
+  - {id: tissue_box, name_zh: 纸巾盒, zone: 客厅, physics_kind: rigid,
+     status: covered, covered_by: [023_tissue-box], related_tasks: [item_return]}
+  - {id: roll_paper, name_zh: 卷纸, zone: 卫生间, physics_kind: rigid,
+     status: covered, covered_by: [028_roll-paper], related_tasks: [countertop_cleaning],
+     note: 中空圆柱，刚体近似}
+  - {id: soap, name_zh: 肥皂, zone: 卫生间, physics_kind: rigid,
+     status: covered, covered_by: [107_soap], related_tasks: [countertop_cleaning]}
+
+  # ---------------- 客厅/餐厅 ----------------
+  - {id: remote_control, name_zh: 遥控器, zone: 客厅, physics_kind: rigid,
+     status: covered, covered_by: [079_remotecontrol], related_tasks: [item_return]}
+  - {id: tray, name_zh: 托盘, zone: 客厅, physics_kind: rigid,
+     status: covered, covered_by: [008_tray], related_tasks: [item_return],
+     thin_walled: true}
+  - {id: fruit, name_zh: 水果, zone: 客厅, physics_kind: rigid,
+     status: covered, covered_by: [035_apple], related_tasks: [item_return],
+     note: 可压痕忽略，刚体近似}
+  - {id: table_trashbin, name_zh: 桌面垃圾桶, zone: 客厅, physics_kind: rigid,
+     status: covered, covered_by: [063_tabletrashbin], related_tasks: [countertop_cleaning]}
+  - {id: trashbin, name_zh: 垃圾桶, zone: 全屋, physics_kind: rigid,
+     status: covered, covered_by: [011_dustbin], related_tasks: [countertop_cleaning]}
+  - {id: storage_box, name_zh: 收纳箱, zone: 全屋, physics_kind: rigid,
+     status: covered, covered_by: [062_plasticbox], related_tasks: [declutter_storage]}
+  - {id: shoe_box, name_zh: 鞋盒, zone: 玄关, physics_kind: rigid,
+     status: covered, covered_by: [007_shoe-box], related_tasks: [declutter_storage]}
+
+  # ---------------- 卧室（柔软体集中区） ----------------
+  - {id: pillow, name_zh: 枕头, zone: 卧室, physics_kind: soft_body,
+     status: gap, route: cloth_sim, related_tasks: [bed_making],
+     note: 内部填充可简化为低刚度压力模型}
+  - {id: quilt, name_zh: 被子, zone: 卧室, physics_kind: soft_body,
+     status: gap, route: cloth_sim, related_tasks: [bed_making],
+     note: 铺平任务主力；折叠态初始网格 + 目标态评估}
+  - {id: bedsheet, name_zh: 床单, zone: 卧室, physics_kind: soft_body,
+     status: gap, route: cloth_sim, related_tasks: [bed_making],
+     note: 大面积极薄布料，床沿包覆约束}
+  - {id: blanket, name_zh: 毯子, zone: 卧室, physics_kind: soft_body,
+     status: gap, route: cloth_sim, related_tasks: [bed_making]}
+  - {id: cushion, name_zh: 靠垫, zone: 客厅, physics_kind: soft_body,
+     status: covered, covered_by: [094_rest], related_tasks: [item_return],
+     note: 以靠垫占位验证软体流程（home_5s 同款策略）}
+
+  # ---------------- 衣物洗护 ----------------
+  - {id: garment, name_zh: 衣物, zone: 卧室, physics_kind: soft_body,
+     status: gap, route: cloth_sim, related_tasks: [],
+     note: T恤/裤/袜，叠放与挂取两类任务}
+  - {id: towel, name_zh: 毛巾, zone: 卫生间, physics_kind: soft_body,
+     status: gap, route: cloth_sim, related_tasks: [countertop_cleaning]}
+  - {id: garbage_bag, name_zh: 垃圾袋, zone: 全屋, physics_kind: soft_body,
+     status: gap, route: cloth_sim, related_tasks: [countertop_cleaning],
+     thin_walled: true, note: 薄壳大形变，套袋任务难度最高档}
+  - {id: plastic_bag, name_zh: 塑料袋, zone: 厨房, physics_kind: soft_body,
+     status: gap, route: cloth_sim, related_tasks: [declutter_storage],
+     thin_walled: true}
+  - {id: hanger, name_zh: 衣架, zone: 阳台, physics_kind: rigid,
+     status: gap, route: trimesh, dims_m: [0.42, 0.10, 0.23],
+     related_tasks: [], note: 三角撑线框，管状体放样；挂取衣物任务配合 garment}
+  - {id: clothes_clip, name_zh: 衣夹, zone: 阳台, physics_kind: rigid,
+     status: gap, route: trimesh, dims_m: [0.085, 0.025, 0.035],
+     related_tasks: [], note: 弹簧夹捏取，小尺寸}
+  - {id: laundry_basket, name_zh: 脏衣篮, zone: 阳台, physics_kind: rigid,
+     status: gap, route: trimesh, dims_m: [0.45, 0.35, 0.55],
+     related_tasks: [], note: 镂空网眼结构，视觉可实心近似}
+  - {id: detergent_bottle, name_zh: 洗衣液瓶, zone: 阳台, physics_kind: rigid,
+     status: gap, route: mesh_import, related_tasks: [],
+     note: 有机外形 + 把手，trimesh 性价比低}
+  - {id: washing_machine, name_zh: 洗衣机, zone: 阳台, physics_kind: rigid,
+     status: gap, route: articulated_urdf, related_tasks: [],
+     note: 滚筒门 revolute 关节；有机外形建议外部 mesh + 关节 URDF 拼装}
+
+  # ---------------- 卫浴易碎/固定件 ----------------
+  - {id: mirror, name_zh: 镜子, zone: 卫生间, physics_kind: fragile_rigid,
+     status: gap, route: mesh_import, related_tasks: [],
+     thin_walled: true, note: 壁挂静态陈设为主，抓握场景少}
+  - {id: toothbrush_set, name_zh: 牙刷架套装, zone: 卫生间, physics_kind: rigid,
+     status: covered, covered_by: [154_toothbrush_set], related_tasks: [item_return]}
+
+# ---------------- 静态场景层（xuvdb 整屋 SDF 烘焙，不属于物品） ----------------
+scene_statics:
+  - {id: floor_walls, name_zh: 地面/墙面/吊顶, zone: 全屋, route: xuvdb_sdf_bake,
+     voxel_size_m: 0.02, note: WFC 户型 → 烘焙（home42.xuvdb 路线），体素 10-20mm}
+  - {id: countertop, name_zh: 厨房台面, zone: 厨房, route: xuvdb_sdf_bake,
+     voxel_size_m: 0.01, note: 放置/推扫接触面，分辨率取高}
+  - {id: sink_basin, name_zh: 水槽/台盆, zone: 厨房, route: xuvdb_sdf_bake,
+     voxel_size_m: 0.005, note: 洗碗任务容器，薄壁 + 小特征需细栅格}
+  - {id: wardrobe_cabinet, name_zh: 衣柜/橱柜柜体, zone: 全屋, route: xuvdb_sdf_bake,
+     voxel_size_m: 0.02, note: 门板仍为 articulated 物品（036/126），此处仅柜体}
+  - {id: windowsill, name_zh: 窗台/晾衣杆, zone: 阳台, route: xuvdb_sdf_bake,
+     voxel_size_m: 0.01, note: 晾衣杆也可用解析圆柱场替代，省栅格}

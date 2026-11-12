@@ -297,8 +297,8 @@ class RoboTwinObjectLibrary:
                     pos=pos,
                     scale=urdf_scale,
                     fixed=False,
-                    material=_resolve_robotwin_material(class_name),
                 ),
+                material=_resolve_robotwin_material(class_name),
                 surface=gs.surfaces.Default(roughness=0.6),
             )
             return entity
@@ -322,10 +322,8 @@ class RoboTwinObjectLibrary:
         if quat is not None:
             kwargs["quat"] = quat
         entity = scene.add_entity(
-            gs.morphs.Mesh(
-                **kwargs,
-                material=_resolve_robotwin_material(class_name),
-            ),
+            gs.morphs.Mesh(**kwargs),
+            material=_resolve_robotwin_material(class_name),
             surface=gs.surfaces.Default(roughness=0.6),
         )
         return entity

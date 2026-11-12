@@ -95,25 +95,27 @@ def test_resolve_robotwin_material_unknown_class() -> None:
 
 
 def test_spawn_mesh_passes_material(
-    fake_library: RoboTwinObjectLibrary, tmp_path: Path
+    fake_library: RoboTwinObjectLibrary,
 ) -> None:
-    """spawn_in_scene forwards a resolved material to gs.morphs.Mesh."""
+    """Mesh material belongs to Scene.add_entity, not gs.morphs.Mesh."""
     pytest.importorskip("robomat")
     fake_gs = _fake_gs_module()
-    scene = SimpleNamespace(add_entity=lambda morph, surface=None: morph)
+    scene = SimpleNamespace(
+        add_entity=mock.Mock(side_effect=lambda morph, **kwargs: morph)
+    )
 
     with mock.patch.dict(sys.modules, {"genesis": fake_gs, "trimesh": None}):
         fake_library.spawn_in_scene(scene, "021_cup", pos=(0.0, 0.0, 0.0))
 
     assert len(fake_gs.morphs.Mesh.calls) == 1
-    call = fake_gs.morphs.Mesh.calls[0]
-    assert "material" in call
+    assert "material" not in fake_gs.morphs.Mesh.calls[0]
+    call = scene.add_entity.call_args.kwargs
     assert call["material"] is not None
     assert call["material"].rho > 0
 
 
 def test_spawn_urdf_passes_material(tmp_path: Path) -> None:
-    """spawn_in_scene forwards a resolved material to gs.morphs.URDF."""
+    """URDF material belongs to Scene.add_entity, not gs.morphs.URDF."""
     pytest.importorskip("robomat")
     class_dir = tmp_path / "009_kettle"
     sub = class_dir / "102730"
@@ -123,14 +125,16 @@ def test_spawn_urdf_passes_material(tmp_path: Path) -> None:
     lib = RoboTwinObjectLibrary(tmp_path)
 
     fake_gs = _fake_gs_module()
-    scene = SimpleNamespace(add_entity=lambda morph, surface=None: morph)
+    scene = SimpleNamespace(
+        add_entity=mock.Mock(side_effect=lambda morph, **kwargs: morph)
+    )
 
     with mock.patch.dict(sys.modules, {"genesis": fake_gs}):
         lib.spawn_in_scene(scene, "009_kettle", pos=(0.0, 0.0, 0.0))
 
     assert len(fake_gs.morphs.URDF.calls) == 1
-    call = fake_gs.morphs.URDF.calls[0]
-    assert "material" in call
+    assert "material" not in fake_gs.morphs.URDF.calls[0]
+    call = scene.add_entity.call_args.kwargs
     assert call["material"] is not None
 
 
@@ -139,7 +143,9 @@ def test_spawn_falls_back_when_robomat_unavailable(
 ) -> None:
     """If robomat cannot be imported, spawn still works with material=None."""
     fake_gs = _fake_gs_module()
-    scene = SimpleNamespace(add_entity=lambda morph, surface=None: morph)
+    scene = SimpleNamespace(
+        add_entity=mock.Mock(side_effect=lambda morph, **kwargs: morph)
+    )
 
     with mock.patch.dict(
         sys.modules, {"robomat": None, "genesis": fake_gs, "trimesh": None}
@@ -147,4 +153,5 @@ def test_spawn_falls_back_when_robomat_unavailable(
         fake_library.spawn_in_scene(scene, "021_cup", pos=(0.0, 0.0, 0.0))
 
     assert len(fake_gs.morphs.Mesh.calls) == 1
-    assert fake_gs.morphs.Mesh.calls[0]["material"] is None
+    assert "material" not in fake_gs.morphs.Mesh.calls[0]
+    assert scene.add_entity.call_args.kwargs["material"] is None

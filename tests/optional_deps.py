@@ -29,6 +29,7 @@ HAS_NUMPY = has_module("numpy")
 HAS_MCP = has_module("mcp")
 HAS_REDIS = has_module("redis")
 HAS_XUVDB = has_module("xuvdb")
+HAS_MANIFOLD3D = has_module("manifold3d")
 HAS_RSL_RL = has_module("rsl_rl")
 HAS_ONNX = has_module("onnx")
 HAS_ONNXRUNTIME = has_module("onnxruntime")
@@ -38,6 +39,9 @@ HAS_UNI_ROBOT_AGENT = has_module("uni_robot_agent")
 genesis_only = pytest.mark.skipif(not HAS_GENESIS, reason="genesis-world not installed")
 torch_only = pytest.mark.skipif(not HAS_TORCH, reason="torch not installed")
 xuvdb_only = pytest.mark.skipif(not HAS_XUVDB, reason="xuvdb not installed")
+fracture_only = pytest.mark.skipif(
+    not HAS_MANIFOLD3D, reason="fracture extra not installed (manifold3d)"
+)
 rsl_rl_only = pytest.mark.skipif(not HAS_RSL_RL, reason="rsl-rl-lib not installed")
 deploy_only = pytest.mark.skipif(
     not (HAS_ONNX and HAS_ONNXRUNTIME and HAS_ONNXCONVERTER_COMMON),

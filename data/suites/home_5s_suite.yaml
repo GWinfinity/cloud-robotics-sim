@@ -11,6 +11,7 @@ recipes:
   - ../recipes/home_5s.yaml
   - ../recipes/asset_gap_list.yaml  # 收纳资产缺口登记（补库路线图）
   - ../recipes/asset_upgrade_list.yaml  # 高保真升级清单（场景同框组织）
+  - ../recipes/home_physics_assets.yaml  # 物品物理分类（刚体/易碎/柔软）与生成路线
 
 assets:
   object_library: assets/robotwin/objects/objects

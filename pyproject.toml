@@ -117,6 +117,11 @@ xuvdb = [
     "xuvdb>=1.4.0,<1.5",
 ]
 
+# Offline watertight Voronoi fragment generation for the household fracture tool.
+fracture = [
+    "manifold3d>=3.0,<4",
+]
+
 # LEAP71 ShapeKernel Python port (sibling checkout) for the wfc_scenes SDF
 # bridge (plugins/scenes/wfc_scenes/sdf_bake.py). Guarded like robomat: the
 # plugin only needs it inside shapekernel_prims_to_sdf, and the uv source
@@ -150,7 +155,7 @@ agent = [
 ]
 
 all = [
-    "cloud-robotics-sim[dev,docs,k8s,cad,xuvdb,deploy,agent]",
+    "cloud-robotics-sim[dev,docs,k8s,cad,xuvdb,fracture,deploy,agent]",
 ]
 
 [[tool.uv.index]]
