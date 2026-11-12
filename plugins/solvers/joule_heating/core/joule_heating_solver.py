@@ -75,6 +75,12 @@ class JouleHeatingSolver(Solver):
         self._direct_solver_cache: dict[str, object] | None = None
         self._direct_v_cache: np.ndarray | None = None
         self._initial_temperature = options.initial_temperature
+        self._dynamic_routing = bool(options.dynamic_routing)
+        self._route_enabled = False
+        self._route: qd.Field | None = None
+        self._route_dirty: qd.Field | None = None
+        self._route_part: qd.Field | None = None
+        self._route_dirty_np = np.zeros(1, dtype=np.int32)
 
         self._V: qd.Field | None = None
         self._V_tmp: qd.Field | None = None
@@ -177,6 +183,31 @@ class JouleHeatingSolver(Solver):
 
         self._entities.append(_JouleHeatingEntityMarker())
         self._check_stability()
+
+        # Dynamic routing of the fused Jacobi solve (Steel-style per-env skip,
+        # see 'substep_pre_coupling' and the plugin README). Disabled in
+        # differentiable scenes (the recorded fixed-iteration tape must match
+        # the forward exactly) and with the direct solver. The frozen-slot
+        # invariant relies on the non-grad frame protocol: the local frame is
+        # always 0, frame 1 receives the write, and the simulator rolls frame 1
+        # into frame 0 after every substep, so an env that skips the write
+        # already holds the rolled-forward value in its frame-1 slot.
+        self._route_enabled = (
+            self._dynamic_routing
+            and not self._scene.requires_grad
+            and self._solver_type == "jacobi"
+        )
+        if self._route_enabled:
+            self._route = qd.field(gs.qd_int, shape=(self._B,))
+            self._route_dirty = qd.field(gs.qd_int, shape=(self._B,))
+            part_shape = (
+                (self._B, self._nx) if self._dim == 2 else (self._B, self._nx, self._ny)
+            )
+            self._route_part = qd.field(gs.qd_float, shape=part_shape)
+            ones = np.ones(self._B, dtype=np.int32)
+            self._route.from_numpy(ones)
+            self._route_dirty.from_numpy(ones)
+            self._route_dirty_np = ones.copy()
 
     def _init_voltage(self) -> None:
         """Initialize the potential field to the Dirichlet boundary value."""
@@ -529,6 +560,7 @@ class JouleHeatingSolver(Solver):
         ).copy()
         self._V.from_numpy(full)
         self._direct_v_cache = None
+        self._mark_route_dirty()
 
     def get_current_density(self) -> np.ndarray:
         """Return the current-density vector field [A/m²]."""
@@ -595,6 +627,7 @@ class JouleHeatingSolver(Solver):
             sigma = np.broadcast_to(sigma, (self._B, *self._shape)).copy()
         self._sigma.from_numpy(sigma)
         self._invalidate_direct_solver_cache()
+        self._mark_route_dirty()
 
     def set_voltage_boundary(self, name: str, value: float) -> None:
         """Apply a Dirichlet voltage to one domain face.
@@ -648,6 +681,7 @@ class JouleHeatingSolver(Solver):
         self._voltage_boundary_mask.from_numpy(mask)
         self._boundary_voltage_field.from_numpy(boundary_values)
         self._invalidate_direct_solver_cache()
+        self._mark_route_dirty()
 
     def _set_scalar_param(
         self, field: qd.Field | None, attr_name: str, value: float
@@ -723,7 +757,12 @@ class JouleHeatingSolver(Solver):
         else:
             # Use the fused forward kernel to avoid Python dispatch overhead
             # for each Jacobi iteration.
-            if self._dim == 2:
+            if self._route_enabled:
+                if self._dim == 2:
+                    self._solve_v_2d_routed(f)
+                else:
+                    self._solve_v_3d_routed(f)
+            elif self._dim == 2:
                 self._solve_v_2d(f)
             else:
                 self._solve_v_3d(f)
@@ -769,6 +808,12 @@ class JouleHeatingSolver(Solver):
             else:
                 self._heat_step_3d(f)
 
+        # Refresh the per-env route flags from this solve's convergence, for
+        # the next substep to consume. Runs after J/Q and the heat step: both
+        # read the fields the delta reduction compares.
+        if self._route_enabled:
+            self._update_route(f)
+
     def _jacobi_solve_v(self, f: int) -> None:
         """Unfixed Jacobi solve: one recorded launch per iteration."""
         self._copy_v_to_tmp(f)
@@ -778,6 +823,45 @@ class JouleHeatingSolver(Solver):
             else:
                 self._jacobi_step_v_3d()
         self._copy_tmp_to_v(f)
+
+    def _mark_route_dirty(self) -> None:
+        """Force every environment back onto the Jacobi solve next substep.
+
+        Called by the setters that change an input of the electric solve
+        (voltage field, conductivity, voltage boundaries, state). The flag is
+        OR-ed into the route by '_update_route' and cleared there; the host
+        mirror tracks pending excitations between substeps.
+        """
+        if not self._route_enabled:
+            return
+        self._route_dirty_np[:] = 1
+        self._route_dirty.from_numpy(self._route_dirty_np)
+
+    def _update_route(self, f: int) -> None:
+        """Recompute the per-env route flags from the last solve's convergence.
+
+        An environment stays routed while its max |ΔV| across the last solve
+        is at or above ``tol``; it freezes (bit-exact carry-over) once the
+        solve converged, until a setter marks it dirty again.
+        """
+        if self._dim == 2:
+            self._route_delta_part_2d(f)
+            self._update_route_2d()
+        else:
+            self._route_delta_part_3d(f)
+            self._update_route_3d()
+        # The device flag was consumed (and cleared) by the update kernel.
+        self._route_dirty_np[:] = 0
+
+    def get_route(self) -> np.ndarray:
+        """Return the per-env routing flags of the last substep.
+
+        1 = the environment ran the Jacobi solve, 0 = it was frozen and its
+        field carried over bit-exactly.
+        """
+        if not self._route_enabled or self._route is None:
+            raise RuntimeError("dynamic routing is not enabled on this solver")
+        return self._route.to_numpy().copy()
 
     def substep_pre_coupling_grad(self, f: int) -> None:
         """Manually reverse one recorded substep (plugin gradient API).
@@ -899,6 +983,7 @@ class JouleHeatingSolver(Solver):
             t_arr = self._T.to_numpy()
             t_arr[0] = np.moveaxis(state["T"], 0, -1)
             self._T.from_numpy(t_arr)
+        self._mark_route_dirty()
 
     def add_grad_from_state(self, grads, selection) -> None:
         return
@@ -1098,6 +1183,146 @@ class JouleHeatingSolver(Solver):
                     + sigma_z * self._V_tmp[i_b, i, j, kp]
                     + sigma_zm * self._V_tmp[i_b, i, j, km]
                 ) / denom
+
+    @qd.kernel
+    def _solve_v_2d_routed(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Fused forward Jacobi solve with per-env dynamic routing.
+
+        Same sweeps as ``_solve_v_2d``, but environments whose route flag is 0
+        skip the copy-in, every sweep, and the copy-back: the simulator copies
+        frame 1 into frame 0 after every substep, so a frozen environment's
+        frame-1 slot already holds the rolled-forward value and the field
+        carries over bit-exactly (see the plugin README, "Dynamic routing").
+        """
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            if self._route[i_b] == 1:
+                self._V_tmp[i_b, i, j] = self._V[f, i, j, i_b]
+        for _ in range(self._max_iter):
+            for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+                if self._route[i_b] == 1:
+                    if self._voltage_boundary_mask[i_b, i, j] == 1:
+                        self._V_tmp[i_b, i, j] = self._boundary_voltage_field[i_b, i, j]
+                    else:
+                        im = i - 1 if i > 0 else i
+                        ip = i + 1 if i < self._nx - 1 else i
+                        jm = j - 1 if j > 0 else j
+                        jp = j + 1 if j < self._ny - 1 else j
+                        s_c = self._sigma[i_b, i, j]
+                        s_ip = self._sigma[i_b, ip, j]
+                        s_im = self._sigma[i_b, im, j]
+                        s_jp = self._sigma[i_b, i, jp]
+                        s_jm = self._sigma[i_b, i, jm]
+                        sigma_x = 2.0 * s_c * s_ip / (s_c + s_ip + 1e-10)
+                        sigma_xm = 2.0 * s_c * s_im / (s_c + s_im + 1e-10)
+                        sigma_y = 2.0 * s_c * s_jp / (s_c + s_jp + 1e-10)
+                        sigma_ym = 2.0 * s_c * s_jm / (s_c + s_jm + 1e-10)
+                        denom = sigma_x + sigma_xm + sigma_y + sigma_ym + 1e-10
+                        self._V_tmp[i_b, i, j] = (
+                            sigma_x * self._V_tmp[i_b, ip, j]
+                            + sigma_xm * self._V_tmp[i_b, im, j]
+                            + sigma_y * self._V_tmp[i_b, i, jp]
+                            + sigma_ym * self._V_tmp[i_b, i, jm]
+                        ) / denom
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            if self._route[i_b] == 1:
+                self._V[f + 1, i, j, i_b] = self._V_tmp[i_b, i, j]
+
+    @qd.kernel
+    def _solve_v_3d_routed(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """3D counterpart of ``_solve_v_2d_routed``."""
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            if self._route[i_b] == 1:
+                self._V_tmp[i_b, i, j, k] = self._V[f, i, j, k, i_b]
+        for _ in range(self._max_iter):
+            for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+                if self._route[i_b] == 1:
+                    if self._voltage_boundary_mask[i_b, i, j, k] == 1:
+                        self._V_tmp[i_b, i, j, k] = self._boundary_voltage_field[
+                            i_b, i, j, k
+                        ]
+                    else:
+                        im = i - 1 if i > 0 else i
+                        ip = i + 1 if i < self._nx - 1 else i
+                        jm = j - 1 if j > 0 else j
+                        jp = j + 1 if j < self._ny - 1 else j
+                        km = k - 1 if k > 0 else k
+                        kp = k + 1 if k < self._nz - 1 else k
+                        s_c = self._sigma[i_b, i, j, k]
+                        s_ip = self._sigma[i_b, ip, j, k]
+                        s_im = self._sigma[i_b, im, j, k]
+                        s_jp = self._sigma[i_b, i, jp, k]
+                        s_jm = self._sigma[i_b, i, jm, k]
+                        s_kp = self._sigma[i_b, i, j, kp]
+                        s_km = self._sigma[i_b, i, j, km]
+                        sigma_x = 2.0 * s_c * s_ip / (s_c + s_ip + 1e-10)
+                        sigma_xm = 2.0 * s_c * s_im / (s_c + s_im + 1e-10)
+                        sigma_y = 2.0 * s_c * s_jp / (s_c + s_jp + 1e-10)
+                        sigma_ym = 2.0 * s_c * s_jm / (s_c + s_jm + 1e-10)
+                        sigma_z = 2.0 * s_c * s_kp / (s_c + s_kp + 1e-10)
+                        sigma_zm = 2.0 * s_c * s_km / (s_c + s_km + 1e-10)
+                        denom = (
+                            sigma_x
+                            + sigma_xm
+                            + sigma_y
+                            + sigma_ym
+                            + sigma_z
+                            + sigma_zm
+                            + 1e-10
+                        )
+                        self._V_tmp[i_b, i, j, k] = (
+                            sigma_x * self._V_tmp[i_b, ip, j, k]
+                            + sigma_xm * self._V_tmp[i_b, im, j, k]
+                            + sigma_y * self._V_tmp[i_b, i, jp, k]
+                            + sigma_ym * self._V_tmp[i_b, i, jm, k]
+                            + sigma_z * self._V_tmp[i_b, i, j, kp]
+                            + sigma_zm * self._V_tmp[i_b, i, j, km]
+                        ) / denom
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            if self._route[i_b] == 1:
+                self._V[f + 1, i, j, k, i_b] = self._V_tmp[i_b, i, j, k]
+
+    @qd.kernel
+    def _route_delta_part_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Per-env max |ΔV| of the last solve, one partial reduced per grid row."""
+        for i, i_b in qd.ndrange(self._nx, self._B):
+            m = gs.qd_float(0.0)
+            for j in range(self._ny):
+                d = self._V[f + 1, i, j, i_b] - self._V[f, i, j, i_b]
+                m = qd.max(m, qd.max(d, -d))
+            self._route_part[i_b, i] = m
+
+    @qd.kernel
+    def _route_delta_part_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """3D counterpart of ``_route_delta_part_2d`` (part shape (B, nx, ny))."""
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            m = gs.qd_float(0.0)
+            for k in range(self._nz):
+                d = self._V[f + 1, i, j, k, i_b] - self._V[f, i, j, k, i_b]
+                m = qd.max(m, qd.max(d, -d))
+            self._route_part[i_b, i, j] = m
+
+    @qd.kernel
+    def _update_route_2d(self):  # type: ignore[no-untyped-def]
+        """Fold the per-env delta and the dirty flags into the route flags."""
+        for i_b in qd.ndrange(self._B):
+            m = gs.qd_float(0.0)
+            for i in range(self._nx):
+                m = qd.max(m, self._route_part[i_b, i])
+            needs_work = qd.cast(m >= self._tol, gs.qd_int)
+            self._route[i_b] = qd.max(self._route_dirty[i_b], needs_work)
+            self._route_dirty[i_b] = 0
+
+    @qd.kernel
+    def _update_route_3d(self):  # type: ignore[no-untyped-def]
+        """3D counterpart of ``_update_route_2d``."""
+        for i_b in qd.ndrange(self._B):
+            m = gs.qd_float(0.0)
+            for i in range(self._nx):
+                for j in range(self._ny):
+                    m = qd.max(m, self._route_part[i_b, i, j])
+            needs_work = qd.cast(m >= self._tol, gs.qd_int)
+            self._route[i_b] = qd.max(self._route_dirty[i_b], needs_work)
+            self._route_dirty[i_b] = 0
 
     @qd.kernel
     def _compute_j_2d(self):  # type: ignore[no-untyped-def]

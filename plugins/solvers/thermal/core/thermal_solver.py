@@ -169,6 +169,13 @@ class ThermalSolver(Solver):
         self._solver_type = options.solver_type
         self._initial_temperature = options.initial_temperature
         self._max_sources = int(options.max_sources)
+        self._dynamic_routing = bool(options.dynamic_routing)
+        self._routing_tol = float(options.routing_tol)
+        self._route_enabled = False
+        self._route: qd.Field | None = None
+        self._route_dirty: qd.Field | None = None
+        self._route_part: qd.Field | None = None
+        self._route_dirty_np = np.zeros(1, dtype=np.int32)
 
         self._T: qd.Field | None = None
         self._n_frames: int = 1
@@ -219,7 +226,11 @@ class ThermalSolver(Solver):
         # substep in two frames (see 'Solver.has_frames').
         self._n_frames = self._sim.substeps + 1 if self._sim.requires_grad else 2
         full_shape = (self._n_frames, *self._shape, self._B)
-        self._T = qd.field(dtype=gs.qd_float, shape=full_shape, needs_grad=True)
+        self._T = qd.field(
+            dtype=gs.qd_float,
+            shape=full_shape,
+            needs_grad=self._scene.requires_grad,
+        )
 
         init = self._make_initial_array()
         # Field layout is (frames, *grid, B): move the batch axis last.
@@ -264,6 +275,31 @@ class ThermalSolver(Solver):
         self._sync_source_temperatures_to_device()
 
         self._check_stability()
+
+        # Dynamic routing of the transient update (Steel-style per-env skip,
+        # see 'substep_pre_coupling' and the plugin README). Disabled in
+        # differentiable scenes (the recorded tape must match the forward) and
+        # in steady mode. The frozen-slot invariant relies on the non-grad
+        # frame protocol: the local frame is always 0, frame 1 receives the
+        # write, and the simulator rolls frame 1 into frame 0 after every
+        # substep, so an env that skips the write already holds the
+        # rolled-forward value in its frame-1 slot.
+        self._route_enabled = (
+            self._dynamic_routing
+            and not self._scene.requires_grad
+            and self._solver_type != "steady"
+        )
+        if self._route_enabled:
+            self._route = qd.field(gs.qd_int, shape=(self._B,))
+            self._route_dirty = qd.field(gs.qd_int, shape=(self._B,))
+            part_shape = (
+                (self._B, self._nx) if self._dim == 2 else (self._B, self._nx, self._ny)
+            )
+            self._route_part = qd.field(gs.qd_float, shape=part_shape)
+            ones = np.ones(self._B, dtype=np.int32)
+            self._route.from_numpy(ones)
+            self._route_dirty.from_numpy(ones)
+            self._route_dirty_np = ones.copy()
 
     def _allocate_source_fields(self) -> None:
         """Allocate quadrants fields used for entity-to-grid coupling."""
@@ -361,6 +397,47 @@ class ThermalSolver(Solver):
                 "Reduce dt, increase dx, or lower alpha."
             )
 
+    def _mark_route_dirty(self) -> None:
+        """Force every environment back onto the transient update next substep.
+
+        Called by the setters that can change an environment's thermal state
+        (temperature field, checkpointed state, source structure). The flag is
+        OR-ed into the route by '_update_route' and cleared there; the host
+        mirror tracks pending excitations between substeps.
+        """
+        if not self._route_enabled:
+            return
+        self._route_dirty_np[:] = 1
+        self._route_dirty.from_numpy(self._route_dirty_np)
+
+    def _update_route(self, f: int) -> None:
+        """Recompute the per-env route flags from the last update's stationarity.
+
+        An environment stays routed while its max |ΔT| across the last update
+        is at or above ``routing_tol`` or any heat source is active (source
+        coupling may touch any environment's field); it freezes (bit-exact
+        carry-over) once stationary and source-free, until a setter marks it
+        dirty again.
+        """
+        if self._dim == 2:
+            self._route_delta_part_2d(f)
+            self._update_route_2d()
+        else:
+            self._route_delta_part_3d(f)
+            self._update_route_3d()
+        # The device flag was consumed (and cleared) by the update kernel.
+        self._route_dirty_np[:] = 0
+
+    def get_route(self) -> np.ndarray:
+        """Return the per-env routing flags of the last substep.
+
+        1 = the environment ran the transient update, 0 = it was frozen and
+        its field carried over bit-exactly.
+        """
+        if not self._route_enabled or self._route is None:
+            raise RuntimeError("dynamic routing is not enabled on this solver")
+        return self._route.to_numpy().copy()
+
     # --------------------------------------------------------------------------
     # Public accessors
     # --------------------------------------------------------------------------
@@ -396,6 +473,7 @@ class ThermalSolver(Solver):
             (self._n_frames, *self._shape, self._B),
         ).copy()
         self._T.from_numpy(full)
+        self._mark_route_dirty()
 
     def get_source_temperature_grad(self, slot: int) -> np.ndarray | None:
         """Return the per-environment gradient of a scalar loss w.r.t. source body temperature.
@@ -504,6 +582,7 @@ class ThermalSolver(Solver):
             # Solver already built: upload metadata and initial temperature.
             self._sync_source_metadata_to_device()
             self._sync_source_temperatures_to_device()
+        self._mark_route_dirty()
 
         return source
 
@@ -515,6 +594,7 @@ class ThermalSolver(Solver):
         if slot is not None and self._T is not None:
             self._source_active_np[slot] = 0
             self._sync_source_metadata_to_device()
+        self._mark_route_dirty()
 
     def _apply_sources(self) -> None:
         """Apply energy-conserving two-way thermal coupling via quadrants kernels.
@@ -629,17 +709,31 @@ class ThermalSolver(Solver):
         if self._solver_type == "steady":
             return
         if self._dim == 2:
-            self._step_transient_2d_interior(f)
-            if self._is_dirichlet:
-                self._step_transient_2d_boundary_dirichlet(f)
+            if self._route_enabled:
+                self._step_transient_2d_interior_routed(f)
+                if self._is_dirichlet:
+                    self._step_transient_2d_boundary_dirichlet_routed(f)
+                else:
+                    self._step_transient_2d_boundary_neumann_routed(f)
             else:
-                self._step_transient_2d_boundary_neumann(f)
+                self._step_transient_2d_interior(f)
+                if self._is_dirichlet:
+                    self._step_transient_2d_boundary_dirichlet(f)
+                else:
+                    self._step_transient_2d_boundary_neumann(f)
         elif self._dim == 3:
-            self._step_transient_3d_interior(f)
-            if self._is_dirichlet:
-                self._step_transient_3d_boundary_dirichlet(f)
+            if self._route_enabled:
+                self._step_transient_3d_interior_routed(f)
+                if self._is_dirichlet:
+                    self._step_transient_3d_boundary_dirichlet_routed(f)
+                else:
+                    self._step_transient_3d_boundary_neumann_routed(f)
             else:
-                self._step_transient_3d_boundary_neumann(f)
+                self._step_transient_3d_interior(f)
+                if self._is_dirichlet:
+                    self._step_transient_3d_boundary_dirichlet(f)
+                else:
+                    self._step_transient_3d_boundary_neumann(f)
         # The source coupling is gradient-free (see the @no_grad kernels in
         # _apply_sources); grouping its launches into one recorded entry with
         # no backward keeps the autodiff tape from trying to reverse the
@@ -647,6 +741,11 @@ class ThermalSolver(Solver):
         # launches overwrote.
         with custom_backward(None):
             self._apply_sources()
+        # Refresh the per-env route flags from this update's stationarity, for
+        # the next substep to consume. Runs after the source coupling so the
+        # delta also covers source-driven changes.
+        if self._route_enabled:
+            self._update_route(f)
 
     def substep_post_coupling(self, f: int) -> None:
         pass
@@ -696,6 +795,7 @@ class ThermalSolver(Solver):
             else:
                 source.temperature = source._initial_temperature
         self._sync_source_temperatures_to_device()
+        self._mark_route_dirty()
 
     def add_grad_from_state(self, grads, selection) -> None:
         """Seed the frame-0 field adjoint with the gradients of a queried state.
@@ -889,6 +989,170 @@ class ThermalSolver(Solver):
                     - 6.0 * self._T[f, i, j, k, i_b]
                 )
                 self._T[f + 1, i, j, k, i_b] = self._T[f, i, j, k, i_b] + r * lap
+
+    @qd.kernel
+    def _step_transient_2d_interior_routed(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Routed interior update: frozen envs skip the write (see README)."""
+        for i, j, i_b in qd.ndrange(self._nx - 2, self._ny - 2, self._B):
+            if self._route[i_b] == 1:
+                r = self._alpha * self._substep_dt / (self._dx * self._dx)
+                ii = i + 1
+                jj = j + 1
+                self._T[f + 1, ii, jj, i_b] = self._T[f, ii, jj, i_b] + r * (
+                    self._T[f, ii + 1, jj, i_b]
+                    + self._T[f, ii - 1, jj, i_b]
+                    + self._T[f, ii, jj + 1, i_b]
+                    + self._T[f, ii, jj - 1, i_b]
+                    - 4.0 * self._T[f, ii, jj, i_b]
+                )
+
+    @qd.kernel
+    def _step_transient_2d_boundary_dirichlet_routed(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Routed Dirichlet boundary update (constant; frozen envs keep it)."""
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            if self._route[i_b] == 1:
+                if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
+                    self._T[f + 1, i, j, i_b] = self._boundary_value
+
+    @qd.kernel
+    def _step_transient_2d_boundary_neumann_routed(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Routed Neumann boundary update."""
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            if self._route[i_b] == 1:
+                if i == 0 or i == self._nx - 1 or j == 0 or j == self._ny - 1:
+                    r = self._alpha * self._substep_dt / (self._dx * self._dx)
+                    im = qd.max(i - 1, 0)
+                    ip = qd.min(i + 1, self._nx - 1)
+                    jm = qd.max(j - 1, 0)
+                    jp = qd.min(j + 1, self._ny - 1)
+                    lap = (
+                        self._T[f, ip, j, i_b]
+                        + self._T[f, im, j, i_b]
+                        + self._T[f, i, jp, i_b]
+                        + self._T[f, i, jm, i_b]
+                        - 4.0 * self._T[f, i, j, i_b]
+                    )
+                    self._T[f + 1, i, j, i_b] = self._T[f, i, j, i_b] + r * lap
+
+    @qd.kernel
+    def _step_transient_3d_interior_routed(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Routed 3D interior update."""
+        for i, j, k, i_b in qd.ndrange(
+            self._nx - 2, self._ny - 2, self._nz - 2, self._B
+        ):
+            if self._route[i_b] == 1:
+                r = self._alpha * self._substep_dt / (self._dx * self._dx)
+                ii = i + 1
+                jj = j + 1
+                kk = k + 1
+                self._T[f + 1, ii, jj, kk, i_b] = self._T[f, ii, jj, kk, i_b] + r * (
+                    self._T[f, ii + 1, jj, kk, i_b]
+                    + self._T[f, ii - 1, jj, kk, i_b]
+                    + self._T[f, ii, jj + 1, kk, i_b]
+                    + self._T[f, ii, jj - 1, kk, i_b]
+                    + self._T[f, ii, jj, kk + 1, i_b]
+                    + self._T[f, ii, jj, kk - 1, i_b]
+                    - 6.0 * self._T[f, ii, jj, kk, i_b]
+                )
+
+    @qd.kernel
+    def _step_transient_3d_boundary_dirichlet_routed(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Routed 3D Dirichlet boundary update."""
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            if self._route[i_b] == 1:
+                if (
+                    i == 0
+                    or i == self._nx - 1
+                    or j == 0
+                    or j == self._ny - 1
+                    or k == 0
+                    or k == self._nz - 1
+                ):
+                    self._T[f + 1, i, j, k, i_b] = self._boundary_value
+
+    @qd.kernel
+    def _step_transient_3d_boundary_neumann_routed(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Routed 3D Neumann boundary update."""
+        for i, j, k, i_b in qd.ndrange(self._nx, self._ny, self._nz, self._B):
+            if self._route[i_b] == 1:
+                if (
+                    i == 0
+                    or i == self._nx - 1
+                    or j == 0
+                    or j == self._ny - 1
+                    or k == 0
+                    or k == self._nz - 1
+                ):
+                    r = self._alpha * self._substep_dt / (self._dx * self._dx)
+                    im = qd.max(i - 1, 0)
+                    ip = qd.min(i + 1, self._nx - 1)
+                    jm = qd.max(j - 1, 0)
+                    jp = qd.min(j + 1, self._ny - 1)
+                    km = qd.max(k - 1, 0)
+                    kp = qd.min(k + 1, self._nz - 1)
+                    lap = (
+                        self._T[f, ip, j, k, i_b]
+                        + self._T[f, im, j, k, i_b]
+                        + self._T[f, i, jp, k, i_b]
+                        + self._T[f, i, jm, k, i_b]
+                        + self._T[f, i, j, kp, i_b]
+                        + self._T[f, i, j, km, i_b]
+                        - 6.0 * self._T[f, i, j, k, i_b]
+                    )
+                    self._T[f + 1, i, j, k, i_b] = self._T[f, i, j, k, i_b] + r * lap
+
+    @qd.kernel
+    def _route_delta_part_2d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """Per-env max |ΔT| of the last update, one partial per grid row."""
+        for i, i_b in qd.ndrange(self._nx, self._B):
+            m = gs.qd_float(0.0)
+            for j in range(self._ny):
+                d = self._T[f + 1, i, j, i_b] - self._T[f, i, j, i_b]
+                m = qd.max(m, qd.max(d, -d))
+            self._route_part[i_b, i] = m
+
+    @qd.kernel
+    def _route_delta_part_3d(self, f: qd.i32):  # type: ignore[no-untyped-def]
+        """3D counterpart of ``_route_delta_part_2d`` (part shape (B, nx, ny))."""
+        for i, j, i_b in qd.ndrange(self._nx, self._ny, self._B):
+            m = gs.qd_float(0.0)
+            for k in range(self._nz):
+                d = self._T[f + 1, i, j, k, i_b] - self._T[f, i, j, k, i_b]
+                m = qd.max(m, qd.max(d, -d))
+            self._route_part[i_b, i, j] = m
+
+    @qd.kernel
+    def _update_route_2d(self):  # type: ignore[no-untyped-def]
+        """Fold the per-env delta, the dirty flags, and source activity into
+        the route flags.
+        """
+        for i_b in qd.ndrange(self._B):
+            any_src = 0
+            if qd.static(self._max_sources > 0):
+                for s in range(self._max_sources):
+                    any_src = qd.max(any_src, self._source_active[s])
+            m = gs.qd_float(0.0)
+            for i in range(self._nx):
+                m = qd.max(m, self._route_part[i_b, i])
+            needs_work = qd.max(any_src, qd.cast(m >= self._routing_tol, gs.qd_int))
+            self._route[i_b] = qd.max(self._route_dirty[i_b], needs_work)
+            self._route_dirty[i_b] = 0
+
+    @qd.kernel
+    def _update_route_3d(self):  # type: ignore[no-untyped-def]
+        """3D counterpart of ``_update_route_2d``."""
+        for i_b in qd.ndrange(self._B):
+            any_src = 0
+            if qd.static(self._max_sources > 0):
+                for s in range(self._max_sources):
+                    any_src = qd.max(any_src, self._source_active[s])
+            m = gs.qd_float(0.0)
+            for i in range(self._nx):
+                for j in range(self._ny):
+                    m = qd.max(m, self._route_part[i_b, i, j])
+            needs_work = qd.max(any_src, qd.cast(m >= self._routing_tol, gs.qd_int))
+            self._route[i_b] = qd.max(self._route_dirty[i_b], needs_work)
+            self._route_dirty[i_b] = 0
 
     # --------------------------------------------------------------------------
     # Source-coupling quadrants kernels

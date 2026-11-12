@@ -33,6 +33,41 @@ small internal transient thermal solve or be injected into the existing
 - Fused forward kernels for the Jacobi electric solve and J/Q computation,
   reducing Python dispatch overhead on long rollouts.
 
+## Dynamic routing
+
+`JouleHeatingOptions(dynamic_routing=True)` enables Steel-style per-env
+routing of the fused Jacobi solve (design reference:
+https://skild.ai/blogs/steel; mechanism validated in
+`outputs/steel_qd/REPORT.md`). Each environment carries a route flag that is
+re-decided every substep:
+
+- an environment whose max |ΔV| across the last solve is below `tol`, and
+  whose inputs did not change, **skips the whole solve** — copy-in, every
+  sweep, and copy-back are guarded off, so its field carries over
+  bit-exactly (the simulator's frame roll leaves the frozen env's frame-1
+  slot holding exactly the rolled-forward value);
+- the voltage/conductivity/state setters mark every environment dirty, so
+  the next substep solves again and seamless continuation resumes from the
+  frozen state.
+
+The per-env flags are introspectable via `solver.get_route()` (1 = solved,
+0 = frozen). Routing is automatically disabled in differentiable scenes (the
+recorded fixed-iteration tape must match the forward exactly) and with
+`solver_type="direct"`. The J/Q and internal heat-step kernels stay
+unguarded: a frozen env's `V` is unchanged, so they recompute identical
+outputs, and the temperature field keeps diffusing as before.
+
+When does it pay off (measured on CPU): the skip only happens once the
+Jacobi iterate actually converged below `tol`, and Jacobi needs O(N^2)
+sweeps (per-sweep error shrink ~`1 - (pi/N)^2`), so at large `resolution`
+with a small `max_iter` the envs never freeze and routing costs ~5-10%
+guard/bookkeeping overhead instead. With the solve converged (e.g.
+resolution 32, `max_iter=2000`, `tol=1e-4`), the solver's own substep is
+~7.7x faster; the end-to-end `scene.step()` gain is that ratio times the
+fraction of the step the electric solve actually takes. Use a `tol` at the
+truncation-error scale (1e-4, not 1e-7) and a `max_iter` that lets the
+iterate reach it.
+
 ## Installation
 
 Install before `scene.build()`:

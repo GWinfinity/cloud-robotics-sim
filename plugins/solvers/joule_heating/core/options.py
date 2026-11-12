@@ -54,6 +54,15 @@ class JouleHeatingOptions:
         ``"direct"`` builds a sparse linear system and uses SciPy's direct
         solver, which is much faster on CPU but is currently only supported
         for single-environment scenes and forward-only mode.
+    dynamic_routing : bool
+        Per-environment dynamic routing of the Jacobi solve (Steel-style, see
+        ``outputs/steel_qd/REPORT.md``). When enabled, an environment whose
+        potential field converged (max |ΔV| across the last solve below
+        ``tol``) and whose inputs (conductivity, voltage boundaries, state)
+        did not change is skipped entirely: its sweeps, and the frame copy,
+        are guarded off, so the field stays bit-exactly frozen until the
+        next excitation. Routing is automatically disabled in differentiable
+        scenes and with ``solver_type="direct"``.
     """
 
     dt: float | None = None
@@ -70,6 +79,7 @@ class JouleHeatingOptions:
     tol: float = 1e-6
     couple_to_thermal: bool = False
     solver_type: str = "jacobi"
+    dynamic_routing: bool = False
 
     def __post_init__(self) -> None:
         """Validate options."""

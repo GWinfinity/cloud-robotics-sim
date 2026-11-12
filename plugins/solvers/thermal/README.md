@@ -10,6 +10,32 @@ A grid-based heat-conduction solver that runs as a plugin on top of `genesis-wor
 - **Dimension**: 2D is fully implemented and tested; 3D kernels are present but not exhaustively tested.
 - **Coupling**: Genesis entities (Rigid, MPM, SPH, PBD, FEM) can be registered as thermally coupled bodies that exchange heat with nearby grid cells in an energy-conserving way.
 
+## Dynamic routing
+
+`ThermalOptions(dynamic_routing=True)` enables Steel-style per-env routing of
+the transient FTCS update (design reference: https://skild.ai/blogs/steel;
+mechanism validated in `outputs/steel_qd/REPORT.md`). Each environment
+carries a route flag that is re-decided every substep:
+
+- an environment whose max |ΔT| across the last update is below
+  `routing_tol`, and in which no heat source is active, **skips the
+  update** — its frame is left untouched and the field carries over
+  bit-exactly (the simulator's frame roll leaves the frozen env's frame-1
+  slot holding exactly the rolled-forward value);
+- while any source is active, every environment stays routed (source
+  coupling may touch any env's field);
+- `set_temperature` / `set_state` / `add_source` / `remove_source` mark
+  every environment dirty, so the next substep updates again and seamless
+  continuation resumes from the frozen state.
+
+The per-env flags are introspectable via `solver.get_route()` (1 = updated,
+0 = frozen). Routing is automatically disabled in differentiable scenes and
+with `solver_type="steady"`. Note that natural freeze-up of a strongly
+perturbed field can take many steps: FTCS diffusion has a slow low-frequency
+tail (the per-step decay of the fundamental mode is ~`1 - r·(π/N)²`), so the
+benefit shows in long rollouts where most environments are near
+stationarity.
+
 ## Usage
 
 ```python

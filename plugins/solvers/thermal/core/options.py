@@ -55,6 +55,19 @@ class ThermalOptions:
         Maximum number of thermally coupled entities. Source slots are
         pre-allocated at build time so that ``add_source()`` can be called
         after ``scene.build()``.
+    dynamic_routing : bool
+        Per-environment dynamic routing of the transient FTCS update
+        (Steel-style per-env skip, see ``outputs/steel_qd/REPORT.md``). When
+        enabled, an environment whose field is stationary (max |ΔT| across the
+        last update below ``routing_tol``) and in which no heat source is
+        active is skipped entirely: the update kernels leave its frame
+        untouched and the field carries over bit-exactly until the next
+        excitation. While any source is active, every environment stays
+        routed (source coupling can touch any env's field). Routing is
+        automatically disabled in differentiable scenes and with
+        ``solver_type="steady"``.
+    routing_tol : float
+        Stationarity threshold: max |ΔT| below which an environment freezes.
     """
 
     dt: float | None = None
@@ -72,6 +85,8 @@ class ThermalOptions:
     solver_type: str = "transient"
     initial_temperature: float | np.ndarray | Callable | None = 0.0
     max_sources: int = 16
+    dynamic_routing: bool = False
+    routing_tol: float = 1e-6
 
     def __post_init__(self) -> None:
         """Validate options and derive alpha from k/rho/cp when needed."""
@@ -99,6 +114,8 @@ class ThermalOptions:
             raise ValueError(
                 f"max_sources must be non-negative, got {self.max_sources}"
             )
+        if self.routing_tol <= 0:
+            raise ValueError(f"routing_tol must be positive, got {self.routing_tol}")
 
         if self.alpha is None:
             if self.k is None or self.rho is None or self.cp is None:
