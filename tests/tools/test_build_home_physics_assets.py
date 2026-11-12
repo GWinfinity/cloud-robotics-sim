@@ -1,4 +1,4 @@
-"""Tests for the first household-physics parametric asset batch."""
+"""Tests for household-physics parametric asset batches."""
 
 from __future__ import annotations
 
@@ -38,25 +38,44 @@ def _cls(lib: RoboTwinObjectLibrary, suffix: str) -> str:
 
 @pytest.fixture(scope="module")
 def built_dir(tmp_path_factory) -> Path:
-    """Build the six classes once into an isolated object library."""
+    """Build all eight classes once into an isolated object library."""
     objects_dir = tmp_path_factory.mktemp("home_physics_objects")
     assert main(["--objects-dir", str(objects_dir)]) == 0
     return objects_dir
 
 
 def test_batch_matches_recipe_and_loads(built_dir: Path) -> None:
-    """The declared batch resolves through the production library loader."""
+    """The declared batches resolve through the production library loader."""
     recipe = yaml.safe_load(RECIPE_PATH.read_text(encoding="utf-8"))
-    batch = next(b for b in recipe["build_batches"] if b["id"] == "trimesh_batch_1")
-    assert set(BUILDERS) == set(batch["items"])
+    declared = {item for batch in recipe["build_batches"] for item in batch["items"]}
+    assert set(BUILDERS) == declared
     lib = RoboTwinObjectLibrary(built_dir)
-    assert len(lib.list_classes()) == 6
+    assert len(lib.list_classes()) == len(BUILDERS)
     for name in BUILDERS:
         inst = lib.get_instance(_cls(lib, name))
         assert inst.asset_path.is_file()
         assert inst.metadata["generator"] == GENERATOR
         assert inst.metadata["license"] == "Apache-2.0"
         assert inst.metadata["keep_scale"] is True
+
+
+def test_second_batch_has_handle_and_open_basket(built_dir: Path) -> None:
+    """The board has a compound handle and the basket is genuinely open gridwork."""
+    lib = RoboTwinObjectLibrary(built_dir)
+    board = trimesh.load(
+        lib.get_instance(_cls(lib, "cutting_board")).asset_path,
+        force="mesh",
+        process=False,
+    )
+    basket = trimesh.load(
+        lib.get_instance(_cls(lib, "laundry_basket")).asset_path,
+        force="mesh",
+        process=False,
+    )
+    assert len(board.split(only_watertight=False)) >= 8
+    assert board.volume / np.prod(board.extents) > 0.3
+    assert len(basket.split(only_watertight=False)) >= 30
+    assert basket.volume / np.prod(basket.extents) < 0.02
 
 
 def test_exported_geometry_is_closed_and_matches_recipe_dims(built_dir: Path) -> None:

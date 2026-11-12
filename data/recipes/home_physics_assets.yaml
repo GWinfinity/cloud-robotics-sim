@@ -39,6 +39,9 @@ build_batches:
   - {id: trimesh_batch_1, generator: tools/build_home_physics_assets.py,
      output_dir: outputs/home_physics_assets/objects,
      items: [glass_cup, dustpan, mop_bucket, sponge, hanger, clothes_clip]}
+  - {id: trimesh_batch_2, generator: tools/build_home_physics_assets.py,
+     output_dir: outputs/home_physics_assets/objects,
+     items: [cutting_board, laundry_basket]}
 
 dynamics_batches:
   - {id: cup_fracture_v1, kind: voronoi_rigid_fracture, target: glass_cup,

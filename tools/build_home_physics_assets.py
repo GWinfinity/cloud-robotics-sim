@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Build the first household-physics trimesh batch as RoboTwin-OD assets.
+"""Build household-physics trimesh batches as RoboTwin-OD assets.
 
-The six classes come from ``data/recipes/home_physics_assets.yaml``. Meshes use
+The eight classes come from ``data/recipes/home_physics_assets.yaml``. Meshes use
 real-world metric dimensions, Y-up coordinates and a grounded base. They are
 self-built geometric stand-ins registered as Apache-2.0 through the common GLB
 writer; no network access or external assets are required. Default output is an
@@ -51,6 +51,8 @@ DIMS_Y_UP = {
     "sponge": (0.11, 0.04, 0.07),
     "hanger": (0.42, 0.23, 0.10),
     "clothes_clip": (0.085, 0.035, 0.025),
+    "cutting_board": (0.38, 0.02, 0.25),
+    "laundry_basket": (0.45, 0.55, 0.35),
 }
 
 
@@ -248,11 +250,84 @@ def build_clothes_clip() -> list:
     ]
 
 
+def build_cutting_board() -> list:
+    """Rounded board with a neck and an open circular hanging handle."""
+    import trimesh
+
+    parts = [
+        _box((0.28, 0.02, 0.25), (-0.03, 0.01, 0.0)),
+        _box((0.32, 0.02, 0.21), (-0.03, 0.01, 0.0)),
+        _box((0.08, 0.02, 0.04), (0.13, 0.01, 0.0)),
+    ]
+    for x in (-0.17, 0.11):
+        for z in (-0.105, 0.105):
+            parts.append(_rod((x, 0.0, z), (x, 0.02, z), 0.02, sections=24))
+    handle = trimesh.creation.torus(major_radius=0.014, minor_radius=0.004)
+    handle.apply_transform(
+        trimesh.transformations.rotation_matrix(math.pi / 2, [1.0, 0.0, 0.0])
+    )
+    handle.apply_translation((0.172, 0.01, 0.0))
+    parts.append(handle)
+    mesh = _fit_extents(_concat(parts), DIMS_Y_UP["cutting_board"])
+    return [(mesh, _metadata("parametric:cutting-board-ring-handle", "rigid"))]
+
+
+def build_laundry_basket() -> list:
+    """Open laundry basket built from a base, vertical ribs and horizontal rims."""
+    parts = [_box((0.45, 0.006, 0.35), (0.0, 0.003, 0.0))]
+    for x in np.linspace(-0.20, 0.20, 7):
+        for z in (-0.17, 0.17):
+            parts.append(_rod((x, 0.004, z), (x, 0.52, z), 0.003))
+    for z in np.linspace(-0.15, 0.15, 5):
+        for x in (-0.22, 0.22):
+            parts.append(_rod((x, 0.004, z), (x, 0.52, z), 0.003))
+    for y, radius in (
+        (0.04, 0.003),
+        (0.18, 0.003),
+        (0.32, 0.003),
+        (0.50, 0.003),
+        (0.54, 0.005),
+    ):
+        parts.extend(
+            [
+                _rod((-0.22, y, -0.17), (0.22, y, -0.17), radius),
+                _rod((-0.22, y, 0.17), (0.22, y, 0.17), radius),
+                _rod((-0.22, y, -0.17), (-0.22, y, 0.17), radius),
+                _rod((0.22, y, -0.17), (0.22, y, 0.17), radius),
+            ]
+        )
+    for x in (-0.22, 0.22):
+        parts.append(
+            _hook(
+                [
+                    (x, 0.47, -0.07),
+                    (x, 0.545, -0.07),
+                    (x, 0.545, 0.07),
+                    (x, 0.47, 0.07),
+                ],
+                r=0.005,
+            )
+        )
+    mesh = _fit_extents(_concat(parts), DIMS_Y_UP["laundry_basket"])
+    return [
+        (
+            mesh,
+            _metadata(
+                "parametric:laundry-basket-open-grid",
+                "rigid",
+                construction="open_wire_grid",
+            ),
+        )
+    ]
+
+
 BUILDERS = {
     "clothes_clip": build_clothes_clip,
+    "cutting_board": build_cutting_board,
     "dustpan": build_dustpan,
     "glass_cup": build_glass_cup,
     "hanger": build_hanger,
+    "laundry_basket": build_laundry_basket,
     "mop_bucket": build_mop_bucket,
     "sponge": build_sponge,
 }
@@ -272,7 +347,7 @@ def main(argv: list[str] | None = None) -> int:
         "--classes",
         nargs="*",
         default=sorted(BUILDERS),
-        help="subset of classes to build (default: all 6)",
+        help="subset of classes to build (default: all 8)",
     )
     parser.add_argument("--force", action="store_true", help="rebuild existing classes")
     args = parser.parse_args(argv)
