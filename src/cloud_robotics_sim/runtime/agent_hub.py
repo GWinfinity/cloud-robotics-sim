@@ -179,6 +179,31 @@ def _dispatch(hub: SimHub, name: str, args: dict[str, Any]) -> Any:
     raise SkillError(f"unknown tool {name!r}")
 
 
+def _mcp_server_cls():
+    """Resolve the MCP server class across mcp 1.x/2.x.
+
+    mcp 2.x renamed ``mcp.server.fastmcp.FastMCP`` to
+    ``mcp.server.mcpserver.MCPServer`` (same ``name``/``tool``/``run`` API).
+    The 1.x fallback imports dynamically so type checkers only see the
+    installed generation's symbols (warn_unused_ignores stays honest).
+    """
+    try:
+        from mcp.server.mcpserver import MCPServer
+
+        return MCPServer
+    except ImportError:
+        import importlib
+
+        try:
+            module = importlib.import_module("mcp.server.fastmcp")
+            return module.FastMCP
+        except ImportError as exc:  # pragma: no cover - optional dependency
+            raise RuntimeError(
+                "serve_stdio requires the 'mcp' package (uv add mcp). "
+                "The list_tools/call_tool adapter works without it."
+            ) from exc
+
+
 def serve_stdio(hub: SimHub) -> None:
     r"""Serve the hub over MCP stdio (requires the optional ``mcp`` package).
 
@@ -187,15 +212,8 @@ def serve_stdio(hub: SimHub) -> None:
         python -m cloud_robotics_sim.runtime.agent_hub
 
     """
-    try:
-        from mcp.server.fastmcp import FastMCP
-    except ImportError as exc:  # pragma: no cover - optional dependency
-        raise RuntimeError(
-            "serve_stdio requires the 'mcp' package (uv add mcp). "
-            "The list_tools/call_tool adapter works without it."
-        ) from exc
-
-    server = FastMCP("genesis-cloud-sim")
+    server_cls = _mcp_server_cls()
+    server = server_cls("genesis-cloud-sim")
 
     @server.tool(name="sim.skills.list", description="List simulation skills.")
     def _skills_list() -> str:  # pragma: no cover
