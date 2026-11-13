@@ -3,9 +3,9 @@
 # 把 home_5s.yaml 任务涉及的物品按物理性质三分类（rigid / fragile_rigid /
 # soft_body），并为缺口资产指定生成路线：
 #   trimesh          程序化参数化网格（build_batches 指定批次生成器），
-#                    旋转体/组合体小件首选，尺寸精确、watertight、无网络依赖
-#   mesh_import      外部 mesh 导入（Objaverse 许可子集 / 已有资产库），
-#                    有机外形或线框镂空结构大件
+#                    旋转体/组合体小件首选，尺寸精确、watertight、无网络依赖；
+#                    有机外形大件暂用参数化占位（吸尘器/洗衣液瓶/镜子），
+#                    后续可用外部高保真 mesh 整体替换对应 builder
 #   articulated_urdf 带关节刚体（门/抽屉/翻盖），参数化 URDF 拼装
 #   cloth_sim        Genesis 布料/XPBD 求解器 + 折叠态初始网格
 # 静态场景层（墙/地/柜体/水槽）不在物品层，走 xuvdb 整屋 SDF 烘焙
@@ -32,7 +32,7 @@ physics_kinds:
   fragile_rigid: 几何为刚体，带破碎语义（阈值判定 + 预破碎碎片切换）
   soft_body: 必须形变（布料/XPBD），刚体近似与 SDF 均不适用
 
-generation_routes: [trimesh, mesh_import, articulated_urdf, cloth_sim]
+generation_routes: [trimesh, articulated_urdf, cloth_sim]
 
 # dims_m 统一为 XYZ/Z-up；RoboTwin GLB 写出时对应为 [x, z, y]/Y-up。
 build_batches:

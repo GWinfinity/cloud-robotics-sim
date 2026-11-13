@@ -23,7 +23,7 @@ HOME_5S_PATH = REPO_ROOT / "data" / "recipes" / "home_5s.yaml"
 OBJECTS_DIR = REPO_ROOT / "assets" / "robotwin" / "objects" / "objects"
 
 PHYSICS_KINDS = {"rigid", "fragile_rigid", "soft_body"}
-ROUTES = {"trimesh", "mesh_import", "articulated_urdf", "cloth_sim"}
+ROUTES = {"trimesh", "articulated_urdf", "cloth_sim"}
 STATUSES = {"covered", "gap"}
 SCENE_ROUTE = "xuvdb_sdf_bake"
 

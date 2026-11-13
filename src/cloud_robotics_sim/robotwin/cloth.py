@@ -202,14 +202,6 @@ def export_cloth_mesh(spec: HouseholdClothSpec, path: str | Path) -> Path:
     return output
 
 
-def export_cloth_grid(spec: HouseholdClothSpec, path: str | Path) -> Path:
-    """Write a rectangular OBJ cloth grid, creating its parent directory."""
-    output = Path(path)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    cloth_grid(spec).export(output)
-    return output
-
-
 def spawn_pbd_cloth(
     scene: Any,
     spec: HouseholdClothSpec,

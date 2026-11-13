@@ -202,6 +202,10 @@ assets/patents/
 # HiFi-UMI-2K downloaded shards (large parquet, fetch from HF)
 data/hifiumi/
 
+# Local runtime state (session locks, diagnostic dumps) — never commit
+/.mimocode/.cron-lock
+/systems.json
+
 # Business plan docs (keep local only)
 BUSINESS_PLAN_mt-embodied-sim*.md
 BUSINESS_PLAN_mt-embodied-sim*.pdf
