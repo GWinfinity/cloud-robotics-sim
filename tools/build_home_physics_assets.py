@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build household-physics trimesh batches as RoboTwin-OD assets.
 
-The eight classes come from ``data/recipes/home_physics_assets.yaml``. Meshes use
+The eleven classes come from ``data/recipes/home_physics_assets.yaml``. Meshes use
 real-world metric dimensions, Y-up coordinates and a grounded base. They are
 self-built geometric stand-ins registered as Apache-2.0 through the common GLB
 writer; no network access or external assets are required. Default output is an
@@ -53,6 +53,9 @@ DIMS_Y_UP = {
     "clothes_clip": (0.085, 0.035, 0.025),
     "cutting_board": (0.38, 0.02, 0.25),
     "laundry_basket": (0.45, 0.55, 0.35),
+    "vacuum_cleaner": (0.45, 0.42, 0.35),
+    "detergent_bottle": (0.12, 0.28, 0.08),
+    "mirror": (0.40, 0.60, 0.025),
 }
 
 
@@ -321,15 +324,126 @@ def build_laundry_basket() -> list:
     ]
 
 
+def build_vacuum_cleaner() -> list:
+    """Canister vacuum proxy with wheels, a top handle and a rigid hose."""
+    import trimesh
+
+    body = trimesh.creation.icosphere(subdivisions=3, radius=1.0)
+    body.apply_scale([0.18, 0.13, 0.13])
+    body.apply_translation((0.0, 0.19, 0.0))
+    parts = [body]
+    for x_start, x_end in ((-0.20, -0.16), (0.16, 0.20)):
+        parts.append(_rod((x_start, 0.075, -0.04), (x_end, 0.075, -0.04), 0.07))
+    parts.append(_rod((-0.035, 0.035, 0.12), (0.035, 0.035, 0.12), 0.035))
+    parts.append(
+        _hook(
+            [
+                (-0.09, 0.27, -0.03),
+                (-0.09, 0.34, -0.03),
+                (0.09, 0.34, -0.03),
+                (0.09, 0.27, -0.03),
+            ],
+            r=0.008,
+        )
+    )
+    parts.append(
+        _hook(
+            [
+                (0.0, 0.17, 0.11),
+                (0.0, 0.25, 0.18),
+                (0.0, 0.36, 0.17),
+                (0.0, 0.40, 0.09),
+            ],
+            r=0.016,
+        )
+    )
+    mesh = _fit_extents(_concat(parts), DIMS_Y_UP["vacuum_cleaner"])
+    return [
+        (
+            mesh,
+            _metadata(
+                "parametric:canister-vacuum",
+                "rigid",
+                approximation="rigid_canister_and_hose",
+            ),
+        )
+    ]
+
+
+def build_detergent_bottle() -> list:
+    """Laundry detergent bottle with a shoulder, cap and closed side handle."""
+    import trimesh
+
+    parts = [
+        _box((0.09, 0.19, 0.07), (-0.015, 0.095, 0.0)),
+        _box((0.08, 0.21, 0.06), (-0.015, 0.105, 0.0)),
+    ]
+    shoulder = _revolve(
+        [
+            (0.0, 0.17),
+            (0.04, 0.17),
+            (0.04, 0.19),
+            (0.018, 0.225),
+            (0.018, 0.24),
+            (0.0, 0.24),
+        ],
+        sections=64,
+    )
+    shoulder.apply_translation((-0.015, 0.0, 0.0))
+    parts.append(shoulder)
+    parts.append(_rod((-0.015, 0.235, 0.0), (-0.015, 0.26, 0.0), 0.022))
+    handle = trimesh.creation.torus(major_radius=0.026, minor_radius=0.006)
+    handle.apply_translation((0.05, 0.155, 0.0))
+    parts.append(handle)
+    mesh = _fit_extents(_concat(parts), DIMS_Y_UP["detergent_bottle"])
+    return [
+        (
+            mesh,
+            _metadata(
+                "parametric:detergent-bottle-handle",
+                "rigid",
+                construction="bottle_with_closed_handle",
+            ),
+        )
+    ]
+
+
+def build_mirror() -> list:
+    """Framed mirror geometry with a 3 mm panel and no reflective shading."""
+    parts = [
+        _box((0.36, 0.552, 0.003), (0.0, 0.30, 0.0)),
+        _box((0.36, 0.552, 0.006), (0.0, 0.30, -0.004)),
+        _box((0.02, 0.552, 0.025), (-0.19, 0.30, 0.0)),
+        _box((0.02, 0.552, 0.025), (0.19, 0.30, 0.0)),
+        _box((0.40, 0.024, 0.025), (0.0, 0.012, 0.0)),
+        _box((0.40, 0.024, 0.025), (0.0, 0.588, 0.0)),
+    ]
+    return [
+        (
+            _concat(parts),
+            _metadata(
+                "parametric:framed-thin-mirror",
+                "fragile_rigid",
+                panel_thickness_m=0.003,
+                construction="framed_thin_panel",
+                appearance="geometry_only",
+            ),
+        )
+    ]
+
+
 BUILDERS = {
     "clothes_clip": build_clothes_clip,
     "cutting_board": build_cutting_board,
+    "detergent_bottle": build_detergent_bottle,
     "dustpan": build_dustpan,
     "glass_cup": build_glass_cup,
     "hanger": build_hanger,
     "laundry_basket": build_laundry_basket,
+    "mirror": build_mirror,
     "mop_bucket": build_mop_bucket,
     "sponge": build_sponge,
+    "vacuum_cleaner": build_vacuum_cleaner,
 }
 
 
@@ -347,7 +461,7 @@ def main(argv: list[str] | None = None) -> int:
         "--classes",
         nargs="*",
         default=sorted(BUILDERS),
-        help="subset of classes to build (default: all 8)",
+        help=f"subset of classes to build (default: all {len(BUILDERS)})",
     )
     parser.add_argument("--force", action="store_true", help="rebuild existing classes")
     args = parser.parse_args(argv)

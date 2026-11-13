@@ -38,7 +38,7 @@ def _cls(lib: RoboTwinObjectLibrary, suffix: str) -> str:
 
 @pytest.fixture(scope="module")
 def built_dir(tmp_path_factory) -> Path:
-    """Build all eight classes once into an isolated object library."""
+    """Build all eleven classes once into an isolated object library."""
     objects_dir = tmp_path_factory.mktemp("home_physics_objects")
     assert main(["--objects-dir", str(objects_dir)]) == 0
     return objects_dir
@@ -76,6 +76,22 @@ def test_second_batch_has_handle_and_open_basket(built_dir: Path) -> None:
     assert board.volume / np.prod(board.extents) > 0.3
     assert len(basket.split(only_watertight=False)) >= 30
     assert basket.volume / np.prod(basket.extents) < 0.02
+
+
+def test_third_batch_has_distinct_parts_and_thin_mirror(built_dir: Path) -> None:
+    """The vacuum, detergent bottle and mirror retain their construction cues."""
+    lib = RoboTwinObjectLibrary(built_dir)
+    vacuum = lib.get_instance(_cls(lib, "vacuum_cleaner"))
+    detergent = lib.get_instance(_cls(lib, "detergent_bottle"))
+    mirror = lib.get_instance(_cls(lib, "mirror"))
+    assert vacuum.metadata["approximation"] == "rigid_canister_and_hose"
+    assert detergent.metadata["construction"] == "bottle_with_closed_handle"
+    assert mirror.metadata["physics_kind"] == "fragile_rigid"
+    assert mirror.metadata["panel_thickness_m"] == 0.003
+    assert mirror.metadata["appearance"] == "geometry_only"
+    for inst, minimum_parts in ((vacuum, 8), (detergent, 5), (mirror, 6)):
+        mesh = trimesh.load(inst.asset_path, force="mesh", process=False)
+        assert len(mesh.split(only_watertight=False)) >= minimum_parts
 
 
 def test_exported_geometry_is_closed_and_matches_recipe_dims(built_dir: Path) -> None:

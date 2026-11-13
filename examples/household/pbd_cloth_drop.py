@@ -1,7 +1,7 @@
-"""Settle the household rag and towel with Genesis's native PBD cloth solver.
+"""Settle selected household cloths with Genesis's native PBD cloth solver.
 
-Run ``tools/build_home_dynamics_assets.py --classes rag towel`` first. The
-optional ``--pin-corner`` holds one rag corner as a fixed grasp-point proxy.
+Build the requested OBJ files with ``tools/build_home_dynamics_assets.py`` first.
+The optional ``--pin-corner`` holds one rag corner as a fixed grasp-point proxy.
 """
 
 from __future__ import annotations
@@ -25,13 +25,22 @@ from cloud_robotics_sim.utils.genesis_compat import get_genesis_backend  # noqa:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Simulate both cloth assets and validate finite, non-penetrating state."""
+    """Simulate selected cloth assets and validate finite, non-penetrating state."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--asset-dir", default="outputs/home_physics_assets/cloth")
+    parser.add_argument(
+        "--classes",
+        nargs="+",
+        choices=sorted(CLOTH_SPECS),
+        default=["rag", "towel"],
+        help="cloth assets to simulate (default: rag towel)",
+    )
     parser.add_argument("--steps", type=int, default=500)
     parser.add_argument("--backend", choices=["cuda", "cpu"], default="cuda")
     parser.add_argument("--pin-corner", action="store_true")
     args = parser.parse_args(argv)
+    if args.pin_corner and "rag" not in args.classes:
+        parser.error("--pin-corner requires rag in --classes")
 
     import genesis as gs
 
@@ -51,10 +60,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     scene.add_entity(gs.morphs.Plane())
     entities = {}
-    for name, x, pos in (
-        ("rag", -0.25, (-0.25, 0.0, 0.25)),
-        ("towel", 0.25, (0.25, 0.0, 0.35)),
-    ):
+    spawn_positions = {}
+    xs = np.linspace(-0.25, 0.25, len(args.classes))
+    for name, x in zip(args.classes, xs, strict=True):
+        pos = (float(x), 0.0, 0.25 if name == "rag" else 0.35)
+        spawn_positions[name] = pos
         entities[name] = spawn_pbd_cloth(
             scene,
             CLOTH_SPECS[name],
@@ -64,7 +74,11 @@ def main(argv: list[str] | None = None) -> int:
     scene.build()
     if args.pin_corner:
         rag = entities["rag"]
-        corner = rag.find_closest_particle((-0.25 - 0.09, -0.09, 0.25))
+        spec = CLOTH_SPECS["rag"]
+        x, y, z = spawn_positions["rag"]
+        corner = rag.find_closest_particle(
+            (x - spec.width / 2.0, y - spec.depth / 2.0, z)
+        )
         rag.fix_particles(corner)
 
     for _ in range(args.steps):

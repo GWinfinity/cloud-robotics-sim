@@ -42,6 +42,9 @@ build_batches:
   - {id: trimesh_batch_2, generator: tools/build_home_physics_assets.py,
      output_dir: outputs/home_physics_assets/objects,
      items: [cutting_board, laundry_basket]}
+  - {id: trimesh_batch_3, generator: tools/build_home_physics_assets.py,
+     output_dir: outputs/home_physics_assets/objects,
+     items: [vacuum_cleaner, detergent_bottle, mirror]}
 
 dynamics_batches:
   - {id: cup_fracture_v1, kind: voronoi_rigid_fracture, target: glass_cup,
@@ -51,6 +54,18 @@ dynamics_batches:
   - {id: household_cloth_v1, kind: genesis_pbd_cloth, items: [rag, towel],
      generator: tools/build_home_dynamics_assets.py,
      runtime: examples/household/pbd_cloth_drop.py, dt_s: 0.004, substeps: 10}
+  - {id: bedding_cloth_v1, kind: genesis_pbd_cloth,
+     items: [bedsheet, quilt, blanket, pillow],
+     generator: tools/build_home_dynamics_assets.py,
+     runtime: examples/household/pbd_cloth_drop.py, dt_s: 0.004, substeps: 10}
+  - {id: garment_bag_cloth_v1, kind: genesis_pbd_cloth,
+     items: [garment, garbage_bag, plastic_bag],
+     generator: tools/build_home_dynamics_assets.py,
+     runtime: examples/household/pbd_cloth_drop.py, dt_s: 0.004, substeps: 10}
+  - {id: washing_machine_door_v1, kind: articulated_urdf, target: washing_machine,
+     generator: tools/build_home_dynamics_assets.py,
+     runtime: examples/household/washing_machine_door.py,
+     joint: door_joint, lower_rad: 0.0, upper_rad: 1.9}
 
 zones: [玄关, 客厅, 餐厅, 厨房, 卧室, 卫生间, 阳台, 全屋]
 
@@ -128,8 +143,9 @@ items:
      status: gap, route: trimesh, dims_m: [0.48, 0.28, 0.3],
      related_tasks: [countertop_cleaning], note: 双桶旋转拖桶，含脱水篮}
   - {id: vacuum_cleaner, name_zh: 吸尘器, zone: 全屋, physics_kind: rigid,
-     status: gap, route: mesh_import, related_tasks: [countertop_cleaning],
-     note: 有机外形，trimesh 性价比低；软管为软体进阶}
+     status: gap, route: trimesh, dims_m: [0.45, 0.35, 0.42],
+     related_tasks: [countertop_cleaning],
+     note: 参数化罐式机身 + 刚性软管近似；后续可外部 mesh 替换，软体软管为进阶}
   - {id: toilet_brush, name_zh: 马桶刷, zone: 卫生间, physics_kind: rigid,
      status: covered, covered_by: [137_toilet_brush], related_tasks: [countertop_cleaning]}
   - {id: cleaner_spray, name_zh: 清洁剂瓶, zone: 全屋, physics_kind: rigid,
@@ -169,7 +185,7 @@ items:
   # ---------------- 卧室（柔软体集中区） ----------------
   - {id: pillow, name_zh: 枕头, zone: 卧室, physics_kind: soft_body,
      status: gap, route: cloth_sim, related_tasks: [bed_making],
-     note: 内部填充可简化为低刚度压力模型}
+     note: 封闭双层鼓面布套；当前为无内压 PBD 近似，后续可加填充压力模型}
   - {id: quilt, name_zh: 被子, zone: 卧室, physics_kind: soft_body,
      status: gap, route: cloth_sim, related_tasks: [bed_making],
      note: 铺平任务主力；折叠态初始网格 + 目标态评估}
@@ -204,16 +220,17 @@ items:
      status: gap, route: trimesh, dims_m: [0.45, 0.35, 0.55],
      related_tasks: [], note: 镂空网眼结构，视觉可实心近似}
   - {id: detergent_bottle, name_zh: 洗衣液瓶, zone: 阳台, physics_kind: rigid,
-     status: gap, route: mesh_import, related_tasks: [],
-     note: 有机外形 + 把手，trimesh 性价比低}
+     status: gap, route: trimesh, dims_m: [0.12, 0.08, 0.28], related_tasks: [],
+     note: 参数化瓶身 + 封闭侧把手；后续可外部 mesh 替换有机外形}
   - {id: washing_machine, name_zh: 洗衣机, zone: 阳台, physics_kind: rigid,
      status: gap, route: articulated_urdf, related_tasks: [],
-     note: 滚筒门 revolute 关节；有机外形建议外部 mesh + 关节 URDF 拼装}
+     note: 已补参数化箱体 + 前开圆门 revolute；滚筒内部与有机外形仍可外部 mesh 替换}
 
   # ---------------- 卫浴易碎/固定件 ----------------
   - {id: mirror, name_zh: 镜子, zone: 卫生间, physics_kind: fragile_rigid,
-     status: gap, route: mesh_import, related_tasks: [],
-     thin_walled: true, note: 壁挂静态陈设为主，抓握场景少}
+     status: gap, route: trimesh, dims_m: [0.40, 0.025, 0.60], related_tasks: [],
+     thin_walled: true,
+     note: 3mm 镜面板 + 边框几何，不含反射材质；壁挂静态陈设为主}
   - {id: toothbrush_set, name_zh: 牙刷架套装, zone: 卫生间, physics_kind: rigid,
      status: covered, covered_by: [154_toothbrush_set], related_tasks: [item_return]}
 

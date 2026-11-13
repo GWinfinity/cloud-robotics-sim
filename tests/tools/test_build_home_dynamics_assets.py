@@ -18,14 +18,19 @@ from tools.build_home_dynamics_assets import GENERATOR, main  # noqa: E402
 
 
 def test_cloth_assets_build_and_reload(tmp_path: Path) -> None:
-    """Generated rag and towel OBJ files retain their metric dimensions."""
-    assert main(["--output-dir", str(tmp_path), "--classes", "rag", "towel"]) == 0
-    rag = trimesh.load(tmp_path / "cloth" / "rag.obj", process=False)
-    towel = trimesh.load(tmp_path / "cloth" / "towel.obj", process=False)
-    assert len(rag.vertices) == 169
-    assert len(towel.vertices) == 561
-    assert rag.extents[:2] == pytest.approx([0.18, 0.18])
-    assert towel.extents[:2] == pytest.approx([0.25, 0.50])
+    """Generated cloth OBJ files retain their metric dimensions and topology."""
+    from cloud_robotics_sim.robotwin.cloth import CLOTH_SPECS, cloth_mesh
+
+    names = sorted(CLOTH_SPECS)
+    assert main(["--output-dir", str(tmp_path), "--classes", *names]) == 0
+    for name in names:
+        spec = CLOTH_SPECS[name]
+        expected = cloth_mesh(spec)
+        mesh = trimesh.load(tmp_path / "cloth" / f"{name}.obj", process=False)
+        assert len(mesh.vertices) == len(expected.vertices)
+        assert len(mesh.faces) == len(expected.faces)
+        assert mesh.extents[:2] == pytest.approx([spec.width, spec.depth])
+        assert mesh.is_watertight == expected.is_watertight
     before = (tmp_path / "cloth" / "rag.obj").stat().st_mtime_ns
     assert main(["--output-dir", str(tmp_path), "--classes", "rag"]) == 0
     assert (tmp_path / "cloth" / "rag.obj").stat().st_mtime_ns == before
@@ -54,6 +59,38 @@ def test_voronoi_fragments_build_reload_and_conserve_volume(tmp_path: Path) -> N
     assert (
         main(["--output-dir", str(tmp_path), "--classes", "glass_cup_fragments"]) == 0
     )
+    assert lib.list_classes() == [class_name]
+
+
+def test_washing_machine_builds_with_revolute_door(tmp_path: Path) -> None:
+    """The washing machine exports a loadable URDF with the declared door joint."""
+    import json
+    from xml.etree import ElementTree as ET
+
+    assert main(["--output-dir", str(tmp_path), "--classes", "washing_machine"]) == 0
+    lib = RoboTwinObjectLibrary(tmp_path / "objects")
+    class_name = lib.list_classes()[0]
+    inst = lib.get_instance(class_name)
+    assert class_name.endswith("_washing_machine")
+    assert inst.kind == "urdf"
+    assert inst.asset_path.is_file()
+    root = ET.fromstring(inst.asset_path.read_text(encoding="utf-8"))
+    assert root.attrib["name"] == "washing_machine"
+    joint = root.find("joint[@name='door_joint']")
+    assert joint is not None
+    assert joint.attrib["type"] == "revolute"
+    assert joint.find("axis").attrib["xyz"] == "0 0 1"
+    assert float(joint.find("limit").attrib["lower"]) == 0.0
+    assert float(joint.find("limit").attrib["upper"]) == 1.9
+    door = root.find("link[@name='door']")
+    assert door is not None
+    assert door.find("visual/geometry/cylinder").attrib["radius"] == "0.20"
+    metadata = json.loads(
+        (inst.asset_path.parent / "model_data.json").read_text("utf-8")
+    )
+    assert metadata["generator"] == GENERATOR
+    assert metadata["license"] == "Apache-2.0"
+    assert main(["--output-dir", str(tmp_path), "--classes", "washing_machine"]) == 0
     assert lib.list_classes() == [class_name]
 
 

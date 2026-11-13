@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build Voronoi cup fragments and household PBD cloth surface meshes.
+"""Build household fracture, PBD cloth and articulated URDF assets.
 
 Usage::
 
@@ -8,7 +8,7 @@ Usage::
     uv run python tools/build_home_dynamics_assets.py --force
 
 Fragment generation requires ``uv sync --extra fracture``. Output defaults to
-``outputs/home_physics_assets`` alongside the first rigid household batch.
+``outputs/home_physics_assets`` alongside the rigid household batches.
 """
 
 from __future__ import annotations
@@ -22,15 +22,38 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from cloud_robotics_sim.robotwin.cloth import (  # noqa: E402
     CLOTH_SPECS,
-    export_cloth_grid,
+    export_cloth_mesh,
 )
 from cloud_robotics_sim.robotwin.fracture import voronoi_fragments  # noqa: E402
 from tools.build_home_physics_assets import build_glass_cup  # noqa: E402
-from tools.build_p1_assets import write_glb_class  # noqa: E402
+from tools.build_p1_assets import write_glb_class, write_urdf_class  # noqa: E402
+from tools.build_p2_assets import compose_urdf  # noqa: E402
 
 logger = logging.getLogger(__name__)
 GENERATOR = "tools/build_home_dynamics_assets.py"
-BUILDERS = {"glass_cup_fragments", "rag", "towel"}
+BUILDERS = {"glass_cup_fragments", "washing_machine", *CLOTH_SPECS}
+
+
+def build_washing_machine_urdf() -> str:
+    """Build a fixed front-loading cabinet with a left-hinged circular door."""
+    return compose_urdf(
+        "washing_machine",
+        "0.60 0.60 0.85",
+        45.0,
+        [
+            {
+                "link_name": "door",
+                "geometry": '<cylinder radius="0.20" length="0.035"/>',
+                "geo_xyz": "0.20 0.015 0.0",
+                "geo_rpy": "1.570796 0 0",
+                "mass": 4.0,
+                "joint_type": "revolute",
+                "joint_xyz": "-0.20 0.315 0.45",
+                "axis": "0 0 1",
+                "upper": 1.9,
+            }
+        ],
+    )
 
 
 def _existing_class(objects_dir: Path, name: str) -> str:
@@ -87,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
         "--classes",
         nargs="*",
         default=sorted(BUILDERS),
-        help="subset of assets to build (default: all 3)",
+        help=f"subset of assets to build (default: all {len(BUILDERS)})",
     )
     parser.add_argument("--force", action="store_true", help="rebuild existing assets")
     args = parser.parse_args(argv)
@@ -103,12 +126,24 @@ def main(argv: list[str] | None = None) -> int:
         for name in args.classes:
             if name == "glass_cup_fragments":
                 built.append(_build_fragments(output_dir, args.force))
+            elif name == "washing_machine":
+                objects_dir = output_dir / "objects"
+                objects_dir.mkdir(parents=True, exist_ok=True)
+                built.append(
+                    write_urdf_class(
+                        objects_dir,
+                        _existing_class(objects_dir, name),
+                        build_washing_machine_urdf(),
+                        args.force,
+                        generator=GENERATOR,
+                    )
+                )
             else:
                 path = output_dir / "cloth" / f"{name}.obj"
                 if path.exists() and not args.force:
                     logger.info("skip existing cloth %s (use --force to rebuild)", path)
                 else:
-                    export_cloth_grid(CLOTH_SPECS[name], path)
+                    export_cloth_mesh(CLOTH_SPECS[name], path)
                     logger.info("built cloth %s", path)
                 built.append(name)
     except (ImportError, ValueError, RuntimeError) as exc:
