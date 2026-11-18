@@ -1,0 +1,2319 @@
+{
+  "suite": "behavior-1k",
+  "n_tasks": 100,
+  "n_task_dirs": 200,
+  "robots": [
+    "r1pro"
+  ],
+  "simulators": [
+    "behavior"
+  ],
+  "tasks": [
+    {
+      "name": "behavior-assembling-gift-baskets-i00",
+      "family": "assembling_gift_baskets",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-attach-a-camera-to-a-tripod-i00",
+      "family": "attach_a_camera_to_a_tripod",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-boxing-books-up-for-storage-i00",
+      "family": "boxing_books_up_for_storage",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-boxing-food-after-dinner-i00",
+      "family": "boxing_food_after_dinner",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-bringing-in-wood-i00",
+      "family": "bringing_in_wood",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-bringing-paper-to-recycling-i00",
+      "family": "bringing_paper_to_recycling",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-bringing-water-i00",
+      "family": "bringing_water",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-can-meat-i00",
+      "family": "can_meat",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-canning-food-i00",
+      "family": "canning_food",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-carrying-in-groceries-i00",
+      "family": "carrying_in_groceries",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-carrying-out-garden-furniture-i00",
+      "family": "carrying_out_garden_furniture",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-chop-an-onion-i00",
+      "family": "chop_an_onion",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-chopping-wood-i00",
+      "family": "chopping_wood",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-clean-a-keyboard-i00",
+      "family": "clean_a_keyboard",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-clean-a-patio-i00",
+      "family": "clean_a_patio",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-clean-a-trumpet-i00",
+      "family": "clean_a_trumpet",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-clean-boxing-gloves-i00",
+      "family": "clean_boxing_gloves",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-clean-up-broken-glass-i00",
+      "family": "clean_up_broken_glass",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-clean-up-your-desk-i00",
+      "family": "clean_up_your_desk",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-clean-your-rusty-garden-tools-i00",
+      "family": "clean_your_rusty_garden_tools",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-cleaning-up-branches-and-twigs-i00",
+      "family": "cleaning_up_branches_and_twigs",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-cleaning-up-plates-and-food-i00",
+      "family": "cleaning_up_plates_and_food",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-clearing-food-from-table-into-fridge-i00",
+      "family": "clearing_food_from_table_into_fridge",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-collecting-aluminum-cans-i00",
+      "family": "collecting_aluminum_cans",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-collecting-childrens-toys-i00",
+      "family": "collecting_childrens_toys",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-composting-waste-i00",
+      "family": "composting_waste",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-cook-a-brisket-i00",
+      "family": "cook_a_brisket",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-cook-a-frozen-pie-i00",
+      "family": "cook_a_frozen_pie",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-cook-bacon-i00",
+      "family": "cook_bacon",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-cook-broccolini-i00",
+      "family": "cook_broccolini",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-cook-brussels-sprouts-i00",
+      "family": "cook_brussels_sprouts",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-cook-cabbage-i00",
+      "family": "cook_cabbage",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-cook-hot-dogs-i00",
+      "family": "cook_hot_dogs",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-dispose-of-batteries-i00",
+      "family": "dispose_of_batteries",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-dispose-of-glass-i00",
+      "family": "dispose_of_glass",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-freeze-fruit-i00",
+      "family": "freeze_fruit",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-freeze-pies-i00",
+      "family": "freeze_pies",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-getting-organized-for-work-i00",
+      "family": "getting_organized_for_work",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-halve-an-egg-i00",
+      "family": "halve_an_egg",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-hanging-pictures-i00",
+      "family": "hanging_pictures",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-hiding-Easter-eggs-i00",
+      "family": "hiding_Easter_eggs",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-installing-a-fax-machine-i00",
+      "family": "installing_a_fax_machine",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-installing-a-modem-i00",
+      "family": "installing_a_modem",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-installing-a-scanner-i00",
+      "family": "installing_a_scanner",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-installing-smoke-detectors-i00",
+      "family": "installing_smoke_detectors",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-laying-tile-floors-i00",
+      "family": "laying_tile_floors",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-loading-the-car-i00",
+      "family": "loading_the_car",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-make-cabinet-doors-i00",
+      "family": "make_cabinet_doors",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-make-gift-bags-for-baby-showers-i00",
+      "family": "make_gift_bags_for_baby_showers",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-make-microwave-popcorn-i00",
+      "family": "make_microwave_popcorn",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-make-pizza-i00",
+      "family": "make_pizza",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-make-rose-centerpieces-i00",
+      "family": "make_rose_centerpieces",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-moving-boxes-to-storage-i00",
+      "family": "moving_boxes_to_storage",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-organizing-art-supplies-i00",
+      "family": "organizing_art_supplies",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-organizing-school-stuff-i00",
+      "family": "organizing_school_stuff",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-outfit-a-basic-toolbox-i00",
+      "family": "outfit_a_basic_toolbox",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-packing-meal-for-delivery-i00",
+      "family": "packing_meal_for_delivery",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-picking-up-toys-i00",
+      "family": "picking_up_toys",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-picking-up-trash-i00",
+      "family": "picking_up_trash",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-polishing-shoes-i00",
+      "family": "polishing_shoes",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-preparing-lunch-box-i00",
+      "family": "preparing_lunch_box",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-put-together-a-basic-pruning-kit-i00",
+      "family": "put_together_a_basic_pruning_kit",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-putting-away-Halloween-decorations-i00",
+      "family": "putting_away_Halloween_decorations",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-putting-away-toys-i00",
+      "family": "putting_away_toys",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-putting-dirty-dishes-in-sink-i00",
+      "family": "putting_dirty_dishes_in_sink",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-putting-dishes-away-after-cleaning-i00",
+      "family": "putting_dishes_away_after_cleaning",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-putting-shoes-on-rack-i00",
+      "family": "putting_shoes_on_rack",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-putting-up-Christmas-decorations-inside-i00",
+      "family": "putting_up_Christmas_decorations_inside",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-re-shelving-library-books-i00",
+      "family": "re_shelving_library_books",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-rearrange-your-room-i00",
+      "family": "rearrange_your_room",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-rearranging-kitchen-furniture-i00",
+      "family": "rearranging_kitchen_furniture",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-scrubbing-bathroom-floor-i00",
+      "family": "scrubbing_bathroom_floor",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-set-up-a-coffee-station-in-your-kitchen-i00",
+      "family": "set_up_a_coffee_station_in_your_kitchen",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-setting-mousetraps-i00",
+      "family": "setting_mousetraps",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-setting-the-fire-i00",
+      "family": "setting_the_fire",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-setting-the-table-i00",
+      "family": "setting_the_table",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-setup-a-bar-for-a-cocktail-party-i00",
+      "family": "setup_a_bar_for_a_cocktail_party",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-slicing-vegetables-i00",
+      "family": "slicing_vegetables",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-sorting-books-on-shelf-i00",
+      "family": "sorting_books_on_shelf",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-sorting-bottles-cans-and-paper-i00",
+      "family": "sorting_bottles_cans_and_paper",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-sorting-household-items-i00",
+      "family": "sorting_household_items",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-sorting-vegetables-i00",
+      "family": "sorting_vegetables",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-spraying-for-bugs-i00",
+      "family": "spraying_for_bugs",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-spraying-fruit-trees-i00",
+      "family": "spraying_fruit_trees",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-stacking-wood-i00",
+      "family": "stacking_wood",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-store-batteries-i00",
+      "family": "store_batteries",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-store-honey-i00",
+      "family": "store_honey",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-store-produce-i00",
+      "family": "store_produce",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-storing-food-i00",
+      "family": "storing_food",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-sweeping-garage-i00",
+      "family": "sweeping_garage",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-thawing-frozen-food-i00",
+      "family": "thawing_frozen_food",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-tidying-bathroom-i00",
+      "family": "tidying_bathroom",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-tidying-bedroom-i00",
+      "family": "tidying_bedroom",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-tidying-living-room-i00",
+      "family": "tidying_living_room",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-turning-on-radio-i00",
+      "family": "turning_on_radio",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-turning-out-all-lights-before-sleep-i00",
+      "family": "turning_out_all_lights_before_sleep",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-unloading-the-car-i00",
+      "family": "unloading_the_car",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-vacuuming-floors-i00",
+      "family": "vacuuming_floors",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-wash-a-baseball-cap-i00",
+      "family": "wash_a_baseball_cap",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "behavior-wash-dog-toys-i00",
+      "family": "wash_dog_toys",
+      "robot": "r1pro",
+      "simulator": "behavior",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 301,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 113800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:47.560297+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

@@ -1,0 +1,502 @@
+{
+  "suite": "dextoolbench",
+  "n_tasks": 21,
+  "n_task_dirs": 42,
+  "robots": [
+    "kuka-iiwa14-sharpa-ha4"
+  ],
+  "simulators": [
+    "mujoco"
+  ],
+  "tasks": [
+    {
+      "name": "dextoolbench_brush_blue_brush_sweep_forward",
+      "family": "dextoolbench/brush/blue_brush/sweep_forward",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_brush_red_brush_sweep_forward",
+      "family": "dextoolbench/brush/red_brush/sweep_forward",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_brush_red_brush_sweep_right",
+      "family": "dextoolbench/brush/red_brush/sweep_right",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_eraser_handle_eraser_wipe_c",
+      "family": "dextoolbench/eraser/handle_eraser/wipe_c",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_eraser_handle_eraser_wipe_smile",
+      "family": "dextoolbench/eraser/handle_eraser/wipe_smile",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_hammer_claw_hammer_swing_down",
+      "family": "dextoolbench/hammer/claw_hammer/swing_down",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_hammer_claw_hammer_swing_side",
+      "family": "dextoolbench/hammer/claw_hammer/swing_side",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_hammer_mallet_hammer_swing_down",
+      "family": "dextoolbench/hammer/mallet_hammer/swing_down",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_hammer_mallet_hammer_swing_side",
+      "family": "dextoolbench/hammer/mallet_hammer/swing_side",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_marker_sharpie_marker_draw_smile",
+      "family": "dextoolbench/marker/sharpie_marker/draw_smile",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_marker_sharpie_marker_write_c",
+      "family": "dextoolbench/marker/sharpie_marker/write_c",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_marker_staples_marker_draw_smile",
+      "family": "dextoolbench/marker/staples_marker/draw_smile",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_marker_staples_marker_write_c",
+      "family": "dextoolbench/marker/staples_marker/write_c",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_screwdriver_long_screwdriver_spin_horizontal",
+      "family": "dextoolbench/screwdriver/long_screwdriver/spin_horizontal",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_screwdriver_long_screwdriver_spin_vertical",
+      "family": "dextoolbench/screwdriver/long_screwdriver/spin_vertical",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_screwdriver_short_screwdriver_spin_horizontal",
+      "family": "dextoolbench/screwdriver/short_screwdriver/spin_horizontal",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_screwdriver_short_screwdriver_spin_vertical",
+      "family": "dextoolbench/screwdriver/short_screwdriver/spin_vertical",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_spatula_flat_spatula_flip_over",
+      "family": "dextoolbench/spatula/flat_spatula/flip_over",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_spatula_flat_spatula_serve_plate",
+      "family": "dextoolbench/spatula/flat_spatula/serve_plate",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_spatula_spoon_spatula_flip_over",
+      "family": "dextoolbench/spatula/spoon_spatula/flip_over",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "dextoolbench_spatula_spoon_spatula_serve_plate",
+      "family": "dextoolbench/spatula/spoon_spatula/serve_plate",
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:47.698667+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

@@ -1,0 +1,364 @@
+{
+  "suite": "robowits",
+  "n_tasks": 15,
+  "n_task_dirs": 30,
+  "robots": [
+    "marvin-bimanual"
+  ],
+  "simulators": [
+    "robowits"
+  ],
+  "tasks": [
+    {
+      "name": "robowits-align-blocks-i00",
+      "family": "align_blocks",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-ball-into-bottle-i00",
+      "family": "ball_into_bottle",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-ball-onto-tower-i00",
+      "family": "ball_onto_tower",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-collect-screws-i00",
+      "family": "collect_screws",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-cover-with-lid-i00",
+      "family": "cover_with_lid",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-dominos-i00",
+      "family": "dominos",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-gap-retrieve-i00",
+      "family": "gap_retrieve",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-hold-cup-i00",
+      "family": "hold_cup",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-move-cube-i00",
+      "family": "move_cube",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-raise-platform-i00",
+      "family": "raise_platform",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-retrieve-cube-i00",
+      "family": "retrieve_cube",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-stack-bowls-i00",
+      "family": "stack_bowls",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-stack-cubes-i00",
+      "family": "stack_cubes",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-stand-bulb-i00",
+      "family": "stand_bulb",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robowits-stand-pages-i00",
+      "family": "stand_pages",
+      "robot": "marvin-bimanual",
+      "simulator": "robowits",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:49.381250+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

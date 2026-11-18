@@ -1,0 +1,29 @@
+# EFE 迁移编译物（metaworldplus）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: metaworld/reach-wall | goal: [-0.05, 0.8, 0.2]
+# fidelity: spec
+version: 1
+
+task:
+  name: metaworldplus-reach-wall-i00
+  type: efe_static
+  robot: sawyer
+  scene: efe_tabletop
+  max_episode_steps: 500
+
+success:
+  type: ee_near
+  params:
+    target_position:
+    - -0.05
+    - 0.8
+    - 0.2
+    threshold: 0.05
+    link: hand
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

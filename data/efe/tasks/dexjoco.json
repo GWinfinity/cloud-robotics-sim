@@ -1,0 +1,273 @@
+{
+  "suite": "dexjoco",
+  "n_tasks": 11,
+  "n_task_dirs": 22,
+  "robots": [
+    "franka-allegro",
+    "franka-allegro-bimanual"
+  ],
+  "simulators": [
+    "dexjoco"
+  ],
+  "tasks": [
+    {
+      "name": "dexjoco-bimanual-assembly-i00",
+      "family": "bimanual_assembly",
+      "robot": "franka-allegro-bimanual",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-bimanual-hanoi-i00",
+      "family": "bimanual_hanoi",
+      "robot": "franka-allegro-bimanual",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-bimanual-microwave-cook-i00",
+      "family": "bimanual_microwave_cook",
+      "robot": "franka-allegro-bimanual",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-bimanual-photograph-i00",
+      "family": "bimanual_photograph",
+      "robot": "franka-allegro-bimanual",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-bimanual-unlock-ipad-i00",
+      "family": "bimanual_unlock_ipad",
+      "robot": "franka-allegro-bimanual",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-click-mouse-i00",
+      "family": "click_mouse",
+      "robot": "franka-allegro",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-fold-glasses-i00",
+      "family": "fold_glasses",
+      "robot": "franka-allegro",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-hammer-nail-i00",
+      "family": "hammer_nail",
+      "robot": "franka-allegro",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-pick-bucket-i00",
+      "family": "pick_bucket",
+      "robot": "franka-allegro",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-pinch-tongs-i00",
+      "family": "pinch_tongs",
+      "robot": "franka-allegro",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "dexjoco-water-plant-i00",
+      "family": "water_plant",
+      "robot": "franka-allegro",
+      "simulator": "dexjoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:47.663271+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

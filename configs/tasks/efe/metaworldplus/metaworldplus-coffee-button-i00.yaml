@@ -1,0 +1,53 @@
+# EFE 迁移编译物（metaworldplus）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: metaworld/coffee-button | goal: Press the coffee machine button
+# fidelity: spec
+version: 1
+
+task:
+  name: metaworldplus-coffee-button-i00
+  type: efe_static
+  robot: sawyer
+  scene: efe_tabletop
+  max_episode_steps: 500
+
+assets:
+  task_relevant:
+  - name: cmbutton
+    shape_type: cylinder
+    size:
+    - 0.032
+    - 0.03
+    - 0.032
+    position:
+    - 0.0
+    - 0.9
+    - 0.0
+    color:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 1.0
+    mass: 0.75
+    static: false
+    friction: 1.0
+
+success:
+  type: axis_window
+  params:
+    object: cmbutton
+    target_position:
+    - 0.0
+    - 0.68
+    - 0.3
+    windows:
+      y:
+      - -0.02
+      - 0.02
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

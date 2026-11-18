@@ -1,0 +1,24 @@
+# BEHAVIOR-1K — EFE 套件迁移记录（策划数据）。
+# `efe.*` 计数与类别来自 arXiv:2611.12177 Table 2；
+# 由 tools/build_efe_registry.py 对照 data/efe/tasks/behavior-1k.json 校验，
+# 并与论文总数（35 套件 / 47 机器人 / 1156 任务 / 2288 测试 / 456 核心）对账。
+# 修改 efe 计数后必须重跑 build 工具的 --check。
+suite: behavior-1k
+name: BEHAVIOR-1K
+efe:
+  origin: adapted
+  in_paper: true
+  source: null
+  simulator: omnigibson
+  kinds:
+  - mobile_manip
+  robots:
+  - r1pro
+  tasks: 100
+  tests: 200
+  core: 71
+project:
+  tier: T3
+  status: planned
+  target: 待定（需先落地 T3 资产管线）
+  note: 1000 日常活动采 100；32GB 数据集+许可门，core 占比最高(71) 之一，长期价值大

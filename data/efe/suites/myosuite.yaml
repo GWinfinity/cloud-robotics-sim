@@ -1,0 +1,29 @@
+# MyoSuite — EFE 套件迁移记录（策划数据）。
+# `efe.*` 计数与类别来自 arXiv:2611.12177 Table 2；
+# 由 tools/build_efe_registry.py 对照 data/efe/tasks/myosuite.json 校验，
+# 并与论文总数（35 套件 / 47 机器人 / 1156 任务 / 2288 测试 / 456 核心）对账。
+# 修改 efe 计数后必须重跑 build 工具的 --check。
+suite: myosuite
+name: MyoSuite
+efe:
+  origin: adapted
+  in_paper: true
+  source: null
+  simulator: mujoco
+  kinds:
+  - musculoskeletal
+  robots:
+  - myoarm
+  - myoarm-mpl
+  - myoarm-torso
+  - myohand
+  - myoleg-osl
+  - myolegs
+  tasks: 22
+  tests: 45
+  core: 13
+project:
+  tier: TX
+  status: blocked
+  target: 无（Genesis 缺肌肉-肌腱致动模型）
+  note: 肌肉骨骼模型依赖 MuJoCo tendon/actuator 特性，Genesis 1.4.6 无等效；需先决策（自研 solver 插件或永久跳过）

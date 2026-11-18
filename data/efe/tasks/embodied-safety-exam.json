@@ -1,0 +1,1270 @@
+{
+  "suite": "embodied-safety-exam",
+  "n_tasks": 72,
+  "n_task_dirs": 76,
+  "robots": [
+    "franka-robotiq-2f85",
+    "i2rt-yam-bimanual",
+    "tidybot-plus-plus",
+    "ur5e-robotiq-2f85"
+  ],
+  "simulators": [
+    "mujoco"
+  ],
+  "tasks": [
+    {
+      "name": "ese-a01-i01",
+      "family": "a01",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a01-i02",
+      "family": "a01",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a01-i04",
+      "family": "a01",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a01-i08",
+      "family": "a01",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a01-i09",
+      "family": "a01",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a02-i03",
+      "family": "a02",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a04-i00",
+      "family": "a04",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a04-i03",
+      "family": "a04",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a06-i01",
+      "family": "a06",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a06-i03",
+      "family": "a06",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a07-i02",
+      "family": "a07",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a08-i01",
+      "family": "a08",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a09-i05",
+      "family": "a09",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a17-i00",
+      "family": "a17",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a17-i01",
+      "family": "a17",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a26-i02",
+      "family": "a26",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a27-i06",
+      "family": "a27",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a28-i00",
+      "family": "a28",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a28-i01",
+      "family": "a28",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a28-i03",
+      "family": "a28",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a29-i00",
+      "family": "a29",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a29-i01",
+      "family": "a29",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a29-i03",
+      "family": "a29",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a30-i05",
+      "family": "a30",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a33-i01",
+      "family": "a33",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a33-i04",
+      "family": "a33",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a34-i07",
+      "family": "a34",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a34-i09",
+      "family": "a34",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-a34-i11",
+      "family": "a34",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b06-i00",
+      "family": "b06",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b06-i01",
+      "family": "b06",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b06-i02",
+      "family": "b06",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b08-i01",
+      "family": "b08",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b08-i02",
+      "family": "b08",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b11-i00",
+      "family": "b11",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b11-i01",
+      "family": "b11",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b11-i03",
+      "family": "b11",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b12-i04",
+      "family": "b12",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b12-i06",
+      "family": "b12",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-b12-i07",
+      "family": "b12",
+      "robot": "tidybot-plus-plus",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-c02-i00",
+      "family": "c02",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-c02-i01",
+      "family": "c02",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-c04-i00",
+      "family": "c04",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-c04-i01",
+      "family": "c04",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-c05-i01",
+      "family": "c05",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-c05-i02",
+      "family": "c05",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-c16-i00",
+      "family": "c16",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-c16-i01",
+      "family": "c16",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-d05-i04",
+      "family": "d05",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-d05-i07",
+      "family": "d05",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-d08-i01",
+      "family": "d08",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-d12-i02",
+      "family": "d12",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-d12-i04",
+      "family": "d12",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-e06-i00",
+      "family": "e06",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-e06-i03",
+      "family": "e06",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f01-i00",
+      "family": "f01",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f02-i00",
+      "family": "f02",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f02-i01",
+      "family": "f02",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f03-i00",
+      "family": "f03",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f03-i01",
+      "family": "f03",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f03-i02",
+      "family": "f03",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f04-i01",
+      "family": "f04",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f04-i02",
+      "family": "f04",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f05-i00",
+      "family": "f05",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f05-i01",
+      "family": "f05",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f06-i00",
+      "family": "f06",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f06-i01",
+      "family": "f06",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f07-i00",
+      "family": "f07",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f08-i00",
+      "family": "f08",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f09-i00",
+      "family": "f09",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f10-i00",
+      "family": "f10",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "ese-f11-i00",
+      "family": "f11",
+      "robot": "ur5e-robotiq-2f85",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:47.994915+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

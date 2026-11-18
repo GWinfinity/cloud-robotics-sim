@@ -1,0 +1,328 @@
+{
+  "suite": "mujoco-playground",
+  "n_tasks": 13,
+  "n_task_dirs": 27,
+  "robots": [
+    "aloha-2",
+    "boston-dynamics-spot",
+    "franka-panda",
+    "google-barkour-vb",
+    "unitree-go1"
+  ],
+  "simulators": [
+    "mujoco"
+  ],
+  "tasks": [
+    {
+      "name": "mujoco_playground_aloha_hand_over",
+      "family": "mujoco_playground/AlohaHandOver",
+      "robot": "aloha-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_aloha_single_peg_insertion",
+      "family": "mujoco_playground/AlohaSinglePegInsertion",
+      "robot": "aloha-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_barkour_joystick",
+      "family": "mujoco_playground/BarkourJoystick",
+      "robot": "google-barkour-vb",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 2,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_go1_footstand",
+      "family": "mujoco_playground/Go1Footstand",
+      "robot": "unitree-go1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_go1_getup",
+      "family": "mujoco_playground/Go1Getup",
+      "robot": "unitree-go1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 5,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_go1_handstand",
+      "family": "mujoco_playground/Go1Handstand",
+      "robot": "unitree-go1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_go1_joystick_flat_terrain",
+      "family": "mujoco_playground/Go1JoystickFlatTerrain",
+      "robot": "unitree-go1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_go1_joystick_rough_terrain",
+      "family": "mujoco_playground/Go1JoystickRoughTerrain",
+      "robot": "unitree-go1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 1,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_panda_open_cabinet",
+      "family": "mujoco_playground/PandaOpenCabinet",
+      "robot": "franka-panda",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_panda_pick_cube_orientation",
+      "family": "mujoco_playground/PandaPickCubeOrientation",
+      "robot": "franka-panda",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_spot_flat_terrain_joystick",
+      "family": "mujoco_playground/SpotFlatTerrainJoystick",
+      "robot": "boston-dynamics-spot",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_spot_getup",
+      "family": "mujoco_playground/SpotGetup",
+      "robot": "boston-dynamics-spot",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 1,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "mujoco_playground_spot_joystick_gait_tracking",
+      "family": "mujoco_playground/SpotJoystickGaitTracking",
+      "robot": "boston-dynamics-spot",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.488874+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

@@ -1,0 +1,51 @@
+# EFE 迁移编译物（metaworldplus）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: metaworld/door-open | goal: [-0.25, 0.45, 0.15]
+# fidelity: spec
+version: 1
+
+task:
+  name: metaworldplus-door-open-i00
+  type: efe_static
+  robot: sawyer
+  scene: efe_tabletop
+  max_episode_steps: 500
+
+assets:
+  task_relevant:
+  - name: door
+    shape_type: sphere
+    size:
+    - 0.02
+    position:
+    - 0.05
+    - 0.9
+    - 0.15
+    color:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 1.0
+    mass: 0.75
+    static: false
+    friction: 1.0
+
+success:
+  type: axis_window
+  params:
+    object: door
+    target_position:
+    - -0.25
+    - 0.45
+    - 0.15
+    windows:
+      x:
+      - -0.08
+      - 0.08
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

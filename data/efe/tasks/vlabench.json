@@ -1,0 +1,847 @@
+{
+  "suite": "vlabench",
+  "n_tasks": 36,
+  "n_task_dirs": 72,
+  "robots": [
+    "franka-panda"
+  ],
+  "simulators": [
+    "vlabench"
+  ],
+  "tasks": [
+    {
+      "name": "vlabench-add-condiment-i00",
+      "family": "vlabench/add_condiment",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-book-rearrange-i00",
+      "family": "vlabench/book_rearrange",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-find-unseen-object-i00",
+      "family": "vlabench/find_unseen_object",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-friction-qa-i00",
+      "family": "vlabench/friction_qa",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-hammer-nail-and-hang-picture-i00",
+      "family": "vlabench/hammer_nail_and_hang_picture",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-heat-food-i00",
+      "family": "vlabench/heat_food",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-insert-bloom-flower-i00",
+      "family": "vlabench/insert_bloom_flower",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-insert-flower-i00",
+      "family": "vlabench/insert_flower",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 4,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-magnetism-qa-i00",
+      "family": "vlabench/magnetism_qa",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-play-math-game-i00",
+      "family": "vlabench/play_math_game",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-put-box-on-painting-i00",
+      "family": "vlabench/put_box_on_painting",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-reflection-qa-i00",
+      "family": "vlabench/reflection_qa",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-billiards-common-sense-i00",
+      "family": "vlabench/select_billiards_common_sense",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-billiards-i00",
+      "family": "vlabench/select_billiards",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-billiards-spatial-i00",
+      "family": "vlabench/select_billiards_spatial",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-book-spatial-i00",
+      "family": "vlabench/select_book_spatial",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-chemistry-tube-common-sense-i00",
+      "family": "vlabench/select_chemistry_tube_common_sense",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-chemistry-tube-i00",
+      "family": "vlabench/select_chemistry_tube",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-chemistry-tube-semantic-i00",
+      "family": "vlabench/select_chemistry_tube_semantic",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-chemistry-tube-spatial-i00",
+      "family": "vlabench/select_chemistry_tube_spatial",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-drink-i00",
+      "family": "vlabench/select_drink",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-fruit-common-sense-i00",
+      "family": "vlabench/select_fruit_common_sense",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-fruit-i00",
+      "family": "vlabench/select_fruit",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-mahjong-i00",
+      "family": "vlabench/select_mahjong",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-mahjong-semantic-i00",
+      "family": "vlabench/select_mahjong_semantic",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-mahjong-spatial-i00",
+      "family": "vlabench/select_mahjong_spatial",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-nth-largest-poker-i00",
+      "family": "vlabench/select_nth_largest_poker",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-painting-i00",
+      "family": "vlabench/select_painting",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-poker-i00",
+      "family": "vlabench/select_poker",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-poker-semantic-i00",
+      "family": "vlabench/select_poker_semantic",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-poker-spatial-i00",
+      "family": "vlabench/select_poker_spatial",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-specific-type-book-i00",
+      "family": "vlabench/select_specific_type_book",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-toy-i00",
+      "family": "vlabench/select_toy",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-select-unique-type-mahjong-i00",
+      "family": "vlabench/select_unique_type_mahjong",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-take-out-cool-drink-i00",
+      "family": "vlabench/take_out_cool_drink",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "vlabench-texas-holdem-i00",
+      "family": "vlabench/texas_holdem",
+      "robot": "franka-panda",
+      "simulator": "vlabench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:49.441220+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

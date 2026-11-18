@@ -1,0 +1,80 @@
+# EFE 迁移编译物（metaworldplus）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: metaworld/stick-push | goal: staged
+# fidelity: spec
+version: 1
+
+task:
+  name: metaworldplus-stick-push-i00
+  type: efe_static
+  robot: sawyer
+  scene: efe_tabletop
+  max_episode_steps: 500
+
+assets:
+  task_relevant:
+  - name: stick
+    shape_type: sphere
+    size:
+    - 0.02
+    position:
+    - -0.15
+    - 0.75
+    - 0.02
+    color:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 1.0
+    mass: 0.75
+    static: false
+    friction: 1.0
+  - name: thermos_point
+    shape_type: box
+    size:
+    - 0.03
+    - 0.03
+    - 0.06
+    position:
+    - 0.0
+    - 0.79
+    - 0.14
+    color:
+    - 0.7
+    - 0.7
+    - 0.7
+    - 1.0
+    mass: 0.2
+    static: false
+    friction: 1.0
+
+success:
+  type: staged
+  params:
+    stages:
+    - stage: transport_fail
+      condition:
+        type: distance_threshold
+        params:
+          object: thermos_point
+          target_position:
+          - 0.0
+          - 0.6
+          - 0.1
+          threshold: 0.12
+    - stage: lift_fail
+      condition:
+        type: axis_window
+        params:
+          object: stick
+          windows:
+            z:
+            - 0.11
+            - null
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

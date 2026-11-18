@@ -1,0 +1,698 @@
+{
+  "suite": "abc-sim",
+  "n_tasks": 29,
+  "n_task_dirs": 60,
+  "robots": [
+    "i2rt-yam-bimanual"
+  ],
+  "simulators": [
+    "mujoco"
+  ],
+  "tasks": [
+    {
+      "name": "abc-sim-ball-tray-i00",
+      "family": "ball_tray",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-chess-i00",
+      "family": "chess",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-conveyor-pick-i00",
+      "family": "conveyor_pick",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-count-four-i00",
+      "family": "count_four",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-count-i00",
+      "family": "count",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-count-one-i00",
+      "family": "count_one",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-count-three-i00",
+      "family": "count_three",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-count-two-i00",
+      "family": "count_two",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-dish-rack-i00",
+      "family": "dish_rack",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-drawer-search-i00",
+      "family": "drawer_search",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-grab-clutter-i00",
+      "family": "grab_clutter",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-hang-mug-i00",
+      "family": "hang_mug",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-inhand-transfer-i00",
+      "family": "inhand_transfer",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-lego-i00",
+      "family": "lego",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-nuts-bolts-i00",
+      "family": "nuts_bolts",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-pouring-i00",
+      "family": "pouring",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-put-bottles-i00",
+      "family": "put_bottles",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-put-relative-i00",
+      "family": "put_relative",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-spell-abc-i00",
+      "family": "spell_abc",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-spell-agi-i00",
+      "family": "spell_agi",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-spell-bair-i00",
+      "family": "spell_bair",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-spell-cat-i00",
+      "family": "spell_cat",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-spell-dog-i00",
+      "family": "spell_dog",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-spell-fish-i00",
+      "family": "spell_fish",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-spell-xdof-i00",
+      "family": "spell_xdof",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-spell-yam-i00",
+      "family": "spell_yam",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-sweep-i00",
+      "family": "sweep",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-throw-bottles-i00",
+      "family": "throw_bottles",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "abc-sim-turn-mug-i00",
+      "family": "turn_mug",
+      "robot": "i2rt-yam-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 6000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:47.355197+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

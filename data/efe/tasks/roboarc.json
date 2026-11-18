@@ -1,0 +1,2460 @@
+{
+  "suite": "roboarc",
+  "n_tasks": 106,
+  "n_task_dirs": 212,
+  "robots": [
+    "aloha-2",
+    "franka-panda-bimanual",
+    "franka-robotiq-2f85"
+  ],
+  "simulators": [
+    "mujoco",
+    "roboarc"
+  ],
+  "tasks": [
+    {
+      "name": "roboarc-blanket-flatten-01-i01",
+      "family": "blanket_flatten",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-flatten-02-i01",
+      "family": "blanket_flatten",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-flatten-03-i01",
+      "family": "blanket_flatten",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-flatten-04-i01",
+      "family": "blanket_flatten",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-flatten-05-i01",
+      "family": "blanket_flatten",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-flatten-06-i01",
+      "family": "blanket_flatten",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-flatten-07-i01",
+      "family": "blanket_flatten",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-flatten-08-i01",
+      "family": "blanket_flatten",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-fold-01-i01",
+      "family": "blanket_fold",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-fold-02-i01",
+      "family": "blanket_fold",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-fold-03-i01",
+      "family": "blanket_fold",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-fold-04-i01",
+      "family": "blanket_fold",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-blanket-fold-05-i01",
+      "family": "blanket_fold",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-01-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-02-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-03-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-04-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-05-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-06-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-07-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-08-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-09-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-buzz-wire-3d-10-i01",
+      "family": "buzz_wire_3d",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-coil-01-i01",
+      "family": "cast_coil",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-coil-02-i01",
+      "family": "cast_coil",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-coil-03-i01",
+      "family": "cast_coil",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-coil-04-i01",
+      "family": "cast_coil",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-coil-05-i01",
+      "family": "cast_coil",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-coil-06-i01",
+      "family": "cast_coil",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-coil-07-i01",
+      "family": "cast_coil",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-coil-08-i01",
+      "family": "cast_coil",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-keyhole-01-i01",
+      "family": "cast_keyhole",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-keyhole-02-i01",
+      "family": "cast_keyhole",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-keyhole-03-i01",
+      "family": "cast_keyhole",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-keyhole-04-i01",
+      "family": "cast_keyhole",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-keyhole-05-i01",
+      "family": "cast_keyhole",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-cast-keyhole-06-i01",
+      "family": "cast_keyhole",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-01-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-02-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-03-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-04-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-05-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-06-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-07-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-08-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-09-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-fiber-bundling-10-i01",
+      "family": "fiber_bundling",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-hedgehog-in-cage-01-i01",
+      "family": "hedgehog_in_cage",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-hedgehog-in-cage-02-i01",
+      "family": "hedgehog_in_cage",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-hedgehog-in-cage-03-i01",
+      "family": "hedgehog_in_cage",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-hedgehog-in-cage-04-i01",
+      "family": "hedgehog_in_cage",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-hedgehog-in-cage-05-i01",
+      "family": "hedgehog_in_cage",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-hedgehog-in-cage-06-i01",
+      "family": "hedgehog_in_cage",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-hedgehog-in-cage-07-i01",
+      "family": "hedgehog_in_cage",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-hedgehog-in-cage-08-i01",
+      "family": "hedgehog_in_cage",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-horseshoe-ring-01-i01",
+      "family": "horseshoe_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-horseshoe-ring-02-i01",
+      "family": "horseshoe_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-horseshoe-ring-03-i01",
+      "family": "horseshoe_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-horseshoe-ring-04-i01",
+      "family": "horseshoe_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-horseshoe-ring-05-i01",
+      "family": "horseshoe_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-ikea-eket-i00",
+      "family": "ikea_eket",
+      "robot": "franka-panda-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 5460.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-ikea-gladom-i00",
+      "family": "ikea_gladom",
+      "robot": "franka-panda-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 17520.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-ikea-ikea365-i00",
+      "family": "ikea_ikea365",
+      "robot": "franka-panda-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 5640.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-ikea-lack-i00",
+      "family": "ikea_lack",
+      "robot": "franka-panda-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 5820.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-ikea-stegesund-i00",
+      "family": "ikea_stegesund",
+      "robot": "franka-panda-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 10080.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-ikea-svallet-i00",
+      "family": "ikea_svallet",
+      "robot": "aloha-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 5280.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-ikea-variera-i00",
+      "family": "ikea_variera",
+      "robot": "franka-panda-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 21120.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-ikea-vesken-i00",
+      "family": "ikea_vesken",
+      "robot": "franka-panda-bimanual",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 6060.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-01-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-02-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-03-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-04-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-05-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-06-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-07-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-08-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-09-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-10-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-11-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-interlocked-claws-12-i01",
+      "family": "interlocked_claws",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-knot-untying-01-i01",
+      "family": "knot_untying",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-knot-untying-02-i01",
+      "family": "knot_untying",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-knot-untying-03-i01",
+      "family": "knot_untying",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-knot-untying-04-i01",
+      "family": "knot_untying",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-knot-untying-05-i01",
+      "family": "knot_untying",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-knot-untying-06-i01",
+      "family": "knot_untying",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-knot-untying-09-i01",
+      "family": "knot_untying",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-lock-picking-01-i01",
+      "family": "lock_picking",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-lock-picking-02-i01",
+      "family": "lock_picking",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-lock-picking-03-i01",
+      "family": "lock_picking",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-lock-picking-04-i01",
+      "family": "lock_picking",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-lock-picking-05-i01",
+      "family": "lock_picking",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-orbits-01-i01",
+      "family": "orbits",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-rope-threading-01-i01",
+      "family": "rope_threading",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-rope-threading-02-i01",
+      "family": "rope_threading",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-rope-threading-03-i01",
+      "family": "rope_threading",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-rope-threading-04-i01",
+      "family": "rope_threading",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-rope-threading-05-i01",
+      "family": "rope_threading",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-rope-threading-06-i01",
+      "family": "rope_threading",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-rope-threading-07-i01",
+      "family": "rope_threading",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-rope-threading-08-i01",
+      "family": "rope_threading",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-slotted-post-ring-01-i01",
+      "family": "slotted_post_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-slotted-post-ring-02-i01",
+      "family": "slotted_post_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-slotted-post-ring-03-i01",
+      "family": "slotted_post_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-slotted-post-ring-04-i01",
+      "family": "slotted_post_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboarc-slotted-post-ring-05-i01",
+      "family": "slotted_post_ring",
+      "robot": "aloha-2",
+      "simulator": "roboarc",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 45000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.4",
+          "agent_timeout_sec": 10800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.768125+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

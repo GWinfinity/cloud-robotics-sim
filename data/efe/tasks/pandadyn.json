@@ -1,0 +1,709 @@
+{
+  "suite": "pandadyn",
+  "n_tasks": 25,
+  "n_task_dirs": 69,
+  "robots": [
+    "franka-panda",
+    "franka-panda-bimanual"
+  ],
+  "simulators": [
+    "maniskill"
+  ],
+  "tasks": [
+    {
+      "name": "pandadyn-d01-reciprocal-cup-relay-i00",
+      "family": "d01_reciprocal_cup_relay",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d02-strike-catch-merge-i00",
+      "family": "d02_strike_catch_merge",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d03-cooperative-puck-course-i00",
+      "family": "d03_cooperative_puck_course",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d04-shared-tray-transport-discharge-i00",
+      "family": "d04_shared_tray_transport_discharge",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 1,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d05-moving-ramp-relay-i00",
+      "family": "d05_moving_ramp_relay",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d06-moving-bank-relay-i00",
+      "family": "d06_moving_bank_relay",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d07-spring-gate-switchyard-i00",
+      "family": "d07_spring_gate_switchyard",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d08-pendulum-energy-relay-i00",
+      "family": "d08_pendulum_energy_relay",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d09-lever-launch-catch-reload-i00",
+      "family": "d09_lever_launch_catch_reload",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d10-moving-grasp-handover-i00",
+      "family": "d10_moving_grasp_handover",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d11-moving-fixture-unlock-i00",
+      "family": "d11_moving_fixture_unlock",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d12-reciprocal-sliding-transfer-i00",
+      "family": "d12_reciprocal_sliding_transfer",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-d13-supported-cube-flip-relay-i00",
+      "family": "d13_supported_cube_flip_relay",
+      "robot": "franka-panda-bimanual",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s01-cup-route-delivery-i00",
+      "family": "s01_cup_route_delivery",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s02-plate-catch-transport-release-i00",
+      "family": "s02_plate_catch_transport_release",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s03-clear-gate-hockey-i00",
+      "family": "s03_clear_gate_hockey",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s04-impact-release-relay-i00",
+      "family": "s04_impact_release_relay",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s05-sliding-receive-align-deliver-i00",
+      "family": "s05_sliding_receive_align_deliver",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s06-cube-flip-route-recover-i00",
+      "family": "s06_cube_flip_route_recover",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s07-conveyor-load-brake-unload-i00",
+      "family": "s07_conveyor_load_brake_unload",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s08-load-switch-recover-i00",
+      "family": "s08_load_switch_recover",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s09-toss-recatch-delivery-i00",
+      "family": "s09_toss_recatch_delivery",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s10-swinging-load-transit-dock-i00",
+      "family": "s10_swinging_load_transit_dock",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s11-cylinder-rescue-route-deliver-i00",
+      "family": "s11_cylinder_rescue_route_deliver",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "pandadyn-s12-moving-bridge-puck-relay-i00",
+      "family": "s12_moving_bridge_puck_relay",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3000.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.601352+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

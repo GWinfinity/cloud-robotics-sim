@@ -1,0 +1,204 @@
+{
+  "suite": "molmospaces",
+  "n_tasks": 8,
+  "n_task_dirs": 16,
+  "robots": [
+    "franka-robotiq-2f85",
+    "rainbow-rby1"
+  ],
+  "simulators": [
+    "molmospaces"
+  ],
+  "tasks": [
+    {
+      "name": "molmospaces-close-i00",
+      "family": "close",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "molmospaces",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "molmospaces-navigate-to-i00",
+      "family": "navigate-to",
+      "robot": "rainbow-rby1",
+      "simulator": "molmospaces",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "molmospaces-open-door-i00",
+      "family": "open-door",
+      "robot": "rainbow-rby1",
+      "simulator": "molmospaces",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "molmospaces-open-i00",
+      "family": "open",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "molmospaces",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "molmospaces-pick-and-place-color-i00",
+      "family": "pick-and-place-color",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "molmospaces",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "molmospaces-pick-and-place-i00",
+      "family": "pick-and-place",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "molmospaces",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "molmospaces-pick-and-place-next-to-i00",
+      "family": "pick-and-place-next-to",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "molmospaces",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "molmospaces-pick-i00",
+      "family": "pick",
+      "robot": "franka-robotiq-2f85",
+      "simulator": "molmospaces",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.462882+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

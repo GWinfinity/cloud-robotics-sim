@@ -1,0 +1,1175 @@
+{
+  "suite": "robocasa365",
+  "n_tasks": 50,
+  "n_task_dirs": 101,
+  "robots": [
+    "franka-panda-omron"
+  ],
+  "simulators": [
+    "robosuite"
+  ],
+  "tasks": [
+    {
+      "name": "robocasa365-add-lemon-to-fish-i00",
+      "family": "robocasa365/AddLemonToFish",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-assemble-cooking-array-i00",
+      "family": "robocasa365/AssembleCookingArray",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-beverage-sorting-i00",
+      "family": "robocasa365/BeverageSorting",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-bread-and-cheese-i00",
+      "family": "robocasa365/BreadAndCheese",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-candle-cleanup-i00",
+      "family": "robocasa365/CandleCleanup",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-cereal-and-bowl-i00",
+      "family": "robocasa365/CerealAndBowl",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-choose-measuring-cup-i00",
+      "family": "robocasa365/ChooseMeasuringCup",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-clear-food-waste-i00",
+      "family": "robocasa365/ClearFoodWaste",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-clear-sink-i00",
+      "family": "robocasa365/ClearSink",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-close-drawer-i00",
+      "family": "robocasa365/CloseDrawer",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-close-oven-i00",
+      "family": "robocasa365/CloseOven",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-close-stand-mixer-head-i00",
+      "family": "robocasa365/CloseStandMixerHead",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-cookie-dough-prep-i00",
+      "family": "robocasa365/CookieDoughPrep",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-deliver-brewed-coffee-i00",
+      "family": "robocasa365/DeliverBrewedCoffee",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-dessert-upgrade-i00",
+      "family": "robocasa365/DessertUpgrade",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-display-meat-variety-i00",
+      "family": "robocasa365/DisplayMeatVariety",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-divide-basins-i00",
+      "family": "robocasa365/DivideBasins",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-drain-veggies-i00",
+      "family": "robocasa365/DrainVeggies",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-drinkware-consolidation-i00",
+      "family": "robocasa365/DrinkwareConsolidation",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-make-ice-lemonade-i00",
+      "family": "robocasa365/MakeIceLemonade",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-make-loaded-potato-i00",
+      "family": "robocasa365/MakeLoadedPotato",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-meal-prep-staging-i00",
+      "family": "robocasa365/MealPrepStaging",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-microwave-defrost-meat-i00",
+      "family": "robocasa365/MicrowaveDefrostMeat",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-open-dishwasher-i00",
+      "family": "robocasa365/OpenDishwasher",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-organize-coffee-condiments-i00",
+      "family": "robocasa365/OrganizeCoffeeCondiments",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-oven-broil-fish-i00",
+      "family": "robocasa365/OvenBroilFish",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-pack-dessert-i00",
+      "family": "robocasa365/PackDessert",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-pick-place-cabinet-to-counter-i00",
+      "family": "robocasa365/PickPlaceCabinetToCounter",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-pick-place-sink-to-counter-i00",
+      "family": "robocasa365/PickPlaceSinkToCounter",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-plate-steak-meal-i00",
+      "family": "robocasa365/PlateSteakMeal",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-portion-in-tupperware-i00",
+      "family": "robocasa365/PortionInTupperware",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-pre-rinse-station-i00",
+      "family": "robocasa365/PreRinseStation",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-prep-for-sanitizing-i00",
+      "family": "robocasa365/PrepForSanitizing",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-prep-marinating-meat-i00",
+      "family": "robocasa365/PrepMarinatingMeat",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-reheat-meal-i00",
+      "family": "robocasa365/ReheatMeal",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-retrieve-meat-i00",
+      "family": "robocasa365/RetrieveMeat",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-sanitize-prep-cutting-board-i00",
+      "family": "robocasa365/SanitizePrepCuttingBoard",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-scrub-bowl-i00",
+      "family": "robocasa365/ScrubBowl",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-searing-meat-i00",
+      "family": "robocasa365/SearingMeat",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-seasoning-spice-setup-i00",
+      "family": "robocasa365/SeasoningSpiceSetup",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-set-up-cutting-station-i00",
+      "family": "robocasa365/SetUpCuttingStation",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-stocking-breakfast-foods-i00",
+      "family": "robocasa365/StockingBreakfastFoods",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-sweeten-coffee-i00",
+      "family": "robocasa365/SweetenCoffee",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-thaw-in-sink-i00",
+      "family": "robocasa365/ThawInSink",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-tong-buffet-setup-i00",
+      "family": "robocasa365/TongBuffetSetup",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-turn-off-microwave-i00",
+      "family": "robocasa365/TurnOffMicrowave",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-turn-on-microwave-i00",
+      "family": "robocasa365/TurnOnMicrowave",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-turn-on-sink-faucet-i00",
+      "family": "robocasa365/TurnOnSinkFaucet",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-turn-on-stove-i00",
+      "family": "robocasa365/TurnOnStove",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa365-turn-on-toaster-oven-i00",
+      "family": "robocasa365/TurnOnToasterOven",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.961047+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

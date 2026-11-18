@@ -1,0 +1,24 @@
+# DexToolBench — EFE 套件迁移记录（策划数据）。
+# `efe.*` 计数与类别来自 arXiv:2611.12177 Table 2；
+# 由 tools/build_efe_registry.py 对照 data/efe/tasks/dextoolbench.json 校验，
+# 并与论文总数（35 套件 / 47 机器人 / 1156 任务 / 2288 测试 / 456 核心）对账。
+# 修改 efe 计数后必须重跑 build 工具的 --check。
+suite: dextoolbench
+name: DexToolBench
+efe:
+  origin: adapted
+  in_paper: true
+  source: null
+  simulator: mujoco
+  kinds:
+  - hand
+  robots:
+  - kuka-iiwa14-sharpa-ha4
+  tasks: 21
+  tests: 42
+  core: 20
+project:
+  tier: T1
+  status: planned
+  target: plugins/manipulation/dexterous_gnn_qp 扩展
+  note: Kuka iiwa14 + SHARPA HA4 灵巧工具操作；iiwa14 在 Menagerie

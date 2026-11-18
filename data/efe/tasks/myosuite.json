@@ -1,0 +1,536 @@
+{
+  "suite": "myosuite",
+  "n_tasks": 22,
+  "n_task_dirs": 45,
+  "robots": [
+    "myoarm",
+    "myoarm-mpl",
+    "myoarm-torso",
+    "myohand",
+    "myoleg-osl",
+    "myolegs"
+  ],
+  "simulators": [
+    "myosuite"
+  ],
+  "tasks": [
+    {
+      "name": "myosuite-arm-reach-i00",
+      "family": "arm_reach",
+      "robot": "myoarm",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-baoding-i00",
+      "family": "baoding",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-bimanual-i00",
+      "family": "bimanual",
+      "robot": "myoarm-mpl",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-chase-tag-i00",
+      "family": "chase_tag",
+      "robot": "myolegs",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-dex-airplane-fly-i00",
+      "family": "dex_airplane_fly",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-dex-apple-lift-i00",
+      "family": "dex_apple_lift",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-dex-bunny-inspect-i00",
+      "family": "dex_bunny_inspect",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-dex-cup-pour-i00",
+      "family": "dex_cup_pour",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-dex-cylinder-pass-i00",
+      "family": "dex_cylinder_pass",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-dex-hammer-use-i00",
+      "family": "dex_hammer_use",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-die-reorient-i00",
+      "family": "die_reorient",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-hand-pose-i00",
+      "family": "hand_pose",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-hand-reach-i00",
+      "family": "hand_reach",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-key-turn-i00",
+      "family": "key_turn",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-obj-hold-i00",
+      "family": "obj_hold",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-obj-reorient-i00",
+      "family": "obj_reorient",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-osl-run-i00",
+      "family": "osl_run",
+      "robot": "myoleg-osl",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-pen-twirl-i00",
+      "family": "pen_twirl",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-relocate-i00",
+      "family": "relocate",
+      "robot": "myoarm",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-sarc-key-turn-i00",
+      "family": "sarc_key_turn",
+      "robot": "myohand",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-soccer-i00",
+      "family": "soccer",
+      "robot": "myolegs",
+      "simulator": "myosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "myosuite-table-tennis-i00",
+      "family": "table_tennis",
+      "robot": "myoarm-torso",
+      "simulator": "myosuite",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.537327+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

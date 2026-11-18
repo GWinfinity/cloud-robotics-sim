@@ -1,0 +1,31 @@
+# RoboEngineer — EFE 套件迁移记录（策划数据）。
+# `efe.*` 计数与类别来自 arXiv:2611.12177 Table 2；
+# 由 tools/build_efe_registry.py 对照 data/efe/tasks/roboengineer.json 校验，
+# 并与论文总数（35 套件 / 47 机器人 / 1156 任务 / 2288 测试 / 456 核心）对账。
+# 修改 efe 计数后必须重跑 build 工具的 --check。
+suite: roboengineer
+name: RoboEngineer
+efe:
+  origin: new
+  in_paper: true
+  source: null
+  simulator: mujoco+learned
+  kinds:
+  - aerial
+  - car
+  - humanoid
+  - quadruped
+  robots:
+  - anycar
+  - intel-aero-partial
+  - neural-fly-partial
+  - unitree-g1
+  - unitree-go2
+  tasks: 30
+  tests: 30
+  core: 15
+project:
+  tier: TX
+  status: planned
+  target: plugins/sim2real
+  note: 考点是公开仿真→隐藏动力学部署闭环；可移植公开半段，隐藏动力学半段需自有 learned-dynamics 服务

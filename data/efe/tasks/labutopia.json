@@ -1,0 +1,226 @@
+{
+  "suite": "labutopia",
+  "n_tasks": 9,
+  "n_task_dirs": 18,
+  "robots": [
+    "franka-panda"
+  ],
+  "simulators": [
+    "labutopia"
+  ],
+  "tasks": [
+    {
+      "name": "labutopia-heat-liquid-i00",
+      "family": "heat_liquid",
+      "robot": "franka-panda",
+      "simulator": "labutopia",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 1,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "labutopia-open-close-i00",
+      "family": "open_close",
+      "robot": "franka-panda",
+      "simulator": "labutopia",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "labutopia-open-door-i00",
+      "family": "open_door",
+      "robot": "franka-panda",
+      "simulator": "labutopia",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 4,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "labutopia-open-drawer-i00",
+      "family": "open_drawer",
+      "robot": "franka-panda",
+      "simulator": "labutopia",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 2,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "labutopia-pick-i00",
+      "family": "pick",
+      "robot": "franka-panda",
+      "simulator": "labutopia",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "labutopia-place-i00",
+      "family": "place",
+      "robot": "franka-panda",
+      "simulator": "labutopia",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "labutopia-pour-i00",
+      "family": "pour",
+      "robot": "franka-panda",
+      "simulator": "labutopia",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "labutopia-press-i00",
+      "family": "press",
+      "robot": "franka-panda",
+      "simulator": "labutopia",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "labutopia-shake-i00",
+      "family": "shake",
+      "robot": "franka-panda",
+      "simulator": "labutopia",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.183095+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

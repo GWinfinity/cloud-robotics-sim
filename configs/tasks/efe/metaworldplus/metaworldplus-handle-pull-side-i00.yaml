@@ -1,0 +1,48 @@
+# EFE 迁移编译物（metaworldplus）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: metaworld/handle-pull-side | goal: Pull the sideways-mounted handle
+# fidelity: spec
+version: 1
+
+task:
+  name: metaworldplus-handle-pull-side-i00
+  type: efe_static
+  robot: sawyer
+  scene: efe_tabletop
+  max_episode_steps: 500
+
+assets:
+  task_relevant:
+  - name: handle_link
+    shape_type: sphere
+    size:
+    - 0.02
+    position:
+    - -0.4
+    - 0.55
+    - 0.15
+    color:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 1.0
+    mass: 0.75
+    static: false
+    friction: 1.0
+
+success:
+  type: distance_threshold
+  params:
+    object: handle_link
+    target_position:
+    - -0.4
+    - 0.384
+    - 0.172
+    threshold: 0.08
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

@@ -1,0 +1,686 @@
+{
+  "suite": "robocasa",
+  "n_tasks": 29,
+  "n_task_dirs": 58,
+  "robots": [
+    "franka-panda-omron"
+  ],
+  "simulators": [
+    "robosuite"
+  ],
+  "tasks": [
+    {
+      "name": "robocasa-arrange-vegetables-i00",
+      "family": "robocasa/ArrangeVegetables",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-close-double-door-i00",
+      "family": "robocasa/CloseDoubleDoor",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-close-drawer-i00",
+      "family": "robocasa/CloseDrawer",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-close-single-door-i00",
+      "family": "robocasa/CloseSingleDoor",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-coffee-press-button-i00",
+      "family": "robocasa/CoffeePressButton",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-coffee-serve-mug-i00",
+      "family": "robocasa/CoffeeServeMug",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-coffee-setup-mug-i00",
+      "family": "robocasa/CoffeeSetupMug",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-microwave-thawing-i00",
+      "family": "robocasa/MicrowaveThawing",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-open-double-door-i00",
+      "family": "robocasa/OpenDoubleDoor",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-open-drawer-i00",
+      "family": "robocasa/OpenDrawer",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-open-single-door-i00",
+      "family": "robocasa/OpenSingleDoor",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-pnp-cab-to-counter-i00",
+      "family": "robocasa/PnPCabToCounter",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-pnp-counter-to-cab-i00",
+      "family": "robocasa/PnPCounterToCab",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-pnp-counter-to-microwave-i00",
+      "family": "robocasa/PnPCounterToMicrowave",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-pnp-counter-to-sink-i00",
+      "family": "robocasa/PnPCounterToSink",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-pnp-counter-to-stove-i00",
+      "family": "robocasa/PnPCounterToStove",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-pnp-microwave-to-counter-i00",
+      "family": "robocasa/PnPMicrowaveToCounter",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-pnp-sink-to-counter-i00",
+      "family": "robocasa/PnPSinkToCounter",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-pnp-stove-to-counter-i00",
+      "family": "robocasa/PnPStoveToCounter",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-pre-soak-pan-i00",
+      "family": "robocasa/PreSoakPan",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-prepare-coffee-i00",
+      "family": "robocasa/PrepareCoffee",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-restock-pantry-i00",
+      "family": "robocasa/RestockPantry",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-turn-off-microwave-i00",
+      "family": "robocasa/TurnOffMicrowave",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-turn-off-sink-faucet-i00",
+      "family": "robocasa/TurnOffSinkFaucet",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-turn-off-stove-i00",
+      "family": "robocasa/TurnOffStove",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-turn-on-microwave-i00",
+      "family": "robocasa/TurnOnMicrowave",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-turn-on-sink-faucet-i00",
+      "family": "robocasa/TurnOnSinkFaucet",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-turn-on-stove-i00",
+      "family": "robocasa/TurnOnStove",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-turn-sink-spout-i00",
+      "family": "robocasa/TurnSinkSpout",
+      "robot": "franka-panda-omron",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.844118+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

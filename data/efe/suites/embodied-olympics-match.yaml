@@ -1,0 +1,30 @@
+# Embodied Olympics - Match — EFE 套件迁移记录（策划数据）。
+# `efe.*` 计数与类别来自 arXiv:2611.12177 Table 2；
+# 由 tools/build_efe_registry.py 对照 data/efe/tasks/embodied-olympics-match.json 校验，
+# 并与论文总数（35 套件 / 47 机器人 / 1156 任务 / 2288 测试 / 456 核心）对账。
+# 修改 efe 计数后必须重跑 build 工具的 --check。
+suite: embodied-olympics-match
+name: Embodied Olympics - Match
+efe:
+  origin: new
+  in_paper: true
+  source: null
+  simulator: mujoco
+  kinds:
+  - arm
+  - humanoid
+  - mobile_manip
+  robots:
+  - booster-t1
+  - foosball-rods
+  - franka-panda
+  - ssl-robot
+  - unitree-g1
+  tasks: 14
+  tests: 41
+  core: 13
+project:
+  tier: T1
+  status: partial
+  target: plugins/envs/table_tennis + badminton 扩展
+  note: 乒乓/羽毛球/足球/桌上足球/击剑对抗，自带 runtime 与脚本对手，realtime 为主；项目桌球/羽毛球插件是最直接的落点

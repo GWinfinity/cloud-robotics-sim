@@ -1,0 +1,328 @@
+# EFE 47 机器人（+组件机）资产来源对账表。
+# source: have(已在库) | compose(组件合成) | menagerie(Menagerie 可转) |
+#         public(上游公开) | efe_custom(需从 EFE 镜像抽取/重建) | blocked | out_of_paper
+# component_only=True 的条目不属于论文 47 台计数（夹爪/手/臂部件）。
+- robot: franka-panda
+  source: have
+  detail: assets_genesis/embodiments/franka-panda (gold)
+  suites:
+  - embodied-olympics-match
+  - embodiedswe
+  - labutopia
+  - libero-max
+  - mujoco-playground
+  - pandadyn
+  - robopaint
+  - vlabench
+- robot: franka-panda-bimanual
+  source: compose
+  detail: 2x franka-panda 对称装配
+  suites:
+  - embodiedswe
+  - pandadyn
+  - roboarc
+  components:
+  - franka-panda
+- robot: franka-panda-longfinger
+  source: compose
+  detail: franka-panda 派生长指版本（ManiGuard 修改）
+  suites:
+  - maniguard
+  components:
+  - franka-panda
+- robot: franka-robotiq-2f85
+  source: compose
+  detail: franka-panda + Robotiq 2F-85
+  suites:
+  - embodied-safety-exam
+  - molmospaces
+  - roboarc
+  - robolab
+  components:
+  - franka-panda
+  - robotiq-2f85
+- robot: franka-panda-omron
+  source: efe_custom
+  detail: RoboCasa 移动操作底座合成（Panda + Omron LD 底盘）
+  suites:
+  - robocasa
+  - robocasa365
+- robot: franka-allegro
+  source: compose
+  detail: franka-panda + Allegro 手
+  suites:
+  - dexjoco
+  components:
+  - franka-panda
+  - allegro-hand
+- robot: franka-allegro-bimanual
+  source: compose
+  detail: 2x (franka-panda + Allegro 手)
+  suites:
+  - dexjoco
+  components:
+  - franka-panda
+  - allegro-hand
+- robot: ur5e-robotiq-2f85
+  source: compose
+  detail: UR5e + Robotiq 2F-85
+  suites:
+  - autobio
+  - embodied-safety-exam
+  components:
+  - ur5e
+  - robotiq-2f85
+- robot: ur5e-dexhand-2f85-bimanual
+  source: efe_custom
+  detail: AutoBio 双臂（UR5e + DexHand + 2F-85）合成体
+  suites:
+  - autobio
+  components:
+  - ur5e
+- robot: sawyer
+  source: public
+  detail: MetaWorld MJCF 已镜像 assets/metaworld（objects/xyz_base.xml，MIT @59fc34d）；EFE P1 编译配置的默认机器人
+  suites:
+  - metaworldplus
+- robot: aloha-agilex
+  source: have
+  detail: assets_genesis/embodiments/aloha-agilex (silver)
+  suites:
+  - robotwin-2
+- robot: arx-x5-bimanual
+  source: compose
+  detail: 2x ARX-X5（assets_genesis/embodiments/ARX-X5, silver）对称装配
+  suites:
+  - robodojo
+  components:
+  - ARX-X5
+- robot: ARX-X5
+  source: have
+  detail: assets_genesis/embodiments/ARX-X5 (silver)
+  suites: []
+  component_only: true
+- robot: aloha-2
+  source: public
+  detail: Mobile ALOHA 仓库（VX300S 双臂 + 夹爪）
+  suites:
+  - autobio
+  - mujoco-playground
+  - roboarc
+- robot: aloha-2-arm
+  source: public
+  detail: Mobile ALOHA 单臂变体
+  suites:
+  - autobio
+- robot: marvin-bimanual
+  source: efe_custom
+  detail: EFE Genesis 原生机器人（RoboWits 镜像内）
+  suites:
+  - robowits
+- robot: marvin-bimanual-sharpa-wave
+  source: efe_custom
+  detail: marvin 臂 + SHARPA Wave 灵巧手
+  suites:
+  - dexhand
+  components:
+  - marvin-bimanual
+- robot: sharpa-wave-floating
+  source: efe_custom
+  detail: SHARPA Wave 手浮动本体
+  suites:
+  - dexhand
+- robot: sharpa-wave-floating-bimanual
+  source: efe_custom
+  detail: 2x SHARPA Wave 浮动本体
+  suites:
+  - dexhand
+  components:
+  - sharpa-wave-floating
+- robot: i2rt-yam-bimanual
+  source: efe_custom
+  detail: I2RT YAM 双臂（ABC Sim/YAMLab 镜像内）
+  suites:
+  - abc-sim
+  - embodied-safety-exam
+  - yamlab
+- robot: unitree-g1
+  source: menagerie
+  detail: MuJoCo Menagerie unitree_g1
+  suites:
+  - embodied-olympics-fun
+  - embodied-olympics-match
+  - roboengineer
+- robot: unitree-g1-dex1
+  source: menagerie
+  detail: G1 + dex1 手（Menagerie g1 + 公开 dex 手）
+  suites:
+  - bigym2
+  components:
+  - unitree-g1
+- robot: unitree-g1-dex3
+  source: menagerie
+  detail: G1 + dex3 手（Menagerie g1 + 公开 dex3 手）
+  suites:
+  - embodiedswe
+  components:
+  - unitree-g1
+- robot: unitree-h1
+  source: menagerie
+  detail: MuJoCo Menagerie unitree_h1
+  suites:
+  - humanoidbench
+- robot: unitree-h1-2
+  source: menagerie
+  detail: MuJoCo Menagerie unitree_h1_2
+  suites:
+  - embodied-olympics-fun
+- robot: unitree-h1hand
+  source: menagerie
+  detail: H1 + 手（Menagerie h1 + 公开手部）
+  suites:
+  - humanoidbench
+  components:
+  - unitree-h1
+- robot: unitree-go1
+  source: menagerie
+  detail: MuJoCo Menagerie unitree_go1
+  suites:
+  - mujoco-playground
+- robot: unitree-go2
+  source: menagerie
+  detail: MuJoCo Menagerie unitree_go2
+  suites:
+  - roboengineer
+- robot: boston-dynamics-spot
+  source: menagerie
+  detail: MuJoCo Menagerie boston_dynamics_spot
+  suites:
+  - mujoco-playground
+- robot: google-barkour-vb
+  source: menagerie
+  detail: MuJoCo Menagerie google_barkour_vb
+  suites:
+  - mujoco-playground
+- robot: fourier-gr1
+  source: public
+  detail: Fourier Intelligence GR1 公开 URDF
+  suites:
+  - robocasa-gr1
+- robot: rainbow-rby1
+  source: public
+  detail: Rainbow Robotics RB-Y1 公开 URDF
+  suites:
+  - molmospaces
+- robot: tidybot-plus-plus
+  source: public
+  detail: TidyBot++（Princeton）公开资产
+  suites:
+  - embodied-safety-exam
+  - kinder
+- robot: booster-t1
+  source: public
+  detail: Booster Robotics T1 公开 URDF
+  suites:
+  - embodied-olympics-match
+- robot: ssl-robot
+  source: efe_custom
+  detail: RoboCup SSL 小车（奥运会对抗镜像内）
+  suites:
+  - embodied-olympics-match
+- robot: foosball-rods
+  source: efe_custom
+  detail: 桌上足球杆组机构
+  suites:
+  - embodied-olympics-match
+- robot: ambench-fahexa
+  source: efe_custom
+  detail: AM-Bench 空中操作平台（镜像内）
+  suites:
+  - ambench
+- robot: anycar
+  source: efe_custom
+  detail: RoboEngineer 小车（镜像内）
+  suites:
+  - roboengineer
+- robot: intel-aero-partial
+  source: efe_custom
+  detail: RoboEngineer Intel Aero 部分模型
+  suites:
+  - roboengineer
+- robot: neural-fly-partial
+  source: efe_custom
+  detail: RoboEngineer Neural-Fly 部分模型
+  suites:
+  - roboengineer
+- robot: r1pro
+  source: efe_custom
+  detail: Galbot R1 Pro（BEHAVIOR/iSpatialGym 镜像内，数据集有许可门）
+  suites:
+  - behavior-1k
+  - ispatialgym
+- robot: myoarm
+  source: blocked
+  detail: MyoSuite 肌肉骨骼模型：Genesis 无 tendon/muscle 致动
+  suites:
+  - myosuite
+- robot: myoarm-mpl
+  source: blocked
+  detail: MyoSuite 肌肉骨骼模型（MPL 假肢）
+  suites:
+  - myosuite
+- robot: myoarm-torso
+  source: blocked
+  detail: MyoSuite 肌肉骨骼模型（躯干）
+  suites:
+  - myosuite
+- robot: myohand
+  source: blocked
+  detail: MyoSuite 肌肉骨骼手
+  suites:
+  - myosuite
+- robot: myoleg-osl
+  source: blocked
+  detail: MyoSuite 肌肉骨骼腿（OSL 假肢）
+  suites:
+  - myosuite
+- robot: myolegs
+  source: blocked
+  detail: MyoSuite 肌肉骨骼双腿
+  suites:
+  - myosuite
+- robot: smplx-human
+  source: out_of_paper
+  detail: SMPL-X 人形（HumanCLAW，论文计数之外）
+  suites: []
+- robot: robotiq-2f85
+  source: menagerie
+  detail: MuJoCo Menagerie robotiq_2f85
+  suites: []
+  component_only: true
+- robot: ur5e
+  source: menagerie
+  detail: MuJoCo Menagerie universal_robots_ur5e
+  suites: []
+  component_only: true
+- robot: kuka-iiwa14-sharpa-ha4
+  source: compose
+  detail: Menagerie kuka_iiwa_14 + SHARPA HA4 手
+  suites:
+  - dextoolbench
+  components:
+  - kuka-iiwa14
+  - sharpa-ha4
+- robot: kuka-iiwa14
+  source: menagerie
+  detail: MuJoCo Menagerie kuka_iiwa_14
+  suites: []
+  component_only: true
+- robot: sharpa-ha4
+  source: efe_custom
+  detail: SHARPA HA4 灵巧手（DexToolBench 镜像内）
+  suites: []
+  component_only: true
+- robot: allegro-hand
+  source: public
+  detail: Wonik/Wessling Allegro 手 URDF
+  suites: []
+  component_only: true

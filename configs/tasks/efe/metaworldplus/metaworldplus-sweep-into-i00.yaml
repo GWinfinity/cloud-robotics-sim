@@ -1,0 +1,56 @@
+# EFE 迁移编译物（metaworldplus）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: metaworld/sweep-into | goal: Sweep the object into the goal
+# fidelity: spec
+version: 1
+
+task:
+  name: metaworldplus-sweep-into-i00
+  type: efe_static
+  robot: sawyer
+  scene: efe_tabletop
+  max_episode_steps: 500
+
+assets:
+  task_relevant:
+  - name: obj
+    shape_type: box
+    size:
+    - 0.02
+    - 0.02
+    - 0.02
+    position:
+    - 0.0
+    - 0.6
+    - 0.02
+    color:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 1.0
+    mass: 0.75
+    static: false
+    friction: 1.0
+
+success:
+  type: axis_window
+  params:
+    object: obj
+    target_position:
+    - 0.0
+    - 0.84
+    - 0.02
+    windows:
+      x:
+      - -0.05
+      - 0.05
+      y:
+      - -0.05
+      - 0.05
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

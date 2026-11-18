@@ -1,0 +1,533 @@
+{
+  "suite": "roboengineer",
+  "n_tasks": 30,
+  "n_task_dirs": 30,
+  "robots": [
+    "anycar",
+    "intel-aero-partial",
+    "neural-fly-partial",
+    "unitree-g1",
+    "unitree-go2"
+  ],
+  "simulators": [
+    "mujoco"
+  ],
+  "tasks": [
+    {
+      "name": "roboengineer-anycar-compact-lap-monaco-6-i00",
+      "family": "roboengineer/anycar-compact-lap-monaco-6",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-anycar-compact-lap-monaco-6-i01",
+      "family": "roboengineer/anycar-compact-lap-monaco-6",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-anycar-compact-lap-silverstone-8-i00",
+      "family": "roboengineer/anycar-compact-lap-silverstone-8",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-anycar-compact-lap-silverstone-8-i01",
+      "family": "roboengineer/anycar-compact-lap-silverstone-8",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-anycar-drift-park-i00",
+      "family": "roboengineer/anycar-drift-park",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-anycar-drift-park-i01",
+      "family": "roboengineer/anycar-drift-park",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-anycar-tight-drift-park-i00",
+      "family": "roboengineer/anycar-tight-drift-park",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-anycar-tight-drift-park-i01",
+      "family": "roboengineer/anycar-tight-drift-park",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-anycar-tracking-i00",
+      "family": "roboengineer/anycar-tracking",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-anycar-tracking-i01",
+      "family": "roboengineer/anycar-tracking",
+      "robot": "anycar",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-g1-terrain-walk-i00",
+      "family": "roboengineer/g1-terrain-walk",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-g1-terrain-walk-i01",
+      "family": "roboengineer/g1-terrain-walk",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-go2-attitude-i00",
+      "family": "roboengineer/go2-attitude",
+      "robot": "unitree-go2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-go2-attitude-i01",
+      "family": "roboengineer/go2-attitude",
+      "robot": "unitree-go2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-go2-forward-jump-i00",
+      "family": "roboengineer/go2-forward-jump",
+      "robot": "unitree-go2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-go2-forward-jump-i01",
+      "family": "roboengineer/go2-forward-jump",
+      "robot": "unitree-go2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-go2-weave-i00",
+      "family": "roboengineer/go2-weave",
+      "robot": "unitree-go2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-go2-weave-i01",
+      "family": "roboengineer/go2-weave",
+      "robot": "unitree-go2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-go2-yaw-jump-i00",
+      "family": "roboengineer/go2-yaw-jump",
+      "robot": "unitree-go2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-go2-yaw-jump-i01",
+      "family": "roboengineer/go2-yaw-jump",
+      "robot": "unitree-go2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-landing-random-pad-i00",
+      "family": "roboengineer/landing-random-pad",
+      "robot": "intel-aero-partial",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.0",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-landing-random-pad-i01",
+      "family": "roboengineer/landing-random-pad",
+      "robot": "intel-aero-partial",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.0",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-neuralfly-eight-i00",
+      "family": "roboengineer/neuralfly-eight",
+      "robot": "neural-fly-partial",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-neuralfly-eight-i01",
+      "family": "roboengineer/neuralfly-eight",
+      "robot": "neural-fly-partial",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-neuralfly-general-i00",
+      "family": "roboengineer/neuralfly-general",
+      "robot": "neural-fly-partial",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-neuralfly-general-i01",
+      "family": "roboengineer/neuralfly-general",
+      "robot": "neural-fly-partial",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-neuralfly-general-skydio-i00",
+      "family": "roboengineer/neuralfly-general-skydio",
+      "robot": "neural-fly-partial",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-neuralfly-general-skydio-i01",
+      "family": "roboengineer/neuralfly-general-skydio",
+      "robot": "neural-fly-partial",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-neuralfly-vector-wind-i00",
+      "family": "roboengineer/neuralfly-vector-wind",
+      "robot": "neural-fly-partial",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "roboengineer-neuralfly-vector-wind-i01",
+      "family": "roboengineer/neuralfly-vector-wind",
+      "robot": "neural-fly-partial",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "policy",
+      "instance_seed": 1,
+      "modes": {
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-policy/1.1",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:49.081566+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

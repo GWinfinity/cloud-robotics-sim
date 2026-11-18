@@ -1,0 +1,571 @@
+{
+  "suite": "robocasa-gr1",
+  "n_tasks": 24,
+  "n_task_dirs": 48,
+  "robots": [
+    "fourier-gr1"
+  ],
+  "simulators": [
+    "robosuite"
+  ],
+  "tasks": [
+    {
+      "name": "robocasa-gr1-bottle-to-cabinet-close-i00",
+      "family": "robocasa-gr1/PnPBottleToCabinetClose",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-can-to-drawer-close-i00",
+      "family": "robocasa-gr1/PnPCanToDrawerClose",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-cup-to-drawer-close-i00",
+      "family": "robocasa-gr1/PnPCupToDrawerClose",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-cuttingboard-to-basket-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromCuttingboardToBasketSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-cuttingboard-to-cardboardbox-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromCuttingboardToCardboardboxSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-cuttingboard-to-pan-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromCuttingboardToPanSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-cuttingboard-to-pot-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromCuttingboardToPotSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-cuttingboard-to-tieredbasket-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromCuttingboardToTieredbasketSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-milk-to-microwave-close-i00",
+      "family": "robocasa-gr1/PnPMilkToMicrowaveClose",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-placemat-to-basket-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromPlacematToBasketSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-placemat-to-bowl-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromPlacematToBowlSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-placemat-to-plate-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromPlacematToPlateSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-placemat-to-tieredshelf-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromPlacematToTieredshelfSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-plate-to-bowl-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromPlateToBowlSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-plate-to-cardboardbox-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromPlateToCardboardboxSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-plate-to-pan-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromPlateToPanSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-plate-to-plate-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromPlateToPlateSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-potato-to-microwave-close-i00",
+      "family": "robocasa-gr1/PnPPotatoToMicrowaveClose",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-tray-to-cardboardbox-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromTrayToCardboardboxSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-tray-to-plate-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromTrayToPlateSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-tray-to-pot-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromTrayToPotSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-tray-to-tieredbasket-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromTrayToTieredbasketSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-tray-to-tieredshelf-i00",
+      "family": "robocasa-gr1/PosttrainPnPNovelFromTrayToTieredshelfSplitA",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "robocasa-gr1-wine-to-cabinet-close-i00",
+      "family": "robocasa-gr1/PnPWineToCabinetClose",
+      "robot": "fourier-gr1",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.883667+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

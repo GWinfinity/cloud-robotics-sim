@@ -1,0 +1,295 @@
+{
+  "suite": "ispatialgym",
+  "n_tasks": 12,
+  "n_task_dirs": 24,
+  "robots": [
+    "r1pro"
+  ],
+  "simulators": [
+    "ispatialgym"
+  ],
+  "tasks": [
+    {
+      "name": "ispatialgym-alignment-axial-i00",
+      "family": "alignment_axial",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-alignment-vertical-i00",
+      "family": "alignment_vertical",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-camera-relocalization-obstructed-i00",
+      "family": "camera_relocalization_obstructed",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-configuration-matching-articulation-open-small-scale-i00",
+      "family": "configuration_matching_articulation_open_small_scale",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-configuration-matching-block-design-i00",
+      "family": "configuration_matching_block_design",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 11018
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-inter-object-relation-satisfaction-inside-small-scale-i00",
+      "family": "inter_object_relation_satisfaction_inside_small_scale",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-inter-object-relation-satisfaction-nextto-small-scale-i00",
+      "family": "inter_object_relation_satisfaction_nextto_small_scale",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-inter-object-relation-satisfaction-ontop-small-scale-i00",
+      "family": "inter_object_relation_satisfaction_ontop_small_scale",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-inter-object-relation-satisfaction-touching-small-scale-i00",
+      "family": "inter_object_relation_satisfaction_touching_small_scale",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-inter-object-relation-satisfaction-under-small-scale-i00",
+      "family": "inter_object_relation_satisfaction_under_small_scale",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-mental-rotation-i00",
+      "family": "mental_rotation",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    },
+    {
+      "name": "ispatialgym-object-scaling-i00",
+      "family": "object_scaling",
+      "robot": "r1pro",
+      "simulator": "ispatialgym",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 5400
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 600.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.157217+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

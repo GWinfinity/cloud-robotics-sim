@@ -1,0 +1,1008 @@
+{
+  "suite": "robopaint",
+  "n_tasks": 43,
+  "n_task_dirs": 86,
+  "robots": [
+    "franka-panda"
+  ],
+  "simulators": [
+    "maniskill"
+  ],
+  "tasks": [
+    {
+      "name": "robopaint-acrylic-applesoranges-i00",
+      "family": "robopaint_acrylic_applesoranges",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-acrylic-bedroom-i00",
+      "family": "robopaint_acrylic_bedroom",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-acrylic-bluehorses-i00",
+      "family": "robopaint_acrylic_bluehorses",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-acrylic-greatwave-i00",
+      "family": "robopaint_acrylic_greatwave",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-acrylic-kajikazawa-i00",
+      "family": "robopaint_acrylic_kajikazawa",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-acrylic-plumpark-i00",
+      "family": "robopaint_acrylic_plumpark",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-acrylic-redfuji-i00",
+      "family": "robopaint_acrylic_redfuji",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-acrylic-suddenshower-i00",
+      "family": "robopaint_acrylic_suddenshower",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-acrylic-sunflowers-i00",
+      "family": "robopaint_acrylic_sunflowers",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-acrylic-vision-i00",
+      "family": "robopaint_acrylic_vision",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-caoshu-beiquelindanshui-i00",
+      "family": "robopaint_caoshu_beiquelindanshui",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-caoshu-nangong-i00",
+      "family": "robopaint_caoshu_nangong",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-caoshu-siwushaonian-i00",
+      "family": "robopaint_caoshu_siwushaonian",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-caoshu-wen-i00",
+      "family": "robopaint_caoshu_wen",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-caoshu-zhen-i00",
+      "family": "robopaint_caoshu_zhen",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-caoshu-zhongtiangechuifen-i00",
+      "family": "robopaint_caoshu_zhongtiangechuifen",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-kaishu-linfengguilong-i00",
+      "family": "robopaint_kaishu_linfengguilong",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-kaishu-yongzibafa-i00",
+      "family": "robopaint_kaishu_yongzibafa",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-lettering-aim-i00",
+      "family": "robopaint_lettering_aim",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-lettering-business-i00",
+      "family": "robopaint_lettering_business",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-lettering-commendation-i00",
+      "family": "robopaint_lettering_commendation",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-lettering-diligence-i00",
+      "family": "robopaint_lettering_diligence",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-lettering-liberty-i00",
+      "family": "robopaint_lettering_liberty",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-lettering-virtue-i00",
+      "family": "robopaint_lettering_virtue",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-bathers-i01",
+      "family": "robopaint_oil_bathers",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-cafeterrace-i01",
+      "family": "robopaint_oil_cafeterrace",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-cypresses-i01",
+      "family": "robopaint_oil_cypresses",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-irises-i01",
+      "family": "robopaint_oil_irises",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-milkmaid-i01",
+      "family": "robopaint_oil_milkmaid",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-monalisa-i01",
+      "family": "robopaint_oil_monalisa",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-pearlearring-i01",
+      "family": "robopaint_oil_pearlearring",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-saintevictoire-i01",
+      "family": "robopaint_oil_saintevictoire",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-starrynight-i01",
+      "family": "robopaint_oil_starrynight",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-temeraire-i01",
+      "family": "robopaint_oil_temeraire",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-oil-wanderer-i01",
+      "family": "robopaint_oil_wanderer",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-xingshu-feng-i00",
+      "family": "robopaint_xingshu_feng",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-xingshu-he-i00",
+      "family": "robopaint_xingshu_he",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-xingshu-huifenghechang-i00",
+      "family": "robopaint_xingshu_huifenghechang",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-xingshu-maolinxiuzhu-i00",
+      "family": "robopaint_xingshu_maolinxiuzhu",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-xingshu-nian-i00",
+      "family": "robopaint_xingshu_nian",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-xingshu-shan-i00",
+      "family": "robopaint_xingshu_shan",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-xingshu-xian-i00",
+      "family": "robopaint_xingshu_xian",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robopaint-xingshu-yong-i00",
+      "family": "robopaint_xingshu_yong",
+      "robot": "franka-panda",
+      "simulator": "maniskill",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "partial",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 3600.0
+        },
+        "standard": {
+          "oracle": "partial",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:49.288158+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

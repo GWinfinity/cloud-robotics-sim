@@ -1,0 +1,573 @@
+{
+  "suite": "embodiedswe",
+  "n_tasks": 24,
+  "n_task_dirs": 48,
+  "robots": [
+    "franka-panda",
+    "franka-panda-bimanual",
+    "unitree-g1-dex3"
+  ],
+  "simulators": [
+    "embodiedswe"
+  ],
+  "tasks": [
+    {
+      "name": "embodiedswe-assembly-allen-bolt-franka-osc-i00",
+      "family": "assembly.allen_bolt.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-assembly-bulb-franka-osc-i00",
+      "family": "assembly.bulb.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-assembly-ikea-table-bimanual-franka-osc-i00",
+      "family": "assembly.ikea_table.bimanual_franka.osc",
+      "robot": "franka-panda-bimanual",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-assembly-nut-thread-franka-osc-i00",
+      "family": "assembly.nut_thread.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-assembly-pc-gpu-franka-osc-i00",
+      "family": "assembly.pc_gpu.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-assembly-pc-gpu-ram-franka-osc-i00",
+      "family": "assembly.pc_gpu_ram.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-assembly-pc-motherboard-franka-osc-i00",
+      "family": "assembly.pc_motherboard.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-assembly-pc-ram-franka-osc-i00",
+      "family": "assembly.pc_ram.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-assembly-so101-bimanual-franka-osc-i00",
+      "family": "assembly.so101.bimanual_franka.osc",
+      "robot": "franka-panda-bimanual",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-cutting-dice-franka-osc-i00",
+      "family": "cutting.dice.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-cutting-slice-franka-osc-i00",
+      "family": "cutting.slice.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-locomanip-box-to-bin-g1-loco-pink-ik-i00",
+      "family": "locomanip.box_to_bin.g1.loco_pink_ik",
+      "robot": "unitree-g1-dex3",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-locomanip-fruit-delivery-g1-loco-pink-ik-i00",
+      "family": "locomanip.fruit_delivery.g1.loco_pink_ik",
+      "robot": "unitree-g1-dex3",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-locomanip-wheel-carry-g1-loco-pink-ik-i00",
+      "family": "locomanip.wheel_carry.g1.loco_pink_ik",
+      "robot": "unitree-g1-dex3",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-packing-clear-organic-objects-g1-pink-ik-i00",
+      "family": "packing.clear_organic_objects.g1.pink_ik",
+      "robot": "unitree-g1-dex3",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-packing-egg-carton-g1-pink-ik-i00",
+      "family": "packing.egg_carton.g1.pink_ik",
+      "robot": "unitree-g1-dex3",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-packing-pen-holder-franka-osc-i00",
+      "family": "packing.pen_holder.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-packing-tool-packing-franka-osc-i00",
+      "family": "packing.tool_packing.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-puzzle-classify-objects-g1-pink-ik-i00",
+      "family": "puzzle.classify_objects.g1.pink_ik",
+      "robot": "unitree-g1-dex3",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-puzzle-coffee-franka-osc-i00",
+      "family": "puzzle.coffee.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-puzzle-push-shapes-g1-pink-ik-i00",
+      "family": "puzzle.push_shapes.g1.pink_ik",
+      "robot": "unitree-g1-dex3",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-puzzle-spatula-franka-osc-i00",
+      "family": "puzzle.spatula.franka.osc",
+      "robot": "franka-panda",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-puzzle-stack-blocks-g1-pink-ik-i00",
+      "family": "puzzle.stack_blocks.g1.pink_ik",
+      "robot": "unitree-g1-dex3",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "embodiedswe-puzzle-syringe-bimanual-franka-osc-i00",
+      "family": "puzzle.syringe.bimanual_franka.osc",
+      "robot": "franka-panda-bimanual",
+      "simulator": "embodiedswe",
+      "dynamics": "static",
+      "task_type": "policy",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 122550.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 14400.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.033168+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

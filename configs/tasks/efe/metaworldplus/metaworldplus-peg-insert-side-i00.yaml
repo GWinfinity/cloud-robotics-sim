@@ -1,0 +1,58 @@
+# EFE 迁移编译物（metaworldplus）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: metaworld/peg-insert-side | goal: Insert the peg into the hole from the side
+# fidelity: spec
+version: 1
+
+task:
+  name: metaworldplus-peg-insert-side-i00
+  type: efe_static
+  robot: sawyer
+  scene: efe_tabletop
+  max_episode_steps: 500
+
+assets:
+  task_relevant:
+  - name: peg
+    shape_type: box
+    size:
+    - 0.015
+    - 0.015
+    - 0.12
+    position:
+    - 0.0
+    - 0.6
+    - 0.03
+    color:
+    - 0.3
+    - 1.0
+    - 0.3
+    - 1.0
+    mass: 0.75
+    static: false
+    friction: 1.0
+
+success:
+  type: body_point_near
+  params:
+    object: peg
+    offset:
+    - -0.1
+    - 0.0
+    - 0.0
+    target_position:
+    - -0.3
+    - 0.504
+    - 0.13
+    threshold: 0.07
+    axis_weights:
+    - 1.0
+    - 2.0
+    - 2.0
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

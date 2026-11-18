@@ -1,0 +1,1491 @@
+{
+  "suite": "libero-max",
+  "n_tasks": 64,
+  "n_task_dirs": 128,
+  "robots": [
+    "franka-panda"
+  ],
+  "simulators": [
+    "robosuite"
+  ],
+  "tasks": [
+    {
+      "name": "libero-max-goal-akita-black-bowl-in-wooden-cabinet-top-target-relocation-i00",
+      "family": "libero-max/libero_goal/target_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-akita-black-bowl-on-flat-stove-cook-target-relocation-i00",
+      "family": "libero-max/libero_goal/target_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-akita-black-bowl-on-plate-receptacle-relocation-i00",
+      "family": "libero-max/libero_goal/receptacle_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-akita-black-bowl-on-wooden-cabinet-top-obstacle-insertion-i00",
+      "family": "libero-max/libero_goal/obstacle_insertion",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-cream-cheese-on-akita-black-bowl-obstacle-insertion-i00",
+      "family": "libero-max/libero_goal/obstacle_insertion",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-flat-stove-off-visual-theme-switch-i00",
+      "family": "libero-max/libero_goal/visual_theme_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-flat-stove-on-illumination-switch-i00",
+      "family": "libero-max/libero_goal/illumination_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-flat-stove-on-illumination-switch-i01",
+      "family": "libero-max/libero_goal/illumination_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-flat-stove-on-sensor-noise-onset-i00",
+      "family": "libero-max/libero_goal/sensor_noise_onset",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-wine-bottle-on-plate-receptacle-relocation-i00",
+      "family": "libero-max/libero_goal/receptacle_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-wine-bottle-on-wine-rack-top-camera-shift-i00",
+      "family": "libero-max/libero_goal/camera_shift",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-wine-bottle-on-wine-rack-top-obstacle-insertion-i00",
+      "family": "libero-max/libero_goal/obstacle_insertion",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-wine-bottle-on-wine-rack-top-visual-theme-switch-i00",
+      "family": "libero-max/libero_goal/visual_theme_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-wine-bottle-on-wooden-cabinet-top-sensor-noise-onset-i00",
+      "family": "libero-max/libero_goal/sensor_noise_onset",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-goal-yellow-stove-on-camera-shift-i00",
+      "family": "libero-max/libero_goal/camera_shift",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-alphabet-soup-and-cream-cheese-in-basket-receptacle-relocation-i00",
+      "family": "libero-max/libero_10/receptacle_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-alphabet-soup-and-cream-cheese-in-basket-target-relocation-i00",
+      "family": "libero-max/libero_10/target_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-alphabet-soup-and-tomato-sauce-in-basket-distractor-burst-i00",
+      "family": "libero-max/libero_10/distractor_burst",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-alphabet-soup-and-tomato-sauce-in-basket-receptacle-relocation-i00",
+      "family": "libero-max/libero_10/receptacle_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-alphabet-soup-and-tomato-sauce-in-basket-sensor-noise-onset-i00",
+      "family": "libero-max/libero_10/sensor_noise_onset",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-black-bowl-in-wooden-cabinet-bottom-closed-obstacle-insertion-i00",
+      "family": "libero-max/libero_10/obstacle_insertion",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-black-bowl-in-wooden-cabinet-bottom-closed-obstacle-insertion-i01",
+      "family": "libero-max/libero_10/obstacle_insertion",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-porcelain-mug-and-white-yellow-mug-on-plate-camera-shift-i00",
+      "family": "libero-max/libero_10/camera_shift",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-porcelain-mug-and-white-yellow-mug-on-plate-illumination-switch-i00",
+      "family": "libero-max/libero_10/illumination_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-porcelain-mug-and-white-yellow-mug-on-plate-visual-theme-switch-i00",
+      "family": "libero-max/libero_10/visual_theme_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-porcelain-mug-and-white-yellow-mug-on-plate-visual-theme-switch-i01",
+      "family": "libero-max/libero_10/visual_theme_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-white-yellow-mug-and-green-chocolate-pudding-on-yellow-plate-sensor-noise-onset-i00",
+      "family": "libero-max/libero_10/sensor_noise_onset",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-white-yellow-mug-in-desk-caddy-back-camera-shift-i00",
+      "family": "libero-max/libero_10/camera_shift",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-long-white-yellow-mug-in-desk-caddy-back-illumination-switch-i00",
+      "family": "libero-max/libero_10/illumination_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-alphabet-soup-in-basket-receptacle-relocation-i00",
+      "family": "libero-max/libero_object/receptacle_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-alphabet-soup-in-basket-target-relocation-i00",
+      "family": "libero-max/libero_object/target_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-alphabet-soup-in-basket-visual-theme-switch-i00",
+      "family": "libero-max/libero_object/visual_theme_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-butter-in-basket-distractor-burst-i00",
+      "family": "libero-max/libero_object/distractor_burst",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-butter-in-basket-receptacle-relocation-i00",
+      "family": "libero-max/libero_object/receptacle_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-chocolate-pudding-in-basket-distractor-burst-i00",
+      "family": "libero-max/libero_object/distractor_burst",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-chocolate-pudding-in-basket-distractor-burst-i01",
+      "family": "libero-max/libero_object/distractor_burst",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-chocolate-pudding-in-basket-sensor-noise-onset-i00",
+      "family": "libero-max/libero_object/sensor_noise_onset",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-cream-cheese-in-basket-visual-theme-switch-i00",
+      "family": "libero-max/libero_object/visual_theme_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-green-bbq-sauce-in-red-basket-distractor-burst-i00",
+      "family": "libero-max/libero_object/distractor_burst",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-green-chocolate-pudding-in-red-basket-camera-shift-i00",
+      "family": "libero-max/libero_object/camera_shift",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-ketchup-in-basket-distractor-burst-i00",
+      "family": "libero-max/libero_object/distractor_burst",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-milk-in-basket-camera-shift-i00",
+      "family": "libero-max/libero_object/camera_shift",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-milk-in-basket-distractor-burst-i00",
+      "family": "libero-max/libero_object/distractor_burst",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-milk-in-basket-illumination-switch-i00",
+      "family": "libero-max/libero_object/illumination_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-milk-in-basket-target-relocation-i00",
+      "family": "libero-max/libero_object/target_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-orange-juice-in-basket-distractor-burst-i00",
+      "family": "libero-max/libero_object/distractor_burst",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-orange-juice-in-basket-illumination-switch-i00",
+      "family": "libero-max/libero_object/illumination_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-object-salad-dressing-in-basket-sensor-noise-onset-i00",
+      "family": "libero-max/libero_object/sensor_noise_onset",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-camera-shift-i00",
+      "family": "libero-max/libero_spatial/camera_shift",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-camera-shift-i01",
+      "family": "libero-max/libero_spatial/camera_shift",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-illumination-switch-i00",
+      "family": "libero-max/libero_spatial/illumination_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-illumination-switch-i01",
+      "family": "libero-max/libero_spatial/illumination_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-obstacle-insertion-i00",
+      "family": "libero-max/libero_spatial/obstacle_insertion",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-obstacle-insertion-i01",
+      "family": "libero-max/libero_spatial/obstacle_insertion",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-receptacle-relocation-i00",
+      "family": "libero-max/libero_spatial/receptacle_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-receptacle-relocation-i01",
+      "family": "libero-max/libero_spatial/receptacle_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-sensor-noise-onset-i00",
+      "family": "libero-max/libero_spatial/sensor_noise_onset",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-sensor-noise-onset-i01",
+      "family": "libero-max/libero_spatial/sensor_noise_onset",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-target-relocation-i00",
+      "family": "libero-max/libero_spatial/target_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-target-relocation-i01",
+      "family": "libero-max/libero_spatial/target_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-akita-black-bowl-on-plate-visual-theme-switch-i00",
+      "family": "libero-max/libero_spatial/visual_theme_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-black-bowl-on-yellow-plate-obstacle-insertion-i00",
+      "family": "libero-max/libero_spatial/obstacle_insertion",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-black-bowl-on-yellow-plate-target-relocation-i00",
+      "family": "libero-max/libero_spatial/target_relocation",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "libero-max-spatial-black-bowl-on-yellow-plate-visual-theme-switch-i00",
+      "family": "libero-max/libero_spatial/visual_theme_switch",
+      "robot": "franka-panda",
+      "simulator": "robosuite",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 195,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.302744+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

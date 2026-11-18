@@ -1,0 +1,26 @@
+# MolmoSpaces — EFE 套件迁移记录（策划数据）。
+# `efe.*` 计数与类别来自 arXiv:2611.12177 Table 2；
+# 由 tools/build_efe_registry.py 对照 data/efe/tasks/molmospaces.json 校验，
+# 并与论文总数（35 套件 / 47 机器人 / 1156 任务 / 2288 测试 / 456 核心）对账。
+# 修改 efe 计数后必须重跑 build 工具的 --check。
+suite: molmospaces
+name: MolmoSpaces
+efe:
+  origin: adapted
+  in_paper: true
+  source: null
+  simulator: mujoco
+  kinds:
+  - arm
+  - mobile_manip
+  robots:
+  - franka-robotiq-2f85
+  - rainbow-rby1
+  tasks: 8
+  tests: 16
+  core: 2
+project:
+  tier: T1
+  status: planned
+  target: src/cloud_robotics_sim/runtime registry 新 task 族
+  note: 导航+操作混合；RBY1 轮式双臂公开 URDF

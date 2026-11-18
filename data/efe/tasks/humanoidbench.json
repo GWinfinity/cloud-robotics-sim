@@ -1,0 +1,310 @@
+{
+  "suite": "humanoidbench",
+  "n_tasks": 10,
+  "n_task_dirs": 30,
+  "robots": [
+    "unitree-h1",
+    "unitree-h1hand"
+  ],
+  "simulators": [
+    "humanoidbench"
+  ],
+  "tasks": [
+    {
+      "name": "humanoidbench-loco-balance-hard-i00",
+      "family": "balance_hard",
+      "robot": "unitree-h1",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "humanoidbench-loco-hurdle-i00",
+      "family": "hurdle",
+      "robot": "unitree-h1",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "humanoidbench-loco-sit-simple-i00",
+      "family": "sit_simple",
+      "robot": "unitree-h1",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "humanoidbench-loco-walk-i00",
+      "family": "walk",
+      "robot": "unitree-h1",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "humanoidbench-manip-bookshelf-simple-i00",
+      "family": "bookshelf_simple",
+      "robot": "unitree-h1hand",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "humanoidbench-manip-cube-i00",
+      "family": "cube",
+      "robot": "unitree-h1hand",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "humanoidbench-manip-door-i00",
+      "family": "door",
+      "robot": "unitree-h1",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "humanoidbench-manip-powerlift-i00",
+      "family": "powerlift",
+      "robot": "unitree-h1hand",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "humanoidbench-manip-room-i00",
+      "family": "room",
+      "robot": "unitree-h1hand",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "humanoidbench-manip-window-i00",
+      "family": "window",
+      "robot": "unitree-h1hand",
+      "simulator": "humanoidbench",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.136397+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

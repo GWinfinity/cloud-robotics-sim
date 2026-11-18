@@ -1,0 +1,134 @@
+{
+  "suite": "kinder",
+  "n_tasks": 5,
+  "n_task_dirs": 10,
+  "robots": [
+    "tidybot-plus-plus"
+  ],
+  "simulators": [
+    "kinder"
+  ],
+  "tasks": [
+    {
+      "name": "kinder-constrained-cupboard-i00",
+      "family": "constrained-cupboard",
+      "robot": "tidybot-plus-plus",
+      "simulator": "kinder",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "kinder-dynamo-i00",
+      "family": "dynamo",
+      "robot": "tidybot-plus-plus",
+      "simulator": "kinder",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "kinder-scoop-pour-i01",
+      "family": "scoop-pour",
+      "robot": "tidybot-plus-plus",
+      "simulator": "kinder",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        }
+      }
+    },
+    {
+      "name": "kinder-sweep-into-drawer-i00",
+      "family": "sweep-into-drawer",
+      "robot": "tidybot-plus-plus",
+      "simulator": "kinder",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "kinder-sweep-simple-i01",
+      "family": "sweep-simple",
+      "robot": "tidybot-plus-plus",
+      "simulator": "kinder",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.167124+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

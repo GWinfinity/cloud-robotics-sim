@@ -1,0 +1,24 @@
+# RoboTwin 2.0 — EFE 套件迁移记录（策划数据）。
+# `efe.*` 计数与类别来自 arXiv:2611.12177 Table 2；
+# 由 tools/build_efe_registry.py 对照 data/efe/tasks/robotwin-2.json 校验，
+# 并与论文总数（35 套件 / 47 机器人 / 1156 任务 / 2288 测试 / 456 核心）对账。
+# 修改 efe 计数后必须重跑 build 工具的 --check。
+suite: robotwin-2
+name: RoboTwin 2.0
+efe:
+  origin: adapted
+  in_paper: true
+  source: null
+  simulator: sapien
+  kinds:
+  - two_arms
+  robots:
+  - aloha-agilex
+  tasks: 47
+  tests: 94
+  core: 3
+project:
+  tier: T2
+  status: partial
+  target: src/cloud_robotics_sim/robotwin 扩展
+  note: 项目本体资产与 robotwin 插件直接来源；47 任务全量移植是 T2 第一批

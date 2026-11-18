@@ -1,0 +1,396 @@
+{
+  "suite": "bigym2",
+  "n_tasks": 13,
+  "n_task_dirs": 39,
+  "robots": [
+    "unitree-g1-dex1"
+  ],
+  "simulators": [
+    "bigym2"
+  ],
+  "tasks": [
+    {
+      "name": "bigym2-dishwasher-close-i00",
+      "family": "dishwasher-close",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-dishwasher-load-plates-i00",
+      "family": "dishwasher-load-plates",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-drawer-top-open-i00",
+      "family": "drawer-top-open",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-flip-cup-i00",
+      "family": "flip-cup",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-flip-cutlery-i00",
+      "family": "flip-cutlery",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-move-two-plates-i00",
+      "family": "move-two-plates",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-pick-box-i00",
+      "family": "pick-box",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-put-cups-i00",
+      "family": "put-cups",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-reach-target-dual-i00",
+      "family": "reach-target-dual",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-sandwich-remove-i00",
+      "family": "sandwich-remove",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-saucepan-to-hob-i00",
+      "family": "saucepan-to-hob",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-stack-blocks-i00",
+      "family": "stack-blocks",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "bigym2-wall-cupboard-open-i00",
+      "family": "wall-cupboard-open",
+      "robot": "unitree-g1-dex1",
+      "simulator": "bigym2",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:47.596527+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

@@ -1,0 +1,26 @@
+# RoboDynamicExam — EFE 套件迁移记录（策划数据）。
+# `efe.*` 计数与类别来自 arXiv:2611.12177 Table 2；
+# 由 tools/build_efe_registry.py 对照 data/efe/tasks/pandadyn.json 校验，
+# 并与论文总数（35 套件 / 47 机器人 / 1156 任务 / 2288 测试 / 456 核心）对账。
+# 修改 efe 计数后必须重跑 build 工具的 --check。
+suite: pandadyn
+name: RoboDynamicExam
+efe:
+  origin: new
+  in_paper: true
+  source: null
+  simulator: maniskill
+  kinds:
+  - arm
+  - two_arms
+  robots:
+  - franka-panda
+  - franka-panda-bimanual
+  tasks: 25
+  tests: 69
+  core: 10
+project:
+  tier: T2
+  status: planned
+  target: plugins/envs/maniskill 扩展
+  note: 上游目录名 pandadyn（Panda Dynamic Scenes）；抛接/击打/搬运/交接动态物体，realtime 占多数

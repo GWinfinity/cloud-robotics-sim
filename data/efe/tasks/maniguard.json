@@ -1,0 +1,709 @@
+{
+  "suite": "maniguard",
+  "n_tasks": 30,
+  "n_task_dirs": 60,
+  "robots": [
+    "franka-panda-longfinger"
+  ],
+  "simulators": [
+    "maniguard"
+  ],
+  "tasks": [
+    {
+      "name": "maniguard-cabinet-pickup-i19",
+      "family": "cabinet_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 19,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-cabinet-pickup-i20",
+      "family": "cabinet_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 20,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-cabinet-pickup-i22",
+      "family": "cabinet_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 22,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-cabinet-pickup-i26",
+      "family": "cabinet_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 26,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-cabinet-pickup-i29",
+      "family": "cabinet_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 29,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-clutter-pickup-i09",
+      "family": "clutter_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 9,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-clutter-pickup-i15",
+      "family": "clutter_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 15,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-clutter-pickup-i23",
+      "family": "clutter_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 23,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-clutter-pickup-i25",
+      "family": "clutter_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 25,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-clutter-pickup-i28",
+      "family": "clutter_pickup",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-dusty-transfer-i03",
+      "family": "dusty_transfer",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 3,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-dusty-transfer-i16",
+      "family": "dusty_transfer",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 16,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-dusty-transfer-i20",
+      "family": "dusty_transfer",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 20,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-dusty-transfer-i24",
+      "family": "dusty_transfer",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 24,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-dusty-transfer-i25",
+      "family": "dusty_transfer",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 25,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-jar-transport-i02",
+      "family": "jar_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 2,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-jar-transport-i09",
+      "family": "jar_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 9,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-jar-transport-i13",
+      "family": "jar_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 13,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-jar-transport-i14",
+      "family": "jar_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 14,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-jar-transport-i25",
+      "family": "jar_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 25,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-lid-transport-i06",
+      "family": "lid_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 6,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-lid-transport-i07",
+      "family": "lid_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 7,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-lid-transport-i12",
+      "family": "lid_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 12,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-lid-transport-i15",
+      "family": "lid_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 15,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-lid-transport-i16",
+      "family": "lid_transport",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 16,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-stack-retrieve-i08",
+      "family": "stack_retrieve",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 8,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-stack-retrieve-i10",
+      "family": "stack_retrieve",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 10,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-stack-retrieve-i12",
+      "family": "stack_retrieve",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 12,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-stack-retrieve-i13",
+      "family": "stack_retrieve",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 13,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "maniguard-stack-retrieve-i21",
+      "family": "stack_retrieve",
+      "robot": "franka-panda-longfinger",
+      "simulator": "maniguard",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 21,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 23400.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.2",
+          "agent_timeout_sec": 3600.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:48.361676+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

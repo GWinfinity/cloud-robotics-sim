@@ -1,0 +1,1100 @@
+{
+  "suite": "robotwin-2",
+  "n_tasks": 47,
+  "n_task_dirs": 94,
+  "robots": [
+    "aloha-agilex"
+  ],
+  "simulators": [
+    "robotwin"
+  ],
+  "tasks": [
+    {
+      "name": "robotwin_2_0_adjust_bottle",
+      "family": "adjust_bottle",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_beat_block_hammer",
+      "family": "beat_block_hammer",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_blocks_ranking_rgb",
+      "family": "blocks_ranking_rgb",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_blocks_ranking_size",
+      "family": "blocks_ranking_size",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_dump_bin_bigbin",
+      "family": "dump_bin_bigbin",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_grab_roller",
+      "family": "grab_roller",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_handover_block",
+      "family": "handover_block",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_handover_mic",
+      "family": "handover_mic",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_hanging_mug",
+      "family": "hanging_mug",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_lift_pot",
+      "family": "lift_pot",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_move_can_pot",
+      "family": "move_can_pot",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_move_pillbottle_pad",
+      "family": "move_pillbottle_pad",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_move_playingcard_away",
+      "family": "move_playingcard_away",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_move_stapler_pad",
+      "family": "move_stapler_pad",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_open_laptop",
+      "family": "open_laptop",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_open_microwave",
+      "family": "open_microwave",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_pick_diverse_bottles",
+      "family": "pick_diverse_bottles",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 77321,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_pick_dual_bottles",
+      "family": "pick_dual_bottles",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_a2b_left",
+      "family": "place_a2b_left",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_a2b_right",
+      "family": "place_a2b_right",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_bread_basket",
+      "family": "place_bread_basket",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_bread_skillet",
+      "family": "place_bread_skillet",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_burger_fries",
+      "family": "place_burger_fries",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_can_basket",
+      "family": "place_can_basket",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_cans_plasticbox",
+      "family": "place_cans_plasticbox",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_container_plate",
+      "family": "place_container_plate",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_dual_shoes",
+      "family": "place_dual_shoes",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_empty_cup",
+      "family": "place_empty_cup",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_fan",
+      "family": "place_fan",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_mouse_pad",
+      "family": "place_mouse_pad",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_object_basket",
+      "family": "place_object_basket",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_object_scale",
+      "family": "place_object_scale",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_object_stand",
+      "family": "place_object_stand",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_phone_stand",
+      "family": "place_phone_stand",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_place_shoe",
+      "family": "place_shoe",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_press_stapler",
+      "family": "press_stapler",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_put_bottles_dustbin",
+      "family": "put_bottles_dustbin",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_rotate_qrcode",
+      "family": "rotate_qrcode",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 28831,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_scan_object",
+      "family": "scan_object",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_shake_bottle",
+      "family": "shake_bottle",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_shake_bottle_horizontally",
+      "family": "shake_bottle_horizontally",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_stack_blocks_three",
+      "family": "stack_blocks_three",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_stack_blocks_two",
+      "family": "stack_blocks_two",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_stack_bowls_three",
+      "family": "stack_bowls_three",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_stack_bowls_two",
+      "family": "stack_bowls_two",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 60417,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_stamp_seal",
+      "family": "stamp_seal",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 91573,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    },
+    {
+      "name": "robotwin_2_0_turn_switch",
+      "family": "turn_switch",
+      "robot": "aloha-agilex",
+      "simulator": "robotwin",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 91573,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1800.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 1800.0,
+          "verifier_timeout_sec": 1200.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:49.355909+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}

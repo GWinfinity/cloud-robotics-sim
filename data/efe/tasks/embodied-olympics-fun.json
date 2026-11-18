@@ -1,0 +1,1963 @@
+{
+  "suite": "embodied-olympics-fun",
+  "n_tasks": 79,
+  "n_task_dirs": 179,
+  "robots": [
+    "unitree-g1",
+    "unitree-h1-2"
+  ],
+  "simulators": [
+    "mujoco"
+  ],
+  "tasks": [
+    {
+      "name": "embodied-olympics-fun-alpine-slalom-i00",
+      "family": "alpine_slalom",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-backflip-i00",
+      "family": "backflip",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-badminton-serve-i00",
+      "family": "badminton_serve",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-balance-beam-i00",
+      "family": "balance_beam",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-balance-board-i00",
+      "family": "balance_board",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-basketball-dribble-i00",
+      "family": "basketball_dribble",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-bowling-i00",
+      "family": "bowling",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-box-jump-i00",
+      "family": "box_jump",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-boxing-i00",
+      "family": "boxing",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-breaking-windmill-i00",
+      "family": "breaking_windmill",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-catch-and-shoot-i00",
+      "family": "catch_and_shoot",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-catch-i00",
+      "family": "catch",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-clean-and-jerk-i00",
+      "family": "clean_and_jerk",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-crawl-i00",
+      "family": "crawl",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-discus-i00",
+      "family": "discus",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-dodgeball-i00",
+      "family": "dodgeball",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-double-dutch-i00",
+      "family": "double_dutch",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-dribble-slalom-i00",
+      "family": "dribble_slalom",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-dunk-between-legs-i00",
+      "family": "dunk_between_legs",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-dunk-i00",
+      "family": "dunk",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-first-time-shot-i00",
+      "family": "first_time_shot",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-free-kick-wall-i00",
+      "family": "free_kick_wall",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-free-throw-i00",
+      "family": "free_throw",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-freeski-360-i00",
+      "family": "freeski_360",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-freeski-straight-air-i00",
+      "family": "freeski_straight_air",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-giant-slalom-i00",
+      "family": "giant_slalom",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-goalkeeper-save-i00",
+      "family": "goalkeeper_save",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-golf-putt-i00",
+      "family": "golf_putt",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-handstand-i00",
+      "family": "handstand",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-header-i00",
+      "family": "header",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-high-bar-swing-i00",
+      "family": "high_bar_swing",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-high-jump-i00",
+      "family": "high_jump",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-hurdles-freestanding-i00",
+      "family": "hurdles_freestanding",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-inline-slalom-i00",
+      "family": "inline_slalom",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-javelin-i00",
+      "family": "javelin",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-juggle-three-i00",
+      "family": "juggle_three",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-juggling-feet-i00",
+      "family": "juggling_feet",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-juggling-head-i00",
+      "family": "juggling_head",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-juggling-i00",
+      "family": "juggling",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-jump-rope-i00",
+      "family": "jump_rope",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-kick-target-i00",
+      "family": "kick_target",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-layup-i00",
+      "family": "layup",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-long-jump-i00",
+      "family": "long_jump",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-long-rope-i00",
+      "family": "long_rope",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-paddle-bounce-i00",
+      "family": "paddle_bounce",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-penalty-kick-i00",
+      "family": "penalty_kick",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-pitch-target-i00",
+      "family": "pitch_target",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-platform-10m-i00",
+      "family": "platform_10m",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-pole-vault-i00",
+      "family": "pole_vault",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-round-off-i00",
+      "family": "round_off",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-rugby-conversion-i00",
+      "family": "rugby_conversion",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-shot-put-i00",
+      "family": "shot_put",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-shuttle-run-i00",
+      "family": "shuttle_run",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-skateboard-ollie-i00",
+      "family": "skateboard_ollie",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-slalom-i00",
+      "family": "slalom",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-sled-push-i00",
+      "family": "sled_push",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-snowboard-i00",
+      "family": "snowboard",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-springboard-3m-i00",
+      "family": "springboard_3m",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-sprint-i00",
+      "family": "sprint",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-standing-long-jump-i00",
+      "family": "standing_long_jump",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-steeplechase-i00",
+      "family": "steeplechase",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-sumo-i00",
+      "family": "sumo",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-sweeper-jump-i00",
+      "family": "sweeper_jump",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-table-tennis-return-i00",
+      "family": "table_tennis_return",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-taekwondo-kick-i00",
+      "family": "taekwondo_kick",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-tennis-return-i00",
+      "family": "tennis_return",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-tennis-serve-i00",
+      "family": "tennis_serve",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-toes-to-bar-i00",
+      "family": "toes_to_bar",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-trampoline-i00",
+      "family": "trampoline",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-trap-ball-i00",
+      "family": "trap_ball",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-triple-jump-i00",
+      "family": "triple_jump",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-vault-i00",
+      "family": "vault",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-vertical-jump-i00",
+      "family": "vertical_jump",
+      "robot": "unitree-g1",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-volley-shot-i00",
+      "family": "volley_shot",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-volleyball-bump-i00",
+      "family": "volleyball_bump",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-volleyball-serve-i00",
+      "family": "volleyball_serve",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "full",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "full",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-volleyball-set-i00",
+      "family": "volleyball_set",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-volleyball-spike-i00",
+      "family": "volleyball_spike",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "dynamic",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "realtime": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.3",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    },
+    {
+      "name": "embodied-olympics-fun-wall-ball-i00",
+      "family": "wall_ball",
+      "robot": "unitree-h1-2",
+      "simulator": "mujoco",
+      "dynamics": "static",
+      "task_type": "trajectory",
+      "instance_seed": 0,
+      "modes": {
+        "privileged": {
+          "oracle": "none",
+          "protocol": null,
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        },
+        "standard": {
+          "oracle": "none",
+          "protocol": "eai-standard/2.1",
+          "agent_timeout_sec": 7200.0,
+          "verifier_timeout_sec": 900.0
+        }
+      }
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "ref": "main",
+    "snapshot_taken": "2026-11-17T03:29:47.863175+00:00",
+    "note": "sparse blob-filtered checkout; task.toml files only"
+  }
+}
