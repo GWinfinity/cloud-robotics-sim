@@ -1,0 +1,157 @@
+# EFE 迁移编译物（libero-max）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: libero-max/libero_goal/illumination_switch | goal: switch on the stove
+# fidelity: spec | notes: 判据句见 instruction.md；冻结初始态 probe 重建（init_state_index=2, policy_seed=195）；事件 illumination_switch（set_lighting，trigger=on_proximity）；substrate=semantic
+version: 1
+
+task:
+  name: libero-max-goal-flat-stove-on-illumination-switch-i00
+  type: efe_liberomax
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 9000
+  event:
+    setup: []
+    trigger:
+      distance_m: 0.18
+      type: on_proximity
+      value: flat_stove_1
+    change:
+      operation: set_lighting
+      scale: 0.2
+    change_type: illumination_switch
+
+robot:
+  base_position:
+  - -0.66
+  - 0.0
+  - 0.912
+
+assets:
+  task_relevant:
+  - name: main_table
+    shape_type: box
+    size:
+    - 1.0
+    - 1.2
+    - 0.05
+    position:
+    - 0.0
+    - 0.0
+    - 0.875
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+    friction: 1.0
+  - name: flat_stove_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/articulated_objects/flat_stove.xml
+    position:
+    - -0.402601
+    - 0.208592
+    - 0.905
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: wine_rack_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/turbosquid_objects/wine_rack/wine_rack.xml
+    position:
+    - -0.257093
+    - -0.256808
+    - 0.92
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: true
+  - name: wooden_cabinet_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/articulated_objects/wooden_cabinet.xml
+    position:
+    - 0.031172
+    - -0.249904
+    - 0.905
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: true
+  - name: akita_black_bowl_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_scanned_objects/akita_black_bowl/akita_black_bowl.xml
+    position:
+    - -0.07881
+    - 0.006796
+    - 0.97
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: false
+  - name: cream_cheese_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_hope_objects/cream_cheese/cream_cheese.xml
+    position:
+    - -0.069559
+    - 0.124238
+    - 0.935
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+  - name: plate_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_scanned_objects/plate/plate.xml
+    position:
+    - 0.05618
+    - -0.013797
+    - 0.97
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: false
+  - name: wine_bottle_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/turbosquid_objects/wine_bottle/wine_bottle.xml
+    position:
+    - -0.211984
+    - -0.060413
+    - 0.97
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+
+success:
+  type: libero_joint_state
+  params:
+    entity: flat_stove_1
+    joints:
+    - flat_stove_1_button
+    mode: turn_on
+    range:
+    - 0.5
+    - 2.1
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

@@ -89,6 +89,10 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
       ("mesh volume is too small ... Try setting inertia to shell") that
       upstream MuJoCo 3.2.2 accepted; such meshes get ``inertia="shell"``.
       The compile probe decides per file, so untouched files stay pristine.
+    * Repeated ``name`` attributes (LIBERO's stove XMLs define two textures
+      named ``tex-stove_knob``; MuJoCo 3.2 tolerates, the quadrants compiler
+      rejects) get ``__dupN`` suffixes on later occurrences, and references
+      after them rebind in document order (upstream intent preserved).
     """
     import hashlib
     import xml.etree.ElementTree as ET
@@ -99,7 +103,7 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
     digest = hashlib.sha256(raw).hexdigest()[:12]
     # scheme version bumps when the staging transforms change, so stale
     # staged siblings from older schemes are never reused.
-    flags = f"{'dyn' if dynamic else 'static'}-v4"
+    flags = f"{'dyn' if dynamic else 'static'}-v5"
     staged = source.with_name(f"{source.stem}-{flags}-{digest}{source.suffix}")
     if staged.is_file() and staged.stat().st_size > 0:
         return staged
@@ -112,6 +116,30 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
     for el in root.iter():
         if el.get("shellinertia") is not None:
             del el.attrib["shellinertia"]
+
+    # Duplicate-name repair (document order): MuJoCo rejects repeated names
+    # in every class (LIBERO's stove XMLs define two textures named
+    # ``tex-stove_knob`` and repeat body names like ``button``). Later
+    # duplicates get ``__dupN`` suffixes and name references after them
+    # rebind in document order (upstream intent preserved).
+    name_ref_attrs = {"texture": "material", "material": "geom", "mesh": "geom"}
+    seen_names: dict[str, int] = {}
+    latest_rename: dict[str, str] = {}
+    for el in root.iter():
+        for attr, target_tag in name_ref_attrs.items():
+            if el.tag != target_tag:
+                continue
+            value = el.get(attr)
+            if value is not None and value in latest_rename:
+                el.set(attr, latest_rename[value])
+        name = el.get("name")
+        if name:
+            count = seen_names.get(name, 0) + 1
+            seen_names[name] = count
+            if count > 1:
+                new_name = f"{name}__dup{count}"
+                el.set("name", new_name)
+                latest_rename[name] = new_name
     if dynamic:
         # VLABench's dm_control composer attaches graspables as ONE free
         # body; upstream component XMLs vary: a single top-level body, loose
@@ -283,14 +311,51 @@ class GenesisEntityBackend(EntityBackend):
         return bool(int(shape[0]) > 0) if shape else bool(geom_a)
 
     def get_joint_positions(self) -> np.ndarray:
-        """DOF positions of the wrapped entity (articulated spawns: model joints)."""
+        """DOF positions of the wrapped entity (zeros for single-body rigs).
+
+        Articulated MJCF spawns (drawers, stove knobs) expose the real joint
+        values; plain rigid bodies report an empty vector.
+        """
         entity = self._resolve_entity()
-        get_dofs = getattr(entity, "get_dofs_position", None)
-        if get_dofs is None:
+        if hasattr(entity, "get_dofs_position"):
+            return _to_numpy_f64(entity.get_dofs_position()).reshape(-1)
+        return np.zeros(0, dtype=np.float64)
+
+    def get_joint_names(self) -> list[str]:
+        """Joint names of the wrapped entity (articulated MJCF spawns)."""
+        entity = self._resolve_entity()
+        joints = getattr(entity, "joints", None)
+        if joints is None:
             raise TypeError(
-                f"wrapped entity of {self._name!r} exposes no get_dofs_position()"
+                f"wrapped entity of {self._name!r} exposes no joints — "
+                f"named-joint reads need an articulated spawn"
             )
-        return _to_numpy_f64(get_dofs())
+        return [str(joint.name) for joint in joints]
+
+    def get_joint_qs_idx_local(self, joint_name: str) -> list[int]:
+        """Qpos indices of one named joint (articulated MJCF spawns)."""
+        entity = self._resolve_entity()
+        get_joint = getattr(entity, "get_joint", None)
+        if get_joint is None:
+            raise TypeError(
+                f"wrapped entity of {self._name!r} exposes no get_joint() — "
+                f"named-joint reads need an articulated spawn"
+            )
+        joint = get_joint(joint_name)
+        indices = getattr(joint, "qs_idx_local", None)
+        if callable(indices):
+            indices = indices()
+        if indices is None:
+            return []
+        return [int(i) for i in np.atleast_1d(indices)]
+
+    def get_qpos(self) -> np.ndarray:
+        """Full qpos vector of the wrapped entity (articulated spawns)."""
+        entity = self._resolve_entity()
+        get_qpos = getattr(entity, "get_qpos", None)
+        if get_qpos is None:
+            raise TypeError(f"wrapped entity of {self._name!r} exposes no get_qpos()")
+        return _to_numpy_f64(get_qpos()).reshape(-1)
 
     def set_color(self, color: tuple[float, float, float, float]) -> None:
         entity = self._resolve_entity()

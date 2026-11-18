@@ -1,0 +1,152 @@
+# EFE 迁移编译物（libero-max）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: libero-max/libero_spatial/illumination_switch | goal: grab black bowl on ramekin and set it on plate
+# fidelity: spec | notes: 判据句见 instruction.md；冻结初始态 probe 重建（init_state_index=6, policy_seed=195）；事件 illumination_switch（set_lighting，trigger=on_proximity）；substrate=semantic
+version: 1
+
+task:
+  name: libero-max-spatial-akita-black-bowl-on-plate-illumination-switch-i01
+  type: efe_liberomax
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 9000
+  event:
+    setup: []
+    trigger:
+      distance_m: 0.18
+      type: on_proximity
+      value: akita_black_bowl_1
+    change:
+      operation: set_lighting
+      scale: 0.2
+    change_type: illumination_switch
+
+robot:
+  base_position:
+  - -0.66
+  - 0.0
+  - 0.912
+
+assets:
+  task_relevant:
+  - name: main_table
+    shape_type: box
+    size:
+    - 1.0
+    - 1.2
+    - 0.05
+    position:
+    - 0.0
+    - 0.0
+    - 0.875
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+    friction: 1.0
+  - name: flat_stove_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/articulated_objects/flat_stove.xml
+    position:
+    - -0.406645
+    - -0.139415
+    - 0.905
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: wooden_cabinet_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/articulated_objects/wooden_cabinet.xml
+    position:
+    - 0.031467
+    - -0.260263
+    - 0.905
+    orientation:
+    - 0.21777
+    - 0.0
+    - 0.0
+    - 0.976
+    static: true
+  - name: akita_black_bowl_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_scanned_objects/akita_black_bowl/akita_black_bowl.xml
+    position:
+    - -0.209432
+    - 0.208931
+    - 1.08
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: false
+  - name: akita_black_bowl_2
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_scanned_objects/akita_black_bowl/akita_black_bowl.xml
+    position:
+    - 0.082148
+    - 0.040787
+    - 1.08
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: false
+  - name: cookies_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_hope_objects/cookies/cookies.xml
+    position:
+    - 0.082148
+    - 0.040787
+    - 0.97
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: false
+  - name: glazed_rim_porcelain_ramekin_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_scanned_objects/glazed_rim_porcelain_ramekin/glazed_rim_porcelain_ramekin.xml
+    position:
+    - -0.209432
+    - 0.208931
+    - 0.97
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: false
+  - name: plate_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_scanned_objects/plate/plate.xml
+    position:
+    - 0.067215
+    - 0.18926
+    - 0.97
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: false
+
+success:
+  type: libero_on
+  params:
+    object: akita_black_bowl_1
+    support: plate_1
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

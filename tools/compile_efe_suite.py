@@ -1156,6 +1156,262 @@ RESOLVERS = {"metaworldplus": resolve_metaworldplus, "vlabench": resolve_vlabenc
 
 
 # ---------------------------------------------------------------------------
+# LIBERO-MAX resolver: probe dumps -> resolved KB
+# ---------------------------------------------------------------------------
+
+LMX_DUMPS = DATA_EFE / "upstream" / "liberomax-dumps"
+LMX_ASSETS = REPO_ROOT / "assets" / "liberomax"
+
+
+def _lmx_site_params(site: dict[str, Any]) -> dict[str, Any]:
+    xmat = np.asarray(site["xmat"], dtype=float).reshape(-1)
+    return {
+        "site_center": [round(float(v), 6) for v in site["pos"]],
+        "site_xmat": [round(float(v), 6) for v in xmat],
+        "site_halfsize": [round(float(v), 6) for v in site["size"]],
+    }
+
+
+def _lmx_map_goal(dump: dict[str, Any], reasons: list[str]) -> dict[str, Any] | None:
+    """Map the parsed BDDL goal_state to our success spec (upstream-exact)."""
+    objects = dump["objects"]
+    fixtures = dump["fixtures"]
+    sites = dump["sites"]
+    specs = []
+    for pred in dump["goal"]:
+        if not pred:
+            reasons.append(f"空谓词: {pred!r}")
+            continue
+        kind, args = pred[0].lower(), pred[1:]
+        if kind == "on" and len(args) == 2:
+            obj, support = args
+            if obj not in objects:
+                reasons.append(f"on: 未知物体 {obj!r}")
+                continue
+            if support in sites:
+                site = sites[support]
+                params: dict[str, Any] = {"object": obj}
+                params.update(_lmx_site_params(site))
+                parent = site.get("parent")
+                if parent is not None and parent in fixtures:
+                    params["site_contact"] = parent
+                specs.append({"type": "libero_on", "params": params})
+            elif support in fixtures or support in objects:
+                specs.append(
+                    {
+                        "type": "libero_on",
+                        "params": {"object": obj, "support": support},
+                    }
+                )
+            else:
+                reasons.append(f"on: 未知支撑 {support!r}")
+        elif kind == "in" and len(args) == 2:
+            obj, container = args
+            if obj not in objects:
+                reasons.append(f"in: 未知物体 {obj!r}")
+                continue
+            if container not in sites:
+                reasons.append(
+                    f"in: 容器 {container!r} 不是 BDDL 区域站点（物体容器未移植）"
+                )
+                continue
+            params = {"object": obj}
+            params.update(_lmx_site_params(sites[container]))
+            specs.append({"type": "libero_in", "params": params})
+        elif kind in {"close", "turnon", "turnoff"} and len(args) == 1:
+            arg = args[0]
+            articulation = None
+            joints: list[str] = []
+            entity = ""
+            if arg in sites:
+                parent = sites[arg].get("parent")
+                joints = list(sites[arg].get("joints") or [])
+                if parent is None or parent not in fixtures:
+                    reasons.append(f"{kind}: 站点 {arg!r} 无父夹具关节")
+                    continue
+                entity = parent
+                articulation = fixtures[parent].get("articulation") or {}
+            elif arg in fixtures:
+                entity = arg
+                joints = list(fixtures[arg].get("joints") or [])
+                articulation = fixtures[arg].get("articulation") or {}
+            else:
+                reasons.append(f"{kind}: 未知实体 {arg!r}")
+                continue
+            if not joints:
+                reasons.append(f"{kind}: {arg!r} 无关节可评估")
+                continue
+            if kind == "close":
+                rng = articulation.get("default_close_ranges")
+                mode = "close"
+            elif kind == "turnon":
+                rng = articulation.get("default_turnon_ranges")
+                mode = "turn_on"
+            else:
+                rng = articulation.get("default_turnoff_ranges")
+                mode = "turn_off"
+            if not rng or len(rng) != 2:
+                reasons.append(f"{kind}: {arg!r} 缺少 articulation 量程: {rng!r}")
+                continue
+            specs.append(
+                {
+                    "type": "libero_joint_state",
+                    "params": {
+                        "entity": entity,
+                        "joints": joints,
+                        "mode": mode,
+                        "range": [float(rng[0]), float(rng[1])],
+                    },
+                }
+            )
+        else:
+            reasons.append(f"谓词未映射: {pred!r}")
+    if reasons:
+        return None
+    if len(specs) == 1:
+        return specs[0]
+    return {"type": "all", "params": {"conditions": specs}}
+
+
+def resolve_liberomax(predicates: dict[str, Any]) -> dict[str, Any]:
+    """Build the resolved KB for LIBERO-MAX from the compile-time probe dumps.
+
+    Each dump reproduces the frozen start state with the pinned upstream
+    stack (scene rebuild + ``.pruned_init`` + LIBERO-PRO substrate
+    perturbations); the KB records entity spawns at those world poses, the
+    BDDL goal mapped upstream-exactly, and the frozen mid-episode event.
+    """
+    inv = load_inventory("libero-max")
+    max_steps = int(predicates.get("max_episode_steps", 9000))
+    tasks: dict[str, Any] = {}
+    pending: list[str] = []
+    pending_reasons: dict[str, str] = {}
+    for entry in inv["tasks"]:
+        name = entry["name"]
+        dump_path = LMX_DUMPS / f"{name}.json"
+        if not dump_path.is_file():
+            pending.append(name)
+            pending_reasons[name] = f"probe dump 缺失: {dump_path.name}"
+            continue
+        dump = json.loads(dump_path.read_text(encoding="utf-8"))
+        reasons: list[str] = []
+        if dump.get("success_at_init"):
+            reasons.append("冻结初始态已满足目标（上游 nop 不变量不成立）")
+
+        assets: list[dict[str, Any]] = []
+        for index, table in enumerate(dump.get("arena_tables") or []):
+            assets.append(
+                {
+                    "name": "main_table" if index == 0 else f"main_table_{index}",
+                    "shape_type": "box",
+                    "size": [round(2.0 * float(v), 6) for v in table["size"]],
+                    "position": [round(float(v), 6) for v in table["pos"]],
+                    "orientation": [round(float(v), 6) for v in table["quat"]],
+                    "static": True,
+                    "friction": 1.0,
+                }
+            )
+        for fname, fixture in sorted(dump["fixtures"].items()):
+            xml = fixture.get("xml")
+            if not xml:
+                reasons.append(f"夹具 {fname} 无 MJCF 路径")
+                continue
+            if not (LMX_ASSETS / xml).is_file():
+                reasons.append(f"夹具未镜像: {xml}")
+                continue
+            assets.append(
+                {
+                    "name": fname,
+                    "shape_type": "mjcf",
+                    "mjcf_path": f"assets/liberomax/{xml}",
+                    "position": [round(float(v), 6) for v in fixture["pos"]],
+                    "orientation": [round(float(v), 6) for v in fixture["quat"]],
+                    "static": True,
+                }
+            )
+        for oname, obj in sorted(dump["objects"].items()):
+            xml = obj.get("xml")
+            if not xml:
+                reasons.append(f"物体 {oname} 无 MJCF 路径")
+                continue
+            if not (LMX_ASSETS / xml).is_file():
+                reasons.append(f"物体未镜像: {xml}")
+                continue
+            assets.append(
+                {
+                    "name": oname,
+                    "shape_type": "mjcf",
+                    "mjcf_path": f"assets/liberomax/{xml}",
+                    "position": [round(float(v), 6) for v in obj["pos"]],
+                    "orientation": [round(float(v), 6) for v in obj["quat"]],
+                    "static": False,
+                }
+            )
+
+        success = _lmx_map_goal(dump, reasons)
+
+        # Frozen articulated-joint start states (drawer open, knob off) that
+        # differ from the MJCF defaults ride in init_distribution.
+        articulation_states: dict[str, dict[str, float]] = {}
+        for fname, fixture in dump["fixtures"].items():
+            nonzero = {
+                joint: round(float(value), 6)
+                for joint, value in (fixture.get("joints") or {}).items()
+                if isinstance(value, (int, float)) and abs(float(value)) > 1e-9
+            }
+            if nonzero:
+                articulation_states[fname] = nonzero
+
+        if reasons:
+            pending.append(name)
+            pending_reasons[name] = "; ".join(reasons)
+            continue
+        assert success is not None
+        event = dump.get("event") or {}
+        tasks[name] = {
+            "family": entry["family"],
+            "goal": dump.get("language") or "",
+            "robot": "franka_panda",
+            "robot_kwargs": {"base_position": dump["robot_base"]},
+            "scene": "efe_tabletop",
+            "task_type": "efe_liberomax",
+            "event": event,
+            "init_distribution": (
+                {"articulation_states": articulation_states}
+                if articulation_states
+                else {}
+            ),
+            "assets_task_relevant": assets,
+            "success": success,
+            "max_episode_steps": max_steps,
+            "efe": {
+                "fidelity": "spec",
+                "notes": (
+                    f"判据句见 instruction.md；冻结初始态 probe 重建"
+                    f"（init_state_index={dump['init_state_index']}, "
+                    f"policy_seed={dump['policy_seed']}）；事件 "
+                    f"{event.get('change_type')}（"
+                    f"{(event.get('change') or {}).get('operation')}，"
+                    f"trigger={event.get('trigger', {}).get('type')}）；"
+                    f"substrate={dump['substrate']['category']}"
+                ),
+            },
+        }
+    return {
+        "suite": "libero-max",
+        "robot": "franka_panda",
+        "scene": "efe_tabletop",
+        "source": predicates.get("source", {}),
+        "pending_tasks": sorted(pending),
+        "pending_reasons": pending_reasons,
+        "tasks": tasks,
+    }
+
+
+RESOLVERS["libero-max"] = resolve_liberomax
+
+
+# ---------------------------------------------------------------------------
 # Rendering
 # ---------------------------------------------------------------------------
 
@@ -1179,8 +1435,31 @@ def render_task_yaml(suite: str, name: str, record: dict[str, Any]) -> str:
         f"  robot: {record['robot']}",
         f"  scene: {record['scene']}",
         f"  max_episode_steps: {record.get('max_episode_steps', 500)}",
-        "",
     ]
+    event = record.get("event")
+    if event:
+        lines.append("  event:")
+        lines.extend(
+            "    " + line
+            for line in yaml.safe_dump(event, sort_keys=False).splitlines()
+        )
+    lines.append("")
+    robot_kwargs = record.get("robot_kwargs") or {}
+    if robot_kwargs:
+        lines.append("robot:")
+        lines.extend(
+            "  " + line
+            for line in yaml.safe_dump(robot_kwargs, sort_keys=False).splitlines()
+        )
+        lines.append("")
+    init_distribution = record.get("init_distribution") or {}
+    if init_distribution:
+        lines.append("init_distribution:")
+        lines.extend(
+            "  " + line
+            for line in yaml.safe_dump(init_distribution, sort_keys=False).splitlines()
+        )
+        lines.append("")
     assets = record.get("assets_task_relevant") or []
     if assets:
         lines.append("assets:")

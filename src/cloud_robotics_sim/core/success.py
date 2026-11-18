@@ -43,6 +43,10 @@ SUCCESS_TYPES = (
     "ordered",
     "in_contact",
     "joint_window",
+    "libero_on",
+    "libero_in",
+    "libero_joint_state",
+    "all",
 )
 
 
@@ -672,6 +676,201 @@ class StagedCondition(SuccessCondition):
         return self._last_failure_stage
 
 
+def _joint_qpos(scene: Any, entity_name: str, joint: str) -> float:
+    """Read one named joint position from a scene entity.
+
+    Prefers an explicit ``get_joint_position(name)`` hook, then the
+    articulation backend pair ``get_joint_names`` + ``get_joint_qs_idx_local``
+    + ``get_qpos``. Articulated names are matched verbatim first, then by
+    unambiguous suffix: LIBERO composes models with an instance prefix
+    (``flat_stove_1_button``) while component-level spawns carry the bare
+    MJCF joint name (``button``); spawn-time duplicate-name repairs add a
+    ``__dupN`` suffix that is ignored for the comparison.
+    """
+    import re
+
+    def _base(name: str) -> str:
+        return re.sub(r"__dup\d+$", "", name)
+
+    entity = _entity(scene, entity_name)
+    hook = getattr(entity, "get_joint_position", None)
+    if hook is not None:
+        return float(hook(joint))
+    names = getattr(entity, "get_joint_names", None)
+    idx_for = getattr(entity, "get_joint_qs_idx_local", None)
+    get_qpos = getattr(entity, "get_qpos", None)
+    if names is not None and idx_for is not None and get_qpos is not None:
+        available = names()
+        resolved = joint
+        if joint not in available:
+            candidates = [
+                name
+                for name in available
+                if (
+                    _base(name) == joint
+                    or joint.endswith(_base(name))
+                    or _base(name).endswith(joint)
+                )
+            ]
+            if len(candidates) == 1:
+                resolved = candidates[0]
+            else:
+                raise KeyError(
+                    f"entity '{entity_name}' has no joint '{joint}' "
+                    f"(available: {available})"
+                )
+        indices = idx_for(resolved)
+        qpos = np.asarray(get_qpos(), dtype=float).reshape(-1)
+        if not indices:
+            raise KeyError(f"entity '{entity_name}' joint '{resolved}' has no qpos")
+        return float(qpos[indices[0]])
+    raise TypeError(
+        f"entity '{entity_name}' exposes neither get_joint_position() nor "
+        f"get_joint_names()/get_joint_qs_idx_local()/get_qpos() — "
+        f"libero_joint_state needs a named-joint hook"
+    )
+
+
+@dataclass
+class LiberoOnCondition(SuccessCondition):
+    """LIBERO's ``On`` goal predicate (BDDL goal_state ``on``).
+
+    Object support — ``arg2.check_ontop(arg1)``: the support's z is at or
+    below the object's, the two touch, and their body origins are within
+    0.03 m horizontally. Site support (a BDDL region site): the object sits
+    in the site's ``under`` slab — site-local delta z within
+    ``[halfsize.z - 0.005, halfsize.z + 0.10]`` and |dx|, |dy| within the
+    site's xy half extents — plus contact with the site's parent fixture
+    when the site has a parent (static fixtures: compiled as a baked world
+    box + an explicit contact entity).
+    """
+
+    object_name: str
+    support: str | None = None
+    site_center: tuple[float, float, float] | None = None
+    site_xmat: tuple[float, ...] | None = None
+    site_halfsize: tuple[float, float, float] | None = None
+    site_contact: str | None = None
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        obj_pos = _entity_position(scene, self.object_name)
+        if self.site_center is not None:
+            center = np.asarray(self.site_center, dtype=float)
+            xmat = np.asarray(self.site_xmat, dtype=float).reshape(3, 3)
+            half = np.asarray(self.site_halfsize, dtype=float)
+            delta = xmat @ (obj_pos - center)
+            if not (
+                half[2] - 0.005 < delta[2] < half[2] + 0.10
+                and abs(delta[0]) < half[0]
+                and abs(delta[1]) < half[1]
+            ):
+                return False
+            if self.site_contact is not None:
+                return bool(
+                    _in_contact(
+                        _entity(scene, self.object_name),
+                        _entity(scene, self.site_contact),
+                    )
+                )
+            return True
+        if self.support is None:
+            raise ValueError("libero_on needs either support or site_* params")
+        support_pos = _entity_position(scene, self.support)
+        if support_pos[2] > obj_pos[2]:
+            return False
+        if np.linalg.norm(support_pos[:2] - obj_pos[:2]) >= 0.03:
+            return False
+        return bool(
+            _in_contact(_entity(scene, self.object_name), _entity(scene, self.support))
+        )
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class LiberoInCondition(SuccessCondition):
+    """LIBERO's ``In`` goal predicate against a BDDL region site.
+
+    ``SiteObjectState.check_contain`` is contact-free (sites have no
+    dynamics); the object's body origin must lie strictly inside the site's
+    world box ``|xmat @ halfsize|``, with the lower z bound relaxed by
+    0.01 m (LIBERO ``SiteObject.in_box``).
+    """
+
+    object_name: str
+    site_center: tuple[float, float, float]
+    site_xmat: tuple[float, ...]
+    site_halfsize: tuple[float, float, float]
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        obj_pos = _entity_position(scene, self.object_name)
+        center = np.asarray(self.site_center, dtype=float)
+        xmat = np.asarray(self.site_xmat, dtype=float).reshape(3, 3)
+        half = np.asarray(self.site_halfsize, dtype=float)
+        total = np.abs(xmat @ half)
+        ub = center + total
+        lb = center - total
+        lb[2] -= 0.01
+        return bool(np.all(obj_pos > lb) and np.all(obj_pos < ub))
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class LiberoJointStateCondition(SuccessCondition):
+    """LIBERO's unary articulated-fixture predicates: ``Close``/``TurnOn``/``TurnOff``.
+
+    Evaluated on the fixture's named joints against the object class's
+    ``articulation`` ranges transcribed from the mirrored LIBERO source:
+    ``close`` — every joint qpos above ``min(close_range)``;
+    ``turn_on`` — any joint qpos at or above ``min(turnon_range)``;
+    ``turn_off`` — every joint qpos below ``max(turnoff_range)``.
+    """
+
+    object_name: str
+    joints: tuple[str, ...]
+    mode: str
+    range: tuple[float, float]
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        values = [_joint_qpos(scene, self.object_name, joint) for joint in self.joints]
+        lo, hi = self.range
+        if self.mode == "close":
+            return all(v > lo for v in values)
+        if self.mode == "turn_on":
+            return any(v >= lo for v in values)
+        if self.mode == "turn_off":
+            return all(v < hi for v in values)
+        raise ValueError(f"unknown libero_joint_state mode {self.mode!r}")
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class AllCondition(SuccessCondition):
+    """Success when every sub-condition holds (LIBERO ``And`` goal trees)."""
+
+    conditions: tuple[SuccessCondition, ...]
+    _last_failure_stage: str = field(default="error", init=False)
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        for condition in self.conditions:
+            if not condition.evaluate(scene, robot, info):
+                self._last_failure_stage = condition.last_failure_stage()
+                return False
+        self._last_failure_stage = "error"
+        return True
+
+    def last_failure_stage(self) -> str:
+        return self._last_failure_stage
+
+
 def _require(params: dict, key: str, success_type: str) -> Any:
     if key not in params:
         raise ConfigError(f"success type '{success_type}' requires params.{key}")
@@ -1125,6 +1324,97 @@ def _build_staged(params: dict) -> StagedCondition:
     return StagedCondition(stages=stages)
 
 
+def _vec3(value: Any, name: str) -> tuple[float, float, float]:
+    """Coerce a validated 3-sequence to a fixed-length float tuple."""
+    return (float(value[0]), float(value[1]), float(value[2]))
+
+
+def _build_libero_on(params: dict) -> LiberoOnCondition:
+    object_name = _require(params, "object", "libero_on")
+    if not isinstance(object_name, str):
+        raise ConfigError("params.object must be a string")
+    support = params.get("support")
+    if support is not None and not isinstance(support, str):
+        raise ConfigError("params.support must be a string")
+    site_center = params.get("site_center")
+    if site_center is None and support is None:
+        raise ConfigError("libero_on needs params.support or params.site_center")
+    site_xmat = params.get("site_xmat")
+    site_halfsize = params.get("site_halfsize")
+    if site_center is not None:
+        for key, value in (("site_xmat", site_xmat), ("site_halfsize", site_halfsize)):
+            if value is None:
+                raise ConfigError(f"libero_on site mode needs params.{key}")
+        if len(site_xmat) != 9:  # type: ignore[arg-type]
+            raise ConfigError("params.site_xmat must have 9 entries")
+        if len(site_halfsize) != 3:  # type: ignore[arg-type]
+            raise ConfigError("params.site_halfsize must have 3 entries")
+    site_contact = params.get("site_contact")
+    if site_contact is not None and not isinstance(site_contact, str):
+        raise ConfigError("params.site_contact must be a string")
+    return LiberoOnCondition(
+        object_name=object_name,
+        support=support,
+        site_center=_vec3(site_center, "site_center") if site_center else None,
+        site_xmat=tuple(float(v) for v in site_xmat) if site_xmat else None,
+        site_halfsize=_vec3(site_halfsize, "site_halfsize") if site_halfsize else None,
+        site_contact=site_contact,
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_libero_in(params: dict) -> LiberoInCondition:
+    object_name = _require(params, "object", "libero_in")
+    site_center = _require(params, "site_center", "libero_in")
+    site_xmat = _require(params, "site_xmat", "libero_in")
+    site_halfsize = _require(params, "site_halfsize", "libero_in")
+    if len(site_xmat) != 9:
+        raise ConfigError("params.site_xmat must have 9 entries")
+    if len(site_halfsize) != 3:
+        raise ConfigError("params.site_halfsize must have 3 entries")
+    return LiberoInCondition(
+        object_name=object_name,
+        site_center=_vec3(site_center, "site_center"),
+        site_xmat=tuple(float(v) for v in site_xmat),
+        site_halfsize=_vec3(site_halfsize, "site_halfsize"),
+        failure_stage=_failure_stage(params),
+    )
+
+
+_LIBERO_JOINT_MODES = ("close", "turn_on", "turn_off")
+
+
+def _build_libero_joint_state(params: dict) -> LiberoJointStateCondition:
+    object_name = _require(params, "entity", "libero_joint_state")
+    joints = _require(params, "joints", "libero_joint_state")
+    if not isinstance(joints, (list, tuple)) or not joints:
+        raise ConfigError("params.joints must be a non-empty list of joint names")
+    mode = _require(params, "mode", "libero_joint_state")
+    if mode not in _LIBERO_JOINT_MODES:
+        raise ConfigError(
+            f"params.mode must be one of {list(_LIBERO_JOINT_MODES)}, got {mode!r}"
+        )
+    window = _require(params, "range", "libero_joint_state")
+    if not isinstance(window, (list, tuple)) or len(window) != 2:
+        raise ConfigError("params.range must be a [lo, hi] pair")
+    return LiberoJointStateCondition(
+        object_name=object_name,
+        joints=tuple(str(j) for j in joints),
+        mode=mode,
+        range=(float(window[0]), float(window[1])),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_all(params: dict) -> AllCondition:
+    raw = _require(params, "conditions", "all")
+    if not isinstance(raw, list) or not raw:
+        raise ConfigError("params.conditions must be a non-empty list of conditions")
+    return AllCondition(
+        conditions=tuple(create_success_condition(spec) for spec in raw)
+    )
+
+
 def create_success_condition(spec: dict | None) -> SuccessCondition:
     """Build a SuccessCondition from a ``success:`` YAML block.
 
@@ -1173,6 +1463,14 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return _build_in_contact(params)
     if success_type == "joint_window":
         return _build_joint_window(params)
+    if success_type == "libero_on":
+        return _build_libero_on(params)
+    if success_type == "libero_in":
+        return _build_libero_in(params)
+    if success_type == "libero_joint_state":
+        return _build_libero_joint_state(params)
+    if success_type == "all":
+        return _build_all(params)
     raise ConfigError(
         f"unknown success type {success_type!r}; available types: {list(SUCCESS_TYPES)}"
     )

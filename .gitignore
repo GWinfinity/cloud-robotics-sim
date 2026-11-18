@@ -216,3 +216,5 @@ BUSINESS_PLAN_mt-embodied-sim*.pdf
 # Embedded clone of MuJoCo Menagerie (download via examples/download_github_dir.py)
 plugins/manipulation/dexterous_gnn_qp/assets/mujoco_menagerie/
 .efe_stage/
+# LIBERO-MAX task assets (LIBERO-PRO assets @ 2b910b5, MIT; mirrored by tools/fetch_liberomax_assets.py)
+assets/liberomax/

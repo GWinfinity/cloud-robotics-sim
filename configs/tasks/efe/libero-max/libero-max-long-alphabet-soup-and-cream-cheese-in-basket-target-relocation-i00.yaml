@@ -1,0 +1,160 @@
+# EFE 迁移编译物（libero-max）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: libero-max/libero_10/target_relocation | goal: put both the alphabet soup and the cream cheese box in the basket
+# fidelity: spec | notes: 判据句见 instruction.md；冻结初始态 probe 重建（init_state_index=4, policy_seed=195）；事件 target_relocation（move_object，trigger=on_proximity）；substrate=camera_view_angle
+version: 1
+
+task:
+  name: libero-max-long-alphabet-soup-and-cream-cheese-in-basket-target-relocation-i00
+  type: efe_liberomax
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 9000
+  event:
+    setup: []
+    trigger:
+      distance_m: 0.18
+      type: on_proximity
+      value: alphabet_soup_1
+    change:
+      calibration: deterministic_candidate_requires_preflight
+      delta_position_m:
+      - 0.0
+      - -0.12
+      - 0.0
+      direction_xy:
+      - 0.0
+      - -1.0
+      distance_m: 0.12
+      object: alphabet_soup_1
+      operation: move_object
+      support_entity: living_room_table
+    change_type: target_relocation
+
+robot:
+  base_position:
+  - -0.51
+  - 0.0
+  - 0.42
+
+assets:
+  task_relevant:
+  - name: alphabet_soup_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_hope_objects/alphabet_soup/alphabet_soup.xml
+    position:
+    - 0.068003
+    - -0.119603
+    - 0.46
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.707107
+    - 0.707107
+    static: false
+  - name: basket_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_scanned_objects/basket/basket.xml
+    position:
+    - 0.000571
+    - 0.264682
+    - 0.48
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: false
+  - name: cream_cheese_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_hope_objects/cream_cheese/cream_cheese.xml
+    position:
+    - -0.156439
+    - 0.046135
+    - 0.445
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+  - name: ketchup_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_hope_objects/ketchup/ketchup.xml
+    position:
+    - -0.202668
+    - -0.167449
+    - 0.48
+    orientation:
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: tomato_sauce_1
+    shape_type: mjcf
+    mjcf_path: assets/liberomax/stable_hope_objects/tomato_sauce/tomato_sauce.xml
+    position:
+    - 0.111629
+    - -0.182678
+    - 0.48
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.707107
+    - 0.707107
+    static: false
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: libero_in
+      params:
+        object: alphabet_soup_1
+        site_center:
+        - 0.000571
+        - 0.264682
+        - 0.55185
+        site_xmat:
+        - 0.0
+        - 1.0
+        - 0.0
+        - -1.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 1.0
+        site_halfsize:
+        - 0.06108
+        - 0.06108
+        - 0.06949
+    - type: libero_in
+      params:
+        object: cream_cheese_1
+        site_center:
+        - 0.000571
+        - 0.264682
+        - 0.55185
+        site_xmat:
+        - 0.0
+        - 1.0
+        - 0.0
+        - -1.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 1.0
+        site_halfsize:
+        - 0.06108
+        - 0.06108
+        - 0.06949
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

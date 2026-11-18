@@ -648,6 +648,48 @@ def apply_layout(scene: Any, layout: Mapping[str, Mapping[str, Any]]) -> None:
         set_quat = getattr(entity, "set_quat", None)
         if orientation is not None and set_quat is not None:
             set_quat(np.asarray(orientation, dtype=float))
+        articulation = record.get("articulation") or {}
+        if articulation:
+            _apply_articulation_state(entity, name, articulation)
+
+
+def _apply_articulation_state(
+    entity: Any, name: str, articulation: Mapping[str, Any]
+) -> None:
+    """Set named joint positions on an articulation-backed entity.
+
+    LIBERO-MAX fixtures start from a frozen MuJoCo state whose articulated
+    joints (drawer slides, stove knobs) are not at their model defaults; the
+    sampled ``articulation_states`` record carries those values forward.
+    """
+    get_names = getattr(entity, "get_joint_names", None)
+    idx_for = getattr(entity, "get_joint_qs_idx_local", None)
+    get_qpos = getattr(entity, "get_qpos", None)
+    set_qpos = getattr(entity, "set_qpos", None)
+    if get_names is None or idx_for is None or get_qpos is None or set_qpos is None:
+        logger.warning(
+            "layout sets articulation for '%s' but its entity has no "
+            "named-joint hooks; ignoring",
+            name,
+        )
+        return
+    available = set(get_names())
+    qpos = np.asarray(get_qpos(), dtype=float).reshape(-1)
+    for joint, value in articulation.items():
+        if joint not in available:
+            logger.warning(
+                "layout articulation references unknown joint '%s' on '%s'; "
+                "available: %s",
+                joint,
+                name,
+                sorted(available),
+            )
+            continue
+        indices = idx_for(joint)
+        if not indices:
+            continue
+        qpos[indices[0]] = float(value)
+    set_qpos(qpos)
 
 
 def make_apply_seed_fn(spec: TaskSpec, scenes: Sequence[Any]) -> ApplySeedFn:

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-18T05:40:49.420250+00:00",
+  "generated_at": "2026-11-18T09:21:16.300239+00:00",
   "paper": {
     "arxiv": "2611.12177",
     "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
@@ -548,9 +548,9 @@
       },
       "project": {
         "tier": "T1",
-        "status": "planned",
+        "status": "ported",
         "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
-        "note": "LIBERO 变体（世界变化适应）；robosuite MJCF 对象模型可导入"
+        "note": "LIBERO 变体（世界变化适应）；robosuite MJCF 对象模型可导入。64/64 已编译并通过双层门（2026-11-18，spec 级；offline nop 门 + Genesis 引擎冒烟 64 任务 EXIT=0，genesis-world 1.4.7，见 docs/LIBEROMAX_PORT_PLAN.md）；判据为 BDDL goal 由 tools/liberomax_probe.py 用 pin 住的上游栈（LIBERO-PRO @2b910b5 + robosuite 1.4.0，.lmxvenv 编译期探测）重建冻结初始态后逐字转写；事件 on_proximity→物理变更在 runtime/efe.py 的 efe_liberomax 任务（视觉类事件仅记录不改物理）；镜像 tools/fetch_liberomax_assets.py（LIBERO-MAX 运行时 @a1e3cef 作者书面授权、LIBERO-PRO MIT、HF 数据 CC-BY-4.0；资产本地镜像不入库）"
       },
       "inventory": {
         "n_tasks": 64,
@@ -1613,9 +1613,10 @@
       "T0": 1
     },
     "by_status": {
-      "planned": 29,
+      "planned": 28,
       "partial": 5,
       "excluded": 1,
+      "ported": 1,
       "blocked": 1
     }
   },

@@ -1,0 +1,21 @@
+# LIBERO-MAX 判据表（data/efe/compile/libero-max.predicates.yaml）
+#
+# LIBERO-MAX 的判据不是人工策划表：每个 case 的 BDDL goal 由
+# tools/liberomax_probe.py 用 pin 住的上游栈（LIBERO-PRO @ 2b910b5 +
+# robosuite 1.4.0 + MuJoCo 3.2.6）重建冻结初始态后直接解析，谓词语义
+# 逐字转写自 LIBERO-PRO 源码（envs/predicates/base_predicates.py 与
+# envs/objects/site_object.py），阈值来自各物体类的 articulation 量程。
+# 本表只承载套件级编译参数；逐任务判据见 probe dump
+# （data/efe/upstream/liberomax-dumps/<task>.json，本地镜像不入库）。
+
+source:
+  suite: libero-max
+  upstream: LIBERO-MAX @ a1e3cef（EFE 镜像 tasks/libero-max，作者书面授权再分发）
+  substrate: LIBERO-PRO @ 2b910b5（MIT）+ 任务数据 zhouxueyang/LIBERO-Pro @ c86fc3b（CC-BY-4.0）
+  simulator: robosuite 1.4.0 / MuJoCo 3.2.6
+  mirror_tool: tools/fetch_liberomax_assets.py
+  probe_tool: tools/liberomax_probe.py（.lmxvenv 编译期探测，见 tools/setup_lmx_probe_venv.py）
+
+# EFE standard 模式对所有 64 例的统一技术上限（privileged 的按套件
+# 220/280/300/520 步长是 LIBERO 评测口径，EFE 任务目录不强制）。
+max_episode_steps: 9000

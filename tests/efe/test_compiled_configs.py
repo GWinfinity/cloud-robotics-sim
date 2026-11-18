@@ -55,6 +55,9 @@ def _stub_scene(spec):
         entity.get_quat.return_value = np.asarray(quat, dtype=float)
         entity.in_contact = MagicMock(return_value=False)
         entity.get_joint_positions = MagicMock(return_value=np.zeros(4))
+        # 0.0 sits on the failing side of every LIBERO articulation mode
+        # (close: > min, turn_on: >= min, turn_off: < max with max <= 0).
+        entity.get_joint_position = MagicMock(return_value=0.0)
         entities[spawn.name] = entity
     return SimpleNamespace(entities=entities)
 

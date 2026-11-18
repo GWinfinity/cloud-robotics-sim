@@ -9,6 +9,7 @@ import pytest
 from cloud_robotics_sim.core.config_loader import ConfigError
 from cloud_robotics_sim.core.success import (
     AboveRegionCondition,
+    AllCondition,
     AxisWindowCondition,
     BodyPointNearCondition,
     ContainsCondition,
@@ -17,6 +18,9 @@ from cloud_robotics_sim.core.success import (
     EeNearCondition,
     InContactCondition,
     InRegionCondition,
+    LiberoInCondition,
+    LiberoJointStateCondition,
+    LiberoOnCondition,
     LiftCondition,
     OrderedCondition,
     PoseWindowCondition,
@@ -1031,3 +1035,328 @@ class TestCreateInContact:
     def test_in_contact_requires_objects(self):
         with pytest.raises(ConfigError, match="objects"):
             create_success_condition({"type": "in_contact", "params": {}})
+
+
+class TestLiberoOn:
+    """Tests for LiberoOnCondition (LIBERO-MAX ``on`` goals)."""
+
+    def _entity(self, pos, touching=True):
+        entity = MagicMock()
+        entity.get_pos.return_value = np.asarray(pos, dtype=float)
+        entity.in_contact.return_value = touching
+        return entity
+
+    def _scene(self, obj_pos, support_pos, touching=True):
+        return SimpleNamespace(
+            entities={
+                "bowl": self._entity(obj_pos, touching),
+                "plate": self._entity(support_pos, touching),
+            }
+        )
+
+    def test_object_support_passes(self):
+        condition = LiberoOnCondition(object_name="bowl", support="plate")
+        # support below, xy within 0.03, contact
+        assert condition.evaluate(self._scene((0.5, 0.0, 0.95), (0.51, 0.0, 0.9)), None)
+
+    def test_object_support_requires_contact(self):
+        condition = LiberoOnCondition(object_name="bowl", support="plate")
+        assert not condition.evaluate(
+            self._scene((0.5, 0.0, 0.95), (0.51, 0.0, 0.9), touching=False), None
+        )
+
+    def test_object_support_rejects_wide_xy(self):
+        condition = LiberoOnCondition(object_name="bowl", support="plate")
+        # exactly 0.03 m off -> upstream uses strict <, so this fails
+        assert not condition.evaluate(
+            self._scene((0.53, 0.0, 0.95), (0.5, 0.0, 0.9)), None
+        )
+
+    def test_object_support_rejects_below_support(self):
+        condition = LiberoOnCondition(object_name="bowl", support="plate")
+        assert not condition.evaluate(
+            self._scene((0.5, 0.0, 0.85), (0.5, 0.0, 0.9)), None
+        )
+
+    def test_site_support_under_slab(self):
+        # identity xmat, half extents (0.1, 0.1, 0.005): slab z in
+        # [0.0, 0.105] relative to center, |dx|,|dy| < 0.1
+        condition = LiberoOnCondition(
+            object_name="bowl",
+            site_center=(0.0, 0.0, 0.9),
+            site_xmat=(1, 0, 0, 0, 1, 0, 0, 0, 1),
+            site_halfsize=(0.1, 0.1, 0.005),
+        )
+        scene = SimpleNamespace(entities={"bowl": self._entity((0.05, -0.05, 0.905))})
+        assert condition.evaluate(scene, None)
+
+    def test_site_support_slab_bounds(self):
+        condition = LiberoOnCondition(
+            object_name="bowl",
+            site_center=(0.0, 0.0, 0.9),
+            site_xmat=(1, 0, 0, 0, 1, 0, 0, 0, 1),
+            site_halfsize=(0.1, 0.1, 0.005),
+        )
+        too_high = SimpleNamespace(entities={"bowl": self._entity((0.0, 0.0, 1.1))})
+        outside_xy = SimpleNamespace(entities={"bowl": self._entity((0.1, 0.0, 0.905))})
+        assert not condition.evaluate(too_high, None)
+        assert not condition.evaluate(outside_xy, None)
+
+    def test_site_support_requires_parent_contact(self):
+        bowl = self._entity((0.0, 0.0, 0.905))
+        cabinet = self._entity((0.0, 0.0, 0.8))
+        bowl.in_contact.return_value = True
+        condition = LiberoOnCondition(
+            object_name="bowl",
+            site_center=(0.0, 0.0, 0.9),
+            site_xmat=(1, 0, 0, 0, 1, 0, 0, 0, 1),
+            site_halfsize=(0.1, 0.1, 0.005),
+            site_contact="cabinet",
+        )
+        scene = SimpleNamespace(entities={"bowl": bowl, "cabinet": cabinet})
+        assert condition.evaluate(scene, None)
+        bowl.in_contact.return_value = False
+        assert not condition.evaluate(scene, None)
+
+
+class TestLiberoIn:
+    """Tests for LiberoInCondition (LIBERO-MAX ``in`` goals, site boxes)."""
+
+    def _condition(self):
+        return LiberoInCondition(
+            object_name="soup",
+            site_center=(0.0, 0.0, 0.9),
+            site_xmat=(1, 0, 0, 0, 1, 0, 0, 0, 1),
+            site_halfsize=(0.05, 0.05, 0.02),
+        )
+
+    def _scene(self, pos):
+        entity = MagicMock()
+        entity.get_pos.return_value = np.asarray(pos, dtype=float)
+        return SimpleNamespace(entities={"soup": entity})
+
+    def test_inside_passes(self):
+        assert self._condition().evaluate(self._scene((0.0, 0.0, 0.9)), None)
+
+    def test_strict_inequalities(self):
+        # on the x boundary -> fails (upstream uses strict >/<)
+        assert not self._condition().evaluate(self._scene((0.05, 0.0, 0.9)), None)
+
+    def test_lower_z_margin(self):
+        # box z in [0.88, 0.92]; lb.z is relaxed by 0.01 m -> [0.87, 0.92]
+        assert self._condition().evaluate(self._scene((0.0, 0.0, 0.871)), None)
+        assert not self._condition().evaluate(self._scene((0.0, 0.0, 0.87)), None)
+
+    def test_rotated_box_uses_abs_xmat_size(self):
+        # 90 deg yaw swaps x/y extents: |xmat @ half| = (0.02, 0.05, 0.01)
+        condition = LiberoInCondition(
+            object_name="soup",
+            site_center=(0.0, 0.0, 0.9),
+            site_xmat=(0, -1, 0, 1, 0, 0, 0, 0, 1),
+            site_halfsize=(0.05, 0.02, 0.01),
+        )
+        entity = MagicMock()
+        entity.get_pos.return_value = np.array([0.015, 0.04, 0.9])
+        scene = SimpleNamespace(entities={"soup": entity})
+        assert condition.evaluate(scene, None)
+
+
+class TestLiberoJointState:
+    """Tests for LiberoJointStateCondition (Close/TurnOn/TurnOff)."""
+
+    def _entity(self, positions: dict):
+        entity = MagicMock()
+        entity.get_joint_position = lambda name: positions[name]
+        return entity
+
+    def test_close_all_joints_above_min(self):
+        scene = SimpleNamespace(
+            entities={"cabinet": self._entity({"j1": 0.001, "j2": 0.002})}
+        )
+        condition = LiberoJointStateCondition(
+            object_name="cabinet", joints=("j1", "j2"), mode="close", range=(0.0, 0.005)
+        )
+        assert condition.evaluate(scene, None)
+        scene.entities["cabinet"].get_joint_position = lambda name: -0.15
+        assert not condition.evaluate(scene, None)
+
+    def test_turn_on_any_joint(self):
+        scene = SimpleNamespace(entities={"stove": self._entity({"b1": 0.0})})
+        condition = LiberoJointStateCondition(
+            object_name="stove", joints=("b1",), mode="turn_on", range=(0.5, 2.1)
+        )
+        assert not condition.evaluate(scene, None)
+        scene.entities["stove"].get_joint_position = lambda name: 0.5
+        assert condition.evaluate(scene, None)
+
+    def test_turn_off_all_joints_below_max(self):
+        scene = SimpleNamespace(entities={"stove": self._entity({"b1": -0.001})})
+        condition = LiberoJointStateCondition(
+            object_name="stove", joints=("b1",), mode="turn_off", range=(-0.005, 0.0)
+        )
+        # upstream: qpos < max(turnoff_range) — exactly 0.0 is NOT "off"
+        assert condition.evaluate(scene, None)
+        scene.entities["stove"].get_joint_position = lambda name: 0.0
+        assert not condition.evaluate(scene, None)
+
+    def test_articulation_backend_hook(self):
+        entity = MagicMock()
+        entity.get_joint_position = None
+        entity.get_joint_names = lambda: ["j1"]
+        entity.get_joint_qs_idx_local = lambda name: [0]
+        entity.get_qpos = lambda: np.array([0.003])
+        scene = SimpleNamespace(entities={"cabinet": entity})
+        condition = LiberoJointStateCondition(
+            object_name="cabinet", joints=("j1",), mode="close", range=(0.0, 0.005)
+        )
+        assert condition.evaluate(scene, None)
+
+    def test_spawn_renamed_joint_matches_by_suffix(self):
+        """Component spawns carry bare MJCF names + __dupN repair suffixes.
+
+        LIBERO composes with an instance prefix (``flat_stove_1_button``);
+        the component-level spawn exposes ``button__dup2`` after the
+        duplicate-name repair — the comparison ignores the repair suffix.
+        """
+        entity = MagicMock()
+        entity.get_joint_position = None
+        entity.get_joint_names = lambda: ["button__dup2"]
+        entity.get_joint_qs_idx_local = lambda name: [0]
+        entity.get_qpos = lambda: np.array([-0.001])
+        scene = SimpleNamespace(entities={"stove": entity})
+        condition = LiberoJointStateCondition(
+            object_name="stove",
+            joints=("flat_stove_1_button",),
+            mode="turn_off",
+            range=(-0.005, 0.0),
+        )
+        assert condition.evaluate(scene, None) is True
+
+    def test_unknown_mode_raises(self):
+        condition = LiberoJointStateCondition(
+            object_name="cabinet", joints=("j1",), mode="tilt", range=(0.0, 1.0)
+        )
+        with pytest.raises(ValueError, match="mode"):
+            condition.evaluate(
+                SimpleNamespace(entities={"cabinet": self._entity({"j1": 0.0})}), None
+            )
+
+
+class TestAllCondition:
+    """Tests for AllCondition (LIBERO ``And`` goal trees)."""
+
+    def test_all_must_hold(self):
+        inner_a = LiberoInCondition(
+            object_name="soup",
+            site_center=(0, 0, 0.9),
+            site_xmat=(1, 0, 0, 0, 1, 0, 0, 0, 1),
+            site_halfsize=(0.1, 0.1, 0.1),
+        )
+        inner_b = LiberoJointStateCondition(
+            object_name="cabinet", joints=("j1",), mode="close", range=(0.0, 0.005)
+        )
+        condition = AllCondition(conditions=(inner_a, inner_b))
+        entity = MagicMock()
+        entity.get_pos.return_value = np.asarray([0.0, 0.0, 0.9])
+        entity.get_joint_position = lambda name: 0.001
+        scene = SimpleNamespace(entities={"soup": entity, "cabinet": entity})
+        assert condition.evaluate(scene, None)
+        entity.get_joint_position = lambda name: -0.2
+        assert not condition.evaluate(scene, None)
+
+    def test_factory_recursion(self):
+        condition = create_success_condition(
+            {
+                "type": "all",
+                "params": {
+                    "conditions": [
+                        {
+                            "type": "libero_in",
+                            "params": {
+                                "object": "soup",
+                                "site_center": [0, 0, 0.9],
+                                "site_xmat": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+                                "site_halfsize": [0.1, 0.1, 0.1],
+                            },
+                        },
+                        {
+                            "type": "libero_joint_state",
+                            "params": {
+                                "entity": "cabinet",
+                                "joints": ["j1"],
+                                "mode": "close",
+                                "range": [0.0, 0.005],
+                            },
+                        },
+                    ]
+                },
+            }
+        )
+        assert isinstance(condition, AllCondition)
+        assert len(condition.conditions) == 2
+
+    def test_factory_requires_conditions(self):
+        with pytest.raises(ConfigError, match="conditions"):
+            create_success_condition({"type": "all", "params": {}})
+
+
+class TestCreateLibero:
+    """Factory coverage for the LIBERO-MAX success types."""
+
+    def test_libero_on_object_mode(self):
+        condition = create_success_condition(
+            {
+                "type": "libero_on",
+                "params": {"object": "bowl", "support": "plate"},
+            }
+        )
+        assert isinstance(condition, LiberoOnCondition)
+
+    def test_libero_on_site_mode(self):
+        condition = create_success_condition(
+            {
+                "type": "libero_on",
+                "params": {
+                    "object": "bowl",
+                    "site_center": [0, 0, 0.9],
+                    "site_xmat": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+                    "site_halfsize": [0.1, 0.1, 0.005],
+                    "site_contact": "cabinet",
+                },
+            }
+        )
+        assert isinstance(condition, LiberoOnCondition)
+        assert condition.site_contact == "cabinet"
+
+    def test_libero_on_requires_support_or_site(self):
+        with pytest.raises(ConfigError, match="support"):
+            create_success_condition(
+                {"type": "libero_on", "params": {"object": "bowl"}}
+            )
+
+    def test_libero_joint_state_bad_mode(self):
+        with pytest.raises(ConfigError, match="mode"):
+            create_success_condition(
+                {
+                    "type": "libero_joint_state",
+                    "params": {
+                        "entity": "stove",
+                        "joints": ["b1"],
+                        "mode": "tilt",
+                        "range": [0.0, 1.0],
+                    },
+                }
+            )
+
+    def test_libero_in_requires_full_site(self):
+        with pytest.raises(ConfigError, match="site_halfsize"):
+            create_success_condition(
+                {
+                    "type": "libero_in",
+                    "params": {
+                        "object": "soup",
+                        "site_center": [0, 0, 0.9],
+                        "site_xmat": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+                    },
+                }
+            )
