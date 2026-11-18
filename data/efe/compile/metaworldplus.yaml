@@ -1,0 +1,2046 @@
+# 编译知识库（生成物）：--resolve 从判据表+上游模型生成；人工修正会被下次 --resolve 覆盖，
+# 持久标注请改 .predicates.yaml。
+suite: metaworldplus
+robot: sawyer
+scene: efe_tabletop
+source:
+  benchmark: Meta-World
+  repo: Farama-Foundation/Metaworld
+  ref: 59fc34d7768af9785e4688c3e1db671424f4a6c3
+  simulator: mujoco
+  robot: sawyer
+  note: 判据句出自 EFE tasks/metaworldplus/*/instruction.md（MIT）
+pending_tasks:
+- metaworldplus-button-press-topdown-i00
+tasks:
+  metaworldplus-assembly-i00:
+    family: metaworld/assembly
+    goal: Place the nut onto the peg
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: RoundNut
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.1
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: RoundNut
+        target_position:
+        - 0.1
+        - 0.8
+        - 0.1
+        windows:
+          x:
+          - -0.02
+          - 0.02
+          y:
+          - -0.02
+          - 0.02
+          z:
+          - null
+          - 0.0
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-basketball-i00:
+    family: metaworld/basketball
+    goal: Pick up the ball and place it through the basketball hoop
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: bsktball
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.03
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: bsktball
+        target_position:
+        - 0.0
+        - 0.9
+        - 0.3
+        threshold: 0.08
+        axis_weights:
+        - 1.0
+        - 1.0
+        - 2.0
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-bin-picking-i00:
+    family: metaworld/bin-picking
+    goal:
+    - 0.12
+    - 0.7
+    - 0.02
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - -0.12
+      - 0.7
+      - 0.04
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.12
+        - 0.7
+        - 0.02
+        threshold: 0.05
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-box-close-i00:
+    family: metaworld/box-close
+    goal:
+    - 0.0
+    - 0.75
+    - 0.133
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: boxbodytop
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.8
+      - 0.0
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: boxbodytop
+        target_position:
+        - 0.0
+        - 0.75
+        - 0.133
+        threshold: 0.08
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-button-press-i00:
+    family: metaworld/button-press
+    goal: Press the button
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: button
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.9
+      - 0.12
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: button
+        target_position:
+        - 0.0
+        - 0.7065
+        - 0.12
+        windows:
+          y:
+          - -0.02
+          - 0.02
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-button-press-topdown-wall-i00:
+    family: metaworld/button-press-topdown-wall
+    goal: Press the button mounted high on a wall
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: button
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.85
+      - 0.12
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: button
+        target_position:
+        - 0.0
+        - 0.6565
+        - 0.12
+        windows:
+          y:
+          - -0.03
+          - 0.03
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-button-press-wall-i00:
+    family: metaworld/button-press-wall
+    goal: Press the button mounted on a wall
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: button
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.9
+      - 0.12
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: button
+        target_position:
+        - 0.0
+        - 0.7065
+        - 0.12
+        windows:
+          y:
+          - -0.03
+          - 0.03
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-coffee-button-i00:
+    family: metaworld/coffee-button
+    goal: Press the coffee machine button
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: cmbutton
+      shape_type: cylinder
+      size:
+      - 0.032
+      - 0.03
+      - 0.032
+      position:
+      - 0.0
+      - 0.9
+      - 0.0
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: cmbutton
+        target_position:
+        - 0.0
+        - 0.68
+        - 0.3
+        windows:
+          y:
+          - -0.02
+          - 0.02
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-coffee-pull-i00:
+    family: metaworld/coffee-pull
+    goal: Pull the mug away from the coffee machine
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.1
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.0
+        - 0.68
+        - 0.0
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-coffee-push-i00:
+    family: metaworld/coffee-push
+    goal:
+    - 0.0
+    - 0.75
+    - 0.0
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.1
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.0
+        - 0.75
+        - 0.0
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-dial-turn-i00:
+    family: metaworld/dial-turn
+    goal:
+    - 0.0
+    - 0.73
+    - 0.08
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: body_33
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.7
+      - 0.0
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: body_point_near
+      params:
+        object: body_33
+        target_position:
+        - 0.0
+        - 0.73
+        - 0.08
+        threshold: 0.05
+        offset:
+        - 0.0
+        - -0.05
+        - 0.035
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-disassemble-i00:
+    family: metaworld/disassemble
+    goal: axis_window
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: RoundNut
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.1
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: RoundNut
+        windows:
+          z:
+          - 0.12
+          - null
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-door-close-i00:
+    family: metaworld/door-close
+    goal:
+    - 0.25
+    - 0.7
+    - 0.15
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: door
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.05
+      - 0.9
+      - 0.15
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - -0.707107
+    success:
+      type: body_point_near
+      params:
+        object: door
+        offset:
+        - 0.14
+        - -0.162
+        - 0.0
+        target_position:
+        - 0.25
+        - 0.7
+        - 0.15
+        threshold: 0.08
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-door-lock-i00:
+    family: metaworld/door-lock
+    goal: axis_window
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: door
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.9
+      - 0.15
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    - name: lock_tip
+      shape_type: box
+      size:
+      - 0.015
+      - 0.015
+      - 0.03
+      position:
+      - 0.0
+      - 0.785
+      - 0.15
+      color:
+      - 0.7
+      - 0.7
+      - 0.7
+      - 1.0
+      mass: 0.2
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: lock_tip
+        target_position:
+        - 0.0
+        - 0.785
+        - 0.05
+        windows:
+          z:
+          - -0.02
+          - 0.02
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-door-open-i00:
+    family: metaworld/door-open
+    goal:
+    - -0.25
+    - 0.45
+    - 0.15
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: door
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.05
+      - 0.9
+      - 0.15
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: door
+        target_position:
+        - -0.25
+        - 0.45
+        - 0.15
+        windows:
+          x:
+          - -0.08
+          - 0.08
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-door-unlock-i00:
+    family: metaworld/door-unlock
+    goal: axis_window
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: door
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.9
+      - 0.15
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    - name: lock_tip
+      shape_type: box
+      size:
+      - 0.015
+      - 0.015
+      - 0.03
+      position:
+      - 0.0
+      - 0.785
+      - 0.15
+      color:
+      - 0.7
+      - 0.7
+      - 0.7
+      - 1.0
+      mass: 0.2
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: lock_tip
+        target_position:
+        - 0.1
+        - 0.785
+        - 0.15
+        windows:
+          x:
+          - -0.02
+          - 0.02
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-drawer-close-i00:
+    family: metaworld/drawer-close
+    goal:
+    - 0.0
+    - 0.73
+    - 0.09
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: drawer_link
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.53
+      - 0.09
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: body_point_near
+      params:
+        object: drawer_link
+        offset:
+        - 0.0
+        - -0.16
+        - 0.0
+        target_position:
+        - 0.0
+        - 0.73
+        - 0.09
+        threshold: 0.065
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-drawer-open-i00:
+    family: metaworld/drawer-open
+    goal:
+    - 0.0
+    - 0.54
+    - 0.09
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: drawer_link
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.89
+      - 0.09
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: body_point_near
+      params:
+        object: drawer_link
+        offset:
+        - 0.0
+        - -0.16
+        - 0.0
+        target_position:
+        - 0.0
+        - 0.54
+        - 0.09
+        threshold: 0.03
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-faucet-close-i00:
+    family: metaworld/faucet-close
+    goal:
+    - -0.175
+    - 0.825
+    - 0.125
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: faucetBase
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.825
+      - 0.0
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: body_point_near
+      params:
+        object: faucetBase
+        target_position:
+        - -0.175
+        - 0.825
+        - 0.125
+        threshold: 0.07
+        offset:
+        - 0.015
+        - -0.175
+        - 0.124
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-faucet-open-i00:
+    family: metaworld/faucet-open
+    goal:
+    - 0.175
+    - 0.825
+    - 0.125
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: faucetBase
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.825
+      - 0.0
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: body_point_near
+      params:
+        object: faucetBase
+        target_position:
+        - 0.175
+        - 0.825
+        - 0.125
+        threshold: 0.07
+        offset:
+        - -0.015
+        - -0.175
+        - 0.124
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-hammer-i00:
+    family: metaworld/hammer
+    goal: axis_window
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: nail_link
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.24
+      - 0.64
+      - 0.11
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: nail_link
+        windows:
+          y:
+          - 0.73
+          - null
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-hand-insert-i00:
+    family: metaworld/hand-insert
+    goal:
+    - 0.0
+    - 0.84
+    - -0.08
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: box
+      size:
+      - 0.02
+      - 0.02
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.0
+        - 0.84
+        - -0.08
+        threshold: 0.05
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-handle-press-i00:
+    family: metaworld/handle-press
+    goal: Press the handle
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: handle_link
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.83
+      - 0.15
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: handle_link
+        target_position:
+        - 0.0
+        - 0.664
+        - 0.075
+        threshold: 0.05
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-handle-press-side-i00:
+    family: metaworld/handle-press-side
+    goal: Press the handle mounted sideways
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: handle_link
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - -0.4
+      - 0.55
+      - 0.15
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: handle_link
+        target_position:
+        - -0.4
+        - 0.384
+        - 0.075
+        windows:
+          z:
+          - -0.02
+          - 0.02
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-handle-pull-i00:
+    family: metaworld/handle-pull
+    goal: Pull the handle
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: handle_link
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.83
+      - 0.15
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: handle_link
+        target_position:
+        - 0.0
+        - 0.664
+        - 0.172
+        threshold: 0.05
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-handle-pull-side-i00:
+    family: metaworld/handle-pull-side
+    goal: Pull the sideways-mounted handle
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: handle_link
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - -0.4
+      - 0.55
+      - 0.15
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: handle_link
+        target_position:
+        - -0.4
+        - 0.384
+        - 0.172
+        threshold: 0.08
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-lever-pull-i00:
+    family: metaworld/lever-pull
+    goal:
+    - 0.12
+    - 0.75
+    - 0.45
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: lever
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.75
+      - 0.0
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: body_point_near
+      params:
+        object: lever
+        target_position:
+        - 0.12
+        - 0.75
+        - 0.45
+        threshold: 0.026
+        offset:
+        - 0.12
+        - -0.2
+        - 0.25
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-peg-insert-side-i00:
+    family: metaworld/peg-insert-side
+    goal: Insert the peg into the hole from the side
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: peg
+      shape_type: box
+      size:
+      - 0.015
+      - 0.015
+      - 0.12
+      position:
+      - 0.0
+      - 0.6
+      - 0.03
+      color:
+      - 0.3
+      - 1.0
+      - 0.3
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: body_point_near
+      params:
+        object: peg
+        offset:
+        - -0.1
+        - 0.0
+        - 0.0
+        target_position:
+        - -0.3
+        - 0.504
+        - 0.13
+        threshold: 0.07
+        axis_weights:
+        - 1.0
+        - 2.0
+        - 2.0
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-peg-unplug-side-i00:
+    family: metaworld/peg-unplug-side
+    goal:
+    - -0.102
+    - 0.6
+    - 0.131
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: plug1
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - -0.252
+      - 0.6
+      - 0.131
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: plug1
+        target_position:
+        - -0.102
+        - 0.6
+        - 0.131
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-pick-out-of-hole-i00:
+    family: metaworld/pick-out-of-hole
+    goal:
+    - 0.0
+    - 0.6
+    - 0.2
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: cylinder
+      size:
+      - 0.02
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.0
+        - 0.6
+        - 0.2
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-pick-place-i00:
+    family: metaworld/pick-place
+    goal:
+    - 0.1
+    - 0.8
+    - 0.2
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: cylinder
+      size:
+      - 0.02
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.1
+        - 0.8
+        - 0.2
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-pick-place-wall-i00:
+    family: metaworld/pick-place-wall
+    goal:
+    - 0.05
+    - 0.8
+    - 0.2
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: cylinder
+      size:
+      - 0.02
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.05
+        - 0.8
+        - 0.2
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-plate-slide-i00:
+    family: metaworld/plate-slide
+    goal:
+    - 0.0
+    - 0.85
+    - 0.02
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: body_33
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.015
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: body_33
+        target_position:
+        - 0.0
+        - 0.85
+        - 0.02
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-plate-slide-back-i00:
+    family: metaworld/plate-slide-back
+    goal:
+    - 0.0
+    - 0.6
+    - 0.015
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: body_33
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.85
+      - 0.0
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: body_33
+        target_position:
+        - 0.0
+        - 0.6
+        - 0.015
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-plate-slide-back-side-i00:
+    family: metaworld/plate-slide-back-side
+    goal:
+    - 0.0
+    - 0.6
+    - 0.015
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: body_33
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - -0.25
+      - 0.6
+      - 0.0
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: body_33
+        target_position:
+        - 0.0
+        - 0.6
+        - 0.015
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-plate-slide-side-i00:
+    family: metaworld/plate-slide-side
+    goal:
+    - -0.25
+    - 0.6
+    - 0.015
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: body_33
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.015
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: body_33
+        target_position:
+        - -0.25
+        - 0.6
+        - 0.015
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-push-i00:
+    family: metaworld/push
+    goal:
+    - 0.1
+    - 0.8
+    - 0.02
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: cylinder
+      size:
+      - 0.02
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.1
+        - 0.8
+        - 0.02
+        threshold: 0.05
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-push-back-i00:
+    family: metaworld/push-back
+    goal:
+    - 0.0
+    - 0.6
+    - 0.02
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: box
+      size:
+      - 0.02
+      - 0.02
+      - 0.02
+      position:
+      - 0.0
+      - 0.825
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.0
+        - 0.6
+        - 0.02
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-push-wall-i00:
+    family: metaworld/push-wall
+    goal:
+    - 0.05
+    - 0.8
+    - 0.015
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: cylinder
+      size:
+      - 0.02
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.05
+        - 0.8
+        - 0.015
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-reach-i00:
+    family: metaworld/reach
+    goal:
+    - -0.1
+    - 0.8
+    - 0.2
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant: []
+    success:
+      type: ee_near
+      params:
+        target_position:
+        - -0.1
+        - 0.8
+        - 0.2
+        threshold: 0.05
+        link: hand
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-reach-wall-i00:
+    family: metaworld/reach-wall
+    goal:
+    - -0.05
+    - 0.8
+    - 0.2
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant: []
+    success:
+      type: ee_near
+      params:
+        target_position:
+        - -0.05
+        - 0.8
+        - 0.2
+        threshold: 0.05
+        link: hand
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-shelf-place-i00:
+    family: metaworld/shelf-place
+    goal: Place the object on the shelf
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: box
+      size:
+      - 0.02
+      - 0.02
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.02
+      color:
+      - 0.0
+      - 0.0
+      - 1.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.0
+        - 0.8
+        - 0.3
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-soccer-i00:
+    family: metaworld/soccer
+    goal:
+    - 0.0
+    - 0.9
+    - 0.03
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: soccer_ball
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.03
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: soccer_ball
+        target_position:
+        - 0.0
+        - 0.9
+        - 0.03
+        threshold: 0.07
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-stick-pull-i00:
+    family: metaworld/stick-pull
+    goal: staged
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: stick
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - -0.15
+      - 0.75
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    - name: thermos_handle
+      shape_type: box
+      size:
+      - 0.03
+      - 0.03
+      - 0.06
+      position:
+      - 0.0
+      - 0.7
+      - 0.14
+      color:
+      - 0.7
+      - 0.7
+      - 0.7
+      - 1.0
+      mass: 0.2
+      static: false
+      friction: 1.0
+    success:
+      type: staged
+      params:
+        stages:
+        - stage: transport_fail
+          condition:
+            type: distance_threshold
+            params:
+              object: thermos_handle
+              target_position:
+              - 0.0
+              - 0.6
+              - 0.1
+              threshold: 0.12
+        - stage: place_fail
+          condition:
+            type: axis_window
+            params:
+              object: stick
+              target_position:
+              - 0.0
+              - 0.7
+              - 0.14
+              windows:
+                x:
+                - 0.0
+                - null
+                y:
+                - -0.04
+                - 0.04
+                z:
+                - -0.06
+                - 0.06
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-stick-push-i00:
+    family: metaworld/stick-push
+    goal: staged
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: stick
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - -0.15
+      - 0.75
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    - name: thermos_point
+      shape_type: box
+      size:
+      - 0.03
+      - 0.03
+      - 0.06
+      position:
+      - 0.0
+      - 0.79
+      - 0.14
+      color:
+      - 0.7
+      - 0.7
+      - 0.7
+      - 1.0
+      mass: 0.2
+      static: false
+      friction: 1.0
+    success:
+      type: staged
+      params:
+        stages:
+        - stage: transport_fail
+          condition:
+            type: distance_threshold
+            params:
+              object: thermos_point
+              target_position:
+              - 0.0
+              - 0.6
+              - 0.1
+              threshold: 0.12
+        - stage: lift_fail
+          condition:
+            type: axis_window
+            params:
+              object: stick
+              windows:
+                z:
+                - 0.11
+                - null
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-sweep-i00:
+    family: metaworld/sweep
+    goal:
+    - 0.5
+    - 0.6
+    - 0.01
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: obj
+        target_position:
+        - 0.5
+        - 0.6
+        - 0.01
+        threshold: 0.05
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-sweep-into-i00:
+    family: metaworld/sweep-into
+    goal: Sweep the object into the goal
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: obj
+      shape_type: box
+      size:
+      - 0.02
+      - 0.02
+      - 0.02
+      position:
+      - 0.0
+      - 0.6
+      - 0.02
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: obj
+        target_position:
+        - 0.0
+        - 0.84
+        - 0.02
+        windows:
+          x:
+          - -0.05
+          - 0.05
+          y:
+          - -0.05
+          - 0.05
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-window-close-i00:
+    family: metaworld/window-close
+    goal:
+    - 0.0
+    - 0.825
+    - 0.2
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: window
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.2
+      - 0.825
+      - 0.2
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: distance_threshold
+      params:
+        object: window
+        target_position:
+        - 0.0
+        - 0.825
+        - 0.2
+        threshold: 0.05
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
+  metaworldplus-window-open-i00:
+    family: metaworld/window-open
+    goal:
+    - 0.2
+    - 0.8
+    - 0.16
+    robot: sawyer
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: window
+      shape_type: sphere
+      size:
+      - 0.02
+      position:
+      - 0.0
+      - 0.8
+      - 0.16
+      color:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 1.0
+      mass: 0.75
+      static: false
+      friction: 1.0
+    success:
+      type: axis_window
+      params:
+        object: window
+        target_position:
+        - 0.2
+        - 0.8
+        - 0.16
+        windows:
+          x:
+          - -0.05
+          - 0.05
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: ''
