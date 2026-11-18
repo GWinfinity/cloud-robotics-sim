@@ -1,0 +1,122 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/select_specific_type_book | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-select-specific-type-book-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: shelf_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/containers/shelf/shelf1.xml
+    position:
+    - -0.048217
+    - 0.301127
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: introduction_to_electronics
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/books/bookscan/introduction_to_electronics/introduction_to_electronics.xml
+    position:
+    - -0.280539
+    - 0.301127
+    - 1.26
+    orientation:
+    - 0.0
+    - 0.707107
+    - 0.707107
+    - 0.0
+    static: false
+  - name: data_visualization
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/books/bookscan/data_visualization/data_visualization.xml
+    position:
+    - -0.133976
+    - 0.301127
+    - 1.26
+    orientation:
+    - 0.0
+    - 0.707107
+    - 0.707107
+    - 0.0
+    static: false
+  - name: the_story_of_american_freedom
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/books/bookscan/the_story_of_american_freedom/the_story_of_american_freedom.xml
+    position:
+    - 0.031922
+    - 0.301127
+    - 1.26
+    orientation:
+    - 0.0
+    - 0.707107
+    - 0.707107
+    - 0.0
+    static: false
+  - name: electron_transport_in_quantum_dots
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/books/bookscan/electron_transport_in_quantum_dots/electron_transport_in_quantum_dots.xml
+    position:
+    - 0.183516
+    - 0.301127
+    - 1.26
+    orientation:
+    - 0.0
+    - 0.707107
+    - 0.707107
+    - 0.0
+    static: false
+
+success:
+  type: contains
+  params:
+    container: shelf_seen
+    objects:
+    - the_story_of_american_freedom
+    negate: true
+    mode: boxes
+    regions:
+    - center:
+      - 0.0
+      - 0.0
+      - 0.0
+      min:
+      - -0.15
+      - -0.401
+      - 0.0
+      max:
+      - 0.15
+      - 0.401
+      - 0.6
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

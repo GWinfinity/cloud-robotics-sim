@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-18T03:29:25.563037+00:00",
+  "generated_at": "2026-11-18T04:20:39.955362+00:00",
   "paper": {
     "arxiv": "2611.12177",
     "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
@@ -1068,7 +1068,7 @@
         "tier": "T1",
         "status": "partial",
         "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
-        "note": "语言条件长程操作；dm_control 封装但底层 MJCF 可导入（任务 XML 在 HF lerobot/vlabench-assets@08d7a44，机器人 XML 在 OpenMOSS/VLABench@cf588fe）。13/36 已编译并通过双层门（2026-11-18，spec 级；offline nop 门 + Genesis 引擎冒烟，见 docs/VLABENCH_PORT_PLAN.md）；镜像工具 tools/fetch_vlabench_assets.py（资产无再分发许可，仅本地镜像）；剩余 23 个 pending 理由见 data/efe/compile/vlabench.predicates.yaml（接触/关节谓词 8、子体抽取 7、资产库式几何合成 4、heat_food 附加语义、texas_holdem 代码层判据、select_drink nop 拦截）"
+        "note": "语言条件长程操作；dm_control 封装但底层 MJCF 可导入（任务 XML 在 HF lerobot/vlabench-assets@08d7a44，机器人 XML 在 OpenMOSS/VLABench@cf588fe）。31/36 已编译并通过双层门（2026-11-18，spec 级；offline nop 门 + Genesis 引擎冒烟 31 任务，见 docs/VLABENCH_PORT_PLAN.md）；镜像工具 tools/fetch_vlabench_assets.py（资产无再分发许可，仅本地镜像）；剩余 5 个 pending 理由见 data/efe/compile/vlabench.predicates.yaml（hammer-nail 关节谓词+关节化 spawn、heat_food 门/钮附加语义、texas_holdem 代码层判据、select-drink/take-out-cool-drink nop 拦截同型疑问）"
       },
       "inventory": {
         "n_tasks": 36,

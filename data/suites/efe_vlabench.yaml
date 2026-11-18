@@ -4,14 +4,32 @@ name: efe-vlabench
 tasks:
   - ../../configs/tasks/efe/vlabench/vlabench-add-condiment-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-book-rearrange-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-find-unseen-object-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-friction-qa-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-insert-bloom-flower-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-insert-flower-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-magnetism-qa-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-play-math-game-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-put-box-on-painting-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-reflection-qa-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-billiards-common-sense-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-billiards-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-billiards-spatial-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-book-spatial-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-chemistry-tube-common-sense-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-chemistry-tube-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-chemistry-tube-semantic-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-chemistry-tube-spatial-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-fruit-common-sense-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-fruit-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-mahjong-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-mahjong-semantic-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-mahjong-spatial-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-nth-largest-poker-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-painting-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-poker-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-poker-semantic-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-poker-spatial-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-specific-type-book-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-toy-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-unique-type-mahjong-i00.yaml

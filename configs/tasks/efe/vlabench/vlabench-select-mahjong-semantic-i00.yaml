@@ -29,8 +29,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_4/placemat_4.xml
     position:
-    - -0.183806248727689
-    - 0.2965464886361917
+    - -0.183806
+    - 0.296546
     - 0.8
     orientation:
     - 1.0
@@ -42,8 +42,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - -0.24363243112005922
-    - -0.06898524306806675
+    - -0.243632
+    - -0.068985
     - 0.83
     orientation:
     - 0.0
@@ -55,8 +55,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - -0.17363243112005922
-    - -0.06898524306806675
+    - -0.173632
+    - -0.068985
     - 0.83
     orientation:
     - 0.0
@@ -68,8 +68,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - -0.10363243112005921
-    - -0.06898524306806675
+    - -0.103632
+    - -0.068985
     - 0.83
     orientation:
     - 0.0
@@ -81,8 +81,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - -0.0336324311200592
-    - -0.06898524306806675
+    - -0.033632
+    - -0.068985
     - 0.83
     orientation:
     - 0.0
@@ -94,8 +94,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - 0.036367568879940804
-    - -0.06898524306806675
+    - 0.036368
+    - -0.068985
     - 0.83
     orientation:
     - 0.0
@@ -107,8 +107,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - 0.10636756887994081
-    - -0.06898524306806675
+    - 0.106368
+    - -0.068985
     - 0.83
     orientation:
     - 0.0
@@ -120,8 +120,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - 0.17636756887994082
-    - -0.06898524306806675
+    - 0.176368
+    - -0.068985
     - 0.83
     orientation:
     - 0.0

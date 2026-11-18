@@ -1,0 +1,158 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/select_poker | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-select-poker-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - -0.0
+    - -1.0e-06
+    orientation:
+    - 1.0
+    - -0.0
+    - -0.0
+    - -0.0
+    static: true
+  - name: card_holder0
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_i00_card_holder0.xml
+    position:
+    - -0.20403
+    - 0.089779
+    - 0.765999
+    orientation:
+    - 0.707107
+    - -0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: king_of_clubs
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_i00_king_of_clubs.xml
+    position:
+    - -0.20403
+    - 0.089779
+    - 0.830999
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder1
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_i00_card_holder1.xml
+    position:
+    - -0.071323
+    - 0.135116
+    - 0.765999
+    orientation:
+    - 0.707107
+    - -0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: ace_of_hearts
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_i00_ace_of_hearts.xml
+    position:
+    - -0.071323
+    - 0.135116
+    - 0.830999
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder2
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_i00_card_holder2.xml
+    position:
+    - 0.064486
+    - 0.144524
+    - 0.765999
+    orientation:
+    - 0.707107
+    - -0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: jack_of_hearts
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_i00_jack_of_hearts.xml
+    position:
+    - 0.064486
+    - 0.144524
+    - 0.830999
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder3
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_i00_card_holder3.xml
+    position:
+    - 0.174959
+    - 0.150836
+    - 0.765999
+    orientation:
+    - 0.707107
+    - -0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 9_of_spades
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_i00_9_of_spades.xml
+    position:
+    - 0.174959
+    - 0.150836
+    - 0.830999
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+
+success:
+  type: staged
+  params:
+    stages:
+    - stage: place_fail
+      condition:
+        type: in_contact
+        params:
+          objects:
+          - ace_of_hearts
+          with_entity: '@robot'
+    - stage: place_fail
+      condition:
+        type: lift
+        params:
+          objects:
+          - ace_of_hearts
+          min_height: 0.9
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

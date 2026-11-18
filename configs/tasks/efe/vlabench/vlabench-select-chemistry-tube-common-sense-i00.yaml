@@ -1,0 +1,109 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/select_chemistry_tube_common_sense | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-select-chemistry-tube-common-sense-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: chemistry_tube_stand
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tube/tube_container/tube_stand.xml
+    position:
+    - 0.186186
+    - 0.097186
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: KMnO4
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tube/tube/tube.xml
+    position:
+    - 0.186186
+    - 0.047186
+    - 0.85
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: FeCl3
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tube/tube/tube.xml
+    position:
+    - 0.106186
+    - 0.147186
+    - 0.85
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: I2
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tube/tube/tube.xml
+    position:
+    - 0.346186
+    - 0.047186
+    - 0.85
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+
+success:
+  type: contains
+  params:
+    container: chemistry_tube_stand
+    objects:
+    - KMnO4
+    negate: true
+    mode: boxes
+    regions:
+    - center:
+      - 0.0
+      - 0.0
+      - 0.0
+      min:
+      - -0.2
+      - -0.1
+      - -0.01
+      max:
+      - 0.2
+      - 0.1
+      - 0.12
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

@@ -1,0 +1,122 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/take_out_cool_drink | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-take-out-cool-drink-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: juice_outside
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/drinks/juice/boxed_drink_0/model.xml
+    position:
+    - 0.300469
+    - 0.028184
+    - 0.85
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: spirit_outside
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/drinks/sota_drink/spirit/bottled_spirit_1/model.xml
+    position:
+    - 0.311837
+    - 0.125051
+    - 0.85
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: small_fridge
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/containers/fridge/small_fridge/fridge_small_1/mobility.xml
+    position:
+    - -0.03797
+    - 0.372983
+    - 0.74
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: juice
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/drinks/juice/boxed_drink_4/model.xml
+    position:
+    - -0.09797
+    - 0.352339
+    - 0.89
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: monster
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/drinks/energy_drink/monster/monster.xml
+    position:
+    - 0.02203
+    - 0.344651
+    - 0.89
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+
+success:
+  type: contains
+  params:
+    container: small_fridge
+    objects:
+    - juice
+    negate: true
+    mode: boxes
+    regions:
+    - center:
+      - 0.0
+      - 0.0
+      - 0.0
+      min:
+      - 0.0
+      - -0.156
+      - 0.0
+      max:
+      - 0.384
+      - 0.168
+      - 0.576
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

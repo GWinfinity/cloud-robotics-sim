@@ -29,8 +29,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
     position:
-    - -0.35950658625495857
-    - 0.15675971780695452
+    - -0.359507
+    - 0.15676
     - 0.8
     orientation:
     - 1.0
@@ -42,8 +42,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
     position:
-    - -0.019668727392107257
-    - 0.09531939083047117
+    - -0.019669
+    - 0.095319
     - 0.8
     orientation:
     - 1.0
@@ -55,8 +55,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
     position:
-    - 0.3583382039455031
-    - 0.18162257703906703
+    - 0.358338
+    - 0.181623
     - 0.8
     orientation:
     - 1.0
@@ -71,8 +71,8 @@ assets:
     - 0.04
     - 0.04
     position:
-    - 0.0028121134904341427
-    - -0.07181621556002962
+    - 0.002812
+    - -0.071816
     - 0.8
     orientation:
     - 1.0

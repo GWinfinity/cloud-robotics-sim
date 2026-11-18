@@ -26,9 +26,11 @@ source:
 #             not_contain 为 negate）
 #   lift   -> lift（LiftCondition：实体根 z ≥ target_height）
 #   order  -> ordered（OrderCondition：axis 上严格递增，其余轴单侧 offset 容差）
-# 未映射条件名（press_button / is_grasped / joint_in_range / on）的任务整单
-# pending，待接触/关节类谓词接入；条件引用未作为组件出现的实体（内嵌于
-# 容器 MJCF）的任务同样 pending（需子体抽取）。
+#   press_button / is_grasped -> in_contact（press 上游为触力带内持续 >10
+#             子步，按终态接触转写（spec 注）；grasp 为实体 ↔ 夹爪接触，
+#             v1 用整机接触近似夹爪（待细化按 link 过滤））
+# 未映射条件名（joint_in_range / on）与内嵌实体的任务整单 pending，
+# 理由见编译输出的 pending_reasons。
 condition_map:
   above: above_region
   pour: tipped
@@ -36,6 +38,8 @@ condition_map:
   not_contain: contains
   lift: lift
   order: ordered
+  press_button: in_contact
+  is_grasped: in_contact
 
 # 组件 class -> 动力学：名单内为动态（注入 freejoint，等价 dm_control attach）。
 dynamic_classes:
@@ -115,53 +119,70 @@ tasks:
     pending: true
     note: "instance conditions=contain: microwave_seen ← cooked_food}，但上游 HeatFoodTask.should_terminate_episode 追加 is_closed(门) ∧ is_activate(启动钮)——接触/门状态谓词待接入后整单解锁"
   friction_qa:
-    pending: true
-    note: "press_button 谓词待接入"
+    goal: "Press the button that answers the friction question"
+    note: "instance conditions=press_button: button1（in_contact 转写，力带按 spec 注）"
+    assets_override:
+      metal_cylinder:
+        shape_type: cylinder
+        size: [0.02, 0.02]
+      metal_box:
+        shape_type: box
+        size: [0.03, 0.03, 0.03]
   magnetism_qa:
-    pending: true
-    note: "press_button 谓词待接入"
+    goal: "Press the button that answers the magnetism question"
+    note: "instance conditions=press_button: button1"
+    assets_override:
+      metal_cylinder:
+        shape_type: cylinder
+        size: [0.02, 0.02]
+      stone_capsule:
+        shape_type: cylinder
+        size: [0.02, 0.02]
+      wood_cylinder:
+        shape_type: cylinder
+        size: [0.02, 0.02]
   reflection_qa:
-    pending: true
-    note: "press_button 谓词待接入"
+    goal: "Press the button that answers the reflection question"
+    note: "instance conditions=press_button: button1"
   select_painting:
-    pending: true
-    note: "press_button 谓词待接入"
+    goal: "Press the button before the target painting"
+    note: "instance conditions=press_button: button1"
   hammer_nail_and_hang_picture:
     pending: true
-    note: "joint_in_range 谓词待接入（钉子滑关节 qpos ∈ [0.05,0.08]）"
+    note: "joint_in_range 谓词待接入（钉子滑关节 qpos ∈ [0.05,0.08]），且 Nail 需关节化非静态 spawn"
   texas_holdem:
     pending: true
     note: "instance conditions 为空；上游按牌型排序在代码中选五张牌，判据需人工转写"
   select_poker:
-    pending: true
-    note: "is_grasped 谓词待接入"
+    goal: "Grasp and lift the ace_of_hearts"
+    note: "instance conditions=is_grasped(ace_of_hearts)+lift(0.9)"
   select_poker_semantic:
-    pending: true
-    note: "is_grasped 谓词待接入"
+    goal: "Grasp and lift the 6_of_spades"
+    note: "instance conditions=is_grasped(6_of_spades)+lift(0.9)"
   select_poker_spatial:
-    pending: true
-    note: "is_grasped 谓词待接入"
+    goal: "Grasp and lift the 6_of_spades (spatial)"
+    note: "instance conditions=is_grasped(6_of_spades)+lift(0.9)"
   select_nth_largest_poker:
-    pending: true
-    note: "is_grasped+lift 谓词待接入"
+    goal: "Grasp and lift the 2_of_diamonds"
+    note: "instance conditions=is_grasped(2_of_diamonds)+lift(0.9)"
   select_book_spatial:
-    pending: true
-    note: "书实体未作为组件出现（内嵌 shelf MJCF），需子体抽取"
+    goal: "Take the_story_of_american_freedom off the shelf"
+    note: "instance conditions=not_contain: shelf_seen ← the_story_of_american_freedom；书经 shelf subentities 展开"
   select_specific_type_book:
-    pending: true
-    note: "书实体未作为组件出现（内嵌 shelf MJCF），需子体抽取"
+    goal: "Take the target book off the shelf"
+    note: "instance conditions=not_contain: shelf_seen ← the_story_of_american_freedom；书经 shelf subentities 展开"
   find_unseen_object:
-    pending: true
-    note: "apple 未作为组件出现（内嵌 cabinet MJCF），需子体抽取"
+    goal: "Find and take the apple out of the cabinet"
+    note: "instance conditions=not_contain: cabinet_seen ← apple；apple 经 cabinet subentities 展开"
   take_out_cool_drink:
     pending: true
-    note: "juice 未作为组件出现（内嵌 small_fridge MJCF），需子体抽取"
+    note: "nop 门拦截（2026-11-18）：子体位姿合成后 juice 世界(-0.098,0.352,0.89) 在 small_fridge keypoint bbox（x∈[-0.038,0.346]）外，not_contain 起始为真；与 select_drink 同型的系统性疑问（待专查：上游冻结语义/attach 位姿口径）"
   select_chemistry_tube_common_sense:
-    pending: true
-    note: "KMnO4 管未作为组件出现（内嵌 TubeStand/场景），需子体抽取"
+    goal: "Take the KMnO4 tube out of the stand"
+    note: "instance conditions=not_contain: chemistry_tube_stand ← KMnO4；试管经 stand subentities 展开"
   select_chemistry_tube_semantic:
-    pending: true
-    note: "KMnO4 管未作为组件出现，需子体抽取"
+    goal: "Take the KMnO4 tube out of the stand"
+    note: "instance conditions=not_contain: chemistry_tube_stand ← KMnO4；试管经 stand subentities 展开"
   select_chemistry_tube_spatial:
-    pending: true
-    note: "KMnO4 管未作为组件出现，需子体抽取"
+    goal: "Take the KMnO4 tube out of the stand"
+    note: "instance conditions=not_contain: chemistry_tube_stand ← KMnO4；试管经 stand subentities 展开"

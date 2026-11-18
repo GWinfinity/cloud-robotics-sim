@@ -108,6 +108,14 @@ quadrants 求解器。因此：
      门/按钮语义）；
    - heat_food 需门关闭+启动钮附加语义；texas_holdem 判据在代码层需人工转写；
    - select_drink 见上（nop 拦截）。
+   **当日二轮（31/36）**：`in_contact` 谓词（press_button 力带按终态接触转写
+   spec 注；grasp 用整机接触近似夹爪）+ 类级几何合成（BilliardBall/Poker/
+   NumberCube 资产库注入；Button/CardHolder 纯代码类转写）+ **subentities
+   递归展开**（书/试管/苹果/饮料经父链位姿合成）+ RandomGeom assets_override
+   + 镜像工具子实体递归。引擎冒烟 31 任务。剩 4 个 pending：hammer-nail
+   （joint_in_range+关节化 spawn）、heat-food（门/钮附加语义）、texas-holdem
+   （代码层判据）、select-drink/take-out-cool-drink（nop 拦截的"出生即成功"
+   同型疑问，待专查上游冻结语义）。
 
 ## 6. 冒烟证据（panda+counter+shaker，CUDA/quadrants，2026-11-17）
 

@@ -16,66 +16,66 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/table/table.xml
     position:
-    - 7.075262944733628e-10
-    - 5.070137086837738e-10
-    - -7.552164743349944e-07
+    - 0.0
+    - 0.0
+    - -1.0e-06
     orientation:
     - 1.0
-    - -2.1019921124369953e-10
-    - -4.071747505116372e-11
-    - -2.958020069361435e-10
+    - -0.0
+    - -0.0
+    - -0.0
     static: true
   - name: plate_seen
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tablewares/plates/plate_13/model.xml
     position:
-    - -0.09693565984929456
-    - 0.024553589932090465
-    - 0.7660947531689721
+    - -0.096936
+    - 0.024554
+    - 0.766095
     orientation:
-    - 0.9997079291087593
-    - 0.0005363153408344687
-    - 0.00014240047854841112
-    - -0.024160889160711733
+    - 0.999708
+    - 0.000536
+    - 0.000142
+    - -0.024161
     static: true
   - name: banana
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/fruit/banana/banana_8/model.xml
     position:
-    - 0.2580957660575855
-    - 0.2656077924563349
-    - 0.7739548652368438
+    - 0.258096
+    - 0.265608
+    - 0.773955
     orientation:
-    - 0.8908778475227138
-    - -0.03373299099986919
-    - -0.4473122466985016
-    - -0.07148776164518021
+    - 0.890878
+    - -0.033733
+    - -0.447312
+    - -0.071488
     static: false
   - name: orange
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/fruit/orange/orange_3/model.xml
     position:
-    - 0.271685137699492
-    - -0.18988416581312795
-    - 0.7933291816989666
+    - 0.271685
+    - -0.189884
+    - 0.793329
     orientation:
-    - 0.9980733933022452
-    - 0.010449630697567392
-    - -0.006592830204539535
-    - 0.06080165614784583
+    - 0.998073
+    - 0.01045
+    - -0.006593
+    - 0.060802
     static: false
   - name: mango
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/fruit/mango/mango_9/model.xml
     position:
-    - -0.2788181068588551
-    - 0.25271650374412646
-    - 0.796590807936988
+    - -0.278818
+    - 0.252717
+    - 0.796591
     orientation:
-    - 0.9899133474765824
-    - 0.13626282739859402
-    - -0.006029685324325134
-    - -0.038309910622949986
+    - 0.989913
+    - 0.136263
+    - -0.00603
+    - -0.03831
     static: false
 
 success:

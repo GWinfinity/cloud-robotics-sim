@@ -1,0 +1,135 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/find_unseen_object | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-find-unseen-object-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: cabinet_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/containers/cabinets/short_cabinet/short_cabinet_fix.xml
+    position:
+    - -0.019013
+    - 0.18919
+    - 0.78
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: apple
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/fruit/apple/apple_5/model.xml
+    position:
+    - -0.040829
+    - 0.161864
+    - 0.86
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: monster
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/drinks/energy_drink/monster/monster.xml
+    position:
+    - -0.007176
+    - 0.146705
+    - 1.12
+    orientation:
+    - 0.707107
+    - 0.707107
+    - 0.0
+    - 0.0
+    static: false
+  - name: canned_food
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/snacks/canned_food/canned_food_19/model.xml
+    position:
+    - 0.0
+    - -0.375
+    - 0.85
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: jumpstart
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/drinks/energy_drink/jumpstart/jumpstart.xml
+    position:
+    - -0.16
+    - -0.315
+    - 0.85
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: chips
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/snacks/chips/chips_10/model.xml
+    position:
+    - 0.16
+    - -0.315
+    - 0.85
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+
+success:
+  type: contains
+  params:
+    container: cabinet_seen
+    objects:
+    - apple
+    negate: true
+    mode: boxes
+    regions:
+    - center:
+      - 0.0
+      - 0.0
+      - 0.0
+      min:
+      - -0.26
+      - -0.26
+      - -0.065
+      max:
+      - 0.26
+      - 0.208
+      - 0.325
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

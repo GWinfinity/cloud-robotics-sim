@@ -358,15 +358,25 @@ def fetch_efe_tasks() -> None:
 
 
 def referenced_asset_paths() -> tuple[set[str], set[str]]:
-    """Component/scene XML paths referenced by the mirrored instances."""
+    """Component/scene XML paths referenced by the mirrored instances.
+
+    Subentities (books on shelves, tubes in stands) are expanded recursively —
+    upstream attaches them to the parent entity.
+    """
     components: set[str] = set()
     scenes: set[str] = set()
+
+    def _collect(comp: dict) -> None:
+        if comp.get("xml_path"):
+            components.add(comp["xml_path"])
+        for sub in comp.get("subentities") or []:
+            _collect(sub)
+
     for inst in sorted(UPSTREAM_OUT.glob("*-privileged/environment/instance.json")):
         data = json.loads(inst.read_text(encoding="utf-8"))
         task = data.get("episode", {}).get("task", {})
         for comp in task.get("components", []):
-            if comp.get("xml_path"):
-                components.add(comp["xml_path"])
+            _collect(comp)
         scene = task.get("scene", {})
         if scene.get("name"):
             scenes.add(scene["name"])

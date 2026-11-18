@@ -29,8 +29,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/containers/vases/vase_1/vase.xml
     position:
-    - 0.2792789318171503
-    - 0.19859276965628125
+    - 0.279279
+    - 0.198593
     - 0.78
     orientation:
     - 1.0
@@ -42,8 +42,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/flowers/bloom_flower/tulip/tulip_draft_0/tulip_draft_0.xml
     position:
-    - -0.31419506253050117
-    - -0.06083393401793176
+    - -0.314195
+    - -0.060834
     - 0.9
     orientation:
     - 1.0
@@ -55,8 +55,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/flowers/wilted_flower/wilted_flower_0/wiltered_flower.xml
     position:
-    - 0.0004686855817390284
-    - -0.12181621556002961
+    - 0.000469
+    - -0.121816
     - 0.9
     orientation:
     - 1.0
@@ -68,8 +68,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/flowers/wilted_flower/wilted_flower_1/wiltered_flower.xml
     position:
-    - 0.31183689966753314
-    - -0.12494936586375593
+    - 0.311837
+    - -0.124949
     - 0.9
     orientation:
     - 1.0

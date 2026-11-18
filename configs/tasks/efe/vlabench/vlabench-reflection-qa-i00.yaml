@@ -1,0 +1,94 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/reflection_qa | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-reflection-qa-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: button0
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_reflection_qa_i00_button0.xml
+    position:
+    - -0.365558
+    - -0.048409
+    - 0.78
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: button1
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_reflection_qa_i00_button1.xml
+    position:
+    - -0.007943
+    - -0.148217
+    - 0.78
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: button2
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_reflection_qa_i00_button2.xml
+    position:
+    - 0.401127
+    - -0.119013
+    - 0.78
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: mirrors
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tools/mirror/mirror.xml
+    position:
+    - 0.401127
+    - -0.019013
+    - 0.78
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: in_contact
+  params:
+    objects:
+    - button1
+    with_entity: '@robot'
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

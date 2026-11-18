@@ -29,8 +29,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_0/placemat.xml
     position:
-    - -0.09643329988281467
-    - -0.02330879179470871
+    - -0.096433
+    - -0.023309
     - 0.78
     orientation:
     - 1.0
@@ -40,9 +40,9 @@ assets:
     static: true
   - name: '5'
     shape_type: mjcf
-    mjcf_path: assets/vlabench/obj/meshes/number_cube/numbercube.xml
+    mjcf_path: assets/vlabench/.derived/vlabench_play_math_game_i00_5.xml
     position:
-    - 0.24999999999999994
+    - 0.25
     - 0.1875
     - 0.8
     orientation:
@@ -53,10 +53,10 @@ assets:
     static: false
   - name: '3'
     shape_type: mjcf
-    mjcf_path: assets/vlabench/obj/meshes/number_cube/numbercube.xml
+    mjcf_path: assets/vlabench/.derived/vlabench_play_math_game_i00_3.xml
     position:
-    - 0.04999999999999999
-    - 0.26249999999999996
+    - 0.05
+    - 0.2625
     - 0.8
     orientation:
     - 1.0
@@ -66,9 +66,9 @@ assets:
     static: false
   - name: '9'
     shape_type: mjcf
-    mjcf_path: assets/vlabench/obj/meshes/number_cube/numbercube.xml
+    mjcf_path: assets/vlabench/.derived/vlabench_play_math_game_i00_9.xml
     position:
-    - 0.04999999999999999
+    - 0.05
     - 0.1875
     - 0.8
     orientation:
@@ -79,10 +79,10 @@ assets:
     static: false
   - name: '8'
     shape_type: mjcf
-    mjcf_path: assets/vlabench/obj/meshes/number_cube/numbercube.xml
+    mjcf_path: assets/vlabench/.derived/vlabench_play_math_game_i00_8.xml
     position:
-    - -0.05000000000000002
-    - 0.26249999999999996
+    - -0.05
+    - 0.2625
     - 0.8
     orientation:
     - 1.0
@@ -92,9 +92,9 @@ assets:
     static: false
   - name: '4'
     shape_type: mjcf
-    mjcf_path: assets/vlabench/obj/meshes/number_cube/numbercube.xml
+    mjcf_path: assets/vlabench/.derived/vlabench_play_math_game_i00_4.xml
     position:
-    - -0.05000000000000002
+    - -0.05
     - 0.1875
     - 0.8
     orientation:
@@ -105,10 +105,10 @@ assets:
     static: false
   - name: '0'
     shape_type: mjcf
-    mjcf_path: assets/vlabench/obj/meshes/number_cube/numbercube.xml
+    mjcf_path: assets/vlabench/.derived/vlabench_play_math_game_i00_0.xml
     position:
     - -0.15
-    - 0.26249999999999996
+    - 0.2625
     - 0.8
     orientation:
     - 1.0

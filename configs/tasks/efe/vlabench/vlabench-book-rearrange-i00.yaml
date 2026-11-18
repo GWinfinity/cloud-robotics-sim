@@ -29,8 +29,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/containers/shelf/shelf1.xml
     position:
-    - 0.08364686635702637
-    - 0.3914926451829496
+    - 0.083647
+    - 0.391493
     - 0.78
     orientation:
     - 1.0
@@ -42,8 +42,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/books/books_time_order/Century17_Don_Quixote_Book/century17_don_quixote_book.xml
     position:
-    - -0.1916617960544969
-    - -0.009188711480466488
+    - -0.191662
+    - -0.009189
     - 0.85
     orientation:
     - 0.5
@@ -55,8 +55,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/books/books_time_order/Century20_The_Metamorphosis_Book/century20_the_metamorphosis_book.xml
     position:
-    - 0.0004686855817390284
-    - -0.07181621556002962
+    - 0.000469
+    - -0.071816
     - 0.85
     orientation:
     - 0.5
@@ -68,8 +68,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/books/books_time_order/Century18_Pride_and_Prejudice_Book/century18_pride_and_prejudice_book.xml
     position:
-    - 0.2255804204157224
-    - -0.03816310033246684
+    - 0.22558
+    - -0.038163
     - 0.85
     orientation:
     - 0.5

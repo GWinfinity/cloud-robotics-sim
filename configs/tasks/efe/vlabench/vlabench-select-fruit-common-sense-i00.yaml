@@ -29,8 +29,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tablewares/plates/plate_13/model.xml
     position:
-    - 0
-    - 0
+    - 0.0
+    - 0.0
     - 0.8
     orientation:
     - 1.0
@@ -81,7 +81,7 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/fruit/orange/orange_11/model.xml
     position:
-    - 0.20000000000000004
+    - 0.2
     - 0.2
     - 0.8
     orientation:

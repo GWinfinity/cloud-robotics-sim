@@ -29,8 +29,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_4/placemat_4.xml
     position:
-    - -0.183806248727689
-    - 0.2965464886361917
+    - -0.183806
+    - 0.296546
     - 0.8
     orientation:
     - 1.0
@@ -42,8 +42,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - -0.14883915916855522
-    - -0.03816310033246684
+    - -0.148839
+    - -0.038163
     - 0.83
     orientation:
     - 0.0
@@ -55,8 +55,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - -0.07883915916855522
-    - -0.03816310033246684
+    - -0.078839
+    - -0.038163
     - 0.83
     orientation:
     - 0.0
@@ -68,8 +68,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - -0.00883915916855521
-    - -0.03816310033246684
+    - -0.008839
+    - -0.038163
     - 0.83
     orientation:
     - 0.0
@@ -81,8 +81,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - 0.061160840831444796
-    - -0.03816310033246684
+    - 0.061161
+    - -0.038163
     - 0.83
     orientation:
     - 0.0
@@ -94,8 +94,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - 0.1311608408314448
-    - -0.03816310033246684
+    - 0.131161
+    - -0.038163
     - 0.83
     orientation:
     - 0.0
@@ -107,8 +107,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - 0.2011608408314448
-    - -0.03816310033246684
+    - 0.201161
+    - -0.038163
     - 0.83
     orientation:
     - 0.0
@@ -120,8 +120,8 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
     position:
-    - 0.2711608408314448
-    - -0.03816310033246684
+    - 0.271161
+    - -0.038163
     - 0.83
     orientation:
     - 0.0

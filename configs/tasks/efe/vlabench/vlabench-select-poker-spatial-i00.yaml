@@ -1,0 +1,158 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/select_poker_spatial | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-select-poker-spatial-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: card_holder0
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_spatial_i00_card_holder0.xml
+    position:
+    - -0.18037
+    - 0.2
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: ace_of_spades
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_spatial_i00_ace_of_spades.xml
+    position:
+    - -0.18037
+    - 0.2
+    - 0.85
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder1
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_spatial_i00_card_holder1.xml
+    position:
+    - -0.069595
+    - 0.2
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 8_of_diamonds
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_spatial_i00_8_of_diamonds.xml
+    position:
+    - -0.069595
+    - 0.2
+    - 0.85
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder2
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_spatial_i00_card_holder2.xml
+    position:
+    - 0.057583
+    - 0.2
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 2_of_diamonds
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_spatial_i00_2_of_diamonds.xml
+    position:
+    - 0.057583
+    - 0.2
+    - 0.85
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder3
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_spatial_i00_card_holder3.xml
+    position:
+    - 0.185745
+    - 0.2
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 6_of_spades
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_select_poker_spatial_i00_6_of_spades.xml
+    position:
+    - 0.185745
+    - 0.2
+    - 0.85
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+
+success:
+  type: staged
+  params:
+    stages:
+    - stage: place_fail
+      condition:
+        type: in_contact
+        params:
+          objects:
+          - 6_of_spades
+          with_entity: '@robot'
+    - stage: place_fail
+      condition:
+        type: lift
+        params:
+          objects:
+          - 6_of_spades
+          min_height: 0.9
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

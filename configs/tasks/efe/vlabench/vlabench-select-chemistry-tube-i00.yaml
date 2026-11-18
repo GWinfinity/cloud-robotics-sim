@@ -16,79 +16,79 @@ assets:
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/table/table.xml
     position:
-    - -1.9004286688057226e-11
-    - -3.7453439328519955e-11
-    - -8.466558688745388e-07
+    - -0.0
+    - -0.0
+    - -1.0e-06
     orientation:
-    - 0.9999999999999997
-    - -9.175380273736233e-09
-    - -1.1175297336403675e-09
-    - -1.3816122022767575e-13
+    - 1.0
+    - -0.0
+    - -0.0
+    - -0.0
     static: true
   - name: chemistry_tube_stand
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tube/tube_container/tube_stand.xml
     position:
-    - -0.006542468506572683
-    - 0.060302529958959655
-    - 0.7599988428330028
+    - -0.006542
+    - 0.060303
+    - 0.759999
     orientation:
-    - 0.999999999999999
-    - -5.794387436607007e-09
-    - -2.1524654867885623e-09
-    - -2.768813926649501e-10
+    - 1.0
+    - -0.0
+    - -0.0
+    - -0.0
     static: true
   - name: CuCl2
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tube/tube/tube.xml
     position:
-    - -0.006644082299547767
-    - 0.010539059272517274
-    - 0.7628885739611672
+    - -0.006644
+    - 0.010539
+    - 0.762889
     orientation:
-    - 0.9989622837116886
-    - 0.0014414336262820317
-    - -0.004806872492152644
-    - -0.045267780677574664
+    - 0.998962
+    - 0.001441
+    - -0.004807
+    - -0.045268
     static: false
   - name: CuCl2_tag
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tube/nametag/nametag.xml
     position:
-    - -0.00654246893706578
-    - 0.06030253111783714
-    - 0.8599988428330025
+    - -0.006542
+    - 0.060303
+    - 0.859999
     orientation:
-    - 0.999999999999999
-    - -5.794387436607007e-09
-    - -2.1524654867885623e-09
-    - -2.768813926649501e-10
+    - 1.0
+    - -0.0
+    - -0.0
+    - -0.0
     static: true
   - name: CuSO4
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tube/tube/tube.xml
     position:
-    - -0.08531810665703575
-    - 0.010337811380284645
-    - 0.7592158809692491
+    - -0.085318
+    - 0.010338
+    - 0.759216
     orientation:
-    - 0.9984434695465851
-    - 0.0012089569695528531
-    - -0.04452225238969743
-    - -0.03357001020215401
+    - 0.998443
+    - 0.001209
+    - -0.044522
+    - -0.03357
     static: false
   - name: CuSO4_tag
     shape_type: mjcf
     mjcf_path: assets/vlabench/obj/meshes/tube/nametag/nametag.xml
     position:
-    - -0.08654246893706562
-    - 0.060302531162138164
-    - 0.8599988424886081
+    - -0.086542
+    - 0.060303
+    - 0.859999
     orientation:
-    - 0.999999999999999
-    - -5.794387436607007e-09
-    - -2.1524654867885623e-09
-    - -2.768813926649501e-10
+    - 1.0
+    - -0.0
+    - -0.0
+    - -0.0
     static: true
 
 success:
