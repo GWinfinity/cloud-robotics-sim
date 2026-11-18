@@ -37,7 +37,12 @@ def _suite_task_paths(suite_file: Path) -> list[Path]:
 
 
 def _stub_scene(spec):
-    """Scene-like stub whose entities sit at the layout the spec samples."""
+    """Scene-like stub whose entities sit at the layout the spec samples.
+
+    Stubs expose ``in_contact() -> False``: the offline nop-check assumes a
+    contact-free start state unless a test overrides it (engine-level
+    contact behaviour lives in the slow smoke gates).
+    """
     layout = sample_layout(spec, seed=spec.evaluation.seeds[0])
     entities = {}
     for spawn in spec.object_spawns:
@@ -48,6 +53,7 @@ def _stub_scene(spec):
         )
         quat = pose.get("orientation", spawn.orientation)
         entity.get_quat.return_value = np.asarray(quat, dtype=float)
+        entity.in_contact = MagicMock(return_value=False)
         entities[spawn.name] = entity
     return SimpleNamespace(entities=entities)
 

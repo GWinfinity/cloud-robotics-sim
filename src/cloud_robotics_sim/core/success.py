@@ -41,6 +41,7 @@ SUCCESS_TYPES = (
     "contains",
     "lift",
     "ordered",
+    "in_contact",
 )
 
 
@@ -556,6 +557,58 @@ class OrderedCondition(SuccessCondition):
 
 
 @dataclass
+class InContactCondition(SuccessCondition):
+    """Success when every named object contacts the counterpart set.
+
+    VLABench ``is_grasped`` (entity ↔ robot gripper geoms) and
+    ``press_button`` (upstream: touch sensor force in band sustained >10
+    substeps; transcribed as contact at the graded final state — the force
+    band 0.01–100 N is permissive, spec note). ``with_entity: "@robot"``
+    resolves to the robot passed to ``evaluate``; otherwise an entity name
+    in the scene (e.g. an object pressing another).
+    """
+
+    objects: tuple[str, ...]
+    with_entity: str = "@robot"
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        if self.with_entity == "@robot":
+            other = getattr(robot, "entity", None) or robot
+        else:
+            other = _entity(scene, self.with_entity)
+        for name in self.objects:
+            target = _entity(scene, name)
+            if not _in_contact(target, other):
+                return False
+        return True
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+def _in_contact(entity_a: Any, entity_b: Any) -> bool:
+    """True when two entities (backend wrappers or raw engine objects) touch."""
+    if hasattr(entity_a, "in_contact"):
+        return bool(entity_a.in_contact(entity_b))
+    get_contacts = getattr(entity_a, "get_contacts", None)
+    if get_contacts is None:
+        raise TypeError(
+            f"entity {getattr(entity_a, 'name', entity_a)!r} exposes neither "
+            f"in_contact() nor get_contacts() — contact predicates need an "
+            f"engine hook"
+        )
+    data = get_contacts(with_entity=entity_b)
+    if not data:
+        return False
+    geom_a = data.get("geom_a") if isinstance(data, dict) else None
+    if geom_a is None:
+        return bool(len(data))
+    shape = getattr(geom_a, "shape", None)
+    return bool(int(shape[0]) > 0) if shape else bool(geom_a)
+
+
+@dataclass
 class StagedCondition(SuccessCondition):
     """Success when every sub-condition holds; reports the earliest failing stage.
 
@@ -975,6 +1028,26 @@ def _build_ordered(params: dict) -> OrderedCondition:
     )
 
 
+def _build_in_contact(params: dict) -> InContactCondition:
+    objects = _require(params, "objects", "in_contact")
+    if (
+        not isinstance(objects, list)
+        or not objects
+        or any(not isinstance(name, str) for name in objects)
+    ):
+        raise ConfigError(
+            f"params.objects must be a non-empty list of names, got {objects!r}"
+        )
+    with_entity = params.get("with_entity", "@robot")
+    if not isinstance(with_entity, str):
+        raise ConfigError(f"params.with_entity must be a string, got {with_entity!r}")
+    return InContactCondition(
+        objects=tuple(objects),
+        with_entity=with_entity,
+        failure_stage=_failure_stage(params),
+    )
+
+
 def _build_staged(params: dict) -> StagedCondition:
     raw_stages = _require(params, "stages", "staged")
     if not isinstance(raw_stages, list) or not raw_stages:
@@ -1041,6 +1114,8 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return _build_lift(params)
     if success_type == "ordered":
         return _build_ordered(params)
+    if success_type == "in_contact":
+        return _build_in_contact(params)
     raise ConfigError(
         f"unknown success type {success_type!r}; available types: {list(SUCCESS_TYPES)}"
     )

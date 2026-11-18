@@ -64,12 +64,6 @@ def test_compiled_tasks_compose_and_nop_fails() -> None:
             failures.append(path.name)
         entities = getattr(lt.env.scene, "entities", {})
         assert entities, f"{path}: scene has no task entities"
-        dynamic = [
-            name
-            for name, spawn in ((s.name, s) for s in lt.spec.object_spawns)
-            if not spawn.static
-        ]
-        assert dynamic, f"{path}: no dynamic graspables declared"
     assert not failures, (
         f"{len(failures)} task(s) score under the nop policy on the engine: "
         f"{failures}"

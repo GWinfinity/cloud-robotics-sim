@@ -15,6 +15,7 @@ from cloud_robotics_sim.core.success import (
     CountInRegionCondition,
     DistanceThresholdCondition,
     EeNearCondition,
+    InContactCondition,
     InRegionCondition,
     LiftCondition,
     OrderedCondition,
@@ -955,3 +956,78 @@ class TestCreateContainLiftOrder:
             }
         )
         assert isinstance(condition, OrderedCondition)
+
+
+class TestInContact:
+    """Tests for InContactCondition (VLABench press_button / is_grasped)."""
+
+    def _entity(self, contacts):
+        entity = MagicMock(spec=["get_contacts"])
+        entity.get_contacts.return_value = contacts
+        return entity
+
+    def test_no_contact_fails(self):
+        scene = SimpleNamespace(entities={"button": self._entity({"geom_a": []})})
+        robot = SimpleNamespace(entity=self._entity({"geom_a": []}))
+        condition = InContactCondition(objects=("button",))
+        assert condition.evaluate(scene, robot) is False
+
+    def test_contact_passes(self):
+        import numpy as np
+
+        scene = SimpleNamespace(
+            entities={"button": self._entity({"geom_a": np.zeros((1, 2))})}
+        )
+        robot = SimpleNamespace(entity=MagicMock())
+        condition = InContactCondition(objects=("button",))
+        assert condition.evaluate(scene, robot) is True
+
+    def test_multi_object_all_required(self):
+        import numpy as np
+
+        ok = self._entity({"geom_a": np.zeros((1, 2))})
+        empty = self._entity({"geom_a": []})
+        scene = SimpleNamespace(entities={"card_a": ok, "card_b": empty})
+        robot = SimpleNamespace(entity=MagicMock())
+        condition = InContactCondition(objects=("card_a", "card_b"))
+        assert condition.evaluate(scene, robot) is False
+        scene.entities["card_b"] = ok
+        assert condition.evaluate(scene, robot) is True
+
+    def test_named_counterpart(self):
+        import numpy as np
+
+        scene = SimpleNamespace(
+            entities={
+                "hammer": self._entity({"geom_a": np.zeros((1, 2))}),
+                "nail": MagicMock(),
+            }
+        )
+        condition = InContactCondition(objects=("hammer",), with_entity="nail")
+        assert condition.evaluate(scene, None) is True
+        scene.entities["hammer"].get_contacts.return_value = {"geom_a": []}
+        assert condition.evaluate(scene, None) is False
+
+    def test_missing_hook_raises(self):
+        scene = SimpleNamespace(entities={"button": MagicMock(spec=[])})
+        condition = InContactCondition(objects=("button",))
+        with pytest.raises(TypeError, match="contact"):
+            condition.evaluate(scene, SimpleNamespace(entity=MagicMock()))
+
+
+class TestCreateInContact:
+    """Factory coverage for in_contact."""
+
+    def test_in_contact(self):
+        condition = create_success_condition(
+            {
+                "type": "in_contact",
+                "params": {"objects": ["button"]},
+            }
+        )
+        assert isinstance(condition, InContactCondition)
+        assert condition.with_entity == "@robot"
+
+    def test_in_contact_requires_objects(self):
+        with pytest.raises(ConfigError, match="objects"):
+            create_success_condition({"type": "in_contact", "params": {}})

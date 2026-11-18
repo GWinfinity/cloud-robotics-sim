@@ -142,7 +142,11 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
         if compiler is None:
             compiler = ET.SubElement(probe, "compiler")
         for attr in ("meshdir", "assetdir", "texturedir"):
-            compiler.set(attr, str(source.parent))
+            existing = compiler.get(attr)
+            if existing is None:
+                compiler.set(attr, str(source.parent))
+            elif not Path(existing).is_absolute():
+                compiler.set(attr, str(Path(source.parent) / existing))
         try:
             mujoco.MjModel.from_xml_string(ET.tostring(probe, encoding="utf-8"))
         except Exception as exc:  # noqa: BLE001 - mujoco raises Exception
@@ -234,6 +238,27 @@ class GenesisEntityBackend(EntityBackend):
             entity.set_quat(np.asarray(quat, dtype=np.float64))
         else:
             logger.debug("Genesis deformable entity does not support set_quat")
+
+    def get_contacts(self, with_entity: "GenesisEntityBackend | None" = None) -> Any:
+        """Contact dict from the wrapped entity (see ``gs.RigidEntity``)."""
+        entity = self._resolve_entity()
+        get_contacts = getattr(entity, "get_contacts", None)
+        if get_contacts is None:
+            raise TypeError(
+                f"wrapped entity of {self._name!r} exposes no get_contacts()"
+            )
+        other = with_entity._resolve_entity() if with_entity is not None else None
+        return get_contacts(with_entity=other)
+
+    def in_contact(self, with_entity: "GenesisEntityBackend") -> bool:
+        data = self.get_contacts(with_entity)
+        if not data:
+            return False
+        geom_a = data.get("geom_a") if isinstance(data, dict) else None
+        if geom_a is None:
+            return bool(len(data))
+        shape = getattr(geom_a, "shape", None)
+        return bool(int(shape[0]) > 0) if shape else bool(geom_a)
 
     def set_color(self, color: tuple[float, float, float, float]) -> None:
         entity = self._resolve_entity()
