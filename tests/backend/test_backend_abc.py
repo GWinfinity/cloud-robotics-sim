@@ -171,6 +171,14 @@ class MockBackend(SimulatorBackend):
     ) -> EntityBackend:
         return MockEntity(name=kwargs.get("name"))
 
+    def create_mjcf(
+        self,
+        file: str,
+        pos: tuple[float, float, float],
+        **kwargs: Any,
+    ) -> EntityBackend:
+        return MockEntity(name=kwargs.get("name"))
+
     def create_deformable(
         self,
         config: DeformableConfig,

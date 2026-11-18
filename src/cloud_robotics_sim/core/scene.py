@@ -60,6 +60,7 @@ class ObjectSpawn:
     size: tuple[float, ...] = (1.0, 1.0, 1.0)
     scale: tuple[float, float, float] | float = (1.0, 1.0, 1.0)
     mesh_path: str | None = None
+    mjcf_path: str | None = None
     position: tuple[float, float, float] = (0.0, 0.0, 0.0)
     orientation: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
     mass: float = 1.0
@@ -141,6 +142,14 @@ class ObjectSpawn:
                     static=self.static,
                     friction=self.friction,
                     material=self.material,
+                    name=entity_name,
+                )
+            case "mjcf" if self.mjcf_path:
+                entity = backend.create_mjcf(
+                    file=self.mjcf_path,
+                    pos=self.position,
+                    quat=self.orientation,
+                    static=self.static,
                     name=entity_name,
                 )
             case "deformable":

@@ -21,6 +21,8 @@ from cloud_robotics_sim.core.task import PickPlaceTask, TaskConfig
 from cloud_robotics_sim.utils import device as device_utils
 from cloud_robotics_sim.utils import genesis_compat
 
+# EFE suite registrations (sawyer robot, efe_tabletop scene, efe_static task).
+from . import efe as _efe_registrations  # noqa: F401,E402
 from .diagnostics import DiagnosticEngine
 from .experiments import ExperimentValidator, ValidationResult
 from .knowledge_base import KnowledgeBase

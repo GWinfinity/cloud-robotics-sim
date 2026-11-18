@@ -47,8 +47,9 @@ logger = logging.getLogger(__name__)
 _TASK_KEYS = ("name", "type", "robot", "scene", "max_episode_steps")
 _SPAWN_FIELD_NAMES = {f.name for f in dataclass_fields(ObjectSpawn)}
 _SPAWN_SUPPORTED = _SPAWN_FIELD_NAMES - {"deformable_config"}
-_SHAPE_TYPES = ("box", "sphere", "cylinder", "mesh", "deformable")
+_SHAPE_TYPES = ("box", "sphere", "cylinder", "mesh", "deformable", "mjcf")
 _MESH_EXTENSIONS = {".glb", ".gltf", ".obj", ".stl", ".dae", ".ply"}
+_MJCF_EXTENSIONS = {".xml"}
 # Physical value ranges for object properties (guards against NaN/inf and
 # absurd magnitudes silently corrupting the physics).
 _MASS_RANGE = (1e-6, 1e4)  # kg
@@ -340,6 +341,15 @@ def _parse_object_spawn(
         resolved_mesh_path = _resolve_mesh_path(mesh_path, label, problems)
         if resolved_mesh_path is None:
             return None
+    mjcf_path = entry.get("mjcf_path")
+    if shape_type == "mjcf" and not mjcf_path:
+        problems.append(f"{label}.mjcf_path is required for shape_type='mjcf'")
+        return None
+    resolved_mjcf_path = None
+    if mjcf_path:
+        resolved_mjcf_path = _resolve_mjcf_path(mjcf_path, label, problems)
+        if resolved_mjcf_path is None:
+            return None
 
     try:
         size = _float_tuple(entry.get("size", (1.0, 1.0, 1.0)), None, f"{label}.size")
@@ -368,6 +378,7 @@ def _parse_object_spawn(
             size=size,
             scale=scale,
             mesh_path=resolved_mesh_path,
+            mjcf_path=resolved_mjcf_path,
             position=_float_tuple(
                 entry.get("position", (0.0, 0.0, 0.0)), 3, f"{label}.position"
             ),
@@ -461,6 +472,31 @@ def _resolve_mesh_path(mesh_path: Any, label: str, problems: list[str]) -> str |
         return None
     if not candidate.is_file():
         problems.append(f"{label}.mesh_path does not exist: {candidate}")
+        return None
+    return str(candidate)
+
+
+def _resolve_mjcf_path(mjcf_path: Any, label: str, problems: list[str]) -> str | None:
+    """Confine ``mjcf_path`` to the asset root; ``.xml`` only."""
+    if not isinstance(mjcf_path, str) or not mjcf_path.strip():
+        problems.append(f"{label}.mjcf_path must be a non-empty string")
+        return None
+    root = _mesh_root()
+    raw = Path(mjcf_path).expanduser()
+    candidate = (raw if raw.is_absolute() else root / raw).resolve()
+    if not candidate.is_relative_to(root):
+        problems.append(
+            f"{label}.mjcf_path escapes the asset root {root}: {mjcf_path!r}"
+        )
+        return None
+    if candidate.suffix.lower() not in _MJCF_EXTENSIONS:
+        problems.append(
+            f"{label}.mjcf_path must use one of {sorted(_MJCF_EXTENSIONS)} "
+            f"extensions, got {candidate.suffix!r}"
+        )
+        return None
+    if not candidate.is_file():
+        problems.append(f"{label}.mjcf_path does not exist: {candidate}")
         return None
     return str(candidate)
 

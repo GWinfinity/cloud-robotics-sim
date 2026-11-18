@@ -745,6 +745,24 @@ class SimulatorBackend(ABC):
     ) -> EntityBackend: ...
 
     @abstractmethod
+    def create_mjcf(
+        self,
+        file: str,
+        pos: tuple[float, float, float],
+        quat: tuple[float, float, float, float] | None = None,
+        static: bool = True,
+        name: str | None = None,
+    ) -> EntityBackend:
+        """Create an entity from an MJCF model file (EFE suite components).
+
+        Unlike :meth:`load_mjcf` (robot articulations), this spawns a scene
+        object honouring the file's own geoms/inertials/sites. Dynamic
+        (``static=False``) spawns get a free joint on the model's top-level
+        body, mirroring how dm_control composers attach graspables.
+        """
+        ...
+
+    @abstractmethod
     def create_deformable(
         self,
         config: DeformableConfig,

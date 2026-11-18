@@ -7,6 +7,7 @@ new Backend ABC to the legacy ``gs.*`` API surface.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -74,6 +75,98 @@ def _require_genesis() -> None:
         raise RuntimeError(
             "Genesis backend requested but 'genesis-world' is not installed."
         )
+
+
+def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
+    """Stage a mirrored EFE component MJCF next to its source for spawning.
+
+    The upstream mirror stays byte-identical; spawn-time fixes go into a
+    content-hashed sibling copy so relative mesh/texture refs keep resolving:
+
+    * ``dynamic``: inject ``<freejoint/>`` on the single top-level body
+      (VLABench's dm_control composer attaches graspables as free bodies).
+    * MuJoCo >= 3.3 rejects thin-shell meshes whose volume is near zero
+      ("mesh volume is too small ... Try setting inertia to shell") that
+      upstream MuJoCo 3.2.2 accepted; such meshes get ``inertia="shell"``.
+      The compile probe decides per file, so untouched files stay pristine.
+    """
+    import hashlib
+    import xml.etree.ElementTree as ET
+
+    import mujoco
+
+    raw = source.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()[:12]
+    # scheme version bumps when the staging transforms change, so stale
+    # staged siblings from older schemes are never reused.
+    flags = f"{'dyn' if dynamic else 'static'}-v2"
+    staged = source.with_name(f"{source.stem}-{flags}-{digest}{source.suffix}")
+    if staged.is_file() and staged.stat().st_size > 0:
+        return staged
+
+    root = ET.fromstring(raw)
+    if dynamic:
+        # VLABench's dm_control composer attaches graspables as ONE free
+        # body; upstream component XMLs vary: a single top-level body, loose
+        # geoms directly under worldbody (implicit body), or several welded
+        # bodies (rose = bloom + stem). All are normalised to one free body:
+        # single body -> freejoint in place; otherwise wrap every worldbody
+        # child into a synthetic root body (jointed multi-body models are
+        # refused loudly — no graspable in the suite is articulated).
+        for worldbody in root.iter("worldbody"):
+            children = list(worldbody)
+            bodies = [c for c in children if c.tag == "body"]
+            articulated = any(b.find(".//joint") is not None for b in bodies)
+            if articulated:
+                raise ValueError(
+                    f"MJCF dynamic spawn refuses articulated model {source}"
+                )
+            if len(bodies) == 1 and len(children) == 1:
+                if bodies[0].find("freejoint") is None:
+                    bodies[0].insert(0, ET.Element("freejoint"))
+                continue
+            wrapper = ET.Element("body", {"name": "crs_root"})
+            worldbody_pos = worldbody.get("pos")
+            if worldbody_pos:
+                wrapper.set("pos", worldbody_pos)
+            for child in children:
+                worldbody.remove(child)
+                wrapper.append(child)
+            wrapper.insert(0, ET.Element("freejoint"))
+            worldbody.append(wrapper)
+
+    def _compile_ok(content: bytes) -> str | None:
+        """Return the volume-error marker when MuJoCo rejects the model."""
+        probe = ET.fromstring(content)
+        compiler = probe.find("compiler")
+        if compiler is None:
+            compiler = ET.SubElement(probe, "compiler")
+        for attr in ("meshdir", "assetdir", "texturedir"):
+            compiler.set(attr, str(source.parent))
+        try:
+            mujoco.MjModel.from_xml_string(ET.tostring(probe, encoding="utf-8"))
+        except Exception as exc:  # noqa: BLE001 - mujoco raises Exception
+            message = str(exc)
+            if "volume is too small" in message:
+                return message
+            raise
+        return None
+
+    content = ET.tostring(root, encoding="utf-8")
+    if _compile_ok(content) is not None:
+        patched = False
+        for mesh in root.findall(".//asset/mesh"):
+            if mesh.get("file"):
+                mesh.set("inertia", "shell")
+                patched = True
+        if patched:
+            content = ET.tostring(root, encoding="utf-8")
+            if _compile_ok(content) is not None:
+                raise ValueError(
+                    f"MJCF shell-inertia patch did not make {source} compile"
+                )
+    staged.write_bytes(content)
+    return staged
 
 
 class GenesisEntityBackend(EntityBackend):
@@ -966,6 +1059,15 @@ class GenesisSceneBackend(SceneBackend):
     def step(self) -> None:
         self._gs_scene.step()
 
+    def destroy(self) -> None:
+        """Tear down the wrapped Genesis scene.
+
+        Each built scene holds a rasterizer/pyglet context; callers building
+        several scenes in one process (e.g. the embodiment build gate) must
+        destroy each scene to keep later builds stable.
+        """
+        self._gs_scene.destroy()
+
     def reset(self) -> None:
         # Genesis resets via state restore; core logic handles recomposition.
         logger.debug("GenesisSceneBackend.reset is a no-op; rely on state rebuild")
@@ -1060,7 +1162,9 @@ class GenesisBackend(SimulatorBackend):
                 camera_pos=viewer_options.camera_pos,
                 camera_lookat=viewer_options.camera_lookat,
                 res=viewer_options.resolution,
-                max_FPS=viewer_options.max_fps,
+                # genesis-world 1.4 renamed max_FPS -> refresh_rate; passing
+                # the old name raises GenesisException at scene creation.
+                refresh_rate=viewer_options.max_fps,
             )
         scene_kwargs: dict[str, Any] = {
             "viewer_options": gs_viewer_options,
@@ -1186,6 +1290,26 @@ class GenesisBackend(SimulatorBackend):
         morph = gs.morphs.Mesh(**kwargs)
         surface = gs.surfaces.Default(color=color, roughness=0.8) if color else None
         return GenesisEntityBackend(morph, surface, name=name)
+
+    def create_mjcf(
+        self,
+        file: str,
+        pos: tuple[float, float, float],
+        quat: tuple[float, float, float, float] | None = None,
+        static: bool = True,
+        name: str | None = None,
+    ) -> EntityBackend:
+        _require_genesis()
+        source = Path(file)
+        # EFE suite components spawn from a staged sibling copy (freejoint
+        # for graspables; shell inertia when MuJoCo rejects thin meshes), so
+        # the upstream mirror stays byte-identical.
+        source = _stage_mjcf_component(source, dynamic=not static)
+        kwargs: dict[str, Any] = {"file": str(source), "pos": pos}
+        if quat is not None:
+            kwargs["quat"] = quat
+        morph = gs.morphs.MJCF(**kwargs)
+        return GenesisEntityBackend(morph, None, name=name)
 
     def _resolve_deformable_morph(
         self,
