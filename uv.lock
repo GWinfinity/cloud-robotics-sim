@@ -644,7 +644,7 @@ requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
     { name = "cadquery", marker = "extra == 'cad'", specifier = ">=2.4" },
     { name = "cloud-robotics-sim", extras = ["dev", "docs", "k8s", "cad", "xuvdb", "fracture", "deploy", "agent"], marker = "extra == 'all'" },
-    { name = "genesis-world", specifier = "==1.4.6" },
+    { name = "genesis-world", specifier = "==1.4.7" },
     { name = "gymnasium", specifier = ">=1.0.0" },
     { name = "h5py", specifier = ">=3.8" },
     { name = "manifold3d", marker = "extra == 'fracture'", specifier = ">=3.0,<4" },
@@ -1369,7 +1369,7 @@ wheels = [
 
 [[package]]
 name = "genesis-world"
-version = "1.4.6"
+version = "1.4.7"
 source = { registry = "https://mirrors.aliyun.com/pypi/simple" }
 dependencies = [
     { name = "av" },
@@ -1406,7 +1406,7 @@ dependencies = [
     { name = "zstandard" },
 ]
 wheels = [
-    { url = "https://mirrors.aliyun.com/pypi/packages/9a/f4/866cf6e8b09ea3682b6bd3d32f652eed29d80747305936527d8832eb8cf0/genesis_world-1.4.6-py3-none-any.whl", hash = "sha256:361203ef7f010b4ca01c06bdb0793226b02f03afa8b2d1793d71d6e0f63a5b02" },
+    { url = "https://mirrors.aliyun.com/pypi/packages/3c/e2/bd32c56e93b97313af13c24d0d966c140949a9a99b47f54a3d3f601b753d/genesis_world-1.4.7-py3-none-any.whl", hash = "sha256:53197ae76a0fc6f2a2e2b22172c425da5c8e07d24575d65e62000c875185a3f2" },
 ]
 
 [[package]]

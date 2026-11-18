@@ -36,7 +36,7 @@ classifiers = [
 
 dependencies = [
     # Core physics
-    "genesis-world==1.4.6",
+    "genesis-world==1.4.7",
     # Geometry & mesh processing (trimesh parses untrusted mesh files:
     # upper-bound the major version to cap parser risk; genesis-world 1.4.6
     # requires trimesh>=5)
