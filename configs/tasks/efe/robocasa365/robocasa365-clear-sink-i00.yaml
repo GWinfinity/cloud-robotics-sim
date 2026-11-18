@@ -1,0 +1,165 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/ClearSink | goal: Remove the corn and carrot from the sink. Then move the bowl and cup from the counter to the sink for washing.
+# fidelity: spec | notes: 判据逐字转写上游 ClearSink._check_success；instance_sha=8b4b20014572
+version: 1
+
+task:
+  name: robocasa365-clear-sink-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: not
+      params:
+        condition:
+          type: rc_inside
+          params:
+            object: food0_main
+            fixture: sink_main_group_1_main
+            regions:
+            - center:
+              - 0.113869
+              - -0.023497
+              - -0.158207
+              halfsize:
+              - 0.204385
+              - 0.151692
+              - 0.092314
+            - center:
+              - -0.0
+              - 3.3e-05
+              - -0.17414
+              halfsize:
+              - 0.39698
+              - 0.265
+              - 0.113027
+            tolerance: 0.0
+    - type: not
+      params:
+        condition:
+          type: rc_inside
+          params:
+            object: food1_main
+            fixture: sink_main_group_1_main
+            regions:
+            - center:
+              - 0.113869
+              - -0.023497
+              - -0.158207
+              halfsize:
+              - 0.204385
+              - 0.151692
+              - 0.092314
+            - center:
+              - -0.0
+              - 3.3e-05
+              - -0.17414
+              halfsize:
+              - 0.39698
+              - 0.265
+              - 0.113027
+            tolerance: 0.0
+    - type: rc_inside
+      params:
+        object: dish0_main
+        fixture: sink_main_group_1_main
+        regions:
+        - center:
+          - 0.113869
+          - -0.023497
+          - -0.158207
+          halfsize:
+          - 0.204385
+          - 0.151692
+          - 0.092314
+        - center:
+          - -0.0
+          - 3.3e-05
+          - -0.17414
+          halfsize:
+          - 0.39698
+          - 0.265
+          - 0.113027
+        tolerance: 0.0
+    - type: rc_inside
+      params:
+        object: dish1_main
+        fixture: sink_main_group_1_main
+        regions:
+        - center:
+          - 0.113869
+          - -0.023497
+          - -0.158207
+          halfsize:
+          - 0.204385
+          - 0.151692
+          - 0.092314
+        - center:
+          - -0.0
+          - 3.3e-05
+          - -0.17414
+          halfsize:
+          - 0.39698
+          - 0.265
+          - 0.113027
+        tolerance: 0.0
+    - type: rc_gripper_far
+      params:
+        target: food0_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: food1_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: dish0_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: dish1_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

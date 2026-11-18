@@ -1,0 +1,66 @@
+# EFE 迁移编译物（robocasa-gr1）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa-gr1/PnPCupToDrawerClose | goal: pick up the cup, place it into the drawer and close the drawer
+# fidelity: spec | notes: 判据逐字转写上游 PnPCupToDrawerClose._check_success；instance_sha=d641dc78d9ed
+version: 1
+
+task:
+  name: robocasa-gr1-cup-to-drawer-close-i00
+  type: efe_robocasa
+  robot: fourier_gr1
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.xml
+    qpos_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_inside
+      params:
+        object: obj_main
+        fixture: stack_1_main_group_1_main
+        fixture_sites:
+        - stack_1_main_group_1_int_p0
+        - stack_1_main_group_1_int_px
+        - stack_1_main_group_1_int_py
+        - stack_1_main_group_1_int_pz
+        tolerance: 0.0
+    - type: rc_joint_state
+      params:
+        joint: stack_1_main_group_1_slidejoint
+        mode: normalized
+        range:
+        - 0.0
+        - 0.75
+        sign: -1.0
+        max: 0.005
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

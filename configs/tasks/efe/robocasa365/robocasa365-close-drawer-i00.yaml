@@ -1,0 +1,54 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/CloseDrawer | goal: Close the right drawer.
+# fidelity: spec | notes: 判据逐字转写上游 CloseDrawer._check_success；instance_sha=f033b88498fe
+version: 1
+
+task:
+  name: robocasa365-close-drawer-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.meta.json
+    extra_sites: {}
+    qpos_overrides:
+      stack_1_main_group_1_1_slidejoint: -0.57
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: rc_joint_state
+  params:
+    joint: stack_1_main_group_1_1_slidejoint
+    mode: normalized
+    range:
+    - 0.0
+    - 0.6
+    sign: -1.0
+    max: 0.05
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

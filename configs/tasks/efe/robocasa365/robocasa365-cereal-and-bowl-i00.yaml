@@ -1,0 +1,82 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/CerealAndBowl | goal: Open the cabinet. Pick the cereal and bowl from the cabinet and place them on the counter next to the milk. Then close the cabinet.
+# fidelity: spec | notes: 判据逐字转写上游 CerealAndBowl._check_success；instance_sha=1a7015ad9437
+version: 1
+
+task:
+  name: robocasa365-cereal-and-bowl-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_contact_any
+      params:
+        object: cereal_main
+        fixtures:
+        - counter_1_left_group_1_main
+        - counter_1_main_group_1_main
+        - counter_2_left_group_1_main
+        - counter_corner_1_main_group_1_main
+        - cube_2_island_group_1_main
+        - cube_3_island_group_1_main
+        - cube_4_island_group_1_main
+        - cube_island_group_1_main
+        - island_island_group_1_main
+    - type: rc_contact_any
+      params:
+        object: bowl_main
+        fixtures:
+        - counter_1_left_group_1_main
+        - counter_1_main_group_1_main
+        - counter_2_left_group_1_main
+        - counter_corner_1_main_group_1_main
+        - cube_2_island_group_1_main
+        - cube_3_island_group_1_main
+        - cube_4_island_group_1_main
+        - cube_island_group_1_main
+        - island_island_group_1_main
+    - type: rc_joint_state
+      params:
+        joint: hingecabinet_1_main_group_1_leftdoorhinge
+        mode: normalized
+        range:
+        - 0.0
+        - 1.57
+        sign: -1.0
+        max: 0.05
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

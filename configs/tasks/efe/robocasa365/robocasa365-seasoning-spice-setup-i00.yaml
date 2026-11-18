@@ -1,0 +1,91 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/SeasoningSpiceSetup | goal: Move the condiment bottle and ketchup from the cabinet to the dining counter.
+# fidelity: spec | notes: 判据逐字转写上游 SeasoningSpiceSetup._check_success；instance_sha=0c7ce0efd476
+version: 1
+
+task:
+  name: robocasa365-seasoning-spice-setup-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_gripper_far
+      params:
+        target: condiment1_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: condiment2_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_contact_any
+      params:
+        object: condiment1_main
+        fixtures:
+        - box_1_island_group_main
+        - box_2_island_group_main
+        - counter_1_front_group_main
+        - counter_1_main_group_main
+        - counter_1_right_group_main
+        - counter_2_main_group_main
+        - counter_corner_right_group_main
+        - island_island_group_main
+        - stack_1_island_group_1_main
+        - stack_1_island_group_base_main
+        - stack_2_island_group_1_main
+        - stack_2_island_group_base_main
+    - type: rc_contact_any
+      params:
+        object: condiment2_main
+        fixtures:
+        - box_1_island_group_main
+        - box_2_island_group_main
+        - counter_1_front_group_main
+        - counter_1_main_group_main
+        - counter_1_right_group_main
+        - counter_2_main_group_main
+        - counter_corner_right_group_main
+        - island_island_group_main
+        - stack_1_island_group_1_main
+        - stack_1_island_group_base_main
+        - stack_2_island_group_1_main
+        - stack_2_island_group_base_main
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

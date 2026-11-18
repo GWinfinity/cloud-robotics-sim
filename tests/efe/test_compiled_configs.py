@@ -28,7 +28,14 @@ SUITES_DIR = REPO_ROOT / "data" / "suites"
 
 
 def _suite_files() -> list[Path]:
-    return sorted(SUITES_DIR.glob("efe_*.yaml"))
+    # Whole-world RoboCasa suites spawn one `world` asset; their nop gate
+    # needs the extraction meta (compiled poses + frozen qpos) and lives in
+    # test_robocasa_nop.py — the generic asset-layout stub cannot model it.
+    return sorted(
+        p
+        for p in SUITES_DIR.glob("efe_*.yaml")
+        if not p.stem.startswith(("efe_robocasa",))
+    )
 
 
 def _suite_task_paths(suite_file: Path) -> list[Path]:

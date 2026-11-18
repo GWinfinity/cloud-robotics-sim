@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-18T09:21:16.300239+00:00",
+  "generated_at": "2026-11-18T14:16:40.873323+00:00",
   "paper": {
     "arxiv": "2611.12177",
     "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
@@ -798,9 +798,9 @@
       },
       "project": {
         "tier": "T1",
-        "status": "planned",
+        "status": "partial",
         "target": "plugins/envs/humanoid_falling 同层新增",
-        "note": "GR1 人形厨房操作；GR1 URDF 公开"
+        "note": "GR1 人形厨房操作；GR1 URDF 公开。6/24 已编译（2026-11-18，spec 级；offline nop 门绿）；GR1 双臂 any_gripper_far×2；SplitA 生成家族 19 个待 objaverse 对象库落地后重 resolve"
       },
       "inventory": {
         "n_tasks": 24,
@@ -827,9 +827,9 @@
       },
       "project": {
         "tier": "T1",
-        "status": "planned",
+        "status": "partial",
         "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
-        "note": "厨房日常；robosuite 场景/对象 MJCF 可导入，Omron 移动底座需合成"
+        "note": "21/29 已编译（2026-11-18，spec 级；offline nop 门绿）。冻结 instance.npz 内嵌组合后世界 XML——免上游 venv，tools/robocasa_worlds.py 提取路径重写世界包，tools/robocasa_resolver.py 逐字绑定上游 _check_success（门 0.90/抽屉 0.95/旋钮/水龙头/容器 0.7×radius/家电按钮状态机）；pending 8：6 待 objaverse 资产落地、2 水槽 int 站点语义待专查"
       },
       "inventory": {
         "n_tasks": 29,
@@ -856,9 +856,9 @@
       },
       "project": {
         "tier": "T1",
-        "status": "planned",
+        "status": "partial",
         "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
-        "note": "365 场景采 50；与 RoboCasa 共用资产管线"
+        "note": "365 场景采 50；与 RoboCasa 共用资产管线。23/50 已编译（2026-11-18，spec 级；offline nop 门绿）；robocasa 1.0.1 改 reg_* 区域 geom（resolver 双轨）；计时器 washed>10/broiled≥10/scrubbed≥15 与 any/not 已移植；pending 27：26 待 objaverse/aigen 资产、TurnOnToasterOven（realtime 动态）挂起"
       },
       "inventory": {
         "n_tasks": 50,
@@ -1613,8 +1613,8 @@
       "T0": 1
     },
     "by_status": {
-      "planned": 28,
-      "partial": 5,
+      "planned": 25,
+      "partial": 8,
       "excluded": 1,
       "ported": 1,
       "blocked": 1

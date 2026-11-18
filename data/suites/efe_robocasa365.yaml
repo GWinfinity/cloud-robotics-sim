@@ -1,0 +1,27 @@
+# EFE robocasa365 套件汇总（编译物）；由 tools/compile_efe_suite.py 生成。
+version: 1
+name: efe-robocasa365
+tasks:
+  - ../../configs/tasks/efe/robocasa365/robocasa365-assemble-cooking-array-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-cereal-and-bowl-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-choose-measuring-cup-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-clear-sink-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-close-drawer-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-close-oven-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-close-stand-mixer-head-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-deliver-brewed-coffee-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-make-ice-lemonade-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-open-dishwasher-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-organize-coffee-condiments-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-oven-broil-fish-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-pick-place-cabinet-to-counter-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-prep-for-sanitizing-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-sanitize-prep-cutting-board-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-scrub-bowl-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-searing-meat-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-seasoning-spice-setup-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-tong-buffet-setup-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-turn-off-microwave-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-turn-on-microwave-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-turn-on-sink-faucet-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-turn-on-stove-i00.yaml

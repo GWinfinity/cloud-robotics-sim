@@ -1,0 +1,54 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/CloseOven | goal: Close the oven door.
+# fidelity: spec | notes: 判据逐字转写上游 CloseOven._check_success；instance_sha=dc6be5233307
+version: 1
+
+task:
+  name: robocasa365-close-oven-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.meta.json
+    extra_sites: {}
+    qpos_overrides:
+      singlecabinet_1_right_group_1_doorhinge: -1.4915
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: rc_joint_state
+  params:
+    joint: singlecabinet_1_right_group_1_doorhinge
+    mode: normalized
+    range:
+    - 0.0
+    - 1.57
+    sign: -1.0
+    max: 0.05
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

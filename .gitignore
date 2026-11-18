@@ -218,3 +218,6 @@ plugins/manipulation/dexterous_gnn_qp/assets/mujoco_menagerie/
 .efe_stage/
 # LIBERO-MAX task assets (LIBERO-PRO assets @ 2b910b5, MIT; mirrored by tools/fetch_liberomax_assets.py)
 assets/liberomax/
+
+# RoboCasa EFE mirrors (frozen world packages + selective asset roots; mirrored by tools/fetch_robocasa_assets.py)
+assets/robocasa/

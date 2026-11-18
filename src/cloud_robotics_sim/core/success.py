@@ -46,7 +46,23 @@ SUCCESS_TYPES = (
     "libero_on",
     "libero_in",
     "libero_joint_state",
+    "rc_contact",
+    "rc_in_receptacle",
+    "rc_gripper_far",
+    "rc_joint_state",
+    "rc_appliance",
+    "rc_inside",
+    "rc_upright",
+    "rc_at_spawn",
+    "rc_near",
+    "rc_contact_any",
+    "rc_timer",
+    "rc_basin",
+    "rc_on_burner",
+    "rc_closer",
     "all",
+    "any",
+    "not",
 )
 
 
@@ -871,6 +887,670 @@ class AllCondition(SuccessCondition):
         return self._last_failure_stage
 
 
+# ---------------------------------------------------------------------------
+# RoboCasa predicates (EFE robocasa / robocasa365 / robocasa-gr1)
+# ---------------------------------------------------------------------------
+
+
+def _world_entity_key(scene: Any) -> str:
+    """Registry key of the whole-world entity backing a RoboCasa task."""
+    entities = getattr(scene, "entities", None) or {}
+    for key in ("world", "kitchen", "scene"):
+        if key in entities:
+            return key
+    raise KeyError(
+        "rc_* predicates need a whole-world entity ('world') in scene.entities; "
+        f"available: {sorted(entities)}"
+    )
+
+
+def _world_entity(scene: Any) -> Any:
+    """The whole-world entity backing a RoboCasa task (asset name ``world``)."""
+    entities = getattr(scene, "entities", None) or {}
+    return entities[_world_entity_key(scene)]
+
+
+def _body_entity(scene: Any, name: str) -> Any:
+    """Resolve a body name to an entity exposing position hooks.
+
+    Whole-world spawns register one entity ('world'); bodies inside it are
+    addressed by their MuJoCo body name through the link hooks. Tests may
+    instead register one lightweight fake entity per body name.
+    """
+    entities = getattr(scene, "entities", None) or {}
+    if name in entities:
+        return entities[name]
+    world = _world_entity(scene)
+    if name in world.link_names():
+        return _WorldBodyView(world, name)
+    raise KeyError(
+        f"no entity or world link named {name!r} " f"(entities: {sorted(entities)})"
+    )
+
+
+class _WorldBodyView:
+    """Positional view of one body inside a whole-world entity."""
+
+    def __init__(self, world: Any, name: str) -> None:
+        self._world = world
+        self._name = name
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def get_pos(self) -> np.ndarray:
+        return np.asarray(self._world.get_link_pos(self._name), dtype=float)
+
+    def get_quat(self) -> np.ndarray:
+        return np.asarray(self._world.get_link_quat(self._name), dtype=float)
+
+    def in_contact(self, other: Any) -> bool:
+        return _world_bodies_touch(self._world, self._name, other)
+
+
+def _body_prefixes(world: Any, name: str) -> set[str]:
+    """Link names belonging to one body (the body and its sub-bodies)."""
+    prefix = name.rstrip("_") + "_"
+    return {n for n in world.link_names() if n == name or n.startswith(prefix)}
+
+
+def _world_bodies_touch(world: Any, name_a: str, other: Any) -> bool:
+    """Contact between body/geoms ``name_a`` and ``other`` (name or entity).
+
+    Link names match by prefix (a body and its sub-bodies — the gripper
+    touches through its finger links); names that are geoms rather than
+    bodies (microwave buttons are geoms on the door body) filter the
+    contact pairs by geom name instead.
+    """
+    links = world.link_names()
+
+    def identifiers(name: str | None) -> set[str] | None:
+        if not name:
+            return None
+        if name in links:
+            prefix = name.rstrip("_") + "_"
+            return {n for n in links if n == name or n.startswith(prefix)}
+        try:
+            geoms = world.geom_names()
+        except TypeError:
+            geoms = []
+        if name in geoms:
+            return {name}
+        return set()
+
+    names_a = identifiers(name_a)
+    if names_a is None:
+        return False
+    if isinstance(other, _WorldBodyView):
+        other_name: str | None = other._name
+        entity_b: Any = None
+    elif isinstance(other, str):
+        other_name, entity_b = other, None
+    else:
+        other_name, entity_b = None, other
+    if entity_b is not None:
+        return bool(world.in_contact(entity_b))
+    names_b = identifiers(other_name)
+    if not names_b:
+        return False
+    contacts = world.get_self_contacts()
+    link_a = np.asarray(contacts.get("link_a", [])).reshape(-1)
+    link_b = np.asarray(contacts.get("link_b", [])).reshape(-1)
+    geom_a = np.asarray(contacts.get("geom_a", [])).reshape(-1)
+    geom_b = np.asarray(contacts.get("geom_b", [])).reshape(-1)
+    if link_a.size == 0:
+        return False
+    link_names = world.link_names()
+    geom_names = world.geom_names()
+    pairs: set[tuple[str, str]] = set()
+    for i in range(link_a.size):
+        a_link, b_link = link_names[link_a[i]], link_names[link_b[i]]
+        a_geom = geom_names[geom_a[i]] if i < geom_a.size else ""
+        b_geom = geom_names[geom_b[i]] if i < geom_b.size else ""
+        for a in (a_link, a_geom):
+            for b in (b_link, b_geom):
+                pairs.add((a, b))
+                pairs.add((b, a))
+    return any(a in names_a and b in names_b for a, b in pairs)
+
+
+def _site_world_pos(scene: Any, site: str) -> np.ndarray:
+    """World position of a baked site (eef / button / marker).
+
+    Sites do not exist in Genesis; the RoboCasa task records each needed
+    site as (body, local offset) at reset time and serves it through
+    ``scene.entities['world']._sites`` — see ``EfeRobocasaTask``.
+    """
+    world = _world_entity(scene)
+    sites = getattr(world, "_rc_sites", None) or {}
+    if site not in sites:
+        raise KeyError(
+            f"site {site!r} not registered on the world entity; "
+            f"available: {sorted(sites)}"
+        )
+    body, local = sites[site]
+    pos = np.asarray(world.get_link_pos(body), dtype=float)
+    quat = np.asarray(world.get_link_quat(body), dtype=float)
+    offset = _quat_to_mat(quat) @ np.asarray(local, dtype=float)
+    return np.asarray(pos + offset, dtype=float)
+
+
+@dataclass
+class RcContactCondition(SuccessCondition):
+    """RoboCasa ``env.check_contact(obj, fixture)`` — any touching geom pair."""
+
+    object_name: str
+    fixture: str
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        entities = getattr(scene, "entities", None) or {}
+        if self.object_name in entities and self.fixture in entities:
+            return bool(_in_contact(entities[self.object_name], entities[self.fixture]))
+        return _world_bodies_touch(_world_entity(scene), self.object_name, self.fixture)
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcInReceptacleCondition(SuccessCondition):
+    """RoboCasa ``OU.check_obj_in_receptacle`` (upstream-exact).
+
+    Contact between the object and the receptacle, and the horizontal
+    distance between their body origins below the threshold — upstream
+    defaults the threshold to ``0.7 * receptacle.horizontal_radius``; the
+    resolver bakes the radius (and the explicit ``th`` where the env passes
+    one) so no geometry is needed at runtime.
+    """
+
+    object_name: str
+    receptacle: str
+    radius: float | None = None
+    factor: float = 0.7
+    threshold: float | None = None
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        if not RcContactCondition(self.object_name, self.receptacle).evaluate(
+            scene, robot, info
+        ):
+            return False
+        obj_pos = _body_entity(scene, self.object_name).get_pos()
+        rec_pos = _body_entity(scene, self.receptacle).get_pos()
+        th = (
+            self.threshold
+            if self.threshold is not None
+            else self.factor * float(self.radius or 0.0)
+        )
+        return bool(np.linalg.norm(obj_pos[:2] - rec_pos[:2]) < th)
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcGripperFarCondition(SuccessCondition):
+    """RoboCasa ``OU.gripper_obj_far`` / ``OU.any_gripper_obj_far``.
+
+    The gripper site (baked; both sites for the GR1 two-arm variant) must
+    be farther than ``threshold`` from the target body origin. With two
+    sites, ANY site satisfying the distance counts (upstream ``any``).
+    """
+
+    target: str
+    sites: tuple[str, ...]
+    threshold: float = 0.25
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        world = _world_entity(scene)
+        sites = getattr(world, "_rc_sites", None) or {}
+        target_pos = (
+            _site_world_pos(scene, self.target)
+            if self.target in sites
+            else _body_entity(scene, self.target).get_pos()
+        )
+        distances = [
+            float(np.linalg.norm(_site_world_pos(scene, s) - target_pos))
+            for s in self.sites
+        ]
+        return any(d > self.threshold for d in distances)
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+_RC_JOINT_MODES = ("normalized", "abs", "mod2pi", "spout_ori")
+
+
+@dataclass
+class RcJointStateCondition(SuccessCondition):
+    """RoboCasa articulated-fixture joint checks (upstream-exact).
+
+    ``normalized`` — cabinet doors and drawers: the joint qpos is mapped
+    through its baked ``range`` to [0, 1] and compared against
+    ``[min, max]`` (open >= 0.90 / close <= 0.05 style).
+    ``abs`` — stove knobs: ``min <= |qpos| <= max`` (on-window rad).
+    ``mod2pi`` — sink handle: ``(qpos mod 2π)`` in the open min/max window.
+    ``spout_ori`` — sink spout orientation bucket (left/right/center).
+    """
+
+    joint: str
+    mode: str
+    range: tuple[float, float] = (0.0, 1.0)
+    min: float = 0.0
+    max: float = 1.0
+    sign: float = 1.0
+    orientation: str = ""
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        world_key = _world_entity_key(scene)
+        qpos = float(_joint_qpos(scene, world_key, self.joint))
+        q = qpos * self.sign
+        if self.mode == "normalized":
+            lo, hi = self.range
+            v = (q - lo) / (hi - lo) if hi != lo else 0.0
+            return bool(self.min <= v <= self.max)
+        if self.mode == "abs":
+            return bool(self.min <= abs(q) <= self.max)
+        if self.mode == "mod2pi":
+            v = q % (2.0 * np.pi)
+            return bool(self.min < v < self.max)
+        if self.mode == "spout_ori":
+            v = q % (2.0 * np.pi)
+            if np.pi <= v <= 2.0 * np.pi - np.pi / 6.0:
+                ori = "left"
+            elif np.pi / 6.0 <= v <= np.pi:
+                ori = "right"
+            else:
+                ori = "center"
+            return ori == self.orientation
+        raise ValueError(f"unknown rc_joint_state mode {self.mode!r}")
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcApplianceCondition(SuccessCondition):
+    """Toggle-appliance state (microwave / coffee machine / toaster oven).
+
+    The upstream fixture flips its ``turned_on`` flag from gripper-button
+    contact each step; :class:`EfeRobocasaTask` mirrors that state machine
+    and publishes the flags in ``info['rc_appliance']``. Missing info is a
+    failure (nop-safe).
+    """
+
+    name: str
+    state: str = "on"
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        states = (info or {}).get("rc_appliance") or {}
+        return bool(states.get(self.name, False)) == (self.state == "on")
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcInsideCondition(SuccessCondition):
+    """RoboCasa ``OU.obj_inside_of`` (upstream-exact, both site and region).
+
+    v0.2 / GR1 fixtures expose four ``int_p*`` sites; robocasa 1.0.1
+    (RoboCasa365) instead defines ``reg_*`` region geoms and ``obj_inside_of``
+    succeeds when ANY region holds every checked point. The object's body
+    origin (``partial_check``) or all eight oriented bounding-box corners
+    (full check, 0.05 m tolerance) must project inside the box. The resolver
+    bakes fixture sites / region boxes and the object bbox from the library
+    XML, so the runtime only transforms baked locals into the world.
+    """
+
+    object_name: str
+    fixture: str
+    fixture_sites: tuple[str, ...] = ()  # p0, px, py, pz site names
+    regions: tuple[
+        tuple[tuple[float, float, float], tuple[float, float, float]], ...
+    ] = ()
+    object_bbox: tuple[tuple[float, float, float], ...] | None = None  # 8 corners
+    tolerance: float = 0.0
+    failure_stage: str = "error"
+
+    def _points_inside(
+        self,
+        p0: np.ndarray,
+        px: np.ndarray,
+        py: np.ndarray,
+        pz: np.ndarray,
+        points: list[np.ndarray],
+        th: float,
+    ) -> bool:
+        u, v, w = px - p0, py - p0, pz - p0
+        for point in points:
+            checks = (
+                np.dot(u, p0) - th <= np.dot(u, point) <= np.dot(u, px) + th,
+                np.dot(v, p0) - th <= np.dot(v, point) <= np.dot(v, py) + th,
+                np.dot(w, p0) - th <= np.dot(w, point) <= np.dot(w, pz) + th,
+            )
+            if not all(checks):
+                return False
+        return True
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        obj = _body_entity(scene, self.object_name)
+        obj_pos = obj.get_pos()
+        if self.object_bbox is None:
+            points = [obj_pos]
+            th = 0.0
+        else:
+            rot = _quat_to_mat(obj.get_quat())
+            points = [
+                obj_pos + rot @ np.asarray(corner, dtype=float)
+                for corner in self.object_bbox
+            ]
+            th = self.tolerance
+        if self.regions:
+            rot = _quat_to_mat(
+                np.asarray(_body_entity(scene, self.fixture).get_quat(), dtype=float)
+            )
+            base = np.asarray(_body_entity(scene, self.fixture).get_pos(), dtype=float)
+            for center, half in self.regions:
+                c = np.asarray(center, dtype=float)
+                h = np.asarray(half, dtype=float)
+
+                def corner(signs: tuple[float, float, float]) -> np.ndarray:
+                    delta = c + h * np.asarray(signs, dtype=float)
+                    return np.asarray(base + rot @ delta, dtype=float)
+
+                p0 = corner((-1.0, -1.0, -1.0))
+                px = corner((1.0, -1.0, -1.0))
+                py = corner((-1.0, 1.0, -1.0))
+                pz = corner((-1.0, -1.0, 1.0))
+                if self._points_inside(p0, px, py, pz, points, th):
+                    return True
+            return False
+        if not self.fixture_sites:
+            raise ValueError("rc_inside needs either fixture_sites or regions")
+        p0 = _site_world_pos(scene, self.fixture_sites[0])
+        px = _site_world_pos(scene, self.fixture_sites[1])
+        py = _site_world_pos(scene, self.fixture_sites[2])
+        pz = _site_world_pos(scene, self.fixture_sites[3])
+        return self._points_inside(p0, px, py, pz, points, th)
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcUprightCondition(SuccessCondition):
+    """RoboCasa ``OU.check_obj_upright``: body z-axis cosine above threshold."""
+
+    object_name: str
+    threshold: float = 0.8
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        rot = _quat_to_mat(_body_entity(scene, self.object_name).get_quat())
+        return bool(rot[2, 2] > self.threshold)
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcNearCondition(SuccessCondition):
+    """Horizontal-distance checks used by several composites.
+
+    ``target`` may be a world body or a baked site name (coffee machine
+    pour site). Upstream compares ``body_xpos`` components against a baked
+    radius (e.g. ``bowl_radius + 0.25``, ``<= 0.3``); ``axes`` selects the
+    xy plane (upstream ``[:2]`` norms) or full 3D.
+    """
+
+    object_name: str
+    target: str
+    radius: float
+    axes: int = 2
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        obj_pos = _body_entity(scene, self.object_name).get_pos()
+        world = _world_entity(scene)
+        sites = getattr(world, "_rc_sites", None) or {}
+        if self.target in sites:
+            target_pos = _site_world_pos(scene, self.target)
+        else:
+            target_pos = _body_entity(scene, self.target).get_pos()
+        delta = obj_pos - target_pos
+        return bool(
+            np.linalg.norm(delta if self.axes == 3 else delta[:2]) <= self.radius
+        )
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcCloserCondition(SuccessCondition):
+    """Comparative distance (RestockPantry ``_close_to_cab_cans``).
+
+    ``|object − anchor| * ratio < |other − object|`` — the object sits
+    closer to the anchor than the other object is (3D, upstream norm).
+    """
+
+    object_name: str
+    anchor: str
+    other: str
+    ratio: float = 2.0
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        obj_pos = _body_entity(scene, self.object_name).get_pos()
+        anchor_pos = _body_entity(scene, self.anchor).get_pos()
+        other_pos = _body_entity(scene, self.other).get_pos()
+        return bool(
+            np.linalg.norm(obj_pos - anchor_pos) * self.ratio
+            < np.linalg.norm(other_pos - obj_pos)
+        )
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcContactAnyCondition(SuccessCondition):
+    """``OU.check_obj_any_counter_contact``: obj touches ANY of the fixtures."""
+
+    object_name: str
+    fixtures: tuple[str, ...]
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        for fixture in self.fixtures:
+            if RcContactCondition(self.object_name, fixture).evaluate(
+                scene, robot, info
+            ):
+                return True
+        return False
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcTimerCondition(SuccessCondition):
+    """Step-counting upstream checks (washed > 10, broiled >= 10, scrub >= 15).
+
+    :class:`EfeRobocasaTask` evaluates each timer's condition block every
+    step (same call pattern as upstream, twice per step), counts
+    consecutive successes and publishes ``info['rc_timer']``. Missing info
+    is a failure (nop-safe).
+    """
+
+    name: str
+    count: int
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        timers = (info or {}).get("rc_timer") or {}
+        return int(timers.get(self.name, 0)) >= self.count
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcBasinCondition(SuccessCondition):
+    """Double-basin sink side check (``get_obj_basin_loc``).
+
+    All eight oriented bbox corners of the object (0.05 m tolerance, as
+    upstream) must fall inside the named basin's region box, expressed in
+    the sink fixture frame. The region center/halfsize and the object bbox
+    are baked at resolve time.
+    """
+
+    object_name: str
+    fixture_body: str
+    side: str  # "left" | "right"
+    center_local: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    halfsize_local: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    object_bbox: tuple[tuple[float, float, float], ...] | None = None
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        fixture = _body_entity(scene, self.fixture_body)
+        rot_t = _quat_to_mat(fixture.get_quat()).T
+        center_w = fixture.get_pos() + _quat_to_mat(fixture.get_quat()) @ np.asarray(
+            self.center_local, dtype=float
+        )
+        obj = _body_entity(scene, self.object_name)
+        obj_pos = obj.get_pos()
+        points = (
+            [obj_pos]
+            if self.object_bbox is None
+            else [
+                obj_pos + _quat_to_mat(obj.get_quat()) @ np.asarray(c, dtype=float)
+                for c in self.object_bbox
+            ]
+        )
+        half = np.asarray(self.halfsize_local, dtype=float)
+        th = 0.05
+        for point in points:
+            local = rot_t @ (point - center_w)
+            if not np.all(np.abs(local) <= half + th):
+                return False
+        return True
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcOnBurnerCondition(SuccessCondition):
+    """``check_obj_location_on_stove``: object sits on a burner.
+
+    The object origin must be within ``threshold`` (baked) of the burner's
+    world xy; with ``require_knob_on`` the burner's knob joint must also be
+    inside the upstream on-window.
+    """
+
+    object_name: str
+    burner_site: str
+    threshold: float
+    knob_joint: str = ""
+    require_knob_on: bool = False
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        obj_pos = _body_entity(scene, self.object_name).get_pos()
+        burner_pos = _site_world_pos(scene, self.burner_site)
+        if np.linalg.norm(obj_pos[:2] - burner_pos[:2]) > self.threshold:
+            return False
+        if self.require_knob_on and self.knob_joint:
+            world = _world_entity(scene)
+            value = abs(float(world.get_joint_position(self.knob_joint)))
+            return bool(0.35 <= value <= 2.0 * np.pi - 0.35)
+        return True
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class AnyCondition(SuccessCondition):
+    """Success when ANY sub-condition holds (upstream ``or`` branches)."""
+
+    conditions: tuple[SuccessCondition, ...]
+    _last_failure_stage: str = field(default="error", init=False)
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        for condition in self.conditions:
+            if condition.evaluate(scene, robot, info):
+                self._last_failure_stage = "error"
+                return True
+        self._last_failure_stage = self.conditions[-1].last_failure_stage()
+        return False
+
+    def last_failure_stage(self) -> str:
+        return self._last_failure_stage
+
+
+@dataclass
+class NotCondition(SuccessCondition):
+    """Success when the sub-condition does NOT hold (upstream ``not``)."""
+
+    condition: SuccessCondition
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        return not self.condition.evaluate(scene, robot, info)
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
+class RcAtSpawnCondition(SuccessCondition):
+    """GR1 tiered containers: the object sits in the target spawn region.
+
+    Upstream compares ``container.closest_spawn_id(obj)`` with the task's
+    target site — i.e. the container spawn site nearest the object origin
+    must be one of the flagged target sites. Spawn sites are baked
+    (body, local) pairs.
+    """
+
+    object_name: str
+    spawn_sites: tuple[tuple[str, bool], ...]  # (site name, is_target)
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        obj_pos = _body_entity(scene, self.object_name).get_pos()
+        nearest: tuple[float, bool] | None = None
+        for site_name, is_target in self.spawn_sites:
+            dist = float(np.linalg.norm(_site_world_pos(scene, site_name) - obj_pos))
+            if nearest is None or dist < nearest[0]:
+                nearest = (dist, is_target)
+        return bool(nearest is not None and nearest[1])
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+def _quat_to_mat(quat: np.ndarray) -> np.ndarray:
+    """Rotation matrix from a (w, x, y, z) quaternion."""
+    w, x, y, z = (float(v) for v in quat)
+    return np.array(
+        [
+            [1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+            [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+            [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)],
+        ]
+    )
+
+
 def _require(params: dict, key: str, success_type: str) -> Any:
     if key not in params:
         raise ConfigError(f"success type '{success_type}' requires params.{key}")
@@ -1406,6 +2086,266 @@ def _build_libero_joint_state(params: dict) -> LiberoJointStateCondition:
     )
 
 
+def _build_rc_contact(params: dict) -> RcContactCondition:
+    return RcContactCondition(
+        object_name=str(_require(params, "object", "rc_contact")),
+        fixture=str(_require(params, "fixture", "rc_contact")),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_in_receptacle(params: dict) -> RcInReceptacleCondition:
+    radius = params.get("radius")
+    threshold = params.get("threshold")
+    return RcInReceptacleCondition(
+        object_name=str(_require(params, "object", "rc_in_receptacle")),
+        receptacle=str(_require(params, "receptacle", "rc_in_receptacle")),
+        radius=None if radius is None else float(radius),
+        factor=float(params.get("factor", 0.7)),
+        threshold=None if threshold is None else float(threshold),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_gripper_far(params: dict) -> RcGripperFarCondition:
+    sites = params.get("sites")
+    if (
+        not isinstance(sites, list)
+        or not sites
+        or not all(isinstance(s, str) for s in sites)
+    ):
+        raise ConfigError("rc_gripper_far needs params.sites (non-empty list of names)")
+    return RcGripperFarCondition(
+        target=str(_require(params, "target", "rc_gripper_far")),
+        sites=tuple(sites),
+        threshold=float(params.get("threshold", 0.25)),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_joint_state(params: dict) -> RcJointStateCondition:
+    mode = params.get("mode", "normalized")
+    if mode not in _RC_JOINT_MODES:
+        raise ConfigError(
+            f"params.mode must be one of {list(_RC_JOINT_MODES)}, got {mode!r}"
+        )
+    window = params.get("range", [0.0, 1.0])
+    if (
+        not isinstance(window, (list, tuple))
+        or len(window) != 2
+        or any(not isinstance(v, (int, float)) for v in window)
+    ):
+        raise ConfigError(
+            f"rc_joint_state params.range must be two numbers, got {window!r}"
+        )
+    orientation = params.get("orientation", "")
+    if mode == "spout_ori" and orientation not in ("left", "right", "center"):
+        raise ConfigError(
+            f"rc_joint_state spout_ori needs params.orientation left/right/center, got {orientation!r}"
+        )
+    return RcJointStateCondition(
+        joint=str(_require(params, "joint", "rc_joint_state")),
+        mode=mode,
+        range=(float(window[0]), float(window[1])),
+        min=float(params.get("min", 0.0)),
+        max=float(params.get("max", 1.0)),
+        sign=float(params.get("sign", 1.0)),
+        orientation=str(orientation),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_appliance(params: dict) -> RcApplianceCondition:
+    state = params.get("state", "on")
+    if state not in ("on", "off"):
+        raise ConfigError(f"rc_appliance params.state must be on/off, got {state!r}")
+    return RcApplianceCondition(
+        name=str(_require(params, "name", "rc_appliance")),
+        state=str(state),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_inside(params: dict) -> RcInsideCondition:
+    sites = params.get("fixture_sites")
+    regions_raw = params.get("regions")
+    regions: list[tuple[tuple[float, float, float], tuple[float, float, float]]] = []
+    if regions_raw is not None:
+        if not isinstance(regions_raw, list) or not regions_raw:
+            raise ConfigError("rc_inside params.regions must be a non-empty list")
+        for entry in regions_raw:
+            if not isinstance(entry, dict):
+                raise ConfigError("rc_inside region entries must be mappings")
+            regions.append(
+                (
+                    _vec(_require(entry, "center", "rc_inside.regions"), 3, "center"),
+                    _vec(
+                        _require(entry, "halfsize", "rc_inside.regions"), 3, "halfsize"
+                    ),
+                )
+            )
+    fixture_sites: tuple[str, ...] = ()
+    if sites is not None:
+        if (
+            not isinstance(sites, list)
+            or len(sites) != 4
+            or not all(isinstance(s, str) for s in sites)
+        ):
+            raise ConfigError(
+                "rc_inside needs params.fixture_sites (4 int-site names p0/px/py/pz)"
+            )
+        fixture_sites = (sites[0], sites[1], sites[2], sites[3])
+    if not fixture_sites and not regions:
+        raise ConfigError(
+            "rc_inside needs either params.fixture_sites or params.regions"
+        )
+    bbox = params.get("object_bbox")
+    corners = None
+    if bbox is not None:
+        if not isinstance(bbox, list) or len(bbox) != 8:
+            raise ConfigError("rc_inside params.object_bbox must be 8 corners")
+        corners = tuple(
+            _vec(corner, 3, "rc_inside params.object_bbox[]") for corner in bbox
+        )
+    return RcInsideCondition(
+        object_name=str(_require(params, "object", "rc_inside")),
+        fixture=str(_require(params, "fixture", "rc_inside")),
+        fixture_sites=fixture_sites,
+        regions=tuple(regions),
+        object_bbox=corners,
+        tolerance=float(params.get("tolerance", 0.0)),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_upright(params: dict) -> RcUprightCondition:
+    return RcUprightCondition(
+        object_name=str(_require(params, "object", "rc_upright")),
+        threshold=float(params.get("threshold", 0.8)),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_at_spawn(params: dict) -> RcAtSpawnCondition:
+    raw = params.get("spawn_sites")
+    if not isinstance(raw, list) or not raw:
+        raise ConfigError(
+            "rc_at_spawn needs params.spawn_sites (list of {site, target})"
+        )
+    pairs: list[tuple[str, bool]] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            raise ConfigError("rc_at_spawn spawn_sites entries must be mappings")
+        site = entry.get("site")
+        if not isinstance(site, str):
+            raise ConfigError("rc_at_spawn spawn_sites entries need a site name")
+        target = entry.get("target", False)
+        pairs.append((site, bool(target)))
+    return RcAtSpawnCondition(
+        object_name=str(_require(params, "object", "rc_at_spawn")),
+        spawn_sites=tuple(pairs),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_near(params: dict) -> RcNearCondition:
+    axes = int(params.get("axes", 2))
+    if axes not in (2, 3):
+        raise ConfigError(f"rc_near params.axes must be 2 or 3, got {axes!r}")
+    return RcNearCondition(
+        object_name=str(_require(params, "object", "rc_near")),
+        target=str(_require(params, "target", "rc_near")),
+        radius=_positive_float(_require(params, "radius", "rc_near"), "params.radius"),
+        axes=axes,
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_contact_any(params: dict) -> RcContactAnyCondition:
+    fixtures = params.get("fixtures")
+    if not isinstance(fixtures, list) or not fixtures:
+        raise ConfigError("rc_contact_any needs params.fixtures (non-empty list)")
+    return RcContactAnyCondition(
+        object_name=str(_require(params, "object", "rc_contact_any")),
+        fixtures=tuple(str(f) for f in fixtures),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_timer(params: dict) -> RcTimerCondition:
+    return RcTimerCondition(
+        name=str(_require(params, "name", "rc_timer")),
+        count=int(_require(params, "count", "rc_timer")),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_basin(params: dict) -> RcBasinCondition:
+    side = params.get("side", "left")
+    if side not in ("left", "right"):
+        raise ConfigError(f"rc_basin params.side must be left/right, got {side!r}")
+    bbox = params.get("object_bbox")
+    corners = None
+    if bbox is not None:
+        if not isinstance(bbox, list) or len(bbox) != 8:
+            raise ConfigError("rc_basin params.object_bbox must be 8 corners")
+        corners = tuple(
+            _vec(corner, 3, "rc_basin params.object_bbox[]") for corner in bbox
+        )
+    return RcBasinCondition(
+        object_name=str(_require(params, "object", "rc_basin")),
+        fixture_body=str(_require(params, "fixture_body", "rc_basin")),
+        side=str(side),
+        center_local=_vec(
+            _require(params, "center_local", "rc_basin"), 3, "params.center_local"
+        ),
+        halfsize_local=_vec(
+            _require(params, "halfsize_local", "rc_basin"), 3, "params.halfsize_local"
+        ),
+        object_bbox=corners,
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_closer(params: dict) -> RcCloserCondition:
+    return RcCloserCondition(
+        object_name=str(_require(params, "object", "rc_closer")),
+        anchor=str(_require(params, "anchor", "rc_closer")),
+        other=str(_require(params, "other", "rc_closer")),
+        ratio=float(params.get("ratio", 2.0)),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_rc_on_burner(params: dict) -> RcOnBurnerCondition:
+    return RcOnBurnerCondition(
+        object_name=str(_require(params, "object", "rc_on_burner")),
+        burner_site=str(_require(params, "burner_site", "rc_on_burner")),
+        threshold=_positive_float(
+            _require(params, "threshold", "rc_on_burner"), "params.threshold"
+        ),
+        knob_joint=str(params.get("knob_joint", "")),
+        require_knob_on=bool(params.get("require_knob_on", False)),
+        failure_stage=_failure_stage(params),
+    )
+
+
+def _build_any(params: dict) -> AnyCondition:
+    raw = _require(params, "conditions", "any")
+    if not isinstance(raw, list) or not raw:
+        raise ConfigError("params.conditions must be a non-empty list of conditions")
+    return AnyCondition(
+        conditions=tuple(create_success_condition(spec) for spec in raw)
+    )
+
+
+def _build_not(params: dict) -> NotCondition:
+    raw = _require(params, "condition", "not")
+    if not isinstance(raw, dict):
+        raise ConfigError("params.condition must be a condition mapping")
+    return NotCondition(condition=create_success_condition(raw))
+
+
 def _build_all(params: dict) -> AllCondition:
     raw = _require(params, "conditions", "all")
     if not isinstance(raw, list) or not raw:
@@ -1469,8 +2409,40 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return _build_libero_in(params)
     if success_type == "libero_joint_state":
         return _build_libero_joint_state(params)
+    if success_type == "rc_contact":
+        return _build_rc_contact(params)
+    if success_type == "rc_in_receptacle":
+        return _build_rc_in_receptacle(params)
+    if success_type == "rc_gripper_far":
+        return _build_rc_gripper_far(params)
+    if success_type == "rc_joint_state":
+        return _build_rc_joint_state(params)
+    if success_type == "rc_appliance":
+        return _build_rc_appliance(params)
+    if success_type == "rc_inside":
+        return _build_rc_inside(params)
+    if success_type == "rc_upright":
+        return _build_rc_upright(params)
+    if success_type == "rc_at_spawn":
+        return _build_rc_at_spawn(params)
+    if success_type == "rc_near":
+        return _build_rc_near(params)
+    if success_type == "rc_contact_any":
+        return _build_rc_contact_any(params)
+    if success_type == "rc_timer":
+        return _build_rc_timer(params)
+    if success_type == "rc_basin":
+        return _build_rc_basin(params)
+    if success_type == "rc_on_burner":
+        return _build_rc_on_burner(params)
+    if success_type == "rc_closer":
+        return _build_rc_closer(params)
     if success_type == "all":
         return _build_all(params)
+    if success_type == "any":
+        return _build_any(params)
+    if success_type == "not":
+        return _build_not(params)
     raise ConfigError(
         f"unknown success type {success_type!r}; available types: {list(SUCCESS_TYPES)}"
     )

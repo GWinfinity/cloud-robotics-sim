@@ -1,0 +1,382 @@
+# 编译知识库（生成物）：--resolve 从判据表+上游模型生成；人工修正会被下次 --resolve 覆盖，
+# 持久标注请改 .predicates.yaml。
+suite: robocasa-gr1
+robot: fourier_gr1
+scene: efe_world
+source:
+  suite: robocasa-gr1
+pending_tasks:
+- robocasa-gr1-cuttingboard-to-basket-i00
+- robocasa-gr1-cuttingboard-to-cardboardbox-i00
+- robocasa-gr1-cuttingboard-to-pan-i00
+- robocasa-gr1-cuttingboard-to-pot-i00
+- robocasa-gr1-cuttingboard-to-tieredbasket-i00
+- robocasa-gr1-placemat-to-basket-i00
+- robocasa-gr1-placemat-to-bowl-i00
+- robocasa-gr1-placemat-to-plate-i00
+- robocasa-gr1-placemat-to-tieredshelf-i00
+- robocasa-gr1-plate-to-bowl-i00
+- robocasa-gr1-plate-to-cardboardbox-i00
+- robocasa-gr1-plate-to-pan-i00
+- robocasa-gr1-plate-to-plate-i00
+- robocasa-gr1-tray-to-cardboardbox-i00
+- robocasa-gr1-tray-to-plate-i00
+- robocasa-gr1-tray-to-pot-i00
+- robocasa-gr1-tray-to-tieredbasket-i00
+- robocasa-gr1-tray-to-tieredshelf-i00
+pending_reasons:
+  robocasa-gr1-cuttingboard-to-basket-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-cuttingboard-to-cardboardbox-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-cuttingboard-to-pan-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-cuttingboard-to-pot-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-cuttingboard-to-tieredbasket-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-placemat-to-basket-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-placemat-to-bowl-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-placemat-to-plate-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-placemat-to-tieredshelf-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-plate-to-bowl-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-plate-to-cardboardbox-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-plate-to-pan-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-plate-to-plate-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-tray-to-cardboardbox-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-tray-to-plate-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-tray-to-pot-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-tray-to-tieredbasket-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-gr1-tray-to-tieredshelf-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+tasks:
+  robocasa-gr1-bottle-to-cabinet-close-i00:
+    family: robocasa-gr1/PnPBottleToCabinetClose
+    goal: pick up the bottled water, place it into the cabinet and close the cabinet
+    robot: fourier_gr1
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-bottle-to-cabinet-close-i00.xml
+      qpos_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-bottle-to-cabinet-close-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-bottle-to-cabinet-close-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-bottle-to-cabinet-close-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_main
+            fixture: cabinet_tabletop_main_group_main
+            fixture_sites:
+            - cabinet_tabletop_main_group_int_p0
+            - cabinet_tabletop_main_group_int_px
+            - cabinet_tabletop_main_group_int_py
+            - cabinet_tabletop_main_group_int_pz
+            tolerance: 0.0
+        - type: rc_joint_state
+          params:
+            joint: cabinet_tabletop_main_group_doorhinge
+            mode: normalized
+            range:
+            - 0.0
+            - 3.0
+            sign: 1.0
+            max: 0.005
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPBottleToCabinetClose._check_success；instance_sha=aa1802474310
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-bottle-to-cabinet-close-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-gr1-can-to-drawer-close-i00:
+    family: robocasa-gr1/PnPCanToDrawerClose
+    goal: pick up the can, place it into the drawer and close the drawer
+    robot: fourier_gr1
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-can-to-drawer-close-i00.xml
+      qpos_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-can-to-drawer-close-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-can-to-drawer-close-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-can-to-drawer-close-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_main
+            fixture: stack_1_main_group_1_main
+            fixture_sites:
+            - stack_1_main_group_1_int_p0
+            - stack_1_main_group_1_int_px
+            - stack_1_main_group_1_int_py
+            - stack_1_main_group_1_int_pz
+            tolerance: 0.0
+        - type: rc_joint_state
+          params:
+            joint: stack_1_main_group_1_slidejoint
+            mode: normalized
+            range:
+            - 0.0
+            - 0.75
+            sign: -1.0
+            max: 0.005
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPCanToDrawerClose._check_success；instance_sha=6c8f166549ca
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-can-to-drawer-close-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-gr1-cup-to-drawer-close-i00:
+    family: robocasa-gr1/PnPCupToDrawerClose
+    goal: pick up the cup, place it into the drawer and close the drawer
+    robot: fourier_gr1
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.xml
+      qpos_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_main
+            fixture: stack_1_main_group_1_main
+            fixture_sites:
+            - stack_1_main_group_1_int_p0
+            - stack_1_main_group_1_int_px
+            - stack_1_main_group_1_int_py
+            - stack_1_main_group_1_int_pz
+            tolerance: 0.0
+        - type: rc_joint_state
+          params:
+            joint: stack_1_main_group_1_slidejoint
+            mode: normalized
+            range:
+            - 0.0
+            - 0.75
+            sign: -1.0
+            max: 0.005
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPCupToDrawerClose._check_success；instance_sha=d641dc78d9ed
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-cup-to-drawer-close-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-gr1-milk-to-microwave-close-i00:
+    family: robocasa-gr1/PnPMilkToMicrowaveClose
+    goal: pick up the milk, place it into the microwave and close the microwave
+    robot: fourier_gr1
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-milk-to-microwave-close-i00.xml
+      qpos_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-milk-to-microwave-close-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-milk-to-microwave-close-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-milk-to-microwave-close-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_main
+            fixture: microwave_main_group_main
+            fixture_sites:
+            - microwave_main_group_int_p0
+            - microwave_main_group_int_px
+            - microwave_main_group_int_py
+            - microwave_main_group_int_pz
+            tolerance: 0.0
+        - type: rc_joint_state
+          params:
+            joint: microwave_main_group_microjoint
+            mode: normalized
+            range:
+            - 0.0
+            - 1.57
+            sign: -1.0
+            max: 0.005
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPMilkToMicrowaveClose._check_success；instance_sha=ac1175880a83
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-milk-to-microwave-close-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-gr1-potato-to-microwave-close-i00:
+    family: robocasa-gr1/PnPPotatoToMicrowaveClose
+    goal: pick up the potato, place it into the microwave and close the microwave
+    robot: fourier_gr1
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-potato-to-microwave-close-i00.xml
+      qpos_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-potato-to-microwave-close-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-potato-to-microwave-close-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-potato-to-microwave-close-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_main
+            fixture: microwave_main_group_main
+            fixture_sites:
+            - microwave_main_group_int_p0
+            - microwave_main_group_int_px
+            - microwave_main_group_int_py
+            - microwave_main_group_int_pz
+            tolerance: 0.0
+        - type: rc_joint_state
+          params:
+            joint: microwave_main_group_microjoint
+            mode: normalized
+            range:
+            - 0.0
+            - 1.57
+            sign: -1.0
+            max: 0.005
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPPotatoToMicrowaveClose._check_success；instance_sha=9f650e7c94ca
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-potato-to-microwave-close-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-gr1-wine-to-cabinet-close-i00:
+    family: robocasa-gr1/PnPWineToCabinetClose
+    goal: pick up the wine, place it into the cabinet and close the cabinet
+    robot: fourier_gr1
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-wine-to-cabinet-close-i00.xml
+      qpos_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-wine-to-cabinet-close-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-wine-to-cabinet-close-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-wine-to-cabinet-close-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_main
+            fixture: cabinet_tabletop_main_group_main
+            fixture_sites:
+            - cabinet_tabletop_main_group_int_p0
+            - cabinet_tabletop_main_group_int_px
+            - cabinet_tabletop_main_group_int_py
+            - cabinet_tabletop_main_group_int_pz
+            tolerance: 0.0
+        - type: rc_joint_state
+          params:
+            joint: cabinet_tabletop_main_group_doorhinge
+            mode: normalized
+            range:
+            - 0.0
+            - 3.0
+            sign: 1.0
+            max: 0.005
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPWineToCabinetClose._check_success；instance_sha=1f866e81f6ac
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-wine-to-cabinet-close-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true

@@ -1,0 +1,1565 @@
+# 编译知识库（生成物）：--resolve 从判据表+上游模型生成；人工修正会被下次 --resolve 覆盖，
+# 持久标注请改 .predicates.yaml。
+suite: robocasa365
+robot: franka_panda_omron
+scene: efe_world
+source:
+  suite: robocasa365
+pending_tasks:
+- robocasa365-add-lemon-to-fish-i00
+- robocasa365-beverage-sorting-i00
+- robocasa365-bread-and-cheese-i00
+- robocasa365-candle-cleanup-i00
+- robocasa365-clear-food-waste-i00
+- robocasa365-cookie-dough-prep-i00
+- robocasa365-dessert-upgrade-i00
+- robocasa365-display-meat-variety-i00
+- robocasa365-divide-basins-i00
+- robocasa365-drain-veggies-i00
+- robocasa365-drinkware-consolidation-i00
+- robocasa365-make-loaded-potato-i00
+- robocasa365-meal-prep-staging-i00
+- robocasa365-microwave-defrost-meat-i00
+- robocasa365-pack-dessert-i00
+- robocasa365-pick-place-sink-to-counter-i00
+- robocasa365-plate-steak-meal-i00
+- robocasa365-portion-in-tupperware-i00
+- robocasa365-pre-rinse-station-i00
+- robocasa365-prep-marinating-meat-i00
+- robocasa365-reheat-meal-i00
+- robocasa365-retrieve-meat-i00
+- robocasa365-set-up-cutting-station-i00
+- robocasa365-stocking-breakfast-foods-i00
+- robocasa365-sweeten-coffee-i00
+- robocasa365-thaw-in-sink-i00
+- robocasa365-turn-on-toaster-oven-i00
+pending_reasons:
+  robocasa365-add-lemon-to-fish-i00: 物体 'fish_container' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-beverage-sorting-i00: 物体 'alcohol1' 库 XML 缺失（bbox 站点）
+  robocasa365-bread-and-cheese-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-candle-cleanup-i00: 物体 'obj1' 库 XML 缺失（bbox 站点）
+  robocasa365-clear-food-waste-i00: 物体 'colander' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-cookie-dough-prep-i00: 物体 'bowl' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-dessert-upgrade-i00: 物体 'receptacle' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-display-meat-variety-i00: 物体 'serving_tray' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-divide-basins-i00: 物体 'obj_to_wash' 库 XML 缺失（bbox 站点）
+  robocasa365-drain-veggies-i00: 物体 'obj' 库 XML 缺失（bbox 站点）
+  robocasa365-drinkware-consolidation-i00: 物体 'obj_0' 库 XML 缺失（bbox 站点）
+  robocasa365-make-loaded-potato-i00: 物体 'cutting_board' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-meal-prep-staging-i00: 物体 'pan1' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-microwave-defrost-meat-i00: 物体 'tupperware' 库 XML 缺失（bbox 站点）
+  robocasa365-pack-dessert-i00: 物体 'cooked_food_container' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-pick-place-sink-to-counter-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-plate-steak-meal-i00: 物体 'plate' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-portion-in-tupperware-i00: 物体 'tupperware1' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-pre-rinse-station-i00: 物体 'stackable' 库 XML 缺失（bbox 站点）
+  robocasa365-prep-marinating-meat-i00: 物体 'cutting_board' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-reheat-meal-i00: 物体 'tupperware' 库 XML 缺失（bbox 站点）
+  robocasa365-retrieve-meat-i00: 物体 'receptacle' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-set-up-cutting-station-i00: 物体 'receptacle' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-stocking-breakfast-foods-i00: 物体 'obj1' 库 XML 缺失（bbox 站点）
+  robocasa365-sweeten-coffee-i00: 物体 'coffee' 库 XML 缺失（horizontal_radius_site）
+  robocasa365-thaw-in-sink-i00: 物体 'obj' 库 XML 缺失（bbox 站点）
+  robocasa365-turn-on-toaster-oven-i00: TurnOnToasterOven：time 状态机（realtime 动态任务），本批挂起
+tasks:
+  robocasa365-assemble-cooking-array-i00:
+    family: robocasa365/AssembleCookingArray
+    goal: Move the shrimp onto the pan on the stove. Then move the syrup bottle and
+      broccoli from the cabinet to the counter where the plate is.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-assemble-cooking-array-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-assemble-cooking-array-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-assemble-cooking-array-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-assemble-cooking-array-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: meat_main
+            receptacle: pan_main
+            threshold: 0.07
+        - type: rc_gripper_far
+          params:
+            target: vegetable_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: condiment_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: meat_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_contact_any
+          params:
+            object: vegetable_main
+            fixtures:
+            - stack_1_island_group_1_1_main
+            - stack_1_island_group_1_2_main
+            - stack_1_island_group_1_3_main
+            - stack_5_island_group_1_1_main
+            - stack_5_island_group_1_2_main
+            - stack_5_island_group_1_3_main
+        - type: rc_contact_any
+          params:
+            object: condiment_main
+            fixtures:
+            - stack_1_island_group_1_1_main
+            - stack_1_island_group_1_2_main
+            - stack_1_island_group_1_3_main
+            - stack_5_island_group_1_1_main
+            - stack_5_island_group_1_2_main
+            - stack_5_island_group_1_3_main
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 AssembleCookingArray._check_success；instance_sha=7535e7a1cb1f
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-assemble-cooking-array-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-cereal-and-bowl-i00:
+    family: robocasa365/CerealAndBowl
+    goal: Open the cabinet. Pick the cereal and bowl from the cabinet and place them
+      on the counter next to the milk. Then close the cabinet.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact_any
+          params:
+            object: cereal_main
+            fixtures:
+            - counter_1_left_group_1_main
+            - counter_1_main_group_1_main
+            - counter_2_left_group_1_main
+            - counter_corner_1_main_group_1_main
+            - cube_2_island_group_1_main
+            - cube_3_island_group_1_main
+            - cube_4_island_group_1_main
+            - cube_island_group_1_main
+            - island_island_group_1_main
+        - type: rc_contact_any
+          params:
+            object: bowl_main
+            fixtures:
+            - counter_1_left_group_1_main
+            - counter_1_main_group_1_main
+            - counter_2_left_group_1_main
+            - counter_corner_1_main_group_1_main
+            - cube_2_island_group_1_main
+            - cube_3_island_group_1_main
+            - cube_4_island_group_1_main
+            - cube_island_group_1_main
+            - island_island_group_1_main
+        - type: rc_joint_state
+          params:
+            joint: hingecabinet_1_main_group_1_leftdoorhinge
+            mode: normalized
+            range:
+            - 0.0
+            - 1.57
+            sign: -1.0
+            max: 0.05
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CerealAndBowl._check_success；instance_sha=1a7015ad9437
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-cereal-and-bowl-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-choose-measuring-cup-i00:
+    family: robocasa365/ChooseMeasuringCup
+    goal: Open the right drawer and place the smaller measuring cup on the counter.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-choose-measuring-cup-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-choose-measuring-cup-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-choose-measuring-cup-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-choose-measuring-cup-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact_any
+          params:
+            object: measuring_cup_small_main
+            fixtures:
+            - stack_1_island_group_2_main
+            - stack_2_island_group_2_main
+            - stack_3_island_group_2_main
+            - stack_4_island_group_2_main
+        - type: not
+          params:
+            condition:
+              type: rc_contact_any
+              params:
+                object: measuring_cup_large_main
+                fixtures:
+                - stack_1_island_group_2_main
+                - stack_2_island_group_2_main
+                - stack_3_island_group_2_main
+                - stack_4_island_group_2_main
+        - type: rc_gripper_far
+          params:
+            target: measuring_cup_small_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 ChooseMeasuringCup._check_success；instance_sha=4fbc5d3ff012
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-choose-measuring-cup-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-clear-sink-i00:
+    family: robocasa365/ClearSink
+    goal: Remove the corn and carrot from the sink. Then move the bowl and cup from
+      the counter to the sink for washing.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: not
+          params:
+            condition:
+              type: rc_inside
+              params:
+                object: food0_main
+                fixture: sink_main_group_1_main
+                regions:
+                - center:
+                  - 0.113869
+                  - -0.023497
+                  - -0.158207
+                  halfsize:
+                  - 0.204385
+                  - 0.151692
+                  - 0.092314
+                - center:
+                  - -0.0
+                  - 3.3e-05
+                  - -0.17414
+                  halfsize:
+                  - 0.39698
+                  - 0.265
+                  - 0.113027
+                tolerance: 0.0
+        - type: not
+          params:
+            condition:
+              type: rc_inside
+              params:
+                object: food1_main
+                fixture: sink_main_group_1_main
+                regions:
+                - center:
+                  - 0.113869
+                  - -0.023497
+                  - -0.158207
+                  halfsize:
+                  - 0.204385
+                  - 0.151692
+                  - 0.092314
+                - center:
+                  - -0.0
+                  - 3.3e-05
+                  - -0.17414
+                  halfsize:
+                  - 0.39698
+                  - 0.265
+                  - 0.113027
+                tolerance: 0.0
+        - type: rc_inside
+          params:
+            object: dish0_main
+            fixture: sink_main_group_1_main
+            regions:
+            - center:
+              - 0.113869
+              - -0.023497
+              - -0.158207
+              halfsize:
+              - 0.204385
+              - 0.151692
+              - 0.092314
+            - center:
+              - -0.0
+              - 3.3e-05
+              - -0.17414
+              halfsize:
+              - 0.39698
+              - 0.265
+              - 0.113027
+            tolerance: 0.0
+        - type: rc_inside
+          params:
+            object: dish1_main
+            fixture: sink_main_group_1_main
+            regions:
+            - center:
+              - 0.113869
+              - -0.023497
+              - -0.158207
+              halfsize:
+              - 0.204385
+              - 0.151692
+              - 0.092314
+            - center:
+              - -0.0
+              - 3.3e-05
+              - -0.17414
+              halfsize:
+              - 0.39698
+              - 0.265
+              - 0.113027
+            tolerance: 0.0
+        - type: rc_gripper_far
+          params:
+            target: food0_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: food1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: dish0_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: dish1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 ClearSink._check_success；instance_sha=8b4b20014572
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-clear-sink-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-close-drawer-i00:
+    family: robocasa365/CloseDrawer
+    goal: Close the right drawer.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.meta.json
+      extra_sites: {}
+      qpos_overrides:
+        stack_1_main_group_1_1_slidejoint: -0.57
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: stack_1_main_group_1_1_slidejoint
+        mode: normalized
+        range:
+        - 0.0
+        - 0.6
+        sign: -1.0
+        max: 0.05
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CloseDrawer._check_success；instance_sha=f033b88498fe
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-drawer-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-close-oven-i00:
+    family: robocasa365/CloseOven
+    goal: Close the oven door.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.meta.json
+      extra_sites: {}
+      qpos_overrides:
+        singlecabinet_1_right_group_1_doorhinge: -1.4915
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: singlecabinet_1_right_group_1_doorhinge
+        mode: normalized
+        range:
+        - 0.0
+        - 1.57
+        sign: -1.0
+        max: 0.05
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CloseOven._check_success；instance_sha=dc6be5233307
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-oven-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-close-stand-mixer-head-i00:
+    family: robocasa365/CloseStandMixerHead
+    goal: Close the stand mixer head.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-stand-mixer-head-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-close-stand-mixer-head-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-close-stand-mixer-head-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-close-stand-mixer-head-i00.meta.json
+      extra_sites: {}
+      qpos_overrides:
+        stand_mixer_island_group_head_joint: 1.5708
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: stand_mixer_island_group_head_joint
+        mode: normalized
+        range:
+        - 0.0
+        - 1.5708
+        sign: 1.0
+        max: 0.01
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CloseStandMixerHead._check_success；instance_sha=e96473de77b5
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-close-stand-mixer-head-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-deliver-brewed-coffee-i00:
+    family: robocasa365/DeliverBrewedCoffee
+    goal: Pick up the brewed coffee from the coffee machine and place it next to the
+      breakfast plate on the dining counter.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-deliver-brewed-coffee-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-deliver-brewed-coffee-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-deliver-brewed-coffee-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-deliver-brewed-coffee-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact_any
+          params:
+            object: brewed_coffee_main
+            fixtures:
+            - stack_1_island_group_1_2_main
+            - stack_2_island_group_1_2_main
+            - stack_4_island_group_1_2_main
+        - type: rc_contact_any
+          params:
+            object: breakfast_plate_main
+            fixtures:
+            - stack_1_island_group_1_2_main
+            - stack_2_island_group_1_2_main
+            - stack_4_island_group_1_2_main
+        - type: rc_near
+          params:
+            object: brewed_coffee_main
+            target: breakfast_plate_main
+            radius: 0.3
+            axes: 2
+        - type: rc_gripper_far
+          params:
+            target: brewed_coffee_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 DeliverBrewedCoffee._check_success；instance_sha=a646afc2d881
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-deliver-brewed-coffee-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-make-ice-lemonade-i00:
+    family: robocasa365/MakeIceLemonade
+    goal: Grab a lemon wedge from the fridge and one ice cube from the ice bowl, and
+      put them in the glass of lemonade.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-make-ice-lemonade-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-make-ice-lemonade-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-make-ice-lemonade-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-make-ice-lemonade-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: lemon_wedge_main
+            receptacle: glass_cup_main
+            threshold: 0.5
+        - type: any
+          params:
+            conditions:
+            - type: rc_in_receptacle
+              params:
+                object: ice_cube1_main
+                receptacle: glass_cup_main
+                threshold: 0.5
+            - type: rc_in_receptacle
+              params:
+                object: ice_cube2_main
+                receptacle: glass_cup_main
+                threshold: 0.5
+        - type: rc_gripper_far
+          params:
+            target: lemon_wedge_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+        - type: rc_gripper_far
+          params:
+            target: ice_cube1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+        - type: rc_gripper_far
+          params:
+            target: ice_cube2_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 MakeIceLemonade._check_success；instance_sha=e9a824eef72a
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-make-ice-lemonade-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-open-dishwasher-i00:
+    family: robocasa365/OpenDishwasher
+    goal: Open the dishwasher door.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-open-dishwasher-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-open-dishwasher-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-open-dishwasher-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-open-dishwasher-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: stack_02_main_group_1_1_doorhinge
+        mode: normalized
+        range:
+        - 0.0
+        - 1.57
+        sign: 1.0
+        min: 0.9
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 OpenDishwasher._check_success；instance_sha=338f359a402d
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-open-dishwasher-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-organize-coffee-condiments-i00:
+    family: robocasa365/OrganizeCoffeeCondiments
+    goal: Pick the syrup bottle and honey bottle from the cabinet and place them next
+      to the mug.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-organize-coffee-condiments-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-organize-coffee-condiments-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-organize-coffee-condiments-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-organize-coffee-condiments-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_near
+          params:
+            object: obj1_main
+            target: mug_main
+            radius: 0.3
+            axes: 3
+        - type: rc_near
+          params:
+            object: obj2_main
+            target: mug_main
+            radius: 0.3
+            axes: 3
+        - type: rc_contact_any
+          params:
+            object: obj1_main
+            fixtures:
+            - counter_1_left_group_main
+            - counter_1_right_group_main
+            - counter_2_left_group_main
+        - type: rc_contact_any
+          params:
+            object: obj2_main
+            fixtures:
+            - counter_1_left_group_main
+            - counter_1_right_group_main
+            - counter_2_left_group_main
+        - type: rc_gripper_far
+          params:
+            target: obj1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+        - type: rc_gripper_far
+          params:
+            target: obj2_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 OrganizeCoffeeCondiments._check_success；instance_sha=b7a8ad17f0bd
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-organize-coffee-condiments-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-oven-broil-fish-i00:
+    family: robocasa365/OvenBroilFish
+    goal: Place the fish on the bottom rack of the oven, and slide the tray back inside.
+      Close the oven door.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers:
+    - name: oven_broil_fish
+      count: 10
+      conditions:
+      - type: rc_contact
+        params:
+          object: obj_main
+          fixture: oven_front_group_1_main
+      - type: rc_joint_state
+        params:
+          joint: oven_front_group_1_door_joint
+          mode: normalized
+          range:
+          - 0.0
+          - 1.15
+          sign: 1.0
+          max: 0.05
+    success:
+      type: rc_timer
+      params:
+        name: oven_broil_fish
+        count: 10
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 OvenBroilFish._check_success；instance_sha=014a37a5ad2e
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-pick-place-cabinet-to-counter-i00:
+    family: robocasa365/PickPlaceCabinetToCounter
+    goal: Pick the ice cube from the cabinet and place it on the counter.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-cabinet-to-counter-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-cabinet-to-counter-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-cabinet-to-counter-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-cabinet-to-counter-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact_any
+          params:
+            object: obj_main
+            fixtures:
+            - counter_1_left_group_1_main
+            - counter_2_main_group_1_main
+            - counter_3_main_group_1_main
+            - counter_4_right_group_1_main
+            - counter_corner_1_main_group_1_main
+            - counter_corner_2_main_group_1_main
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PickPlaceCabinetToCounter._check_success；instance_sha=f8a491265f27
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-cabinet-to-counter-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-prep-for-sanitizing-i00:
+    family: robocasa365/PrepForSanitizing
+    goal: Pick the bar soap and dish brush from the cabinet and place them on the
+      counter.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-for-sanitizing-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-for-sanitizing-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-for-sanitizing-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-for-sanitizing-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact_any
+          params:
+            object: obj1_main
+            fixtures:
+            - stack_1_island_group_1_1_main
+            - stack_1_island_group_1_2_main
+            - stack_1_island_group_1_3_main
+            - stack_5_island_group_1_1_main
+            - stack_5_island_group_1_2_main
+            - stack_5_island_group_1_3_main
+        - type: rc_contact_any
+          params:
+            object: obj2_main
+            fixtures:
+            - stack_1_island_group_1_1_main
+            - stack_1_island_group_1_2_main
+            - stack_1_island_group_1_3_main
+            - stack_5_island_group_1_1_main
+            - stack_5_island_group_1_2_main
+            - stack_5_island_group_1_3_main
+        - type: rc_gripper_far
+          params:
+            target: obj1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: obj2_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PrepForSanitizing._check_success；instance_sha=da8352070d31
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-for-sanitizing-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-sanitize-prep-cutting-board-i00:
+    family: robocasa365/SanitizePrepCuttingBoard
+    goal: Grab the spray bottle from the cabinet, then place it next to the cutting
+      board for sanitizing. Then grab the dish brush from the countertop next to the
+      sink and place it next to the cutting board.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_near
+          params:
+            object: spray_main
+            target: cutting_board_main
+            radius: 0.35
+            axes: 2
+        - type: rc_near
+          params:
+            object: dish_brush_main
+            target: cutting_board_main
+            radius: 0.35
+            axes: 2
+        - type: rc_contact_any
+          params:
+            object: spray_main
+            fixtures:
+            - counter_1_front_group_main
+            - counter_1_left_group_main
+            - counter_1_main_group_main
+            - counter_2_front_group_main
+            - counter_3_front_group_main
+            - counter_4_front_group_main
+            - counter_5_front_group_main
+            - counter_corner_main_group_main
+        - type: rc_contact_any
+          params:
+            object: dish_brush_main
+            fixtures:
+            - counter_1_front_group_main
+            - counter_1_left_group_main
+            - counter_1_main_group_main
+            - counter_2_front_group_main
+            - counter_3_front_group_main
+            - counter_4_front_group_main
+            - counter_5_front_group_main
+            - counter_corner_main_group_main
+        - type: rc_contact_any
+          params:
+            object: cutting_board_main
+            fixtures:
+            - counter_1_front_group_main
+            - counter_1_left_group_main
+            - counter_1_main_group_main
+            - counter_2_front_group_main
+            - counter_3_front_group_main
+            - counter_4_front_group_main
+            - counter_5_front_group_main
+            - counter_corner_main_group_main
+        - type: rc_gripper_far
+          params:
+            target: spray_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 SanitizePrepCuttingBoard._check_success；instance_sha=2894a84066b8
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-scrub-bowl-i00:
+    family: robocasa365/ScrubBowl
+    goal: Use the sponge to scrub the bowl inside the sink.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-scrub-bowl-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-scrub-bowl-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-scrub-bowl-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-scrub-bowl-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers:
+    - name: scrub_bowl_contact
+      count: 15
+      conditions:
+      - type: rc_contact
+        params:
+          object: sponge_main
+          fixture: bowl_main
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_timer
+          params:
+            name: scrub_bowl_contact
+            count: 15
+        - type: rc_gripper_far
+          params:
+            target: bowl_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 ScrubBowl._check_success；instance_sha=e46572aae447
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-scrub-bowl-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-searing-meat-i00:
+    family: robocasa365/SearingMeat
+    goal: Grab the pan from the cabinet and place it on the rear right burner on the
+      stove. Then place the chicken drumstick on the stove and turn the burner on.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-searing-meat-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-searing-meat-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-searing-meat-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-searing-meat-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_gripper_far
+          params:
+            target: meat_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_on_burner
+          params:
+            object: pan_main
+            burner_site: stovetop_main_group_burner_front_center_place_site
+            threshold: 0.15
+            knob_joint: stovetop_main_group_knob_rear_right_joint
+            require_knob_on: true
+        - type: rc_in_receptacle
+          params:
+            object: meat_main
+            receptacle: pan_main
+            threshold: 0.07
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 SearingMeat._check_success；instance_sha=2610b0f6a6de
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-searing-meat-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-seasoning-spice-setup-i00:
+    family: robocasa365/SeasoningSpiceSetup
+    goal: Move the condiment bottle and ketchup from the cabinet to the dining counter.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_gripper_far
+          params:
+            target: condiment1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: condiment2_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_contact_any
+          params:
+            object: condiment1_main
+            fixtures:
+            - box_1_island_group_main
+            - box_2_island_group_main
+            - counter_1_front_group_main
+            - counter_1_main_group_main
+            - counter_1_right_group_main
+            - counter_2_main_group_main
+            - counter_corner_right_group_main
+            - island_island_group_main
+            - stack_1_island_group_1_main
+            - stack_1_island_group_base_main
+            - stack_2_island_group_1_main
+            - stack_2_island_group_base_main
+        - type: rc_contact_any
+          params:
+            object: condiment2_main
+            fixtures:
+            - box_1_island_group_main
+            - box_2_island_group_main
+            - counter_1_front_group_main
+            - counter_1_main_group_main
+            - counter_1_right_group_main
+            - counter_2_main_group_main
+            - counter_corner_right_group_main
+            - island_island_group_main
+            - stack_1_island_group_1_main
+            - stack_1_island_group_base_main
+            - stack_2_island_group_1_main
+            - stack_2_island_group_base_main
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 SeasoningSpiceSetup._check_success；instance_sha=0c7ce0efd476
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-tong-buffet-setup-i00:
+    family: robocasa365/TongBuffetSetup
+    goal: Take the tongs from the drawer on the left and place them on the dining
+      counter next to the tray containing the hot dog.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact_any
+          params:
+            object: tongs_main
+            fixtures:
+            - stack_1_island_group_1_1_main
+            - stack_1_island_group_1_2_main
+            - stack_2_island_group_1_1_main
+            - stack_2_island_group_1_2_main
+            - stack_3_island_group_1_1_main
+            - stack_3_island_group_1_2_main
+        - type: rc_contact_any
+          params:
+            object: food_container_main
+            fixtures:
+            - stack_1_island_group_1_1_main
+            - stack_1_island_group_1_2_main
+            - stack_2_island_group_1_1_main
+            - stack_2_island_group_1_2_main
+            - stack_3_island_group_1_1_main
+            - stack_3_island_group_1_2_main
+        - type: rc_near
+          params:
+            object: tongs_main
+            target: food_container_main
+            radius: 0.5
+            axes: 2
+        - type: rc_gripper_far
+          params:
+            target: tongs_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+        - type: rc_gripper_far
+          params:
+            target: food_container_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TongBuffetSetup._check_success；instance_sha=8651564b226f
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-turn-off-microwave-i00:
+    family: robocasa365/TurnOffMicrowave
+    goal: Press the stop button on the microwave.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-off-microwave-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-off-microwave-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-off-microwave-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-off-microwave-i00.meta.json
+      extra_sites:
+        microwave_main_group_1_stop_button:
+        - microwave_main_group_1_main
+        - - 0.263715
+          - -0.202423
+          - -0.108152
+      qpos_overrides: {}
+    appliances:
+    - name: microwave_main_group_1
+      door_joint: microwave_main_group_1_microjoint
+      door_range:
+      - -1.5708
+      - 0.0
+      start_button: microwave_main_group_1_start_button
+      stop_button: microwave_main_group_1_stop_button
+      gripper_body: gripper0_right
+      initial_on: true
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_appliance
+          params:
+            name: microwave_main_group_1
+            state: 'off'
+        - type: rc_gripper_far
+          params:
+            target: microwave_main_group_1_stop_button
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOffMicrowave._check_success；instance_sha=c7792a311647
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-off-microwave-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-turn-on-microwave-i00:
+    family: robocasa365/TurnOnMicrowave
+    goal: Press the start button on the microwave.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.meta.json
+      extra_sites:
+        microwave_main_group_start_button:
+        - microwave_main_group_main
+        - - 0.356405
+          - -0.210228
+          - -0.111213
+      qpos_overrides: {}
+    appliances:
+    - name: microwave_main_group
+      door_joint: microwave_main_group_microjoint
+      door_range:
+      - -1.5708
+      - 0.0
+      start_button: microwave_main_group_start_button
+      stop_button: microwave_main_group_stop_button
+      gripper_body: gripper0_right
+      initial_on: false
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_appliance
+          params:
+            name: microwave_main_group
+            state: 'on'
+        - type: rc_gripper_far
+          params:
+            target: microwave_main_group_start_button
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOnMicrowave._check_success；instance_sha=dc354b3a6710
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-turn-on-sink-faucet-i00:
+    family: robocasa365/TurnOnSinkFaucet
+    goal: Turn on the sink faucet.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-sink-faucet-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-sink-faucet-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-sink-faucet-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-sink-faucet-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: sink_left_group_handle_joint
+        mode: mod2pi
+        min: 0.4
+        max: 3.141592653589793
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOnSinkFaucet._check_success；instance_sha=f9eae292b33b
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-sink-faucet-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-turn-on-stove-i00:
+    family: robocasa365/TurnOnStove
+    goal: Turn on the rear left burner of the stove.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-stove-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-stove-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-stove-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-stove-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: stove_left_group_1_knob_rear_left_joint
+        mode: abs
+        min: 0.35
+        max: 5.933185307179587
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOnStove._check_success；instance_sha=a52a0718df3e
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-stove-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true

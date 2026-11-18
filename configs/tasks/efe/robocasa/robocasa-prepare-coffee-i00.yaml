@@ -1,0 +1,78 @@
+# EFE 迁移编译物（robocasa）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa/PrepareCoffee | goal: Pick the mug from the cabinet, place it under the coffee machine dispenser, and press the start button.
+# fidelity: spec | notes: 判据逐字转写上游 PrepareCoffee._check_success；instance_sha=c8921c3021e4
+version: 1
+
+task:
+  name: robocasa-prepare-coffee-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.xml
+    qpos_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.meta.json
+    extra_sites:
+      coffee_machine_main_group_start_button:
+      - coffee_machine_main_group_main
+      - - 0.0
+        - -0.0881904
+        - 0.157725
+    qpos_overrides: {}
+  appliances:
+    - name: coffee_machine_main_group
+      start_button: coffee_machine_main_group_start_button
+      gripper_body: gripper0_right
+      initial_on: false
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_near
+      params:
+        object: obj_main
+        target: coffee_machine_main_group_receptacle_place_site
+        radius: 0.04
+    - type: rc_gripper_far
+      params:
+        target: obj_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_appliance
+      params:
+        name: coffee_machine_main_group
+        state: 'on'
+    - type: rc_gripper_far
+      params:
+        target: coffee_machine_main_group_start_button
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.15
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

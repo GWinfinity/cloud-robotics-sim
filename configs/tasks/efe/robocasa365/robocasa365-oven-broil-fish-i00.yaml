@@ -1,0 +1,65 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/OvenBroilFish | goal: Place the fish on the bottom rack of the oven, and slide the tray back inside. Close the oven door.
+# fidelity: spec | notes: 判据逐字转写上游 OvenBroilFish._check_success；instance_sha=014a37a5ad2e
+version: 1
+
+task:
+  name: robocasa365-oven-broil-fish-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+  timers:
+    - name: oven_broil_fish
+      count: 10
+      conditions:
+      - type: rc_contact
+        params:
+          object: obj_main
+          fixture: oven_front_group_1_main
+      - type: rc_joint_state
+        params:
+          joint: oven_front_group_1_door_joint
+          mode: normalized
+          range:
+          - 0.0
+          - 1.15
+          sign: 1.0
+          max: 0.05
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-oven-broil-fish-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: rc_timer
+  params:
+    name: oven_broil_fish
+    count: 10
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

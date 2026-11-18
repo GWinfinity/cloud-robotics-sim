@@ -1155,6 +1155,25 @@ def resolve_vlabench(predicates: dict[str, Any]) -> dict[str, Any]:
 RESOLVERS = {"metaworldplus": resolve_metaworldplus, "vlabench": resolve_vlabench}
 
 
+def _resolve_robocasa(suite: str):
+    """RoboCasa suites share the family-check resolver in tools/."""
+
+    def _resolver(predicates: dict[str, Any]) -> dict[str, Any]:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        try:
+            import robocasa_resolver
+
+            return robocasa_resolver.resolve_suite(suite, load_inventory(suite))
+        finally:
+            sys.path.remove(str(Path(__file__).resolve().parent))
+
+    return _resolver
+
+
+for _suite in ("robocasa", "robocasa365", "robocasa-gr1"):
+    RESOLVERS[_suite] = _resolve_robocasa(_suite)
+
+
 # ---------------------------------------------------------------------------
 # LIBERO-MAX resolver: probe dumps -> resolved KB
 # ---------------------------------------------------------------------------
@@ -1443,6 +1462,14 @@ def render_task_yaml(suite: str, name: str, record: dict[str, Any]) -> str:
             "    " + line
             for line in yaml.safe_dump(event, sort_keys=False).splitlines()
         )
+    for block in ("world", "appliances", "timers"):
+        value = record.get(block)
+        if value:
+            lines.append(f"  {block}:")
+            lines.extend(
+                "    " + line
+                for line in yaml.safe_dump(value, sort_keys=False).splitlines()
+            )
     lines.append("")
     robot_kwargs = record.get("robot_kwargs") or {}
     if robot_kwargs:

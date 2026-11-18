@@ -1,0 +1,101 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/SanitizePrepCuttingBoard | goal: Grab the spray bottle from the cabinet, then place it next to the cutting board for sanitizing. Then grab the dish brush from the countertop next to the sink and place it next to the cutting board.
+# fidelity: spec | notes: 判据逐字转写上游 SanitizePrepCuttingBoard._check_success；instance_sha=2894a84066b8
+version: 1
+
+task:
+  name: robocasa365-sanitize-prep-cutting-board-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-sanitize-prep-cutting-board-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_near
+      params:
+        object: spray_main
+        target: cutting_board_main
+        radius: 0.35
+        axes: 2
+    - type: rc_near
+      params:
+        object: dish_brush_main
+        target: cutting_board_main
+        radius: 0.35
+        axes: 2
+    - type: rc_contact_any
+      params:
+        object: spray_main
+        fixtures:
+        - counter_1_front_group_main
+        - counter_1_left_group_main
+        - counter_1_main_group_main
+        - counter_2_front_group_main
+        - counter_3_front_group_main
+        - counter_4_front_group_main
+        - counter_5_front_group_main
+        - counter_corner_main_group_main
+    - type: rc_contact_any
+      params:
+        object: dish_brush_main
+        fixtures:
+        - counter_1_front_group_main
+        - counter_1_left_group_main
+        - counter_1_main_group_main
+        - counter_2_front_group_main
+        - counter_3_front_group_main
+        - counter_4_front_group_main
+        - counter_5_front_group_main
+        - counter_corner_main_group_main
+    - type: rc_contact_any
+      params:
+        object: cutting_board_main
+        fixtures:
+        - counter_1_front_group_main
+        - counter_1_left_group_main
+        - counter_1_main_group_main
+        - counter_2_front_group_main
+        - counter_3_front_group_main
+        - counter_4_front_group_main
+        - counter_5_front_group_main
+        - counter_corner_main_group_main
+    - type: rc_gripper_far
+      params:
+        target: spray_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

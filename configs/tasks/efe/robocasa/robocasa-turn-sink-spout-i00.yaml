@@ -1,0 +1,49 @@
+# EFE 迁移编译物（robocasa）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa/TurnSinkSpout | goal: turn the sink spout to the right
+# fidelity: spec | notes: 判据逐字转写上游 TurnSinkSpout._check_success；instance_sha=ca06676fa410
+version: 1
+
+task:
+  name: robocasa-turn-sink-spout-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.xml
+    qpos_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: rc_joint_state
+  params:
+    joint: sink_right_group_spout_joint
+    mode: spout_ori
+    orientation: right
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

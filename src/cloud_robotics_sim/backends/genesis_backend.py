@@ -357,12 +357,83 @@ class GenesisEntityBackend(EntityBackend):
             raise TypeError(f"wrapped entity of {self._name!r} exposes no get_qpos()")
         return _to_numpy_f64(get_qpos()).reshape(-1)
 
+    def set_qpos(self, qpos: np.ndarray) -> None:
+        """Set the full qpos vector (frozen RoboCasa world state)."""
+        entity = self._resolve_entity()
+        set_qpos = getattr(entity, "set_qpos", None)
+        if set_qpos is None:
+            raise TypeError(f"wrapped entity of {self._name!r} exposes no set_qpos()")
+        set_qpos(np.asarray(qpos, dtype=np.float64))
+
+    def set_qvel(self, qvel: np.ndarray) -> None:
+        """Set the full qvel vector (frozen RoboCasa world state)."""
+        entity = self._resolve_entity()
+        set_qvel = getattr(entity, "set_qvel", None)
+        if set_qvel is None:
+            raise TypeError(f"wrapped entity of {self._name!r} exposes no set_qvel()")
+        set_qvel(np.asarray(qvel, dtype=np.float64))
+
+    def get_joint_position(self, joint_name: str) -> float:
+        """Position of one named joint (articulated spawns)."""
+        indices = self.get_joint_qs_idx_local(joint_name)
+        qpos = self.get_qpos()
+        if not indices:
+            raise KeyError(f"entity {self._name!r} joint {joint_name!r} has no qpos")
+        return float(qpos[indices[0]])
+
     def set_color(self, color: tuple[float, float, float, float]) -> None:
         entity = self._resolve_entity()
         if hasattr(entity, "set_color"):
             entity.set_color(color)
         else:
             logger.debug("Genesis entity does not support set_color")
+
+    def link_names(self) -> list[str]:
+        """Names of the wrapped entity's links (MuJoCo body names)."""
+        entity = self._resolve_entity()
+        links = getattr(entity, "links", None)
+        if links is None:
+            raise TypeError(f"wrapped entity of {self._name!r} exposes no links")
+        return [str(getattr(link, "name", link)) for link in links]
+
+    def geom_names(self) -> list[str]:
+        """Names of the wrapped entity's geoms (MuJoCo geom names)."""
+        entity = self._resolve_entity()
+        geoms = getattr(entity, "geoms", None)
+        if geoms is None:
+            raise TypeError(f"wrapped entity of {self._name!r} exposes no geoms")
+        return [str(getattr(geom, "name", geom)) for geom in geoms]
+
+    def get_link_pos(self, name: str) -> np.ndarray:
+        """World position of one named link (MJCF body name)."""
+        entity = self._resolve_entity()
+        link = entity.get_link(name)
+        return np.asarray(link.get_pos(relative=False), dtype=np.float64).reshape(3)
+
+    def get_link_quat(self, name: str) -> np.ndarray:
+        """World quaternion (w, x, y, z) of one named link (MJCF body name)."""
+        entity = self._resolve_entity()
+        link = entity.get_link(name)
+        return np.asarray(link.get_quat(relative=False), dtype=np.float64).reshape(4)
+
+    def get_self_contacts(self) -> dict[str, np.ndarray]:
+        """Self-collision contacts of the wrapped entity (link/geom index pairs).
+
+        RoboCasa worlds spawn the whole kitchen as one MJCF entity, so
+        body-vs-body contact checks (object on a fixture) filter these
+        pairs by the two bodies' link sets.
+        """
+        entity = self._resolve_entity()
+        raw = entity.get_contacts(with_entity=entity)
+        contacts: dict[str, np.ndarray] = {}
+        for key, value in raw.items():
+            if value is None:
+                continue
+            arr = np.asarray(value)
+            if arr.ndim >= 1 and arr.shape[0] == 1:
+                arr = arr[0]
+            contacts[key] = arr
+        return contacts
 
     def apply_force(
         self,

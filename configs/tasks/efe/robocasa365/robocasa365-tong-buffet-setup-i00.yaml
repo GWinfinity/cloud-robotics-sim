@@ -1,0 +1,85 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/TongBuffetSetup | goal: Take the tongs from the drawer on the left and place them on the dining counter next to the tray containing the hot dog.
+# fidelity: spec | notes: 判据逐字转写上游 TongBuffetSetup._check_success；instance_sha=8651564b226f
+version: 1
+
+task:
+  name: robocasa365-tong-buffet-setup-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-tong-buffet-setup-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_contact_any
+      params:
+        object: tongs_main
+        fixtures:
+        - stack_1_island_group_1_1_main
+        - stack_1_island_group_1_2_main
+        - stack_2_island_group_1_1_main
+        - stack_2_island_group_1_2_main
+        - stack_3_island_group_1_1_main
+        - stack_3_island_group_1_2_main
+    - type: rc_contact_any
+      params:
+        object: food_container_main
+        fixtures:
+        - stack_1_island_group_1_1_main
+        - stack_1_island_group_1_2_main
+        - stack_2_island_group_1_1_main
+        - stack_2_island_group_1_2_main
+        - stack_3_island_group_1_1_main
+        - stack_3_island_group_1_2_main
+    - type: rc_near
+      params:
+        object: tongs_main
+        target: food_container_main
+        radius: 0.5
+        axes: 2
+    - type: rc_gripper_far
+      params:
+        target: tongs_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.15
+    - type: rc_gripper_far
+      params:
+        target: food_container_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.15
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

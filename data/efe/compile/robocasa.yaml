@@ -1,0 +1,1075 @@
+# 编译知识库（生成物）：--resolve 从判据表+上游模型生成；人工修正会被下次 --resolve 覆盖，
+# 持久标注请改 .predicates.yaml。
+suite: robocasa
+robot: franka_panda_omron
+scene: efe_world
+source:
+  suite: robocasa
+pending_tasks:
+- robocasa-arrange-vegetables-i00
+- robocasa-microwave-thawing-i00
+- robocasa-pnp-counter-to-cab-i00
+- robocasa-pnp-counter-to-sink-i00
+- robocasa-pnp-microwave-to-counter-i00
+- robocasa-pnp-sink-to-counter-i00
+- robocasa-pre-soak-pan-i00
+- robocasa-restock-pantry-i00
+pending_reasons:
+  robocasa-arrange-vegetables-i00: 物体 'cutting_board' 库 XML 缺失（horizontal_radius_site）
+  robocasa-microwave-thawing-i00: 物体 'obj' 库 XML 缺失（bbox 站点）
+  robocasa-pnp-counter-to-cab-i00: 物体 'obj' 库 XML 缺失（bbox 站点）
+  robocasa-pnp-counter-to-sink-i00: 夹具 'sink_left_group' 无 int 站点也无 reg 区域
+  robocasa-pnp-microwave-to-counter-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-pnp-sink-to-counter-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
+  robocasa-pre-soak-pan-i00: 夹具 'sink_main_group' 无 int 站点也无 reg 区域
+  robocasa-restock-pantry-i00: 物体 'obj1' 库 XML 缺失（bbox 站点）
+tasks:
+  robocasa-close-double-door-i00:
+    family: robocasa/CloseDoubleDoor
+    goal: close the cabinet doors
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.meta.json
+      extra_sites: {}
+      qpos_overrides:
+        stack_1_right_group_1_leftdoorhinge: -2.8499999999999996
+        stack_1_right_group_1_rightdoorhinge: 2.8499999999999996
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_joint_state
+          params:
+            joint: stack_1_right_group_1_leftdoorhinge
+            mode: normalized
+            range:
+            - 0.0
+            - 3.0
+            sign: -1.0
+            max: 0.05
+        - type: rc_joint_state
+          params:
+            joint: stack_1_right_group_1_rightdoorhinge
+            mode: normalized
+            range:
+            - 0.0
+            - 3.0
+            sign: 1.0
+            max: 0.05
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CloseDoubleDoor._check_success；instance_sha=9a3d1510d32e
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-close-drawer-i00:
+    family: robocasa/CloseDrawer
+    goal: close the left drawer
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-close-drawer-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-close-drawer-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-close-drawer-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-close-drawer-i00.meta.json
+      extra_sites: {}
+      qpos_overrides:
+        stack_5_main_group_2_slidejoint: -0.57
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: stack_5_main_group_2_slidejoint
+        mode: normalized
+        range:
+        - 0.0
+        - 0.6
+        sign: -1.0
+        max: 0.05
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CloseDrawer._check_success；instance_sha=17a37afd3dfc
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-close-drawer-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-close-single-door-i00:
+    family: robocasa/CloseSingleDoor
+    goal: close the microwave door
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-close-single-door-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-close-single-door-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-close-single-door-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-close-single-door-i00.meta.json
+      extra_sites: {}
+      qpos_overrides:
+        stack_left_left_group_1_doorhinge: -2.8499999999999996
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: stack_left_left_group_1_doorhinge
+        mode: normalized
+        range:
+        - 0.0
+        - 3.0
+        sign: -1.0
+        max: 0.05
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CloseSingleDoor._check_success；instance_sha=6c33b41d4d54
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-close-single-door-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-coffee-press-button-i00:
+    family: robocasa/CoffeePressButton
+    goal: press the button on the coffee machine to serve coffee
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-coffee-press-button-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-coffee-press-button-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-coffee-press-button-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-coffee-press-button-i00.meta.json
+      extra_sites:
+        coffee_machine_right_group_start_button:
+        - coffee_machine_right_group_main
+        - - 0.005632
+          - -0.0935
+          - 0.06534
+      qpos_overrides: {}
+    appliances:
+    - name: coffee_machine_right_group
+      start_button: coffee_machine_right_group_start_button
+      gripper_body: gripper0_right
+      initial_on: false
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_appliance
+          params:
+            name: coffee_machine_right_group
+            state: 'on'
+        - type: rc_gripper_far
+          params:
+            target: coffee_machine_right_group_start_button
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CoffeePressButton._check_success；instance_sha=5bbda4561bed
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-coffee-press-button-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-coffee-serve-mug-i00:
+    family: robocasa/CoffeeServeMug
+    goal: pick the mug from under the coffee machine dispenser and place it on the
+      counter
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-coffee-serve-mug-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-coffee-serve-mug-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-coffee-serve-mug-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-coffee-serve-mug-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances:
+    - name: coffee_machine_main_group
+      start_button: coffee_machine_main_group_start_button
+      gripper_body: gripper0_right
+      initial_on: false
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_near
+          params:
+            object: obj_main
+            target: coffee_machine_main_group_receptacle_place_site
+            radius: 0.04
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CoffeeServeMug._check_success；instance_sha=b36ca4c90e66
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-coffee-serve-mug-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-coffee-setup-mug-i00:
+    family: robocasa/CoffeeSetupMug
+    goal: pick the mug from the counter and place it under the coffee machine dispenser
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-coffee-setup-mug-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-coffee-setup-mug-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-coffee-setup-mug-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-coffee-setup-mug-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances:
+    - name: coffee_machine_main_group
+      start_button: coffee_machine_main_group_start_button
+      gripper_body: gripper0_right
+      initial_on: false
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_near
+          params:
+            object: obj_main
+            target: coffee_machine_main_group_receptacle_place_site
+            radius: 0.04
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CoffeeSetupMug._check_success；instance_sha=478ded1cb058
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-coffee-setup-mug-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-open-double-door-i00:
+    family: robocasa/OpenDoubleDoor
+    goal: open the cabinet doors
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-open-double-door-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-open-double-door-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-open-double-door-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-open-double-door-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_joint_state
+          params:
+            joint: stack_2_main_group_1_leftdoorhinge
+            mode: normalized
+            range:
+            - 0.0
+            - 3.0
+            sign: -1.0
+            min: 0.9
+        - type: rc_joint_state
+          params:
+            joint: stack_2_main_group_1_rightdoorhinge
+            mode: normalized
+            range:
+            - 0.0
+            - 3.0
+            sign: 1.0
+            min: 0.9
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 OpenDoubleDoor._check_success；instance_sha=d7f922753a2d
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-open-double-door-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-open-drawer-i00:
+    family: robocasa/OpenDrawer
+    goal: open the right drawer
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-open-drawer-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-open-drawer-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-open-drawer-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-open-drawer-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: stack_2_right_group_2_slidejoint
+        mode: normalized
+        range:
+        - 0.0
+        - 0.6
+        sign: -1.0
+        min: 0.95
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 OpenDrawer._check_success；instance_sha=129942a0a014
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-open-drawer-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-open-single-door-i00:
+    family: robocasa/OpenSingleDoor
+    goal: open the cabinet door
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-open-single-door-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-open-single-door-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-open-single-door-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-open-single-door-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: stack_1_left_group_doorhinge
+        mode: normalized
+        range:
+        - 0.0
+        - 3.0
+        sign: -1.0
+        min: 0.9
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 OpenSingleDoor._check_success；instance_sha=f228fc1e39a5
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-open-single-door-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-pnp-cab-to-counter-i00:
+    family: robocasa/PnPCabToCounter
+    goal: pick the hot dog from the cabinet and place it on the counter
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-cab-to-counter-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-pnp-cab-to-counter-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-pnp-cab-to-counter-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-pnp-cab-to-counter-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact_any
+          params:
+            object: obj_main
+            fixtures:
+            - counter_1_front_group_main
+            - counter_1_left_group_main
+            - counter_1_right_group_main
+            - counter_2_left_group_main
+            - counter_corner_2_main_group_main
+            - counter_corner_2_right_group_main
+            - counter_corner_front_group_main
+            - counter_corner_left_group_main
+            - counter_corner_main_group_main
+            - counter_corner_right_group_main
+            - counter_main_main_group_main
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPCabToCounter._check_success；instance_sha=c9ebef28995d
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-cab-to-counter-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-pnp-counter-to-microwave-i00:
+    family: robocasa/PnPCounterToMicrowave
+    goal: pick the corn from the counter and place it in the microwave
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-microwave-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-microwave-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-microwave-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-microwave-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact
+          params:
+            object: obj_main
+            fixture: container_main
+        - type: rc_contact
+          params:
+            object: container_main
+            fixture: microwave_right_group_main
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPCounterToMicrowave._check_success；instance_sha=ee78d9fc260f
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-microwave-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-pnp-counter-to-stove-i00:
+    family: robocasa/PnPCounterToStove
+    goal: pick the potato from the plate and place it in the pan
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-stove-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-stove-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-stove-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-stove-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: obj_main
+            receptacle: container_main
+            threshold: 0.07
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPCounterToStove._check_success；instance_sha=375d9a4b5b9a
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-stove-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-pnp-stove-to-counter-i00:
+    family: robocasa/PnPStoveToCounter
+    goal: pick the steak from the pan and place it on the plate
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-stove-to-counter-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-pnp-stove-to-counter-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-pnp-stove-to-counter-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-pnp-stove-to-counter-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: obj_main
+            receptacle: container_main
+            threshold: 0.07
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPStoveToCounter._check_success；instance_sha=7f34764f5fac
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-stove-to-counter-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-prepare-coffee-i00:
+    family: robocasa/PrepareCoffee
+    goal: Pick the mug from the cabinet, place it under the coffee machine dispenser,
+      and press the start button.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.meta.json
+      extra_sites:
+        coffee_machine_main_group_start_button:
+        - coffee_machine_main_group_main
+        - - 0.0
+          - -0.0881904
+          - 0.157725
+      qpos_overrides: {}
+    appliances:
+    - name: coffee_machine_main_group
+      start_button: coffee_machine_main_group_start_button
+      gripper_body: gripper0_right
+      initial_on: false
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_near
+          params:
+            object: obj_main
+            target: coffee_machine_main_group_receptacle_place_site
+            radius: 0.04
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_appliance
+          params:
+            name: coffee_machine_main_group
+            state: 'on'
+        - type: rc_gripper_far
+          params:
+            target: coffee_machine_main_group_start_button
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PrepareCoffee._check_success；instance_sha=c8921c3021e4
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-turn-off-microwave-i00:
+    family: robocasa/TurnOffMicrowave
+    goal: press the stop button on the microwave
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-microwave-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-microwave-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-microwave-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-microwave-i00.meta.json
+      extra_sites:
+        microwave_left_group_stop_button:
+        - microwave_left_group_main
+        - - 0.245539
+          - -0.161443
+          - -0.0952837
+      qpos_overrides: {}
+    appliances:
+    - name: microwave_left_group
+      door_joint: microwave_left_group_microjoint
+      door_range:
+      - -1.57
+      - 0.0
+      start_button: microwave_left_group_start_button
+      stop_button: microwave_left_group_stop_button
+      gripper_body: gripper0_right
+      initial_on: true
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_appliance
+          params:
+            name: microwave_left_group
+            state: 'off'
+        - type: rc_gripper_far
+          params:
+            target: microwave_left_group_stop_button
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOffMicrowave._check_success；instance_sha=9ff3947ed6f9
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-microwave-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-turn-off-sink-faucet-i00:
+    family: robocasa/TurnOffSinkFaucet
+    goal: turn off the sink faucet
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-sink-faucet-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-sink-faucet-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-sink-faucet-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-sink-faucet-i00.meta.json
+      extra_sites: {}
+      qpos_overrides:
+        sink_left_group_handle_joint: 0.45
+    appliances: []
+    timers: []
+    success:
+      type: not
+      params:
+        condition:
+          type: rc_joint_state
+          params:
+            joint: sink_left_group_handle_joint
+            mode: mod2pi
+            min: 0.4
+            max: 3.141592653589793
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOffSinkFaucet._check_success；instance_sha=24e4e530d062
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-sink-faucet-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-turn-off-stove-i00:
+    family: robocasa/TurnOffStove
+    goal: turn off the front right burner of the stove
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.meta.json
+      extra_sites: {}
+      qpos_overrides:
+        stove_right_group_knob_front_right_joint: 0.6
+    appliances: []
+    timers: []
+    success:
+      type: not
+      params:
+        condition:
+          type: rc_joint_state
+          params:
+            joint: stove_right_group_knob_front_right_joint
+            mode: abs
+            min: 0.35
+            max: 5.933185307179587
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOffStove._check_success；instance_sha=0f390ea2a6c3
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-turn-on-microwave-i00:
+    family: robocasa/TurnOnMicrowave
+    goal: press the start button on the microwave
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-microwave-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-microwave-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-microwave-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-microwave-i00.meta.json
+      extra_sites:
+        microwave_front_group_start_button:
+        - microwave_front_group_main
+        - - 0.328608
+          - -0.220504
+          - -0.100515
+      qpos_overrides: {}
+    appliances:
+    - name: microwave_front_group
+      door_joint: microwave_front_group_microjoint
+      door_range:
+      - -1.57
+      - 0.0
+      start_button: microwave_front_group_start_button
+      stop_button: microwave_front_group_stop_button
+      gripper_body: gripper0_right
+      initial_on: false
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_appliance
+          params:
+            name: microwave_front_group
+            state: 'on'
+        - type: rc_gripper_far
+          params:
+            target: microwave_front_group_start_button
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOnMicrowave._check_success；instance_sha=a8b51619dcca
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-microwave-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-turn-on-sink-faucet-i00:
+    family: robocasa/TurnOnSinkFaucet
+    goal: turn on the sink faucet
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-sink-faucet-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-sink-faucet-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-sink-faucet-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-sink-faucet-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: sink_island_group_handle_joint
+        mode: mod2pi
+        min: 0.4
+        max: 3.141592653589793
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOnSinkFaucet._check_success；instance_sha=36053cc46ba6
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-sink-faucet-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-turn-on-stove-i00:
+    family: robocasa/TurnOnStove
+    goal: turn on the front left burner of the stove
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-stove-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-stove-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-stove-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-stove-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: stovetop_main_group_knob_front_left_joint
+        mode: abs
+        min: 0.35
+        max: 5.933185307179587
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnOnStove._check_success；instance_sha=bbf8379d0980
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-on-stove-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-turn-sink-spout-i00:
+    family: robocasa/TurnSinkSpout
+    goal: turn the sink spout to the right
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: rc_joint_state
+      params:
+        joint: sink_right_group_spout_joint
+        mode: spout_ori
+        orientation: right
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 TurnSinkSpout._check_success；instance_sha=ca06676fa410
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-sink-spout-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true

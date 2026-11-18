@@ -1,0 +1,67 @@
+# EFE 迁移编译物（robocasa）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa/CloseDoubleDoor | goal: close the cabinet doors
+# fidelity: spec | notes: 判据逐字转写上游 CloseDoubleDoor._check_success；instance_sha=9a3d1510d32e
+version: 1
+
+task:
+  name: robocasa-close-double-door-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.xml
+    qpos_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.meta.json
+    extra_sites: {}
+    qpos_overrides:
+      stack_1_right_group_1_leftdoorhinge: -2.8499999999999996
+      stack_1_right_group_1_rightdoorhinge: 2.8499999999999996
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-close-double-door-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_joint_state
+      params:
+        joint: stack_1_right_group_1_leftdoorhinge
+        mode: normalized
+        range:
+        - 0.0
+        - 3.0
+        sign: -1.0
+        max: 0.05
+    - type: rc_joint_state
+      params:
+        joint: stack_1_right_group_1_rightdoorhinge
+        mode: normalized
+        range:
+        - 0.0
+        - 3.0
+        sign: 1.0
+        max: 0.05
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

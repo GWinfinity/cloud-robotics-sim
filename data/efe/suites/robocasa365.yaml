@@ -19,6 +19,6 @@ efe:
   core: 5
 project:
   tier: T1
-  status: planned
+  status: partial
   target: src/cloud_robotics_sim/runtime registry 新 task 族
-  note: 365 场景采 50；与 RoboCasa 共用资产管线
+  note: 365 场景采 50；与 RoboCasa 共用资产管线。23/50 已编译（2026-11-18，spec 级；offline nop 门绿）；robocasa 1.0.1 改 reg_* 区域 geom（resolver 双轨）；计时器 washed>10/broiled≥10/scrubbed≥15 与 any/not 已移植；pending 27：26 待 objaverse/aigen 资产、TurnOnToasterOven（realtime 动态）挂起

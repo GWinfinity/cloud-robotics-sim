@@ -13,12 +13,17 @@ the built-ins exist once the improvement-loop entry point is loaded.
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
-from cloud_robotics_sim.core.embodiment import EmbodimentConfig, FrankaPanda
+from cloud_robotics_sim.core.embodiment import (
+    EmbodimentConfig,
+    FrankaPanda,
+    RobotEmbodiment,
+)
 from cloud_robotics_sim.core.registry import (
     register_robot,
     register_scene,
@@ -26,6 +31,8 @@ from cloud_robotics_sim.core.registry import (
 )
 from cloud_robotics_sim.core.scene import Scene, SceneConfig
 from cloud_robotics_sim.core.task import Task, TaskConfig
+
+logger = logging.getLogger(__name__)
 
 #: Repo-rooted default model paths (upstream mirrors under assets/).
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -84,6 +91,35 @@ class EfeTabletopScene(Scene):
 def _make_efe_tabletop(**kwargs: Any) -> Any:
     kwargs.pop("type", None)
     return EfeTabletopScene(**kwargs)
+
+
+class EfeWorldScene(Scene):
+    """Bare container for whole-world EFE suites (RoboCasa).
+
+    The frozen kitchen world asset carries its own room shell (walls,
+    floor), robot and objects, so this scene spawns no structure at all —
+    unlike ``efe_tabletop`` whose floor plane would double the kitchen.
+    """
+
+    def __init__(self, size: tuple[float, float, float] = (12.0, 12.0, 4.0)):
+        config = SceneConfig(
+            name="efe_world",
+            size=size,
+            default_camera_pos=(2.5, -2.5, 2.0),
+        )
+        super().__init__(config)
+
+    def _build_room_structure(self) -> None:
+        """No shell: the world MJCF provides walls, floor and lighting."""
+
+    def _build_custom(self) -> None:
+        """Nothing beyond the task-declared world asset."""
+
+
+@register_scene("efe_world")
+def _make_efe_world(**kwargs: Any) -> Any:
+    kwargs.pop("type", None)
+    return EfeWorldScene(**kwargs)
 
 
 class EfeLiberoMaxTask(EfeBaseTask):
@@ -344,4 +380,254 @@ def _make_franka_panda(**kwargs: Any) -> Any:
             base_position=base_position,
             urdf_path=model_path,
         )
+    )
+
+
+class _WorldEmbeddedRobot(RobotEmbodiment):
+    """Placeholder embodiment for robots that live inside a whole-world MJCF.
+
+    The RoboCasa suites spawn the robot (Franka on an Omron base / Fourier
+    GR1) as part of the frozen kitchen world asset; the composer still wants
+    a robot component, so this embodiment spawns nothing and exposes no
+    controls. Success predicates reach bodies/sites through the world
+    entity registered by the asset spawn.
+    """
+
+    def __init__(self, name: str) -> None:
+        super().__init__(EmbodimentConfig(name=name, base_position=(0.0, 0.0, 0.0)))
+        self._obs_dim = 0
+        self._action_dim = 0
+
+    def spawn(self, scene: Any, position: tuple | None = None) -> RobotEmbodiment:
+        """No-op: the robot is already inside the spawned world."""
+        self.scene = scene
+        logger.info(f"{self.config.name} embedded in the world asset; no spawn")
+        return self
+
+    def reset(self) -> None:
+        """No-op: the frozen world state is applied by the task."""
+
+    def apply_action(self, action: np.ndarray) -> None:
+        """No-op: EFE grades final states, not controls."""
+
+    def get_observation(self) -> dict:
+        """Empty observation; the world task carries its own state."""
+        return {}
+
+
+@register_robot("franka_panda_omron")
+def _make_franka_panda_omron(**kwargs: Any) -> Any:
+    """Franka Panda on an Omron mobile base (RoboCasa, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("franka_panda_omron")
+
+
+@register_robot("fourier_gr1")
+def _make_fourier_gr1(**kwargs: Any) -> Any:
+    """Fourier GR1 humanoid (RoboCasa-GR1, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("fourier_gr1")
+
+
+class EfeRobocasaTask(EfeBaseTask):
+    """RoboCasa frozen-world task.
+
+    The task YAML carries the whole kitchen as one ``world`` MJCF asset
+    (robot + fixtures + objects at the frozen poses compiled into the
+    extracted XML); this task applies the frozen ``qpos``/``qvel`` at reset,
+    registers the baked sites (eef, buttons) on the world entity, and steps
+    the upstream appliance toggle state machines (microwave / coffee
+    machine / toaster oven: door-open forces off, gripper-button contact
+    toggles) into ``info['rc_appliance']`` for :class:`RcApplianceCondition`.
+    """
+
+    def __init__(
+        self,
+        config: TaskConfig,
+        world: dict | None = None,
+        appliances: list[dict] | None = None,
+        timers: list[dict] | None = None,
+    ):
+        super().__init__(config)
+        if world is not None and not isinstance(world, dict):
+            raise TypeError("efe_robocasa world must be a mapping or None")
+        if appliances is not None and not isinstance(appliances, list):
+            raise TypeError("efe_robocasa appliances must be a list or None")
+        if timers is not None and not isinstance(timers, list):
+            raise TypeError("efe_robocasa timers must be a list or None")
+        self._world_cfg = world or {}
+        self._appliance_cfgs = appliances or []
+        self._timer_cfgs = timers or []
+        self._appliance_states: dict[str, bool] = {}
+        self._timer_counts: dict[str, int] = {}
+        self._timer_conditions: dict[str, Any] = {}
+        self._sites_registered = False
+
+    # -- helpers -----------------------------------------------------------
+
+    def _world(self, scene: Any) -> Any:
+        entities = getattr(scene, "entities", None) or {}
+        entity = entities.get("world")
+        if entity is None:
+            raise KeyError(
+                "efe_robocasa expects the 'world' asset in scene.entities; "
+                f"available: {sorted(entities)}"
+            )
+        return entity
+
+    def _register_sites(self, scene: Any) -> None:
+        """Bake site (body, local offset) pairs onto the world entity."""
+        if self._sites_registered:
+            return
+        meta_path = self._world_cfg.get("meta_path")
+        sites: dict[str, tuple[str, tuple[float, float, float]]] = {}
+        if meta_path:
+            import json
+
+            meta = json.loads(Path(meta_path).read_text(encoding="utf-8"))
+            for name, record in (meta.get("sites") or {}).items():
+                try:
+                    local = tuple(float(v) for v in str(record["pos"]).split())
+                except (KeyError, ValueError):
+                    continue
+                sites[name] = (record["body"], local)  # type: ignore[assignment]
+        for name, record in (self._world_cfg.get("extra_sites") or {}).items():
+            body = str(record[0])
+            local = tuple(float(v) for v in record[1])
+            sites[name] = (body, local)  # type: ignore[assignment]
+        world = self._world(scene)
+        world._rc_sites = sites
+        self._sites_registered = True
+
+    def _apply_frozen_state(self, scene: Any) -> None:
+        world = self._world(scene)
+        qpos_path = self._world_cfg.get("qpos_path")
+        qvel_path = self._world_cfg.get("qvel_path")
+        overrides = self._world_cfg.get("qpos_overrides") or {}
+        if qpos_path:
+            qpos = np.load(qpos_path)
+            if overrides:
+                qpos = qpos.copy()
+                for joint, value in overrides.items():
+                    indices = self._qpos_indices(scene, joint)
+                    if indices:
+                        qpos[indices[0]] = float(value)
+            world.set_qpos(qpos)
+        if qvel_path:
+            set_qvel = getattr(world, "set_qvel", None)
+            if set_qvel is not None:
+                set_qvel(np.load(qvel_path))
+
+    def _qpos_indices(self, scene: Any, joint: str) -> list[int]:
+        """Qpos segment of one named joint (document-order width walk)."""
+        meta_path = self._world_cfg.get("meta_path")
+        if not meta_path:
+            return []
+        import json
+
+        meta = json.loads(Path(meta_path).read_text(encoding="utf-8"))
+        sizes = {"free": 7, "ball": 4}
+        cursor = 0
+        for record in meta.get("joints") or []:
+            width = sizes.get(record.get("type"), 1)
+            if record.get("name") == joint:
+                return [cursor]
+            cursor += width
+        return []
+
+    def _update_appliances(self, scene: Any) -> None:
+        """Upstream ``Fixture.update_state`` toggle semantics, per step."""
+        if not self._appliance_cfgs:
+            return
+        world = self._world(scene)
+        from cloud_robotics_sim.core.success import (  # local: circular-safe
+            _world_bodies_touch,
+        )
+
+        for cfg in self._appliance_cfgs:
+            name = cfg["name"]
+            door_joint = cfg.get("door_joint")
+            door_open = False
+            if door_joint:
+                value = float(world.get_joint_position(door_joint))
+                lo, hi = (float(v) for v in cfg.get("door_range", [0.0, 1.5707963]))
+                door_open = (value - lo) / (hi - lo) > 0.005
+            gripper = cfg.get("gripper_body", "gripper0_right")
+            if door_open:
+                self._appliance_states[name] = False
+                continue
+            start = cfg.get("start_button")
+            stop = cfg.get("stop_button")
+            start_pressed = (
+                _world_bodies_touch(world, gripper, start) if start else False
+            )
+            stop_pressed = _world_bodies_touch(world, gripper, stop) if stop else False
+            if self._appliance_states.get(name, False) and stop_pressed:
+                self._appliance_states[name] = False
+            elif not self._appliance_states.get(name, False) and start_pressed:
+                self._appliance_states[name] = True
+
+    def _update_timers(self, scene: Any, robot: Any, info: dict) -> None:
+        """Consecutive-step success counters (washed/broiled/scrubbed).
+
+        Mirrors upstream ``_check_success`` call-pattern state machines:
+        the condition block is evaluated every step; holding it increments
+        the counter, losing it resets to zero.
+        """
+        if not self._timer_cfgs:
+            return
+        from cloud_robotics_sim.core.success import create_success_condition
+
+        for cfg in self._timer_cfgs:
+            name = cfg["name"]
+            if name not in self._timer_conditions:
+                self._timer_conditions[name] = create_success_condition(
+                    {"type": "all", "params": {"conditions": cfg["conditions"]}}
+                )
+            condition = self._timer_conditions[name]
+            if condition.evaluate(scene, robot, info):
+                self._timer_counts[name] = self._timer_counts.get(name, 0) + 1
+            else:
+                self._timer_counts[name] = 0
+
+    # -- Task API ----------------------------------------------------------
+
+    def reset(self, scene: Any, robot: Any, seed: int) -> dict:
+        """Apply the frozen world state and reset appliance flags."""
+        info = super().reset(scene, robot, seed)
+        self._register_sites(scene)
+        self._apply_frozen_state(scene)
+        self._appliance_states = {
+            cfg["name"]: bool(cfg.get("initial_on", False))
+            for cfg in self._appliance_cfgs
+        }
+        self._timer_counts = {}
+        self._update_appliances(scene)
+        info["rc_appliance"] = dict(self._appliance_states)
+        info["rc_timer"] = dict(self._timer_counts)
+        return info
+
+    def step(self, scene: Any, robot: Any, action: np.ndarray):
+        """Advance one step; mirror upstream appliance/toggle checks."""
+        reward, terminated, truncated, info = super().step(scene, robot, action)
+        self._update_appliances(scene)
+        self._update_timers(scene, robot, info)
+        info["rc_appliance"] = dict(self._appliance_states)
+        info["rc_timer"] = dict(self._timer_counts)
+        return reward, terminated, truncated, info
+
+
+@register_task("efe_robocasa")
+def _make_efe_robocasa(**kwargs: Any) -> EfeRobocasaTask:
+    """RoboCasa frozen-world task with world/appliances YAML blocks."""
+    kwargs.pop("type", None)
+    max_steps = int(kwargs.pop("max_episode_steps", 500))
+    world = kwargs.pop("world", None)
+    appliances = kwargs.pop("appliances", None)
+    timers = kwargs.pop("timers", None)
+    return EfeRobocasaTask(
+        TaskConfig(name="efe", max_episode_steps=max_steps),
+        world=world,
+        appliances=appliances,
+        timers=timers,
     )

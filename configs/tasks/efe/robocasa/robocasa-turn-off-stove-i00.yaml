@@ -1,0 +1,54 @@
+# EFE 迁移编译物（robocasa）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa/TurnOffStove | goal: turn off the front right burner of the stove
+# fidelity: spec | notes: 判据逐字转写上游 TurnOffStove._check_success；instance_sha=0f390ea2a6c3
+version: 1
+
+task:
+  name: robocasa-turn-off-stove-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.xml
+    qpos_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.meta.json
+    extra_sites: {}
+    qpos_overrides:
+      stove_right_group_knob_front_right_joint: 0.6
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-turn-off-stove-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: not
+  params:
+    condition:
+      type: rc_joint_state
+      params:
+        joint: stove_right_group_knob_front_right_joint
+        mode: abs
+        min: 0.35
+        max: 5.933185307179587
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

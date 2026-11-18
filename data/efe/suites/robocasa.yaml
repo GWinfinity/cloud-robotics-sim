@@ -19,6 +19,6 @@ efe:
   core: 2
 project:
   tier: T1
-  status: planned
+  status: partial
   target: src/cloud_robotics_sim/runtime registry 新 task 族
-  note: 厨房日常；robosuite 场景/对象 MJCF 可导入，Omron 移动底座需合成
+  note: 21/29 已编译（2026-11-18，spec 级；offline nop 门绿）。冻结 instance.npz 内嵌组合后世界 XML——免上游 venv，tools/robocasa_worlds.py 提取路径重写世界包，tools/robocasa_resolver.py 逐字绑定上游 _check_success（门 0.90/抽屉 0.95/旋钮/水龙头/容器 0.7×radius/家电按钮状态机）；pending 8：6 待 objaverse 资产落地、2 水槽 int 站点语义待专查

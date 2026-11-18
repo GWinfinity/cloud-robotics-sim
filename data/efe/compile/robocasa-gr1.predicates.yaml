@@ -1,0 +1,21 @@
+# RoboCasa-GR1（EFE 套件，Fourier GR1 双臂人形）判据表。
+# 判据本体由 tools/robocasa_resolver.py 从冻结实例逐字绑定上游
+# _check_success；本表只记套件级参数与来源。
+suite: robocasa-gr1
+source:
+  suite: robocasa-gr1
+  upstream: robocasa/robocasa-gr1-tabletop-tasks @ 4840e67（MIT）+ robosuite @ 51cc017（1.5.1）+ mink 0.0.5 + MuJoCo 3.2.6
+  substrate: EFE 任务目录 tasks/robocasa-gr1（冻结 instance.npz，含组合后世界 XML 与积分态）
+  simulator: robosuite 1.5.1 / MuJoCo 3.2.6
+  mirror_tool: tools/fetch_robocasa_assets.py
+  world_tool: tools/robocasa_worlds.py
+  probe_tool: 无（免 venv：冻结 XML 即真相）
+max_episode_steps: 9000
+robot: fourier_gr1
+scene: efe_world
+task_type: efe_robocasa
+notes: |
+  判据逐字转写 24 个家族：obj_inside_of partial（原点入 int 盒）+ 门态
+  （gr1 口径 open≥0.5 / closed≤0.005）；SplitA 生成家族为
+  any_gripper_far×2 + in_receptacle + not counter-contact + upright(0.8)
+  + 容器 tiered 时 spawn 区域匹配。

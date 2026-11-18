@@ -1,0 +1,72 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/TurnOnMicrowave | goal: Press the start button on the microwave.
+# fidelity: spec | notes: 判据逐字转写上游 TurnOnMicrowave._check_success；instance_sha=dc354b3a6710
+version: 1
+
+task:
+  name: robocasa365-turn-on-microwave-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.meta.json
+    extra_sites:
+      microwave_main_group_start_button:
+      - microwave_main_group_main
+      - - 0.356405
+        - -0.210228
+        - -0.111213
+    qpos_overrides: {}
+  appliances:
+    - name: microwave_main_group
+      door_joint: microwave_main_group_microjoint
+      door_range:
+      - -1.5708
+      - 0.0
+      start_button: microwave_main_group_start_button
+      stop_button: microwave_main_group_stop_button
+      gripper_body: gripper0_right
+      initial_on: false
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-turn-on-microwave-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_appliance
+      params:
+        name: microwave_main_group
+        state: 'on'
+    - type: rc_gripper_far
+      params:
+        target: microwave_main_group_start_button
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.15
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

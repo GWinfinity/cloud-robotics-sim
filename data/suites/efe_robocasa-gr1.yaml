@@ -1,0 +1,10 @@
+# EFE robocasa-gr1 套件汇总（编译物）；由 tools/compile_efe_suite.py 生成。
+version: 1
+name: efe-robocasa-gr1
+tasks:
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-bottle-to-cabinet-close-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-can-to-drawer-close-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-cup-to-drawer-close-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-milk-to-microwave-close-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-potato-to-microwave-close-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-wine-to-cabinet-close-i00.yaml
