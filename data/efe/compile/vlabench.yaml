@@ -1,0 +1,1628 @@
+# 编译知识库（生成物）：--resolve 从判据表+上游模型生成；人工修正会被下次 --resolve 覆盖，
+# 持久标注请改 .predicates.yaml。
+suite: vlabench
+robot: franka_panda
+scene: efe_tabletop
+source:
+  benchmark: VLABench
+  repo: OpenMOSS/VLABench
+  ref: cf588fe60c0c7282174fe979f5913170cfe69017
+  assets: lerobot/vlabench-assets@08d7a44
+  simulator: mujoco+dm_control
+  robot: franka-panda
+  note: 判据句出自 EFE tasks/vlabench/*/instruction.md（上游镜像）与上游 tasks/condition.py
+pending_tasks:
+- vlabench-find-unseen-object-i00
+- vlabench-friction-qa-i00
+- vlabench-hammer-nail-and-hang-picture-i00
+- vlabench-heat-food-i00
+- vlabench-magnetism-qa-i00
+- vlabench-play-math-game-i00
+- vlabench-reflection-qa-i00
+- vlabench-select-billiards-common-sense-i00
+- vlabench-select-billiards-i00
+- vlabench-select-billiards-spatial-i00
+- vlabench-select-book-spatial-i00
+- vlabench-select-chemistry-tube-common-sense-i00
+- vlabench-select-chemistry-tube-semantic-i00
+- vlabench-select-chemistry-tube-spatial-i00
+- vlabench-select-drink-i00
+- vlabench-select-nth-largest-poker-i00
+- vlabench-select-painting-i00
+- vlabench-select-poker-i00
+- vlabench-select-poker-semantic-i00
+- vlabench-select-poker-spatial-i00
+- vlabench-select-specific-type-book-i00
+- vlabench-take-out-cool-drink-i00
+- vlabench-texas-holdem-i00
+pending_reasons:
+  vlabench-find-unseen-object-i00: apple 未作为组件出现（内嵌 cabinet MJCF），需子体抽取
+  vlabench-friction-qa-i00: press_button 谓词待接入
+  vlabench-hammer-nail-and-hang-picture-i00: joint_in_range 谓词待接入（钉子滑关节 qpos ∈ [0.05,0.08]）
+  vlabench-heat-food-i00: 'instance conditions=contain: microwave_seen ← cooked_food}，但上游
+    HeatFoodTask.should_terminate_episode 追加 is_closed(门) ∧ is_activate(启动钮)——接触/门状态谓词待接入后整单解锁'
+  vlabench-magnetism-qa-i00: press_button 谓词待接入
+  vlabench-play-math-game-i00: 动态组件 5(NumberCube) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植;
+    动态组件 3(NumberCube) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 9(NumberCube)
+    为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 8(NumberCube) 为资产库式（worldbody
+    零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 4(NumberCube) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植;
+    动态组件 0(NumberCube) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植
+  vlabench-reflection-qa-i00: press_button 谓词待接入
+  vlabench-select-billiards-common-sense-i00: 动态组件 snooker_black(BilliardBall) 为资产库式（worldbody
+    零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 solid_3(BilliardBall) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植;
+    动态组件 striped_12(BilliardBall) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件
+    striped_11(BilliardBall) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 solid_7(BilliardBall)
+    为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植
+  vlabench-select-billiards-i00: 动态组件 striped_14(BilliardBall) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植;
+    动态组件 striped_10(BilliardBall) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件
+    solid_4(BilliardBall) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 solid_2(BilliardBall)
+    为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 white(BilliardBall) 为资产库式（worldbody
+    零 geom，几何由上游类代码合成），需类级实例化移植
+  vlabench-select-billiards-spatial-i00: 动态组件 striped_14(BilliardBall) 为资产库式（worldbody
+    零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 solid_4(BilliardBall) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植;
+    动态组件 solid_2(BilliardBall) 为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 white(BilliardBall)
+    为资产库式（worldbody 零 geom，几何由上游类代码合成），需类级实例化移植; 动态组件 striped_10(BilliardBall) 为资产库式（worldbody
+    零 geom，几何由上游类代码合成），需类级实例化移植
+  vlabench-select-book-spatial-i00: 书实体未作为组件出现（内嵌 shelf MJCF），需子体抽取
+  vlabench-select-chemistry-tube-common-sense-i00: KMnO4 管未作为组件出现（内嵌 TubeStand/场景），需子体抽取
+  vlabench-select-chemistry-tube-semantic-i00: KMnO4 管未作为组件出现，需子体抽取
+  vlabench-select-chemistry-tube-spatial-i00: KMnO4 管未作为组件出现，需子体抽取
+  vlabench-select-drink-i00: nop 门拦截（2026-11-18）：冻结初始态 juice_seen(-0.066,0.364,0.855)
+    已在 fridge_open keypoint bbox（世界 x∈[0.001,0.265]）之外，not_contain 起始为真；需人工核对上游初始布局/key_sites
+    构成后解锁
+  vlabench-select-nth-largest-poker-i00: is_grasped+lift 谓词待接入
+  vlabench-select-painting-i00: press_button 谓词待接入
+  vlabench-select-poker-i00: is_grasped 谓词待接入
+  vlabench-select-poker-semantic-i00: is_grasped 谓词待接入
+  vlabench-select-poker-spatial-i00: is_grasped 谓词待接入
+  vlabench-select-specific-type-book-i00: 书实体未作为组件出现（内嵌 shelf MJCF），需子体抽取
+  vlabench-take-out-cool-drink-i00: juice 未作为组件出现（内嵌 small_fridge MJCF），需子体抽取
+  vlabench-texas-holdem-i00: instance conditions 为空；上游按牌型排序在代码中选五张牌，判据需人工转写
+tasks:
+  vlabench-add-condiment-i00:
+    family: vlabench/add_condiment
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: counter
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/counters/counter_0/counter.xml
+      position:
+      - 0.5303115820802036
+      - 0.010683069028140774
+      - 0.003983514806393679
+      orientation:
+      - 0.9999357330237302
+      - 0.010948512266964392
+      - -8.276129617504096e-05
+      - -0.0029416070444474186
+      static: true
+    - name: stove
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/stoves/square_gas/model.xml
+      position:
+      - -0.2500000032360692
+      - -5.148670500173294e-09
+      - 0.0019876037552298866
+      orientation:
+      - 0.999999999985613
+      - -5.364169552860695e-06
+      - 6.007783776754081e-09
+      - 1.129311229621567e-08
+      static: true
+    - name: pan_seen
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tablewares/pans/pan_0/model.xml
+      position:
+      - -0.19581609169829667
+      - -0.1278301673935628
+      - 0.8396966653834624
+      orientation:
+      - 0.9999999990023424
+      - 4.404499821404179e-05
+      - -6.354578983808194e-06
+      - -3.869709132141756e-06
+      static: true
+    - name: dishes
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/dishes/dish_without_plate_2/dish_without_plate_2.xml
+      position:
+      - -0.1958158595325422
+      - -0.09783016751085892
+      - 0.8396993080848281
+      orientation:
+      - 0.9999999990023424
+      - 4.404499821404179e-05
+      - -6.354578983808194e-06
+      - -3.869709132141756e-06
+      static: true
+    - name: salt
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/condiment/shaker/shaker_1/model.xml
+      position:
+      - 0.17810615068443833
+      - -0.16943276026058027
+      - 0.7972548700010286
+      orientation:
+      - 0.9970311855057694
+      - 0.0018378113320972292
+      - 0.0004133963794964104
+      - -0.07697575385729914
+      static: false
+    - name: salt_tag
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tube/nametag/nametag.xml
+      position:
+      - 0.28752513653225675
+      - -0.15
+      - 0.75
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: bbq_sauce
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/condiment/bbq_sauce/bbq_sauce1/model.xml
+      position:
+      - 0.15677549776556624
+      - -0.015180560161357784
+      - 0.8248183254360097
+      orientation:
+      - 0.9999665331741835
+      - 0.00010443360264128987
+      - 0.00019075704549011295
+      - 0.008178339499892114
+      static: false
+    - name: salad_dressing
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/condiment/salad_dressing/salad_dressing.xml
+      position:
+      - 0.21144838519829898
+      - 0.13328525883016087
+      - 0.8225621937983214
+      orientation:
+      - 0.9997870259579831
+      - 0.00037010123637830307
+      - 6.173397207431639e-06
+      - -0.020634091040217937
+      static: false
+    success:
+      type: staged
+      params:
+        stages:
+        - stage: place_fail
+          condition:
+            type: above_region
+            params:
+              object: bbq_sauce
+              platform: pan_seen
+              circle: 0.124654
+        - stage: place_fail
+          condition:
+            type: tipped
+            params:
+              object: bbq_sauce
+              top_offset:
+              - 0.000443
+              - -0.000357
+              - 0.073961
+              bottom_offset:
+              - 0.000443
+              - -0.000357
+              - -0.075
+              threshold: 0.0
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-book-rearrange-i00:
+    family: vlabench/book_rearrange
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: shelf_seen
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/containers/shelf/shelf1.xml
+      position:
+      - 0.08364686635702637
+      - 0.3914926451829496
+      - 0.78
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: century17_don_quixote_book
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/books/books_time_order/Century17_Don_Quixote_Book/century17_don_quixote_book.xml
+      position:
+      - -0.1916617960544969
+      - -0.009188711480466488
+      - 0.85
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    - name: century20_the_metamorphosis_book
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/books/books_time_order/Century20_The_Metamorphosis_Book/century20_the_metamorphosis_book.xml
+      position:
+      - 0.0004686855817390284
+      - -0.07181621556002962
+      - 0.85
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    - name: century18_pride_and_prejudice_book
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/books/books_time_order/Century18_Pride_and_Prejudice_Book/century18_pride_and_prejudice_book.xml
+      position:
+      - 0.2255804204157224
+      - -0.03816310033246684
+      - 0.85
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    success:
+      type: staged
+      params:
+        stages:
+        - stage: place_fail
+          condition:
+            type: contains
+            params:
+              container: shelf_seen
+              objects:
+              - century17_don_quixote_book
+              - century18_pride_and_prejudice_book
+              - century20_the_metamorphosis_book
+              negate: false
+              mode: boxes
+              regions:
+              - center:
+                - 0.0
+                - 0.0
+                - 0.0
+                min:
+                - -0.15
+                - -0.401
+                - 0.0
+                max:
+                - 0.15
+                - 0.401
+                - 0.6
+        - stage: place_fail
+          condition:
+            type: ordered
+            params:
+              objects:
+              - century17_don_quixote_book
+              - century18_pride_and_prejudice_book
+              - century20_the_metamorphosis_book
+              axes:
+              - 0
+              offset: 0.1
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-insert-bloom-flower-i00:
+    family: vlabench/insert_bloom_flower
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: vase_seen
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/containers/vases/vase_1/vase.xml
+      position:
+      - 0.2792789318171503
+      - 0.19859276965628125
+      - 0.78
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: tulip
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/flowers/bloom_flower/tulip/tulip_draft_0/tulip_draft_0.xml
+      position:
+      - -0.31419506253050117
+      - -0.06083393401793176
+      - 0.9
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: false
+    - name: wilted_flower
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/flowers/wilted_flower/wilted_flower_0/wiltered_flower.xml
+      position:
+      - 0.0004686855817390284
+      - -0.12181621556002961
+      - 0.9
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: false
+    - name: wilted_flower
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/flowers/wilted_flower/wilted_flower_1/wiltered_flower.xml
+      position:
+      - 0.31183689966753314
+      - -0.12494936586375593
+      - 0.9
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: false
+    success:
+      type: contains
+      params:
+        container: vase_seen
+        objects:
+        - tulip
+        negate: false
+        mode: boxes
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - 0.0
+          min:
+          - -0.03
+          - -0.03
+          - 0.0
+          max:
+          - 0.03
+          - 0.03
+          - 0.22
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-insert-flower-i00:
+    family: vlabench/insert_flower
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - -3.3376832705804098e-09
+      - 1.1216957529415544e-08
+      - -7.585116687102693e-07
+      orientation:
+      - 1.0
+      - -4.263029713932995e-09
+      - -1.120160806474264e-09
+      - 3.795418853248807e-11
+      static: true
+    - name: vase_seen
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/containers/vases/vase_1/vase.xml
+      position:
+      - 0.28527639675597094
+      - 0.19674762253194547
+      - 0.78
+      orientation:
+      - 0.9990893104725075
+      - 0.0
+      - 0.0
+      - -0.04266790010733524
+      static: true
+    - name: rose
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/flowers/bloom_flower/rose/rose_0/rose_0.xml
+      position:
+      - 0.24877346747039128
+      - -0.13181826560207166
+      - 0.8081570201131894
+      orientation:
+      - 0.9968636262835932
+      - 0.035828068445638024
+      - 0.02042701682137099
+      - 0.06754255760600068
+      static: false
+    - name: chrysanthemum
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/flowers/bloom_flower/chrysanthemum/chrysanthemum_1/chrysanthemum_1.xml
+      position:
+      - -0.030634241663508466
+      - -0.1052830206486976
+      - 0.8052392528576594
+      orientation:
+      - 0.992483986285242
+      - 0.07189892115195427
+      - 0.05336685859805613
+      - -0.08341498970758361
+      static: false
+    - name: sunflower
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/flowers/bloom_flower/sunflower/sunflower_2/sunflower_2.xml
+      position:
+      - -0.250075955188204
+      - -0.08366484292989433
+      - 0.8017459704952195
+      orientation:
+      - 0.9998662389784886
+      - 4.8750294991131933e-17
+      - -7.974447557739945e-19
+      - -0.01635555413344485
+      static: false
+    success:
+      type: contains
+      params:
+        container: vase_seen
+        objects:
+        - rose
+        negate: false
+        mode: boxes
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - 0.0
+          min:
+          - -0.03
+          - -0.03
+          - 0.0
+          max:
+          - 0.03
+          - 0.03
+          - 0.22
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-put-box-on-painting-i00:
+    family: vlabench/put_box_on_painting
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: Dinner and Love on the River
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+      position:
+      - -0.35950658625495857
+      - 0.15675971780695452
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: Cypresses
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+      position:
+      - -0.019668727392107257
+      - 0.09531939083047117
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: Girl before a mirror
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+      position:
+      - 0.3583382039455031
+      - 0.18162257703906703
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: target_box
+      shape_type: box
+      size:
+      - 0.04
+      - 0.04
+      - 0.04
+      position:
+      - 0.0028121134904341427
+      - -0.07181621556002962
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: false
+      mass: 0.2
+      friction: 1.0
+    success:
+      type: contains
+      params:
+        container: Dinner and Love on the River
+        objects:
+        - target_box
+        negate: false
+        mode: boxes
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - 0.0
+          min:
+          - -0.15
+          - 0.0
+          - 0.03
+          max:
+          - 0.15
+          - 0.36
+          - 0.03
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-select-chemistry-tube-i00:
+    family: vlabench/select_chemistry_tube
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - -1.9004286688057226e-11
+      - -3.7453439328519955e-11
+      - -8.466558688745388e-07
+      orientation:
+      - 0.9999999999999997
+      - -9.175380273736233e-09
+      - -1.1175297336403675e-09
+      - -1.3816122022767575e-13
+      static: true
+    - name: chemistry_tube_stand
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tube/tube_container/tube_stand.xml
+      position:
+      - -0.006542468506572683
+      - 0.060302529958959655
+      - 0.7599988428330028
+      orientation:
+      - 0.999999999999999
+      - -5.794387436607007e-09
+      - -2.1524654867885623e-09
+      - -2.768813926649501e-10
+      static: true
+    - name: CuCl2
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tube/tube/tube.xml
+      position:
+      - -0.006644082299547767
+      - 0.010539059272517274
+      - 0.7628885739611672
+      orientation:
+      - 0.9989622837116886
+      - 0.0014414336262820317
+      - -0.004806872492152644
+      - -0.045267780677574664
+      static: false
+    - name: CuCl2_tag
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tube/nametag/nametag.xml
+      position:
+      - -0.00654246893706578
+      - 0.06030253111783714
+      - 0.8599988428330025
+      orientation:
+      - 0.999999999999999
+      - -5.794387436607007e-09
+      - -2.1524654867885623e-09
+      - -2.768813926649501e-10
+      static: true
+    - name: CuSO4
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tube/tube/tube.xml
+      position:
+      - -0.08531810665703575
+      - 0.010337811380284645
+      - 0.7592158809692491
+      orientation:
+      - 0.9984434695465851
+      - 0.0012089569695528531
+      - -0.04452225238969743
+      - -0.03357001020215401
+      static: false
+    - name: CuSO4_tag
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tube/nametag/nametag.xml
+      position:
+      - -0.08654246893706562
+      - 0.060302531162138164
+      - 0.8599988424886081
+      orientation:
+      - 0.999999999999999
+      - -5.794387436607007e-09
+      - -2.1524654867885623e-09
+      - -2.768813926649501e-10
+      static: true
+    success:
+      type: contains
+      params:
+        container: chemistry_tube_stand
+        objects:
+        - CuCl2
+        negate: true
+        mode: boxes
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - 0.0
+          min:
+          - -0.2
+          - -0.1
+          - -0.01
+          max:
+          - 0.2
+          - 0.1
+          - 0.12
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-select-fruit-common-sense-i00:
+    family: vlabench/select_fruit_common_sense
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: plate_seen
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tablewares/plates/plate_13/model.xml
+      position:
+      - 0
+      - 0
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: pear
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/fruit/pear/pear_6/model.xml
+      position:
+      - -0.1
+      - 0.2
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: false
+    - name: peach
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/fruit/peach/peach_5/model.xml
+      position:
+      - 0.0
+      - 0.2
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: false
+    - name: mango
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/fruit/mango/mango_19/model.xml
+      position:
+      - 0.1
+      - 0.2
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: false
+    - name: orange
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/fruit/orange/orange_11/model.xml
+      position:
+      - 0.20000000000000004
+      - 0.2
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: false
+    success:
+      type: contains
+      params:
+        container: plate_seen
+        objects:
+        - pear
+        negate: false
+        mode: circle
+        circle: 0.121451
+        z_band:
+        - 0.0
+        - 0.1
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-select-fruit-i00:
+    family: vlabench/select_fruit
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 7.075262944733628e-10
+      - 5.070137086837738e-10
+      - -7.552164743349944e-07
+      orientation:
+      - 1.0
+      - -2.1019921124369953e-10
+      - -4.071747505116372e-11
+      - -2.958020069361435e-10
+      static: true
+    - name: plate_seen
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tablewares/plates/plate_13/model.xml
+      position:
+      - -0.09693565984929456
+      - 0.024553589932090465
+      - 0.7660947531689721
+      orientation:
+      - 0.9997079291087593
+      - 0.0005363153408344687
+      - 0.00014240047854841112
+      - -0.024160889160711733
+      static: true
+    - name: banana
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/fruit/banana/banana_8/model.xml
+      position:
+      - 0.2580957660575855
+      - 0.2656077924563349
+      - 0.7739548652368438
+      orientation:
+      - 0.8908778475227138
+      - -0.03373299099986919
+      - -0.4473122466985016
+      - -0.07148776164518021
+      static: false
+    - name: orange
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/fruit/orange/orange_3/model.xml
+      position:
+      - 0.271685137699492
+      - -0.18988416581312795
+      - 0.7933291816989666
+      orientation:
+      - 0.9980733933022452
+      - 0.010449630697567392
+      - -0.006592830204539535
+      - 0.06080165614784583
+      static: false
+    - name: mango
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/fruit/mango/mango_9/model.xml
+      position:
+      - -0.2788181068588551
+      - 0.25271650374412646
+      - 0.796590807936988
+      orientation:
+      - 0.9899133474765824
+      - 0.13626282739859402
+      - -0.006029685324325134
+      - -0.038309910622949986
+      static: false
+    success:
+      type: contains
+      params:
+        container: plate_seen
+        objects:
+        - banana
+        negate: false
+        mode: circle
+        circle: 0.121451
+        z_band:
+        - 0.0
+        - 0.1
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-select-mahjong-i00:
+    family: vlabench/select_mahjong
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - -4.969370128634649e-10
+      - -3.2405665140083464e-10
+      - -4.3217851451331023e-07
+      orientation:
+      - 0.9999999999999991
+      - -2.3755011910162743e-08
+      - 1.0857760478939697e-08
+      - -3.960733294232105e-12
+      static: true
+    - name: placemat
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_1/placemat.xml
+      position:
+      - 0.1269622231032771
+      - 0.27836608703539734
+      - 0.7624384491467557
+      orientation:
+      - 0.9999046863385629
+      - -3.6932395024883797e-06
+      - 1.5453372012435296e-06
+      - 0.013806455814289832
+      static: true
+    - name: 7_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.20314016264229384
+      - -0.014527485229748182
+      - 0.8050086745020419
+      orientation:
+      - 1.063981474930019e-06
+      - -0.00016085182946472512
+      - 0.000796394166664769
+      - 0.9999996699408893
+      static: false
+    - name: 5_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.13314006267751152
+      - -0.014527483092817694
+      - 0.805008702181379
+      orientation:
+      - 1.0586680408137859e-06
+      - -0.00016007032561738115
+      - 0.0007963911497255574
+      - 0.9999996700686989
+      static: false
+    - name: 1_pin
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.06314391304179047
+      - -0.014527392523377836
+      - 0.8050070587205315
+      orientation:
+      - 1.8354763136612007e-07
+      - -0.00020286939329612294
+      - 0.0007963947874183657
+      - 0.9999996622996017
+      static: false
+    - name: 1_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.006859764167796468
+      - -0.014527500440028606
+      - 0.8050086324688625
+      orientation:
+      - 1.0810071206036765e-06
+      - -0.0001617590224719289
+      - 0.0007963898075885965
+      - 0.9999996697980077
+      static: false
+    - name: 6_sou
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.07685586137470725
+      - -0.014527493029942409
+      - 0.8050069838349162
+      orientation:
+      - 1.1154815358639168e-06
+      - -0.00020473404624721155
+      - 0.0007963466770181369
+      - 0.9999996619572905
+      static: false
+    - name: 5_pin
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.14686014237539988
+      - -0.014527475638347742
+      - 0.8050087716411927
+      orientation:
+      - 1.0555839862799635e-06
+      - -0.00015804169471004588
+      - 0.0007963514348536605
+      - 0.999999670422996
+      static: false
+    - name: 2_sou
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.21686026084857285
+      - -0.01452747514902225
+      - 0.80500883239383
+      orientation:
+      - 7.827343627555907e-07
+      - -0.0001564205281988436
+      - 0.0007963600834091943
+      - 0.9999996706712574
+      static: false
+    success:
+      type: contains
+      params:
+        container: placemat
+        objects:
+        - 6_sou
+        negate: false
+        mode: circle
+        circle: 0.17
+        z_band:
+        - 0.0
+        - 0.1
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-select-mahjong-semantic-i00:
+    family: vlabench/select_mahjong_semantic
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: placemat
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_4/placemat_4.xml
+      position:
+      - -0.183806248727689
+      - 0.2965464886361917
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: 5_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.24363243112005922
+      - -0.06898524306806675
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 3_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.17363243112005922
+      - -0.06898524306806675
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 5_pin
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.10363243112005921
+      - -0.06898524306806675
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 3_pin
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.0336324311200592
+      - -0.06898524306806675
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 4_sou
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.036367568879940804
+      - -0.06898524306806675
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 9_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.10636756887994081
+      - -0.06898524306806675
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 2_sou
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.17636756887994082
+      - -0.06898524306806675
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    success:
+      type: contains
+      params:
+        container: placemat
+        objects:
+        - 9_man
+        negate: false
+        mode: boxes
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - 0.0
+          min:
+          - -0.15
+          - -0.1
+          - 0.0
+          max:
+          - 0.15
+          - 0.1
+          - 0.0
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-select-mahjong-spatial-i00:
+    family: vlabench/select_mahjong_spatial
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: placemat
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_4/placemat_4.xml
+      position:
+      - -0.183806248727689
+      - 0.2965464886361917
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: 5_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.17181621556002963
+      - -0.09051692365231441
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 9_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.10181621556002962
+      - -0.09051692365231441
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 3_pin
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.031816215560029615
+      - -0.09051692365231441
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 5_pin
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.03818378443997039
+      - -0.09051692365231441
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 4_sou
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.1081837844399704
+      - -0.09051692365231441
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 3_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.1781837844399704
+      - -0.09051692365231441
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 2_sou
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.2481837844399704
+      - -0.09051692365231441
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    success:
+      type: contains
+      params:
+        container: placemat
+        objects:
+        - 2_sou
+        negate: false
+        mode: boxes
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - 0.0
+          min:
+          - -0.15
+          - -0.1
+          - 0.0
+          max:
+          - 0.15
+          - 0.1
+          - 0.0
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-select-toy-i00:
+    family: vlabench/select_toy
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - -1.1233457206763792e-08
+      - 2.3304283678471674e-10
+      - -7.675361707509702e-07
+      orientation:
+      - 1.0
+      - -9.002825008327674e-10
+      - -2.95191183760016e-09
+      - 3.995516596393811e-09
+      static: true
+    - name: giftbox_seen
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/containers/boxes/giftbox/giftbox_0/giftbox.xml
+      position:
+      - 0.2116228308662884
+      - 0.03419328189914477
+      - 0.7709990940592165
+      orientation:
+      - 0.9994224602878812
+      - 0.0007823412298736047
+      - -0.0004249886287902504
+      - -0.03396988664953546
+      static: true
+    - name: mickey
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/toys/disney/mickey/mickey/mickey_0/mickey.xml
+      position:
+      - -0.28364559284301927
+      - -0.15254077909313435
+      - 0.7598772497477722
+      orientation:
+      - 0.707230432377275
+      - 0.7069829767826772
+      - 0.00025859025775924803
+      - -0.00034523909945493203
+      static: false
+    - name: luffy
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/toys/onepiece/luffy/luffy_1/monkey_d_luffy_damage_-_one_piece.xml
+      position:
+      - -0.08789820774077069
+      - 0.16217680575838672
+      - 0.7656458678624997
+      orientation:
+      - 0.7068031277664579
+      - 0.7073638089410779
+      - -0.005764793897330142
+      - 0.005705044368101772
+      static: false
+    - name: ironman
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/toys/marvel/ironman/ironman_1/iron-man_mark_7.xml
+      position:
+      - 0.05300825739626282
+      - -0.14919536744435108
+      - 0.7649969164582312
+      orientation:
+      - 0.7068255496480758
+      - 0.707387899157554
+      - -1.711940729884559e-05
+      - 4.6873058721711186e-05
+      static: false
+    - name: spiderman
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/toys/marvel/spiderman/spiderman_1/spiderman_classic_textured_rigged.xml
+      position:
+      - -0.11082177352174633
+      - -0.06038427393045034
+      - 0.7651708161886267
+      orientation:
+      - 0.7068241082494382
+      - 0.707386042822167
+      - 0.0015542697253852098
+      - -0.0015002211178281276
+      static: false
+    success:
+      type: contains
+      params:
+        container: giftbox_seen
+        objects:
+        - mickey
+        negate: false
+        mode: boxes
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - 0.0
+          min:
+          - -0.09
+          - -0.1
+          - 0.0
+          max:
+          - 0.09
+          - 0.06
+          - 0.18
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-select-unique-type-mahjong-i00:
+    family: vlabench/select_unique_type_mahjong
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: placemat
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_4/placemat_4.xml
+      position:
+      - -0.183806248727689
+      - 0.2965464886361917
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: 1_pin
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.14883915916855522
+      - -0.03816310033246684
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 8_sou
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.07883915916855522
+      - -0.03816310033246684
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 9_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - -0.00883915916855521
+      - -0.03816310033246684
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 5_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.061160840831444796
+      - -0.03816310033246684
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 5_pin
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.1311608408314448
+      - -0.03816310033246684
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 3_pin
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.2011608408314448
+      - -0.03816310033246684
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    - name: 3_man
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+      position:
+      - 0.2711608408314448
+      - -0.03816310033246684
+      - 0.83
+      orientation:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 1.0
+      static: false
+    success:
+      type: contains
+      params:
+        container: placemat
+        objects:
+        - 8_sou
+        negate: false
+        mode: boxes
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - 0.0
+          min:
+          - -0.15
+          - -0.1
+          - 0.0
+          max:
+          - 0.15
+          - 0.1
+          - 0.0
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0

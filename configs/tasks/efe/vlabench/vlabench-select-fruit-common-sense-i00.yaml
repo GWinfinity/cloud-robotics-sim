@@ -1,0 +1,113 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/select_fruit_common_sense | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-select-fruit-common-sense-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: plate_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tablewares/plates/plate_13/model.xml
+    position:
+    - 0
+    - 0
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: pear
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/fruit/pear/pear_6/model.xml
+    position:
+    - -0.1
+    - 0.2
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: peach
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/fruit/peach/peach_5/model.xml
+    position:
+    - 0.0
+    - 0.2
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: mango
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/fruit/mango/mango_19/model.xml
+    position:
+    - 0.1
+    - 0.2
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: orange
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/fruit/orange/orange_11/model.xml
+    position:
+    - 0.20000000000000004
+    - 0.2
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+
+success:
+  type: contains
+  params:
+    container: plate_seen
+    objects:
+    - pear
+    negate: false
+    mode: circle
+    circle: 0.121451
+    z_band:
+    - 0.0
+    - 0.1
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

@@ -1,0 +1,109 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/insert_flower | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-insert-flower-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - -3.3376832705804098e-09
+    - 1.1216957529415544e-08
+    - -7.585116687102693e-07
+    orientation:
+    - 1.0
+    - -4.263029713932995e-09
+    - -1.120160806474264e-09
+    - 3.795418853248807e-11
+    static: true
+  - name: vase_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/containers/vases/vase_1/vase.xml
+    position:
+    - 0.28527639675597094
+    - 0.19674762253194547
+    - 0.78
+    orientation:
+    - 0.9990893104725075
+    - 0.0
+    - 0.0
+    - -0.04266790010733524
+    static: true
+  - name: rose
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/flowers/bloom_flower/rose/rose_0/rose_0.xml
+    position:
+    - 0.24877346747039128
+    - -0.13181826560207166
+    - 0.8081570201131894
+    orientation:
+    - 0.9968636262835932
+    - 0.035828068445638024
+    - 0.02042701682137099
+    - 0.06754255760600068
+    static: false
+  - name: chrysanthemum
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/flowers/bloom_flower/chrysanthemum/chrysanthemum_1/chrysanthemum_1.xml
+    position:
+    - -0.030634241663508466
+    - -0.1052830206486976
+    - 0.8052392528576594
+    orientation:
+    - 0.992483986285242
+    - 0.07189892115195427
+    - 0.05336685859805613
+    - -0.08341498970758361
+    static: false
+  - name: sunflower
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/flowers/bloom_flower/sunflower/sunflower_2/sunflower_2.xml
+    position:
+    - -0.250075955188204
+    - -0.08366484292989433
+    - 0.8017459704952195
+    orientation:
+    - 0.9998662389784886
+    - 4.8750294991131933e-17
+    - -7.974447557739945e-19
+    - -0.01635555413344485
+    static: false
+
+success:
+  type: contains
+  params:
+    container: vase_seen
+    objects:
+    - rose
+    negate: false
+    mode: boxes
+    regions:
+    - center:
+      - 0.0
+      - 0.0
+      - 0.0
+      min:
+      - -0.03
+      - -0.03
+      - 0.0
+      max:
+      - 0.03
+      - 0.03
+      - 0.22
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

@@ -1,0 +1,96 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/select_drink | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-select-drink-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 2.3068529322413024e-19
+    - 2.7567305344374817e-17
+    - -7.538417574201227e-07
+    orientation:
+    - 1.0
+    - 2.0856077381272877e-17
+    - 5.0930865865732185e-20
+    - -4.313574969474065e-22
+    static: true
+  - name: fridge_open
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/containers/fridge/fridge_open/fridge_open_0/mobility.xml
+    position:
+    - 0.0012562489460757834
+    - 0.38728454900879145
+    - 0.74
+    orientation:
+    - 0.9992726914286488
+    - 0.0
+    - 0.0
+    - -0.03813250798130689
+    static: true
+  - name: juice_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/drinks/juice/boxed_drink_2/model.xml
+    position:
+    - -0.06640220431247475
+    - 0.3644697030412831
+    - 0.8554790334944351
+    orientation:
+    - 0.9977693538806879
+    - 0.00044467329196808846
+    - -0.0002652235121331835
+    - -0.06675363944135407
+    static: false
+  - name: monster
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/drinks/energy_drink/monster/monster.xml
+    position:
+    - 0.0654917778029028
+    - 0.3547897384850106
+    - 0.838010735085275
+    orientation:
+    - 0.9993593634346445
+    - 3.695186187058866e-05
+    - 1.4201094543511087e-06
+    - 0.03578912332041561
+    static: false
+
+success:
+  type: contains
+  params:
+    container: fridge_open
+    objects:
+    - juice_seen
+    negate: true
+    mode: boxes
+    regions:
+    - center:
+      - 0.0
+      - 0.0
+      - 0.0
+      min:
+      - 0.0
+      - -0.156
+      - 0.0
+      max:
+      - 0.384
+      - 0.168
+      - 0.576
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

@@ -1,0 +1,1626 @@
+{
+  "version": 1,
+  "generated_at": "2026-11-18T02:46:44.662153+00:00",
+  "paper": {
+    "arxiv": "2611.12177",
+    "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
+    "suites": 35,
+    "robots": 47,
+    "tasks": 1156,
+    "tests": 2288,
+    "core": 456
+  },
+  "suites": [
+    {
+      "suite": "abc-sim",
+      "name": "ABC Sim",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "two_arms"
+        ],
+        "robots": [
+          "i2rt-yam-bimanual"
+        ],
+        "tasks": 29,
+        "tests": 60,
+        "core": 0
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "I2RT YAM 双臂协作（托盘运球/摆棋等）；core=0 说明未进核心集但迁移价值在双臂协调"
+      },
+      "inventory": {
+        "n_tasks": 29,
+        "n_task_dirs": 60
+      }
+    },
+    {
+      "suite": "ambench",
+      "name": "AM-Bench",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "isaac_lab",
+        "kinds": [
+          "aerial"
+        ],
+        "robots": [
+          "ambench-fahexa"
+        ],
+        "tasks": 9,
+        "tests": 17,
+        "core": 2
+      },
+      "project": {
+        "tier": "T3",
+        "status": "planned",
+        "target": "待定（需先落地 T3 资产管线）",
+        "note": "空中操作基准，EFE 镜像需接受 Isaac Sim 条款构建"
+      },
+      "inventory": {
+        "n_tasks": 9,
+        "n_task_dirs": 17
+      }
+    },
+    {
+      "suite": "autobio",
+      "name": "AutoBio",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "arm",
+          "two_arms"
+        ],
+        "robots": [
+          "aloha-2",
+          "aloha-2-arm",
+          "ur5e-dexhand-2f85-bimanual",
+          "ur5e-robotiq-2f85"
+        ],
+        "tasks": 9,
+        "tests": 18,
+        "core": 0
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "数字生物实验室自动化；控制率高达 500Hz，需注意 Genesis 步进预算"
+      },
+      "inventory": {
+        "n_tasks": 9,
+        "n_task_dirs": 18
+      }
+    },
+    {
+      "suite": "behavior-1k",
+      "name": "BEHAVIOR-1K",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "omnigibson",
+        "kinds": [
+          "mobile_manip"
+        ],
+        "robots": [
+          "r1pro"
+        ],
+        "tasks": 100,
+        "tests": 200,
+        "core": 71
+      },
+      "project": {
+        "tier": "T3",
+        "status": "planned",
+        "target": "待定（需先落地 T3 资产管线）",
+        "note": "1000 日常活动采 100；32GB 数据集+许可门，core 占比最高(71) 之一，长期价值大"
+      },
+      "inventory": {
+        "n_tasks": 100,
+        "n_task_dirs": 200
+      }
+    },
+    {
+      "suite": "bigym2",
+      "name": "BiGym 2.0",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "humanoid"
+        ],
+        "robots": [
+          "unitree-g1-dex1"
+        ],
+        "tasks": 13,
+        "tests": 39,
+        "core": 10
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "plugins/envs/humanoid_falling 同层新增",
+        "note": "G1-dex3 人形家务（全身控制器接口）；g1 本体 Menagerie 可转"
+      },
+      "inventory": {
+        "n_tasks": 13,
+        "n_task_dirs": 39
+      }
+    },
+    {
+      "suite": "dexhand",
+      "name": "DexHandExam",
+      "efe": {
+        "origin": "new",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "hand"
+        ],
+        "robots": [
+          "marvin-bimanual-sharpa-wave",
+          "sharpa-wave-floating",
+          "sharpa-wave-floating-bimanual"
+        ],
+        "tasks": 30,
+        "tests": 60,
+        "core": 23
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "plugins/manipulation/dexterous_gnn_qp 扩展为完整 env",
+        "note": "SHARPA Wave 灵巧手翻书/开罐/搅咖啡/USB/折纸/汉堡；接触丰富，复用 dexterous_gnn_qp 的灵巧操作与 Menagerie leap_hand 设施"
+      },
+      "inventory": {
+        "n_tasks": 30,
+        "n_task_dirs": 60
+      }
+    },
+    {
+      "suite": "dexjoco",
+      "name": "DexJoCo",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "hand"
+        ],
+        "robots": [
+          "franka-allegro",
+          "franka-allegro-bimanual"
+        ],
+        "tasks": 11,
+        "tests": 22,
+        "core": 2
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "plugins/manipulation/dexterous_gnn_qp 扩展",
+        "note": "任务导向灵巧操作工具包；Allegro 手 URDF 公开可得"
+      },
+      "inventory": {
+        "n_tasks": 11,
+        "n_task_dirs": 22
+      }
+    },
+    {
+      "suite": "dextoolbench",
+      "name": "DexToolBench",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "hand"
+        ],
+        "robots": [
+          "kuka-iiwa14-sharpa-ha4"
+        ],
+        "tasks": 21,
+        "tests": 42,
+        "core": 20
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "plugins/manipulation/dexterous_gnn_qp 扩展",
+        "note": "Kuka iiwa14 + SHARPA HA4 灵巧工具操作；iiwa14 在 Menagerie"
+      },
+      "inventory": {
+        "n_tasks": 21,
+        "n_task_dirs": 42
+      }
+    },
+    {
+      "suite": "embodied-olympics-fun",
+      "name": "Embodied Olympics - Fun",
+      "efe": {
+        "origin": "new",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "humanoid"
+        ],
+        "robots": [
+          "unitree-g1",
+          "unitree-h1-2"
+        ],
+        "tasks": 79,
+        "tests": 179,
+        "core": 56
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "plugins/envs/humanoid_falling 同层新增",
+        "note": "G1/H1-2 体育动作全家桶；项目已有 humanoid_falling 插件与桌球/羽毛球设施可参考"
+      },
+      "inventory": {
+        "n_tasks": 79,
+        "n_task_dirs": 179
+      }
+    },
+    {
+      "suite": "embodied-olympics-match",
+      "name": "Embodied Olympics - Match",
+      "efe": {
+        "origin": "new",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "arm",
+          "humanoid",
+          "mobile_manip"
+        ],
+        "robots": [
+          "booster-t1",
+          "foosball-rods",
+          "franka-panda",
+          "ssl-robot",
+          "unitree-g1"
+        ],
+        "tasks": 14,
+        "tests": 41,
+        "core": 13
+      },
+      "project": {
+        "tier": "T1",
+        "status": "partial",
+        "target": "plugins/envs/table_tennis + badminton 扩展",
+        "note": "乒乓/羽毛球/足球/桌上足球/击剑对抗，自带 runtime 与脚本对手，realtime 为主；项目桌球/羽毛球插件是最直接的落点"
+      },
+      "inventory": {
+        "n_tasks": 14,
+        "n_task_dirs": 41
+      }
+    },
+    {
+      "suite": "embodied-safety-exam",
+      "name": "Embodied Safety Exam",
+      "efe": {
+        "origin": "new",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "arm",
+          "two_arms",
+          "mobile_manip"
+        ],
+        "robots": [
+          "franka-robotiq-2f85",
+          "i2rt-yam-bimanual",
+          "tidybot-plus-plus",
+          "ur5e-robotiq-2f85"
+        ],
+        "tasks": 72,
+        "tests": 76,
+        "core": 50
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "安全请求执行/有害请求拒止/风险解释；拒止判定是规则 verifier，物理要求低，与项目 SafetyViolationError 安全边界同源"
+      },
+      "inventory": {
+        "n_tasks": 72,
+        "n_task_dirs": 76
+      }
+    },
+    {
+      "suite": "embodiedswe",
+      "name": "EmbodiedSWE",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "isaac_lab",
+        "kinds": [
+          "arm",
+          "two_arms",
+          "humanoid"
+        ],
+        "robots": [
+          "franka-panda",
+          "franka-panda-bimanual",
+          "unitree-g1-dex3"
+        ],
+        "tasks": 24,
+        "tests": 48,
+        "core": 12
+      },
+      "project": {
+        "tier": "T3",
+        "status": "planned",
+        "target": "待定（跨 T1/T3，资产以 Isaac Lab 为主）",
+        "note": "机器人软件工程（修控制器/诊断）；Privileged 答案是程序本体"
+      },
+      "inventory": {
+        "n_tasks": 24,
+        "n_task_dirs": 48
+      }
+    },
+    {
+      "suite": "humanclaw",
+      "name": "HumanCLAW",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": false,
+        "source": null,
+        "simulator": "humanclaw",
+        "kinds": [
+          "humanoid"
+        ],
+        "robots": [
+          "smplx-human"
+        ],
+        "tasks": 55,
+        "tests": 110,
+        "core": null
+      },
+      "project": {
+        "tier": "TX",
+        "status": "excluded",
+        "target": "无（论文计数的 35 套件之外）",
+        "note": "@all 里的第 36 个基准（SMPL-X 人形+爪），论文 1156 任务计数不含；登记在册以便全量对齐"
+      },
+      "inventory": {
+        "n_tasks": 55,
+        "n_task_dirs": 110
+      }
+    },
+    {
+      "suite": "humanoidbench",
+      "name": "HumanoidBench",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "humanoid"
+        ],
+        "robots": [
+          "unitree-h1",
+          "unitree-h1hand"
+        ],
+        "tasks": 10,
+        "tests": 30,
+        "core": 8
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "plugins/envs/humanoid_falling 同层新增",
+        "note": "H1/H1hand 全身 loco-manipulation；与 humanoid_falling 插件同栈"
+      },
+      "inventory": {
+        "n_tasks": 10,
+        "n_task_dirs": 30
+      }
+    },
+    {
+      "suite": "ispatialgym",
+      "name": "iSpatialGym",
+      "efe": {
+        "origin": "new",
+        "in_paper": true,
+        "source": null,
+        "simulator": "omnigibson",
+        "kinds": [
+          "mobile_manip"
+        ],
+        "robots": [
+          "r1pro"
+        ],
+        "tasks": 12,
+        "tests": 24,
+        "core": 8
+      },
+      "project": {
+        "tier": "T3",
+        "status": "planned",
+        "target": "待定（需先落地 T3 资产管线）",
+        "note": "目标仅以图像给出的移动双臂空间推理；依赖 BEHAVIOR-1K 数据集与 OmniGibson 场景"
+      },
+      "inventory": {
+        "n_tasks": 12,
+        "n_task_dirs": 24
+      }
+    },
+    {
+      "suite": "kinder",
+      "name": "KinDER",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "mobile_manip"
+        ],
+        "robots": [
+          "tidybot-plus-plus"
+        ],
+        "tasks": 5,
+        "tests": 10,
+        "core": 4
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "TidyBot++ 移动操作物理推理小套件（5 任务），公开资产，适合 T1 早批次"
+      },
+      "inventory": {
+        "n_tasks": 5,
+        "n_task_dirs": 10
+      }
+    },
+    {
+      "suite": "labutopia",
+      "name": "LabUtopia",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "isaac_sim",
+        "kinds": [
+          "arm"
+        ],
+        "robots": [
+          "franka-panda"
+        ],
+        "tasks": 9,
+        "tests": 18,
+        "core": 0
+      },
+      "project": {
+        "tier": "T3",
+        "status": "planned",
+        "target": "待定（需先落地 T3 资产管线）",
+        "note": "科学实验室层级基准，franka 本体已在库但场景/资产走 Isaac Sim"
+      },
+      "inventory": {
+        "n_tasks": 9,
+        "n_task_dirs": 18
+      }
+    },
+    {
+      "suite": "libero-max",
+      "name": "LIBERO-MAX",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "robosuite",
+        "kinds": [
+          "arm"
+        ],
+        "robots": [
+          "franka-panda"
+        ],
+        "tasks": 64,
+        "tests": 128,
+        "core": 2
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "LIBERO 变体（世界变化适应）；robosuite MJCF 对象模型可导入"
+      },
+      "inventory": {
+        "n_tasks": 64,
+        "n_task_dirs": 128
+      }
+    },
+    {
+      "suite": "maniguard",
+      "name": "ManiGuard",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "omnigibson",
+        "kinds": [
+          "arm"
+        ],
+        "robots": [
+          "franka-panda-longfinger"
+        ],
+        "tasks": 30,
+        "tests": 60,
+        "core": 7
+      },
+      "project": {
+        "tier": "T3",
+        "status": "planned",
+        "target": "待定（需先落地 T3 资产管线）",
+        "note": "规格 grounded 操作安全；franka 派生长指版本需改资产"
+      },
+      "inventory": {
+        "n_tasks": 30,
+        "n_task_dirs": 60
+      }
+    },
+    {
+      "suite": "metaworldplus",
+      "name": "MetaWorld+",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "arm"
+        ],
+        "robots": [
+          "sawyer"
+        ],
+        "tasks": 50,
+        "tests": 100,
+        "core": 2
+      },
+      "project": {
+        "tier": "T1",
+        "status": "partial",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "Meta-World v3 全 50 环境固定实例；Sawyer MJCF 随 MetaWorld(MIT) 发布。P1 进展：26/50 已编译并通过双层门（spec 保真级；判据句逐字转写自上游 instruction，目标语义取自上游 env .py 常量，代表点注明非冻结实例值；nop 门拦截 2 处 XML 位姿≠任务初始位姿并修正）；保真度说明：spec 级（非冻结实例位姿）；stick-push 夹持接触子句降级未建模；disassemble 行程值为预设待判据句核正；机构初始构型按 env reset 语义建模（door-close −90° 开门等）"
+      },
+      "inventory": {
+        "n_tasks": 50,
+        "n_task_dirs": 100
+      }
+    },
+    {
+      "suite": "molmospaces",
+      "name": "MolmoSpaces",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "arm",
+          "mobile_manip"
+        ],
+        "robots": [
+          "franka-robotiq-2f85",
+          "rainbow-rby1"
+        ],
+        "tasks": 8,
+        "tests": 16,
+        "core": 2
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "导航+操作混合；RBY1 轮式双臂公开 URDF"
+      },
+      "inventory": {
+        "n_tasks": 8,
+        "n_task_dirs": 16
+      }
+    },
+    {
+      "suite": "mujoco-playground",
+      "name": "MuJoCo Playground",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "arm",
+          "two_arms",
+          "quadruped"
+        ],
+        "robots": [
+          "aloha-2",
+          "boston-dynamics-spot",
+          "franka-panda",
+          "google-barkour-vb",
+          "unitree-go1"
+        ],
+        "tasks": 13,
+        "tests": 27,
+        "core": 7
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "plugins/envs 新增",
+        "note": "四足 locomotion + 少量臂任务；spot/barkour/go1 全在 Menagerie，是 T1 里机器人资产最省事的一套"
+      },
+      "inventory": {
+        "n_tasks": 13,
+        "n_task_dirs": 27
+      }
+    },
+    {
+      "suite": "myosuite",
+      "name": "MyoSuite",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "musculoskeletal"
+        ],
+        "robots": [
+          "myoarm",
+          "myoarm-mpl",
+          "myoarm-torso",
+          "myohand",
+          "myoleg-osl",
+          "myolegs"
+        ],
+        "tasks": 22,
+        "tests": 45,
+        "core": 13
+      },
+      "project": {
+        "tier": "TX",
+        "status": "blocked",
+        "target": "无（Genesis 缺肌肉-肌腱致动模型）",
+        "note": "肌肉骨骼模型依赖 MuJoCo tendon/actuator 特性，Genesis 1.4.6 无等效；需先决策（自研 solver 插件或永久跳过）"
+      },
+      "inventory": {
+        "n_tasks": 22,
+        "n_task_dirs": 45
+      }
+    },
+    {
+      "suite": "pandadyn",
+      "name": "RoboDynamicExam",
+      "efe": {
+        "origin": "new",
+        "in_paper": true,
+        "source": null,
+        "simulator": "maniskill",
+        "kinds": [
+          "arm",
+          "two_arms"
+        ],
+        "robots": [
+          "franka-panda",
+          "franka-panda-bimanual"
+        ],
+        "tasks": 25,
+        "tests": 69,
+        "core": 10
+      },
+      "project": {
+        "tier": "T2",
+        "status": "planned",
+        "target": "plugins/envs/maniskill 扩展",
+        "note": "上游目录名 pandadyn（Panda Dynamic Scenes）；抛接/击打/搬运/交接动态物体，realtime 占多数"
+      },
+      "inventory": {
+        "n_tasks": 25,
+        "n_task_dirs": 69
+      }
+    },
+    {
+      "suite": "roboarc",
+      "name": "RoboARC",
+      "efe": {
+        "origin": "new",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco",
+        "kinds": [
+          "arm",
+          "two_arms"
+        ],
+        "robots": [
+          "aloha-2",
+          "franka-panda-bimanual",
+          "franka-robotiq-2f85"
+        ],
+        "tasks": 106,
+        "tests": 212,
+        "core": 58
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "plugins/envs 新增 + cable_sim 复用",
+        "note": "绳结/穿绳/金属环/IKEA 装配/buzz-wire；可变形体(MuJoCo rope/cloth)需 Genesis 等效或降级为刚体链方案"
+      },
+      "inventory": {
+        "n_tasks": 106,
+        "n_task_dirs": 212
+      }
+    },
+    {
+      "suite": "robocasa-gr1",
+      "name": "RoboCasa-GR1",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "robosuite",
+        "kinds": [
+          "humanoid"
+        ],
+        "robots": [
+          "fourier-gr1"
+        ],
+        "tasks": 24,
+        "tests": 48,
+        "core": 1
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "plugins/envs/humanoid_falling 同层新增",
+        "note": "GR1 人形厨房操作；GR1 URDF 公开"
+      },
+      "inventory": {
+        "n_tasks": 24,
+        "n_task_dirs": 48
+      }
+    },
+    {
+      "suite": "robocasa",
+      "name": "RoboCasa",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "robosuite",
+        "kinds": [
+          "mobile_manip"
+        ],
+        "robots": [
+          "franka-panda-omron"
+        ],
+        "tasks": 29,
+        "tests": 58,
+        "core": 2
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "厨房日常；robosuite 场景/对象 MJCF 可导入，Omron 移动底座需合成"
+      },
+      "inventory": {
+        "n_tasks": 29,
+        "n_task_dirs": 58
+      }
+    },
+    {
+      "suite": "robocasa365",
+      "name": "RoboCasa365",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "robosuite",
+        "kinds": [
+          "mobile_manip"
+        ],
+        "robots": [
+          "franka-panda-omron"
+        ],
+        "tasks": 50,
+        "tests": 101,
+        "core": 5
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "365 场景采 50；与 RoboCasa 共用资产管线"
+      },
+      "inventory": {
+        "n_tasks": 50,
+        "n_task_dirs": 101
+      }
+    },
+    {
+      "suite": "robodojo",
+      "name": "RoboDojo",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "isaac_lab",
+        "kinds": [
+          "two_arms"
+        ],
+        "robots": [
+          "arx-x5-bimanual"
+        ],
+        "tasks": 54,
+        "tests": 102,
+        "core": 12
+      },
+      "project": {
+        "tier": "T3",
+        "status": "planned",
+        "target": "docs/ROBODOJO_P0_PLAN.md 已有 P0 计划",
+        "note": "ARX-X5 双臂已入库(silver)——本体资产就绪，差 Isaac Lab 场景迁移；项目已有完整对标文档"
+      },
+      "inventory": {
+        "n_tasks": 54,
+        "n_task_dirs": 108
+      }
+    },
+    {
+      "suite": "roboengineer",
+      "name": "RoboEngineer",
+      "efe": {
+        "origin": "new",
+        "in_paper": true,
+        "source": null,
+        "simulator": "mujoco+learned",
+        "kinds": [
+          "aerial",
+          "car",
+          "humanoid",
+          "quadruped"
+        ],
+        "robots": [
+          "anycar",
+          "intel-aero-partial",
+          "neural-fly-partial",
+          "unitree-g1",
+          "unitree-go2"
+        ],
+        "tasks": 30,
+        "tests": 30,
+        "core": 15
+      },
+      "project": {
+        "tier": "TX",
+        "status": "planned",
+        "target": "plugins/sim2real",
+        "note": "考点是公开仿真→隐藏动力学部署闭环；可移植公开半段，隐藏动力学半段需自有 learned-dynamics 服务"
+      },
+      "inventory": {
+        "n_tasks": 30,
+        "n_task_dirs": 30
+      }
+    },
+    {
+      "suite": "robolab",
+      "name": "RoboLab",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "isaac_lab",
+        "kinds": [
+          "arm"
+        ],
+        "robots": [
+          "franka-robotiq-2f85"
+        ],
+        "tasks": 53,
+        "tests": 106,
+        "core": 6
+      },
+      "project": {
+        "tier": "T3",
+        "status": "planned",
+        "target": "待定（需先落地 T3 资产管线）",
+        "note": "实验室任务通才策略分析；franka+robotiq 组件均在库/Menagerie"
+      },
+      "inventory": {
+        "n_tasks": 53,
+        "n_task_dirs": 106
+      }
+    },
+    {
+      "suite": "robopaint",
+      "name": "RoboPaint",
+      "efe": {
+        "origin": "new",
+        "in_paper": true,
+        "source": null,
+        "simulator": "maniskill",
+        "kinds": [
+          "arm"
+        ],
+        "robots": [
+          "franka-panda"
+        ],
+        "tasks": 43,
+        "tests": 86,
+        "core": 22
+      },
+      "project": {
+        "tier": "T2",
+        "status": "planned",
+        "target": "plugins/envs/maniskill 扩展",
+        "note": "毛笔字到油画复现，画笔/颜料可变形体；franka 已在库"
+      },
+      "inventory": {
+        "n_tasks": 43,
+        "n_task_dirs": 86
+      }
+    },
+    {
+      "suite": "robotwin-2",
+      "name": "RoboTwin 2.0",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "sapien",
+        "kinds": [
+          "two_arms"
+        ],
+        "robots": [
+          "aloha-agilex"
+        ],
+        "tasks": 47,
+        "tests": 94,
+        "core": 3
+      },
+      "project": {
+        "tier": "T2",
+        "status": "partial",
+        "target": "src/cloud_robotics_sim/robotwin 扩展",
+        "note": "项目本体资产与 robotwin 插件直接来源；47 任务全量移植是 T2 第一批"
+      },
+      "inventory": {
+        "n_tasks": 47,
+        "n_task_dirs": 94
+      }
+    },
+    {
+      "suite": "robowits",
+      "name": "RoboWits",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "genesis",
+        "kinds": [
+          "two_arms"
+        ],
+        "robots": [
+          "marvin-bimanual"
+        ],
+        "tasks": 15,
+        "tests": 30,
+        "core": 6
+      },
+      "project": {
+        "tier": "T0",
+        "status": "partial",
+        "target": "outputs/robowits_ported_v1 + docs/ROBOWITS_BENCHMARK.md",
+        "note": "EFE 中唯一 Genesis 原生套件；项目已实现协议+port v1，对齐 EFE 任务清单(marvin-bimanual 命名待对账)即可视为 T0 完成"
+      },
+      "inventory": {
+        "n_tasks": 15,
+        "n_task_dirs": 30
+      }
+    },
+    {
+      "suite": "vlabench",
+      "name": "VLABench",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "dm_control",
+        "kinds": [
+          "arm"
+        ],
+        "robots": [
+          "franka-panda"
+        ],
+        "tasks": 36,
+        "tests": 72,
+        "core": 2
+      },
+      "project": {
+        "tier": "T1",
+        "status": "planned",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
+        "note": "语言条件长程操作；dm_control 封装但底层 MJCF 可导入（任务 XML 在 HF lerobot/vlabench-assets@08d7a44，机器人 XML 在 OpenMOSS/VLABench@cf588fe）。可行性已钉死：dm_control→quadrants 冒烟 6/6 通过（docs/VLABENCH_PORT_PLAN.md，panda+counter+shaker 实例合成/落体/位置控制/渲染全 OK，spec 保真级）；镜像工具 tools/fetch_vlabench_assets.py（资产无再分发许可，仅本地镜像）"
+      },
+      "inventory": {
+        "n_tasks": 36,
+        "n_task_dirs": 72
+      }
+    },
+    {
+      "suite": "yamlab",
+      "name": "YAMLab",
+      "efe": {
+        "origin": "adapted",
+        "in_paper": true,
+        "source": null,
+        "simulator": "isaac_lab",
+        "kinds": [
+          "two_arms"
+        ],
+        "robots": [
+          "i2rt-yam-bimanual"
+        ],
+        "tasks": 10,
+        "tests": 20,
+        "core": 2
+      },
+      "project": {
+        "tier": "T3",
+        "status": "planned",
+        "target": "待定（需先落地 T3 资产管线）",
+        "note": "YAM 双臂；与 ABC Sim/安全考试共用 i2rt-yam 资产"
+      },
+      "inventory": {
+        "n_tasks": 10,
+        "n_task_dirs": 20
+      }
+    }
+  ],
+  "robots": [
+    {
+      "robot": "franka-panda",
+      "source": "have",
+      "detail": "assets_genesis/embodiments/franka-panda (gold)",
+      "suites": [
+        "embodied-olympics-match",
+        "embodiedswe",
+        "labutopia",
+        "libero-max",
+        "mujoco-playground",
+        "pandadyn",
+        "robopaint",
+        "vlabench"
+      ]
+    },
+    {
+      "robot": "franka-panda-bimanual",
+      "source": "compose",
+      "detail": "2x franka-panda 对称装配",
+      "suites": [
+        "embodiedswe",
+        "pandadyn",
+        "roboarc"
+      ],
+      "components": [
+        "franka-panda"
+      ]
+    },
+    {
+      "robot": "franka-panda-longfinger",
+      "source": "compose",
+      "detail": "franka-panda 派生长指版本（ManiGuard 修改）",
+      "suites": [
+        "maniguard"
+      ],
+      "components": [
+        "franka-panda"
+      ]
+    },
+    {
+      "robot": "franka-robotiq-2f85",
+      "source": "compose",
+      "detail": "franka-panda + Robotiq 2F-85",
+      "suites": [
+        "embodied-safety-exam",
+        "molmospaces",
+        "roboarc",
+        "robolab"
+      ],
+      "components": [
+        "franka-panda",
+        "robotiq-2f85"
+      ]
+    },
+    {
+      "robot": "franka-panda-omron",
+      "source": "efe_custom",
+      "detail": "RoboCasa 移动操作底座合成（Panda + Omron LD 底盘）",
+      "suites": [
+        "robocasa",
+        "robocasa365"
+      ]
+    },
+    {
+      "robot": "franka-allegro",
+      "source": "compose",
+      "detail": "franka-panda + Allegro 手",
+      "suites": [
+        "dexjoco"
+      ],
+      "components": [
+        "franka-panda",
+        "allegro-hand"
+      ]
+    },
+    {
+      "robot": "franka-allegro-bimanual",
+      "source": "compose",
+      "detail": "2x (franka-panda + Allegro 手)",
+      "suites": [
+        "dexjoco"
+      ],
+      "components": [
+        "franka-panda",
+        "allegro-hand"
+      ]
+    },
+    {
+      "robot": "ur5e-robotiq-2f85",
+      "source": "compose",
+      "detail": "UR5e + Robotiq 2F-85",
+      "suites": [
+        "autobio",
+        "embodied-safety-exam"
+      ],
+      "components": [
+        "ur5e",
+        "robotiq-2f85"
+      ]
+    },
+    {
+      "robot": "ur5e-dexhand-2f85-bimanual",
+      "source": "efe_custom",
+      "detail": "AutoBio 双臂（UR5e + DexHand + 2F-85）合成体",
+      "suites": [
+        "autobio"
+      ],
+      "components": [
+        "ur5e"
+      ]
+    },
+    {
+      "robot": "sawyer",
+      "source": "public",
+      "detail": "MetaWorld MJCF 已镜像 assets/metaworld（objects/xyz_base.xml，MIT @59fc34d）；EFE P1 编译配置的默认机器人",
+      "suites": [
+        "metaworldplus"
+      ]
+    },
+    {
+      "robot": "aloha-agilex",
+      "source": "have",
+      "detail": "assets_genesis/embodiments/aloha-agilex (silver)",
+      "suites": [
+        "robotwin-2"
+      ]
+    },
+    {
+      "robot": "arx-x5-bimanual",
+      "source": "compose",
+      "detail": "2x ARX-X5（assets_genesis/embodiments/ARX-X5, silver）对称装配",
+      "suites": [
+        "robodojo"
+      ],
+      "components": [
+        "ARX-X5"
+      ]
+    },
+    {
+      "robot": "ARX-X5",
+      "source": "have",
+      "detail": "assets_genesis/embodiments/ARX-X5 (silver)",
+      "suites": [],
+      "component_only": true
+    },
+    {
+      "robot": "aloha-2",
+      "source": "public",
+      "detail": "Mobile ALOHA 仓库（VX300S 双臂 + 夹爪）",
+      "suites": [
+        "autobio",
+        "mujoco-playground",
+        "roboarc"
+      ]
+    },
+    {
+      "robot": "aloha-2-arm",
+      "source": "public",
+      "detail": "Mobile ALOHA 单臂变体",
+      "suites": [
+        "autobio"
+      ]
+    },
+    {
+      "robot": "marvin-bimanual",
+      "source": "efe_custom",
+      "detail": "EFE Genesis 原生机器人（RoboWits 镜像内）",
+      "suites": [
+        "robowits"
+      ]
+    },
+    {
+      "robot": "marvin-bimanual-sharpa-wave",
+      "source": "efe_custom",
+      "detail": "marvin 臂 + SHARPA Wave 灵巧手",
+      "suites": [
+        "dexhand"
+      ],
+      "components": [
+        "marvin-bimanual"
+      ]
+    },
+    {
+      "robot": "sharpa-wave-floating",
+      "source": "efe_custom",
+      "detail": "SHARPA Wave 手浮动本体",
+      "suites": [
+        "dexhand"
+      ]
+    },
+    {
+      "robot": "sharpa-wave-floating-bimanual",
+      "source": "efe_custom",
+      "detail": "2x SHARPA Wave 浮动本体",
+      "suites": [
+        "dexhand"
+      ],
+      "components": [
+        "sharpa-wave-floating"
+      ]
+    },
+    {
+      "robot": "i2rt-yam-bimanual",
+      "source": "efe_custom",
+      "detail": "I2RT YAM 双臂（ABC Sim/YAMLab 镜像内）",
+      "suites": [
+        "abc-sim",
+        "embodied-safety-exam",
+        "yamlab"
+      ]
+    },
+    {
+      "robot": "unitree-g1",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie unitree_g1",
+      "suites": [
+        "embodied-olympics-fun",
+        "embodied-olympics-match",
+        "roboengineer"
+      ]
+    },
+    {
+      "robot": "unitree-g1-dex1",
+      "source": "menagerie",
+      "detail": "G1 + dex1 手（Menagerie g1 + 公开 dex 手）",
+      "suites": [
+        "bigym2"
+      ],
+      "components": [
+        "unitree-g1"
+      ]
+    },
+    {
+      "robot": "unitree-g1-dex3",
+      "source": "menagerie",
+      "detail": "G1 + dex3 手（Menagerie g1 + 公开 dex3 手）",
+      "suites": [
+        "embodiedswe"
+      ],
+      "components": [
+        "unitree-g1"
+      ]
+    },
+    {
+      "robot": "unitree-h1",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie unitree_h1",
+      "suites": [
+        "humanoidbench"
+      ]
+    },
+    {
+      "robot": "unitree-h1-2",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie unitree_h1_2",
+      "suites": [
+        "embodied-olympics-fun"
+      ]
+    },
+    {
+      "robot": "unitree-h1hand",
+      "source": "menagerie",
+      "detail": "H1 + 手（Menagerie h1 + 公开手部）",
+      "suites": [
+        "humanoidbench"
+      ],
+      "components": [
+        "unitree-h1"
+      ]
+    },
+    {
+      "robot": "unitree-go1",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie unitree_go1",
+      "suites": [
+        "mujoco-playground"
+      ]
+    },
+    {
+      "robot": "unitree-go2",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie unitree_go2",
+      "suites": [
+        "roboengineer"
+      ]
+    },
+    {
+      "robot": "boston-dynamics-spot",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie boston_dynamics_spot",
+      "suites": [
+        "mujoco-playground"
+      ]
+    },
+    {
+      "robot": "google-barkour-vb",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie google_barkour_vb",
+      "suites": [
+        "mujoco-playground"
+      ]
+    },
+    {
+      "robot": "fourier-gr1",
+      "source": "public",
+      "detail": "Fourier Intelligence GR1 公开 URDF",
+      "suites": [
+        "robocasa-gr1"
+      ]
+    },
+    {
+      "robot": "rainbow-rby1",
+      "source": "public",
+      "detail": "Rainbow Robotics RB-Y1 公开 URDF",
+      "suites": [
+        "molmospaces"
+      ]
+    },
+    {
+      "robot": "tidybot-plus-plus",
+      "source": "public",
+      "detail": "TidyBot++（Princeton）公开资产",
+      "suites": [
+        "embodied-safety-exam",
+        "kinder"
+      ]
+    },
+    {
+      "robot": "booster-t1",
+      "source": "public",
+      "detail": "Booster Robotics T1 公开 URDF",
+      "suites": [
+        "embodied-olympics-match"
+      ]
+    },
+    {
+      "robot": "ssl-robot",
+      "source": "efe_custom",
+      "detail": "RoboCup SSL 小车（奥运会对抗镜像内）",
+      "suites": [
+        "embodied-olympics-match"
+      ]
+    },
+    {
+      "robot": "foosball-rods",
+      "source": "efe_custom",
+      "detail": "桌上足球杆组机构",
+      "suites": [
+        "embodied-olympics-match"
+      ]
+    },
+    {
+      "robot": "ambench-fahexa",
+      "source": "efe_custom",
+      "detail": "AM-Bench 空中操作平台（镜像内）",
+      "suites": [
+        "ambench"
+      ]
+    },
+    {
+      "robot": "anycar",
+      "source": "efe_custom",
+      "detail": "RoboEngineer 小车（镜像内）",
+      "suites": [
+        "roboengineer"
+      ]
+    },
+    {
+      "robot": "intel-aero-partial",
+      "source": "efe_custom",
+      "detail": "RoboEngineer Intel Aero 部分模型",
+      "suites": [
+        "roboengineer"
+      ]
+    },
+    {
+      "robot": "neural-fly-partial",
+      "source": "efe_custom",
+      "detail": "RoboEngineer Neural-Fly 部分模型",
+      "suites": [
+        "roboengineer"
+      ]
+    },
+    {
+      "robot": "r1pro",
+      "source": "efe_custom",
+      "detail": "Galbot R1 Pro（BEHAVIOR/iSpatialGym 镜像内，数据集有许可门）",
+      "suites": [
+        "behavior-1k",
+        "ispatialgym"
+      ]
+    },
+    {
+      "robot": "myoarm",
+      "source": "blocked",
+      "detail": "MyoSuite 肌肉骨骼模型：Genesis 无 tendon/muscle 致动",
+      "suites": [
+        "myosuite"
+      ]
+    },
+    {
+      "robot": "myoarm-mpl",
+      "source": "blocked",
+      "detail": "MyoSuite 肌肉骨骼模型（MPL 假肢）",
+      "suites": [
+        "myosuite"
+      ]
+    },
+    {
+      "robot": "myoarm-torso",
+      "source": "blocked",
+      "detail": "MyoSuite 肌肉骨骼模型（躯干）",
+      "suites": [
+        "myosuite"
+      ]
+    },
+    {
+      "robot": "myohand",
+      "source": "blocked",
+      "detail": "MyoSuite 肌肉骨骼手",
+      "suites": [
+        "myosuite"
+      ]
+    },
+    {
+      "robot": "myoleg-osl",
+      "source": "blocked",
+      "detail": "MyoSuite 肌肉骨骼腿（OSL 假肢）",
+      "suites": [
+        "myosuite"
+      ]
+    },
+    {
+      "robot": "myolegs",
+      "source": "blocked",
+      "detail": "MyoSuite 肌肉骨骼双腿",
+      "suites": [
+        "myosuite"
+      ]
+    },
+    {
+      "robot": "smplx-human",
+      "source": "out_of_paper",
+      "detail": "SMPL-X 人形（HumanCLAW，论文计数之外）",
+      "suites": []
+    },
+    {
+      "robot": "robotiq-2f85",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie robotiq_2f85",
+      "suites": [],
+      "component_only": true
+    },
+    {
+      "robot": "ur5e",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie universal_robots_ur5e",
+      "suites": [],
+      "component_only": true
+    },
+    {
+      "robot": "kuka-iiwa14-sharpa-ha4",
+      "source": "compose",
+      "detail": "Menagerie kuka_iiwa_14 + SHARPA HA4 手",
+      "suites": [
+        "dextoolbench"
+      ],
+      "components": [
+        "kuka-iiwa14",
+        "sharpa-ha4"
+      ]
+    },
+    {
+      "robot": "kuka-iiwa14",
+      "source": "menagerie",
+      "detail": "MuJoCo Menagerie kuka_iiwa_14",
+      "suites": [],
+      "component_only": true
+    },
+    {
+      "robot": "sharpa-ha4",
+      "source": "efe_custom",
+      "detail": "SHARPA HA4 灵巧手（DexToolBench 镜像内）",
+      "suites": [],
+      "component_only": true
+    },
+    {
+      "robot": "allegro-hand",
+      "source": "public",
+      "detail": "Wonik/Wessling Allegro 手 URDF",
+      "suites": [],
+      "component_only": true
+    }
+  ],
+  "totals": {
+    "suites": 36,
+    "in_paper_suites": 35,
+    "tasks": 1211,
+    "tests": 2398,
+    "by_tier": {
+      "T1": 20,
+      "T3": 9,
+      "TX": 3,
+      "T2": 3,
+      "T0": 1
+    },
+    "by_status": {
+      "planned": 30,
+      "partial": 4,
+      "excluded": 1,
+      "blocked": 1
+    }
+  },
+  "warnings": [
+    "robodojo: upstream drift — paper tests=102, inventory dirs=108"
+  ],
+  "errors": []
+}

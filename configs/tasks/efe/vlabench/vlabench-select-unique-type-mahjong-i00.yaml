@@ -1,0 +1,161 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/select_unique_type_mahjong | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-select-unique-type-mahjong-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: placemat
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_4/placemat_4.xml
+    position:
+    - -0.183806248727689
+    - 0.2965464886361917
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: 1_pin
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+    position:
+    - -0.14883915916855522
+    - -0.03816310033246684
+    - 0.83
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+  - name: 8_sou
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+    position:
+    - -0.07883915916855522
+    - -0.03816310033246684
+    - 0.83
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+  - name: 9_man
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+    position:
+    - -0.00883915916855521
+    - -0.03816310033246684
+    - 0.83
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+  - name: 5_man
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+    position:
+    - 0.061160840831444796
+    - -0.03816310033246684
+    - 0.83
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+  - name: 5_pin
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+    position:
+    - 0.1311608408314448
+    - -0.03816310033246684
+    - 0.83
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+  - name: 3_pin
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+    position:
+    - 0.2011608408314448
+    - -0.03816310033246684
+    - 0.83
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+  - name: 3_man
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/mahjong/mahjong.xml
+    position:
+    - 0.2711608408314448
+    - -0.03816310033246684
+    - 0.83
+    orientation:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    static: false
+
+success:
+  type: contains
+  params:
+    container: placemat
+    objects:
+    - 8_sou
+    negate: false
+    mode: boxes
+    regions:
+    - center:
+      - 0.0
+      - 0.0
+      - 0.0
+      min:
+      - -0.15
+      - -0.1
+      - 0.0
+      max:
+      - 0.15
+      - 0.1
+      - 0.0
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

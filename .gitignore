@@ -185,6 +185,9 @@ plugins/do_as_i_do/assets/sharpa-urdf-usd-xml-main/
 plugins/do_as_i_do/assets/sharpa-urdf-usd-xml.zip
 plugins/do_as_i_do/assets/robots/*.urdf
 
+# VLABench task assets (HF lerobot/vlabench-assets, no redistribution licence)
+assets/vlabench/
+
 # RoboTwin 2.0 assets (~4GB, downloaded from HuggingFace TianxingChen/RoboTwin2.0)
 assets/robotwin/
 # ManiSkill ReplicaCAD scene dataset (~289MB, downloaded from ModelScope jessy888/ManiSkill_replica_cad_dataset)
@@ -212,3 +215,4 @@ BUSINESS_PLAN_mt-embodied-sim*.pdf
 
 # Embedded clone of MuJoCo Menagerie (download via examples/download_github_dir.py)
 plugins/manipulation/dexterous_gnn_qp/assets/mujoco_menagerie/
+.efe_stage/

@@ -1,0 +1,109 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/insert_bloom_flower | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-insert-bloom-flower-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: vase_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/containers/vases/vase_1/vase.xml
+    position:
+    - 0.2792789318171503
+    - 0.19859276965628125
+    - 0.78
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: tulip
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/flowers/bloom_flower/tulip/tulip_draft_0/tulip_draft_0.xml
+    position:
+    - -0.31419506253050117
+    - -0.06083393401793176
+    - 0.9
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: wilted_flower
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/flowers/wilted_flower/wilted_flower_0/wiltered_flower.xml
+    position:
+    - 0.0004686855817390284
+    - -0.12181621556002961
+    - 0.9
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+  - name: wilted_flower
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/flowers/wilted_flower/wilted_flower_1/wiltered_flower.xml
+    position:
+    - 0.31183689966753314
+    - -0.12494936586375593
+    - 0.9
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+
+success:
+  type: contains
+  params:
+    container: vase_seen
+    objects:
+    - tulip
+    negate: false
+    mode: boxes
+    regions:
+    - center:
+      - 0.0
+      - 0.0
+      - 0.0
+      min:
+      - -0.03
+      - -0.03
+      - 0.0
+      max:
+      - 0.03
+      - 0.03
+      - 0.22
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

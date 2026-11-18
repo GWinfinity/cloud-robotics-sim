@@ -1,0 +1,152 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/add_condiment | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-add-condiment-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: counter
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/counters/counter_0/counter.xml
+    position:
+    - 0.5303115820802036
+    - 0.010683069028140774
+    - 0.003983514806393679
+    orientation:
+    - 0.9999357330237302
+    - 0.010948512266964392
+    - -8.276129617504096e-05
+    - -0.0029416070444474186
+    static: true
+  - name: stove
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/stoves/square_gas/model.xml
+    position:
+    - -0.2500000032360692
+    - -5.148670500173294e-09
+    - 0.0019876037552298866
+    orientation:
+    - 0.999999999985613
+    - -5.364169552860695e-06
+    - 6.007783776754081e-09
+    - 1.129311229621567e-08
+    static: true
+  - name: pan_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tablewares/pans/pan_0/model.xml
+    position:
+    - -0.19581609169829667
+    - -0.1278301673935628
+    - 0.8396966653834624
+    orientation:
+    - 0.9999999990023424
+    - 4.404499821404179e-05
+    - -6.354578983808194e-06
+    - -3.869709132141756e-06
+    static: true
+  - name: dishes
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/dishes/dish_without_plate_2/dish_without_plate_2.xml
+    position:
+    - -0.1958158595325422
+    - -0.09783016751085892
+    - 0.8396993080848281
+    orientation:
+    - 0.9999999990023424
+    - 4.404499821404179e-05
+    - -6.354578983808194e-06
+    - -3.869709132141756e-06
+    static: true
+  - name: salt
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/condiment/shaker/shaker_1/model.xml
+    position:
+    - 0.17810615068443833
+    - -0.16943276026058027
+    - 0.7972548700010286
+    orientation:
+    - 0.9970311855057694
+    - 0.0018378113320972292
+    - 0.0004133963794964104
+    - -0.07697575385729914
+    static: false
+  - name: salt_tag
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tube/nametag/nametag.xml
+    position:
+    - 0.28752513653225675
+    - -0.15
+    - 0.75
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: bbq_sauce
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/condiment/bbq_sauce/bbq_sauce1/model.xml
+    position:
+    - 0.15677549776556624
+    - -0.015180560161357784
+    - 0.8248183254360097
+    orientation:
+    - 0.9999665331741835
+    - 0.00010443360264128987
+    - 0.00019075704549011295
+    - 0.008178339499892114
+    static: false
+  - name: salad_dressing
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/condiment/salad_dressing/salad_dressing.xml
+    position:
+    - 0.21144838519829898
+    - 0.13328525883016087
+    - 0.8225621937983214
+    orientation:
+    - 0.9997870259579831
+    - 0.00037010123637830307
+    - 6.173397207431639e-06
+    - -0.020634091040217937
+    static: false
+
+success:
+  type: staged
+  params:
+    stages:
+    - stage: place_fail
+      condition:
+        type: above_region
+        params:
+          object: bbq_sauce
+          platform: pan_seen
+          circle: 0.124654
+    - stage: place_fail
+      condition:
+        type: tipped
+        params:
+          object: bbq_sauce
+          top_offset:
+          - 0.000443
+          - -0.000357
+          - 0.073961
+          bottom_offset:
+          - 0.000443
+          - -0.000357
+          - -0.075
+          threshold: 0.0
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

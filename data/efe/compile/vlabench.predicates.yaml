@@ -1,0 +1,167 @@
+# VLABench 判据表（人工策划，唯一事实来源）。
+# 判据句逐字转写自 EFE tasks/vlabench/*/instruction.md 的 "## Success" 节
+# （--extract-specs 摘编到 vlabench.specs.md 辅助核对），谓词语义对齐上游
+# VLABench tasks/condition.py（MIT，镜像于 data/efe/upstream/vlabench-src）。
+# 实例布局（组件/位姿/条件清单）取自冻结的 environment/instance.json；
+# resolver 据 instance 的 conditions 块逐条映射，XML 里的派生量
+# （足迹半径、top/bottom 站点偏移）在编译期从镜像 MJCF 解析，禁止凭记忆写数。
+# 未映射条件名的任务整单 pending，理由见编译输出的 pending_reasons。
+source:
+  benchmark: VLABench
+  repo: OpenMOSS/VLABench
+  ref: cf588fe60c0c7282174fe979f5913170cfe69017
+  assets: lerobot/vlabench-assets@08d7a44
+  simulator: mujoco+dm_control
+  robot: franka-panda
+  note: "判据句出自 EFE tasks/vlabench/*/instruction.md（上游镜像）与上游 tasks/condition.py"
+
+# upstream condition -> core/success.py 类型分发（resolver 按名执行）：
+#   above  -> above_region（VLABench AboveCondition：目标 z ≥ 平台原点且
+#             (x,y) 落足迹；足迹圆半径取自平台 XML horizontal_radius_site）
+#   pour   -> tipped（PourCondition：bottom.z - top.z > threshold，默认 0；
+#             top/bottom 偏移取自目标 XML 站点，即 "tip past horizontal"）
+#   contain / not_contain -> contains（容器局部坐标系判定；FlatContainer 用
+#             足迹圆 + 0.1 m z 带（上下界开区间），BilliardTable 用构建期
+#             目标袋 bbox，CommonContainer 用 group-3 key 站点 bbox（闭区间）；
+#             not_contain 为 negate）
+#   lift   -> lift（LiftCondition：实体根 z ≥ target_height）
+#   order  -> ordered（OrderCondition：axis 上严格递增，其余轴单侧 offset 容差）
+# 未映射条件名（press_button / is_grasped / joint_in_range / on）的任务整单
+# pending，待接触/关节类谓词接入；条件引用未作为组件出现的实体（内嵌于
+# 容器 MJCF）的任务同样 pending（需子体抽取）。
+condition_map:
+  above: above_region
+  pour: tipped
+  contain: contains
+  not_contain: contains
+  lift: lift
+  order: ordered
+
+# 组件 class -> 动力学：名单内为动态（注入 freejoint，等价 dm_control attach）。
+dynamic_classes:
+  - CommonGraspedEntity
+  - BilliardBall
+  - Book
+  - Fruit
+  - Drink
+  - Snack
+  - Toy
+  - Mahjong
+  - Poker
+  - NumberCube
+  - ChemistryTube
+  - RandomGeom
+
+tasks:
+  add_condiment:
+    goal: "Add bbq_sauce to the dish"
+    note: "判据句 hold bbq_sauce over pan_seen and tip it past horizontal；instance conditions=above→pan_seen, pour"
+  insert_flower:
+    goal: "Put the rose in the vase"
+    note: "instance conditions=contain: vase_seen ← rose"
+  insert_bloom_flower:
+    goal: "Put the tulip in the vase"
+    note: "instance conditions=contain: vase_seen ← tulip"
+  select_fruit:
+    goal: "Put the banana on the plate"
+    note: "instance conditions=contain: plate_seen ← banana；判据=根点落盘足迹+0–0.1 m 带（非稳定放置）"
+  select_fruit_common_sense:
+    goal: "Put the pear on the plate"
+    note: "instance conditions=contain: plate_seen ← pear"
+  select_toy:
+    goal: "Put the mickey in the giftbox"
+    note: "instance conditions=contain: giftbox_seen ← mickey"
+  play_math_game:
+    goal: "Put 4 and 0 on the placemat in ascending order"
+    note: "instance conditions=contain: placemat_seen ← [4,0], order axis=[0]"
+  select_mahjong:
+    goal: "Put the 6_sou on the placemat"
+    note: "instance conditions=contain: placemat ← 6_sou"
+  select_mahjong_semantic:
+    goal: "Put the 9_man on the placemat"
+    note: "instance conditions=contain: placemat ← 9_man"
+  select_mahjong_spatial:
+    goal: "Put the 2_sou on the placemat"
+    note: "instance conditions=contain: placemat ← 2_sou"
+  select_unique_type_mahjong:
+    goal: "Put the 8_sou on the placemat"
+    note: "instance conditions=contain: placemat ← 8_sou"
+  book_rearrange:
+    goal: "Put the books on the shelf in time order"
+    note: "instance conditions=contain: shelf_seen ← 3 books, order axis=[0]"
+  put_box_on_painting:
+    goal: "Put the target_box on the painting"
+    note: "instance conditions=contain: 画框 ← target_box；容器为 Painting（按 group-3 站点 bbox）；target_box 为上游过程生成 RandomGeom（无 xml_path），size 为 spec 级假定"
+    assets_override:
+      target_box:
+        shape_type: box
+        size: [0.04, 0.04, 0.04]
+  select_billiards:
+    goal: "Put the striped_14 in any hole"
+    note: "instance conditions=contain: billiards_table ← striped_14；EFE README 明示只计 VLABench 目标袋（默认 container_mid_1），袋 bbox 为类构建期常量 ±0.07/+0.1"
+  select_billiards_common_sense:
+    goal: "Put the black snooker ball in any hole"
+    note: "同 select_billiards（目标袋 container_mid_1）"
+  select_billiards_spatial:
+    goal: "Put the striped_14 in any hole (spatial)"
+    note: "同 select_billiards（目标袋 container_mid_1）"
+  select_drink:
+    pending: true
+    note: "nop 门拦截（2026-11-18）：冻结初始态 juice_seen(-0.066,0.364,0.855) 已在 fridge_open keypoint bbox（世界 x∈[0.001,0.265]）之外，not_contain 起始为真；需人工核对上游初始布局/key_sites 构成后解锁"
+  select_chemistry_tube:
+    goal: "Take the CuCl2 tube out of the stand"
+    note: "instance conditions=not_contain: chemistry_tube_stand ← CuCl2"
+  heat_food:
+    pending: true
+    note: "instance conditions=contain: microwave_seen ← cooked_food}，但上游 HeatFoodTask.should_terminate_episode 追加 is_closed(门) ∧ is_activate(启动钮)——接触/门状态谓词待接入后整单解锁"
+  friction_qa:
+    pending: true
+    note: "press_button 谓词待接入"
+  magnetism_qa:
+    pending: true
+    note: "press_button 谓词待接入"
+  reflection_qa:
+    pending: true
+    note: "press_button 谓词待接入"
+  select_painting:
+    pending: true
+    note: "press_button 谓词待接入"
+  hammer_nail_and_hang_picture:
+    pending: true
+    note: "joint_in_range 谓词待接入（钉子滑关节 qpos ∈ [0.05,0.08]）"
+  texas_holdem:
+    pending: true
+    note: "instance conditions 为空；上游按牌型排序在代码中选五张牌，判据需人工转写"
+  select_poker:
+    pending: true
+    note: "is_grasped 谓词待接入"
+  select_poker_semantic:
+    pending: true
+    note: "is_grasped 谓词待接入"
+  select_poker_spatial:
+    pending: true
+    note: "is_grasped 谓词待接入"
+  select_nth_largest_poker:
+    pending: true
+    note: "is_grasped+lift 谓词待接入"
+  select_book_spatial:
+    pending: true
+    note: "书实体未作为组件出现（内嵌 shelf MJCF），需子体抽取"
+  select_specific_type_book:
+    pending: true
+    note: "书实体未作为组件出现（内嵌 shelf MJCF），需子体抽取"
+  find_unseen_object:
+    pending: true
+    note: "apple 未作为组件出现（内嵌 cabinet MJCF），需子体抽取"
+  take_out_cool_drink:
+    pending: true
+    note: "juice 未作为组件出现（内嵌 small_fridge MJCF），需子体抽取"
+  select_chemistry_tube_common_sense:
+    pending: true
+    note: "KMnO4 管未作为组件出现（内嵌 TubeStand/场景），需子体抽取"
+  select_chemistry_tube_semantic:
+    pending: true
+    note: "KMnO4 管未作为组件出现，需子体抽取"
+  select_chemistry_tube_spatial:
+    pending: true
+    note: "KMnO4 管未作为组件出现，需子体抽取"

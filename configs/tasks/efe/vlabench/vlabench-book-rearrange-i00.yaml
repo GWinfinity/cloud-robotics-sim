@@ -1,0 +1,127 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/book_rearrange | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-book-rearrange-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: shelf_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/containers/shelf/shelf1.xml
+    position:
+    - 0.08364686635702637
+    - 0.3914926451829496
+    - 0.78
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: century17_don_quixote_book
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/books/books_time_order/Century17_Don_Quixote_Book/century17_don_quixote_book.xml
+    position:
+    - -0.1916617960544969
+    - -0.009188711480466488
+    - 0.85
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: century20_the_metamorphosis_book
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/books/books_time_order/Century20_The_Metamorphosis_Book/century20_the_metamorphosis_book.xml
+    position:
+    - 0.0004686855817390284
+    - -0.07181621556002962
+    - 0.85
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: century18_pride_and_prejudice_book
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/books/books_time_order/Century18_Pride_and_Prejudice_Book/century18_pride_and_prejudice_book.xml
+    position:
+    - 0.2255804204157224
+    - -0.03816310033246684
+    - 0.85
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+
+success:
+  type: staged
+  params:
+    stages:
+    - stage: place_fail
+      condition:
+        type: contains
+        params:
+          container: shelf_seen
+          objects:
+          - century17_don_quixote_book
+          - century18_pride_and_prejudice_book
+          - century20_the_metamorphosis_book
+          negate: false
+          mode: boxes
+          regions:
+          - center:
+            - 0.0
+            - 0.0
+            - 0.0
+            min:
+            - -0.15
+            - -0.401
+            - 0.0
+            max:
+            - 0.15
+            - 0.401
+            - 0.6
+    - stage: place_fail
+      condition:
+        type: ordered
+        params:
+          objects:
+          - century17_don_quixote_book
+          - century18_pride_and_prejudice_book
+          - century20_the_metamorphosis_book
+          axes:
+          - 0
+          offset: 0.1
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

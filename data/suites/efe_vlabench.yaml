@@ -1,0 +1,17 @@
+# EFE vlabench 套件汇总（编译物）；由 tools/compile_efe_suite.py 生成。
+version: 1
+name: efe-vlabench
+tasks:
+  - ../../configs/tasks/efe/vlabench/vlabench-add-condiment-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-book-rearrange-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-insert-bloom-flower-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-insert-flower-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-put-box-on-painting-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-chemistry-tube-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-fruit-common-sense-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-fruit-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-mahjong-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-mahjong-semantic-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-mahjong-spatial-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-toy-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-select-unique-type-mahjong-i00.yaml

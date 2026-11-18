@@ -1,0 +1,114 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/put_box_on_painting | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-put-box-on-painting-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: Dinner and Love on the River
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+    position:
+    - -0.35950658625495857
+    - 0.15675971780695452
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: Cypresses
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+    position:
+    - -0.019668727392107257
+    - 0.09531939083047117
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: Girl before a mirror
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+    position:
+    - 0.3583382039455031
+    - 0.18162257703906703
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: target_box
+    shape_type: box
+    size:
+    - 0.04
+    - 0.04
+    - 0.04
+    position:
+    - 0.0028121134904341427
+    - -0.07181621556002962
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: false
+    mass: 0.2
+    friction: 1.0
+
+success:
+  type: contains
+  params:
+    container: Dinner and Love on the River
+    objects:
+    - target_box
+    negate: false
+    mode: boxes
+    regions:
+    - center:
+      - 0.0
+      - 0.0
+      - 0.0
+      min:
+      - -0.15
+      - 0.0
+      - 0.03
+      max:
+      - 0.15
+      - 0.36
+      - 0.03
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu
