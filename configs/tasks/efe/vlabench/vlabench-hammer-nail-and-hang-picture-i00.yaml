@@ -1,0 +1,95 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/hammer_nail_and_hang_picture | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-hammer-nail-and-hang-picture-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: counter
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/counters/counter_0/counter.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: "\u672C\u6240\u7ACB\u5DDD_painting"
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+    position:
+    - -0.156381
+    - -0.295141
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: cypresses_painting
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+    position:
+    - 0.191729
+    - -0.291701
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: nail
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tools/nail/nail_0/nail.xml
+    position:
+    - 0.18712
+    - 0.3
+    - 1.17161
+    orientation:
+    - 0.707107
+    - 0.707107
+    - 0.0
+    - 0.0
+    static: false
+  - name: hammer
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tools/hammer/whole_hammer/hammer_2/hammer.xml
+    position:
+    - 0.101875
+    - 0.23
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+
+success:
+  type: joint_window
+  params:
+    object: nail
+    window:
+    - 0.05
+    - 0.08
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

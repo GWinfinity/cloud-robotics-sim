@@ -1,0 +1,142 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/heat_food | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-heat-food-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: microwave_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/containers/microwaves/hamilton_beach/model.xml
+    position:
+    - -0.129753
+    - 0.37838
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: tray_seen
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/containers/tray/tray_12/model.xml
+    position:
+    - 0.280331
+    - -0.05234
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: ingredient
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/ingredients/garlic/garlic_1/model.xml
+    position:
+    - 0.268494
+    - -0.142108
+    - 0.85
+    orientation:
+    - 1.000001
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: cooked_food
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/cooked_food/hot_dog/hot_dog_2/model.xml
+    position:
+    - 0.277075
+    - -0.03285
+    - 0.85
+    orientation:
+    - 1.000001
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: ingredient
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/ingredients/onion/onion_0/model.xml
+    position:
+    - 0.257348
+    - 0.040066
+    - 0.85
+    orientation:
+    - 1.000001
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: staged
+  params:
+    stages:
+    - stage: place_fail
+      condition:
+        type: contains
+        params:
+          container: microwave_seen
+          objects:
+          - cooked_food
+          negate: false
+          mode: boxes
+          regions:
+          - center:
+            - 0.0
+            - 0.0
+            - 0.0
+            min:
+            - -0.3
+            - -0.192
+            - 0.03
+            max:
+            - 0.3
+            - 0.216
+            - 0.357
+    - stage: place_fail
+      condition:
+        type: joint_window
+        params:
+          object: microwave_seen
+          window:
+          - -0.3141593
+          - 0.3141593
+    - stage: place_fail
+      condition:
+        type: in_contact
+        params:
+          objects:
+          - microwave_seen
+          with_entity: '@robot'
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

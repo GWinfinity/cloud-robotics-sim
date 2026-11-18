@@ -54,6 +54,7 @@ def _stub_scene(spec):
         quat = pose.get("orientation", spawn.orientation)
         entity.get_quat.return_value = np.asarray(quat, dtype=float)
         entity.in_contact = MagicMock(return_value=False)
+        entity.get_joint_positions = MagicMock(return_value=np.zeros(4))
         entities[spawn.name] = entity
     return SimpleNamespace(entities=entities)
 

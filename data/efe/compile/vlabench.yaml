@@ -12,23 +12,15 @@ source:
   robot: franka-panda
   note: 判据句出自 EFE tasks/vlabench/*/instruction.md（上游镜像）与上游 tasks/condition.py
 pending_tasks:
-- vlabench-hammer-nail-and-hang-picture-i00
-- vlabench-heat-food-i00
 - vlabench-select-drink-i00
 - vlabench-take-out-cool-drink-i00
-- vlabench-texas-holdem-i00
 pending_reasons:
-  vlabench-hammer-nail-and-hang-picture-i00: joint_in_range 谓词待接入（钉子滑关节 qpos ∈ [0.05,0.08]），且
-    Nail 需关节化非静态 spawn
-  vlabench-heat-food-i00: 'instance conditions=contain: microwave_seen ← cooked_food}，但上游
-    HeatFoodTask.should_terminate_episode 追加 is_closed(门) ∧ is_activate(启动钮)——接触/门状态谓词待接入后整单解锁'
   vlabench-select-drink-i00: nop 门拦截（2026-11-18）：冻结初始态 juice_seen(-0.066,0.364,0.855)
     已在 fridge_open keypoint bbox（世界 x∈[0.001,0.265]）之外，not_contain 起始为真；需人工核对上游初始布局/key_sites
     构成后解锁
   vlabench-take-out-cool-drink-i00: nop 门拦截（2026-11-18）：子体位姿合成后 juice 世界(-0.098,0.352,0.89)
     在 small_fridge keypoint bbox（x∈[-0.038,0.346]）外，not_contain 起始为真；与 select_drink
     同型的系统性疑问（待专查：上游冻结语义/attach 位姿口径）
-  vlabench-texas-holdem-i00: instance conditions 为空；上游按牌型排序在代码中选五张牌，判据需人工转写
 tasks:
   vlabench-add-condiment-i00:
     family: vlabench/add_condiment
@@ -523,6 +515,219 @@ tasks:
         objects:
         - button1
         with_entity: '@robot'
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-hammer-nail-and-hang-picture-i00:
+    family: vlabench/hammer_nail_and_hang_picture
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: counter
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/counters/counter_0/counter.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: 本所立川_painting
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+      position:
+      - -0.156381
+      - -0.295141
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: cypresses_painting
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/paintings/painting.xml
+      position:
+      - 0.191729
+      - -0.291701
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: nail
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tools/nail/nail_0/nail.xml
+      position:
+      - 0.18712
+      - 0.3
+      - 1.17161
+      orientation:
+      - 0.707107
+      - 0.707107
+      - 0.0
+      - 0.0
+      static: false
+    - name: hammer
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tools/hammer/whole_hammer/hammer_2/hammer.xml
+      position:
+      - 0.101875
+      - 0.23
+      - 0.8
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - 0.707107
+      static: true
+    success:
+      type: joint_window
+      params:
+        object: nail
+        window:
+        - 0.05
+        - 0.08
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-heat-food-i00:
+    family: vlabench/heat_food
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: microwave_seen
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/containers/microwaves/hamilton_beach/model.xml
+      position:
+      - -0.129753
+      - 0.37838
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: tray_seen
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/containers/tray/tray_12/model.xml
+      position:
+      - 0.280331
+      - -0.05234
+      - 0.8
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - 0.707107
+      static: true
+    - name: ingredient
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/ingredients/garlic/garlic_1/model.xml
+      position:
+      - 0.268494
+      - -0.142108
+      - 0.85
+      orientation:
+      - 1.000001
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: cooked_food
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/cooked_food/hot_dog/hot_dog_2/model.xml
+      position:
+      - 0.277075
+      - -0.03285
+      - 0.85
+      orientation:
+      - 1.000001
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: ingredient
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/ingredients/onion/onion_0/model.xml
+      position:
+      - 0.257348
+      - 0.040066
+      - 0.85
+      orientation:
+      - 1.000001
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    success:
+      type: staged
+      params:
+        stages:
+        - stage: place_fail
+          condition:
+            type: contains
+            params:
+              container: microwave_seen
+              objects:
+              - cooked_food
+              negate: false
+              mode: boxes
+              regions:
+              - center:
+                - 0.0
+                - 0.0
+                - 0.0
+                min:
+                - -0.3
+                - -0.192
+                - 0.03
+                max:
+                - 0.3
+                - 0.216
+                - 0.357
+        - stage: place_fail
+          condition:
+            type: joint_window
+            params:
+              object: microwave_seen
+              window:
+              - -0.3141593
+              - 0.3141593
+        - stage: place_fail
+          condition:
+            type: in_contact
+            params:
+              objects:
+              - microwave_seen
+              with_entity: '@robot'
     max_episode_steps: 4000
     efe:
       fidelity: spec
@@ -3793,6 +3998,240 @@ tasks:
           - 0.15
           - 0.1
           - 0.0
+    max_episode_steps: 4000
+    efe:
+      fidelity: spec
+      notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+  vlabench-texas-holdem-i00:
+    family: vlabench/texas_holdem
+    goal: ''
+    robot: franka_panda
+    scene: efe_tabletop
+    task_type: efe_static
+    assets_task_relevant:
+    - name: table
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: target_container
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_1/placemat.xml
+      position:
+      - 0.103182
+      - 0.321029
+      - 0.8
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+    - name: card_holder0
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder0.xml
+      position:
+      - -0.155417
+      - -0.028156
+      - 0.8
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - 0.707107
+      static: true
+    - name: 10_of_spades
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_10_of_spades.xml
+      position:
+      - -0.155417
+      - -0.028156
+      - 0.87
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    - name: card_holder1
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder1.xml
+      position:
+      - -0.093036
+      - -0.036025
+      - 0.8
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - 0.707107
+      static: true
+    - name: 9_of_hearts
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_9_of_hearts.xml
+      position:
+      - -0.093036
+      - -0.036025
+      - 0.87
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    - name: card_holder2
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder2.xml
+      position:
+      - 0.004742
+      - 0.02994
+      - 0.8
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - 0.707107
+      static: true
+    - name: 8_of_clubs
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_8_of_clubs.xml
+      position:
+      - 0.004742
+      - 0.02994
+      - 0.87
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    - name: card_holder3
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder3.xml
+      position:
+      - 0.149363
+      - 0.003256
+      - 0.8
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - 0.707107
+      static: true
+    - name: 6_of_hearts
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_6_of_hearts.xml
+      position:
+      - 0.149363
+      - 0.003256
+      - 0.87
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    - name: card_holder4
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder4.xml
+      position:
+      - 0.235259
+      - 0.01019
+      - 0.8
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - 0.707107
+      static: true
+    - name: 9_of_diamonds
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_9_of_diamonds.xml
+      position:
+      - 0.235259
+      - 0.01019
+      - 0.87
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    - name: card_holder5
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder5.xml
+      position:
+      - -0.071182
+      - -0.240124
+      - 0.8
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - 0.707107
+      static: true
+    - name: 7_of_diamonds
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_7_of_diamonds.xml
+      position:
+      - -0.071182
+      - -0.240124
+      - 0.87
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    - name: card_holder6
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder6.xml
+      position:
+      - 0.024425
+      - -0.164953
+      - 0.8
+      orientation:
+      - 0.707107
+      - 0.0
+      - 0.0
+      - 0.707107
+      static: true
+    - name: jack_of_clubs
+      shape_type: mjcf
+      mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_jack_of_clubs.xml
+      position:
+      - 0.024425
+      - -0.164953
+      - 0.87
+      orientation:
+      - 0.5
+      - -0.5
+      - 0.5
+      - 0.5
+      static: false
+    success:
+      type: contains
+      params:
+        container: target_container
+        objects:
+        - 6_of_hearts
+        - 7_of_diamonds
+        - 8_of_clubs
+        - 9_of_hearts
+        - 10_of_spades
+        mode: circle
+        circle: 0.17
+        z_band:
+        - 0.0
+        - 0.1
     max_episode_steps: 4000
     efe:
       fidelity: spec

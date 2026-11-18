@@ -116,6 +116,18 @@ quadrants 求解器。因此：
    （joint_in_range+关节化 spawn）、heat-food（门/钮附加语义）、texas-holdem
    （代码层判据）、select-drink/take-out-cool-drink（nop 拦截的"出生即成功"
    同型疑问，待专查上游冻结语义）。
+   **当日三轮（34/36）**：`joint_window` 谓词（joint_in_range + 门状态
+   |qpos|<π/10）；**articulated spawn**（关节化组件保关节无 freejoint；
+   活动体网格惯性自动补 shell——MuJoCo 3.10 对活动 mesh geom 的强制）；
+   heat_food/texas_holdem 经 extra_conditions 转写（判据表声明式附加条件，
+   contains 型同样编译期解析容器几何）。剩余 2 个 pending 为 nop 门拦截的
+   饮料同型疑问（冻结态即在容器外，待专查上游语义）。
+   **+100 路线评估（2026-11-18）**：VLABench 已接近收官；再 +100 需新开
+   套件，固定成本排序——KinDER 5（seed-only 实例需 kindergarden 代码栈重建
+   场景 + TidyBot++ 移动本体，性价比低）、LIBERO-MAX 64（最大单体，但需
+   LIBERO-PRO 场景栈与 robosuite 位精确语义降级，多日工程）、RoboPaint 43
+   （需独立光栅评分器，单独立项）、Olympics-Fun 79 / Dex 系 62（Menagerie
+   本体转换波次 + 逐场景重建）。建议下一波从 LIBERO-MAX 垂直切片立项。
 
 ## 6. 冒烟证据（panda+counter+shaker，CUDA/quadrants，2026-11-17）
 

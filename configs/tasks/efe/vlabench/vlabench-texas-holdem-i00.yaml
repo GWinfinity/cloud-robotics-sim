@@ -1,0 +1,246 @@
+# EFE 迁移编译物（vlabench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: vlabench/texas_holdem | goal: 
+# fidelity: spec | notes: 判据句见 instruction.md；实例为上游冻结 seed 0
+version: 1
+
+task:
+  name: vlabench-texas-holdem-i00
+  type: efe_static
+  robot: franka_panda
+  scene: efe_tabletop
+  max_episode_steps: 4000
+
+assets:
+  task_relevant:
+  - name: table
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/table/table.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: target_container
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/obj/meshes/tablewares/placemats/placemat_1/placemat.xml
+    position:
+    - 0.103182
+    - 0.321029
+    - 0.8
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+  - name: card_holder0
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder0.xml
+    position:
+    - -0.155417
+    - -0.028156
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 10_of_spades
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_10_of_spades.xml
+    position:
+    - -0.155417
+    - -0.028156
+    - 0.87
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder1
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder1.xml
+    position:
+    - -0.093036
+    - -0.036025
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 9_of_hearts
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_9_of_hearts.xml
+    position:
+    - -0.093036
+    - -0.036025
+    - 0.87
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder2
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder2.xml
+    position:
+    - 0.004742
+    - 0.02994
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 8_of_clubs
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_8_of_clubs.xml
+    position:
+    - 0.004742
+    - 0.02994
+    - 0.87
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder3
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder3.xml
+    position:
+    - 0.149363
+    - 0.003256
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 6_of_hearts
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_6_of_hearts.xml
+    position:
+    - 0.149363
+    - 0.003256
+    - 0.87
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder4
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder4.xml
+    position:
+    - 0.235259
+    - 0.01019
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 9_of_diamonds
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_9_of_diamonds.xml
+    position:
+    - 0.235259
+    - 0.01019
+    - 0.87
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder5
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder5.xml
+    position:
+    - -0.071182
+    - -0.240124
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: 7_of_diamonds
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_7_of_diamonds.xml
+    position:
+    - -0.071182
+    - -0.240124
+    - 0.87
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+  - name: card_holder6
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_card_holder6.xml
+    position:
+    - 0.024425
+    - -0.164953
+    - 0.8
+    orientation:
+    - 0.707107
+    - 0.0
+    - 0.0
+    - 0.707107
+    static: true
+  - name: jack_of_clubs
+    shape_type: mjcf
+    mjcf_path: assets/vlabench/.derived/vlabench_texas_holdem_i00_jack_of_clubs.xml
+    position:
+    - 0.024425
+    - -0.164953
+    - 0.87
+    orientation:
+    - 0.5
+    - -0.5
+    - 0.5
+    - 0.5
+    static: false
+
+success:
+  type: contains
+  params:
+    container: target_container
+    objects:
+    - 6_of_hearts
+    - 7_of_diamonds
+    - 8_of_clubs
+    - 9_of_hearts
+    - 10_of_spades
+    mode: circle
+    circle: 0.17
+    z_band:
+    - 0.0
+    - 0.1
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

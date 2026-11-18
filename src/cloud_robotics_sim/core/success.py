@@ -42,6 +42,7 @@ SUCCESS_TYPES = (
     "lift",
     "ordered",
     "in_contact",
+    "joint_window",
 )
 
 
@@ -557,6 +558,44 @@ class OrderedCondition(SuccessCondition):
 
 
 @dataclass
+class JointWindowCondition(SuccessCondition):
+    """Success when an entity's joint position sits inside a window.
+
+    VLABench ``joint_in_range`` (hammer-nail: nail slide qpos in
+    ``target_pos_range``) and door-state checks derived from upstream
+    ``ContainerWithDoor.is_closed`` (|qpos| < closed_threshold → window
+    ``[-threshold, +threshold]``). ``dof`` indexes the entity's DOF vector;
+    for articulated spawns (joints kept, no freejoint) dof 0 is the model's
+    first joint.
+    """
+
+    object_name: str
+    window: tuple[float, float]
+    dof: int = 0
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        entity = _entity(scene, self.object_name)
+        get_joints = getattr(entity, "get_joint_positions", None)
+        if get_joints is None:
+            raise TypeError(
+                f"entity '{self.object_name}' does not expose "
+                f"get_joint_positions() required by joint_window"
+            )
+        qpos = np.asarray(get_joints(), dtype=float)
+        if qpos.size <= self.dof:
+            raise IndexError(
+                f"joint_window dof {self.dof} out of range for "
+                f"'{self.object_name}' ({qpos.size} dofs)"
+            )
+        lo, hi = self.window
+        return bool(lo <= qpos[self.dof] <= hi)
+
+    def last_failure_stage(self) -> str:
+        return self.failure_stage
+
+
+@dataclass
 class InContactCondition(SuccessCondition):
     """Success when every named object contacts the counterpart set.
 
@@ -1028,6 +1067,22 @@ def _build_ordered(params: dict) -> OrderedCondition:
     )
 
 
+def _build_joint_window(params: dict) -> JointWindowCondition:
+    object_name = _require(params, "object", "joint_window")
+    if not isinstance(object_name, str):
+        raise ConfigError("params.object must be a string")
+    window = _vec(_require(params, "window", "joint_window"), 2, "params.window")
+    dof = params.get("dof", 0)
+    if not isinstance(dof, int) or isinstance(dof, bool) or dof < 0:
+        raise ConfigError(f"params.dof must be a non-negative integer, got {dof!r}")
+    return JointWindowCondition(
+        object_name=object_name,
+        window=(float(window[0]), float(window[1])),
+        dof=dof,
+        failure_stage=_failure_stage(params),
+    )
+
+
 def _build_in_contact(params: dict) -> InContactCondition:
     objects = _require(params, "objects", "in_contact")
     if (
@@ -1116,6 +1171,8 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return _build_ordered(params)
     if success_type == "in_contact":
         return _build_in_contact(params)
+    if success_type == "joint_window":
+        return _build_joint_window(params)
     raise ConfigError(
         f"unknown success type {success_type!r}; available types: {list(SUCCESS_TYPES)}"
     )

@@ -6,6 +6,8 @@ tasks:
   - ../../configs/tasks/efe/vlabench/vlabench-book-rearrange-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-find-unseen-object-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-friction-qa-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-hammer-nail-and-hang-picture-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-heat-food-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-insert-bloom-flower-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-insert-flower-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-magnetism-qa-i00.yaml
@@ -33,3 +35,4 @@ tasks:
   - ../../configs/tasks/efe/vlabench/vlabench-select-specific-type-book-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-toy-i00.yaml
   - ../../configs/tasks/efe/vlabench/vlabench-select-unique-type-mahjong-i00.yaml
+  - ../../configs/tasks/efe/vlabench/vlabench-texas-holdem-i00.yaml

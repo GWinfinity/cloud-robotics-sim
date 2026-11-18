@@ -40,6 +40,7 @@ condition_map:
   order: ordered
   press_button: in_contact
   is_grasped: in_contact
+  joint_in_range: joint_window
 
 # 组件 class -> 动力学：名单内为动态（注入 freejoint，等价 dm_control attach）。
 dynamic_classes:
@@ -55,6 +56,7 @@ dynamic_classes:
   - NumberCube
   - ChemistryTube
   - RandomGeom
+  - Nail
 
 tasks:
   add_condiment:
@@ -116,8 +118,13 @@ tasks:
     goal: "Take the CuCl2 tube out of the stand"
     note: "instance conditions=not_contain: chemistry_tube_stand ← CuCl2"
   heat_food:
-    pending: true
-    note: "instance conditions=contain: microwave_seen ← cooked_food}，但上游 HeatFoodTask.should_terminate_episode 追加 is_closed(门) ∧ is_activate(启动钮)——接触/门状态谓词待接入后整单解锁"
+    goal: "Heat the food in the microwave (door closed, start pressed)"
+    note: "上游 HeatFoodTask.should_terminate_episode = contain(microwave←cooked_food) ∧ is_closed(|门关节|<π/10) ∧ is_activate(启动钮接触)；后两者经 extra_conditions 转写（in_contact 用整机近似，spec 注）"
+    extra_conditions:
+      - type: joint_window
+        params: {object: microwave_seen, window: [-0.3141593, 0.3141593]}
+      - type: in_contact
+        params: {objects: [microwave_seen], with_entity: "@robot"}
   friction_qa:
     goal: "Press the button that answers the friction question"
     note: "instance conditions=press_button: button1（in_contact 转写，力带按 spec 注）"
@@ -148,11 +155,16 @@ tasks:
     goal: "Press the button before the target painting"
     note: "instance conditions=press_button: button1"
   hammer_nail_and_hang_picture:
-    pending: true
-    note: "joint_in_range 谓词待接入（钉子滑关节 qpos ∈ [0.05,0.08]），且 Nail 需关节化非静态 spawn"
+    goal: "Drive the nail into the wall (nail qpos 0.05–0.08)"
+    note: "instance conditions=joint_in_range: nail ∈ [0.05,0.08]；Nail 关节化动态 spawn（slide 关节，无 freejoint）"
   texas_holdem:
-    pending: true
-    note: "instance conditions 为空；上游按牌型排序在代码中选五张牌，判据需人工转写"
+    goal: "Show the largest hand on the placemat"
+    note: "上游 PokerPlayTask.init_conditions：get_largest_combination 从 7 张牌选最大组合，ContainCondition(目标牌, target_container)；instruction 具名五张牌（6H 7D 8C 9H 10S），extra_conditions 转写"
+    extra_conditions:
+      - type: contains
+        params:
+          container: target_container
+          objects: [6_of_hearts, 7_of_diamonds, 8_of_clubs, 9_of_hearts, 10_of_spades]
   select_poker:
     goal: "Grasp and lift the ace_of_hearts"
     note: "instance conditions=is_grasped(ace_of_hearts)+lift(0.9)"

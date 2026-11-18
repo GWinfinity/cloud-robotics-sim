@@ -99,12 +99,19 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
     digest = hashlib.sha256(raw).hexdigest()[:12]
     # scheme version bumps when the staging transforms change, so stale
     # staged siblings from older schemes are never reused.
-    flags = f"{'dyn' if dynamic else 'static'}-v2"
+    flags = f"{'dyn' if dynamic else 'static'}-v4"
     staged = source.with_name(f"{source.stem}-{flags}-{digest}{source.suffix}")
     if staged.is_file() and staged.stat().st_size > 0:
         return staged
 
     root = ET.fromstring(raw)
+    # dm_control-ism: component XMLs emitted by dm_control carry geom-level
+    # ``shellinertia="true"``, which plain MJCF rejects (it makes MuJoCo
+    # require per-mesh inertia). Strip it; shell inertia then lives on the
+    # mesh assets where MJCF puts it.
+    for el in root.iter():
+        if el.get("shellinertia") is not None:
+            del el.attrib["shellinertia"]
     if dynamic:
         # VLABench's dm_control composer attaches graspables as ONE free
         # body; upstream component XMLs vary: a single top-level body, loose
@@ -118,9 +125,10 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
             bodies = [c for c in children if c.tag == "body"]
             articulated = any(b.find(".//joint") is not None for b in bodies)
             if articulated:
-                raise ValueError(
-                    f"MJCF dynamic spawn refuses articulated model {source}"
-                )
+                # Jointed attachment (nail slide joint, articulated tools):
+                # the model's own joints constrain it — no freejoint; the
+                # entity spawns unfixed with its joints live.
+                continue
             if len(bodies) == 1 and len(children) == 1:
                 if bodies[0].find("freejoint") is None:
                     bodies[0].insert(0, ET.Element("freejoint"))
@@ -134,6 +142,20 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
                 wrapper.append(child)
             wrapper.insert(0, ET.Element("freejoint"))
             worldbody.append(wrapper)
+
+    # Articulated models (jointed bodies: microwave door, nail slide): MuJoCo
+    # requires mesh geoms on MOVING bodies to carry explicit mesh inertia
+    # ("inertia should be specified in the mesh asset") — upstream 3.2.2 was
+    # lax, and a static-file probe cannot see it, so patch proactively.
+    articulated = any(
+        body.find(".//joint") is not None
+        for worldbody in root.iter("worldbody")
+        for body in worldbody.iter("body")
+    )
+    if articulated:
+        for mesh in root.findall(".//asset/mesh"):
+            if mesh.get("file") and mesh.get("inertia") is None:
+                mesh.set("inertia", "shell")
 
     def _compile_ok(content: bytes) -> str | None:
         """Return the volume-error marker when MuJoCo rejects the model."""
@@ -259,6 +281,16 @@ class GenesisEntityBackend(EntityBackend):
             return bool(len(data))
         shape = getattr(geom_a, "shape", None)
         return bool(int(shape[0]) > 0) if shape else bool(geom_a)
+
+    def get_joint_positions(self) -> np.ndarray:
+        """DOF positions of the wrapped entity (articulated spawns: model joints)."""
+        entity = self._resolve_entity()
+        get_dofs = getattr(entity, "get_dofs_position", None)
+        if get_dofs is None:
+            raise TypeError(
+                f"wrapped entity of {self._name!r} exposes no get_dofs_position()"
+            )
+        return _to_numpy_f64(get_dofs())
 
     def set_color(self, color: tuple[float, float, float, float]) -> None:
         entity = self._resolve_entity()

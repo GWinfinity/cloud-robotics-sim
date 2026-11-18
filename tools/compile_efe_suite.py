@@ -815,6 +815,22 @@ def _vlb_map_condition(  # noqa: C901 - per-condition transcription branches
                 "offset": float(params.get("offset", 0.1) or 0.1),
             },
         }
+    if cond_name == "joint_in_range":
+        entities = params.get("entities")
+        if not isinstance(entities, list) or len(entities) != 1:
+            raise SystemExit(f"{task_label}: joint_in_range needs exactly one entity")
+        target_range = params.get("target_pos_range")
+        if not isinstance(target_range, list) or len(target_range) != 2:
+            raise SystemExit(
+                f"{task_label}: joint_in_range needs target_pos_range [lo, hi]"
+            )
+        return {
+            "type": "joint_window",
+            "params": {
+                "object": entities[0],
+                "window": [float(target_range[0]), float(target_range[1])],
+            },
+        }
     if cond_name in ("press_button", "is_grasped"):
         if cond_name == "press_button":
             button = params.get("target_button")
@@ -1042,8 +1058,8 @@ def resolve_vlabench(predicates: dict[str, Any]) -> dict[str, Any]:
             )
         cond_specs: list[dict[str, Any]] = []
         conditions = task_cfg.get("conditions", {})
-        if not conditions:
-            reasons.append("instance 无 conditions 块")
+        if not conditions and not spec.get("extra_conditions"):
+            reasons.append("instance 无 conditions 块且判据表无 extra_conditions")
         for cond_name, params in conditions.items():
             if cond_name not in cmap:
                 reasons.append(f"condition '{cond_name}' 无映射")
@@ -1054,6 +1070,28 @@ def resolve_vlabench(predicates: dict[str, Any]) -> dict[str, Any]:
                 )
             except SystemExit as exc:
                 reasons.append(str(exc))
+        # curated additions transcribed from the upstream task class (beyond
+        # the instance's declarative conditions), e.g. heat_food's door +
+        # start-button semantics from HeatFoodTask.should_terminate_episode.
+        for extra in spec.get("extra_conditions") or []:
+            if not isinstance(extra, dict) or extra.get("type") not in cmap.values():
+                reasons.append(f"extra_conditions 条目非法: {extra!r}")
+                continue
+            extra_spec = json.loads(json.dumps(extra))
+            extra_params = extra_spec.get("params") or {}
+            if extra_spec.get("type") == "contains" and "mode" not in extra_params:
+                container = components.get(extra_params.get("container") or "")
+                if container is None:
+                    reasons.append(
+                        f"extra_conditions 引用未知容器: {extra_params.get('container')!r}"
+                    )
+                    continue
+                try:
+                    extra_params.update(_vlb_container_params(container, name))
+                except SystemExit as exc:
+                    reasons.append(str(exc))
+                    continue
+            cond_specs.append(extra_spec)
         if not reasons:
             referenced: set[str] = set()
             for spec in cond_specs:
