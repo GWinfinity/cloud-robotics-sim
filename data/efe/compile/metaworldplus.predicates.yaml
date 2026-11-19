@@ -69,7 +69,16 @@ envs:
     object: button
     goal_site: hole
     windows: "{z: [-0.024, 0.024]}"
-    note: 引擎 nop 门实证：复位后按钮悬空下落到 goal 窗口内（z≈0.13∈[0.096,0.144]）——需 fixture 几何（按钮套）支撑高位复位；判据 env 语义已核（|button.z−hole.z|≤0.024）
+    note: >-
+      2026-11-19 攻坚实证（.djxvenv MuJoCo 3.4 编译原 XML + mj_forward）：
+      hole 世界 z=0.22，按钮顶 rest z=0.314、滑轨全行程 top=0.254——
+      |top−hole| 恒为 0.034 > EFE 判据 0.024（EFE instruction 逐字：
+      "The button's top is within 2.4 cm of the target point in height;
+      only z is compared"），几何结构性不可达，与 box z 随机化无关。
+      待查：EFE 冻结实例的 meta target_pos 究竟取 hole 还是 self.goal
+      [0,0.88,0.1]，或其 rcb grader 的 button top 定义（可能含
+      box 下沉/其他帧）；原自由球体建模 nop 失败原因：z 是重力方向，
+      悬空按钮落体穿过窗口（sibling button-press 的 y 向不受重力影响）。
   button-press-topdown-wall:
     xml: sawyer_button_press_topdown_wall.xml
     object: button
