@@ -540,6 +540,308 @@ class EfeDtbTask(EfeBaseTask):
         return reward, terminated, truncated, info
 
 
+@register_robot("franka_allegro")
+def _make_franka_allegro(**kwargs: Any) -> Any:
+    """Franka Panda + 16-DoF Allegro hand (DexJoCo single arm, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("franka_allegro")
+
+
+@register_robot("franka_allegro_bimanual")
+def _make_franka_allegro_bimanual(**kwargs: Any) -> Any:
+    """Twin Franka Panda + Allegro hands (DexJoCo bimanual, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("franka_allegro_bimanual")
+
+
+class EfeDjxTask(EfeBaseTask):
+    """DexJoCo frozen-scene task (Franka Panda + Allegro hand, 1-2 arms).
+
+    The world block carries the replayed instance (env XML + model-array
+    overlays + frozen qpos/qvel); the ``djx`` block carries the family name
+    and per-family constants. Each step the task evaluates the family's
+    ``_compute_success`` port (verbatim from the upstream env class) and
+    publishes ``info['djx_success']``; the episode ends at the first success
+    or on the family's failure latch, exactly like DexJoCo's own loop.
+
+    Ported families (pose/joint/contact readable): ``water_plant``
+    (ref_point site in the plant cylinder + spray-trigger joint hysteresis,
+    30-step hold, trigger-outside fails), ``pick_bucket`` (boxed food inside
+    the bucket-ref site AABB + bucket bottom lifted 15 cm),
+    ``pinch_tongs`` (tongs-joint pinch counting + 10 cm lift, 30-step
+    hold), ``fold_glasses`` (both glass joints > 1.1 and the glass inside
+    the open-box cavity, 50-step hold), ``microwave_cook`` (door joint
+    closed, hot dog inside the interior-site box, start-button contact),
+    ``bimanual_assembly`` (peg-to-socket-bottom contact, 30-step hold) and
+    ``click_mouse`` (mouse on the pad + joint-0 click past the frozen
+    initial value, display latches blue, 10-step hold). Families needing
+    engine quantities this runtime does not expose (pre-impact velocities,
+    static display-geom poses, tower reconstruction, digit-sequence
+    material state) stay ``pending`` in the compile KB with the reason
+    recorded.
+    """
+
+    def __init__(
+        self,
+        config: TaskConfig,
+        world: dict | None = None,
+        djx: dict | None = None,
+    ):
+        super().__init__(config)
+        if world is not None and not isinstance(world, dict):
+            raise TypeError("efe_djx world must be a mapping or None")
+        if djx is not None and not isinstance(djx, dict):
+            raise TypeError("efe_djx djx must be a mapping or None")
+        self._world_cfg = world or {}
+        self._djx = djx or {}
+        self._meta_cache: dict | None = None
+        self._reset_state()
+
+    def _reset_state(self) -> None:
+        """Per-episode latches (the env classes' Python-side state)."""
+        self._success_count = 0
+        self._failure = False
+        self._trigger_pulled = False
+        self._pinch_count = 0
+        self._pinch_in_progress = False
+        self._display_blue = False
+        family = self._djx.get("family", "")
+        target = {
+            "water_plant": 30,
+            "click_mouse": 10,
+            "fold_glasses": 50,
+            "pinch_tongs": 30,
+            "bimanual_assembly": 30,
+        }.get(family, 1)
+        self._success_target = int(self._djx.get("success_target") or target)
+
+    def _world(self, scene: Any) -> Any:
+        entities = getattr(scene, "entities", None) or {}
+        entity = entities.get("world")
+        if entity is None:
+            raise KeyError(
+                "efe_djx expects the 'world' asset in scene.entities; "
+                f"available: {sorted(entities)}"
+            )
+        return entity
+
+    def _apply_frozen_state(self, scene: Any) -> None:
+        world = self._world(scene)
+        qpos_path = self._world_cfg.get("qpos_path")
+        qvel_path = self._world_cfg.get("qvel_path")
+        if qpos_path:
+            world.set_qpos(np.load(qpos_path))
+        if qvel_path:
+            set_qvel = getattr(world, "set_qvel", None)
+            if set_qvel is not None:
+                set_qvel(np.load(qvel_path))
+
+    # -- accessors ---------------------------------------------------------
+
+    def _pos(self, scene: Any, body: str) -> np.ndarray:
+        from cloud_robotics_sim.core.success import _abc_pos
+
+        return _abc_pos(scene, body)
+
+    def _quat(self, scene: Any, body: str) -> np.ndarray:
+        from cloud_robotics_sim.core.success import _abc_quat
+
+        return _abc_quat(scene, body)
+
+    def _site_pos(self, scene: Any, site: str) -> np.ndarray:
+        """Current world position of a site from the extraction meta."""
+        meta = self._meta(scene)
+        record = (meta.get("sites") or {})[site]
+        body_pos = self._pos(scene, record["body"])
+        body_quat = self._quat(scene, record["body"])
+        from cloud_robotics_sim.core.success import _quat_to_mat
+
+        local = np.asarray(record["local"], dtype=float)
+        world_point: np.ndarray = body_pos + _quat_to_mat(body_quat) @ local
+        return world_point
+
+    def _qpos(self, scene: Any, joint: str) -> float:
+        world = self._world(scene)
+        for record in self._meta(scene).get("joints") or []:
+            if record.get("name") == joint:
+                qpos = np.asarray(world.get_qpos(), dtype=float)
+                return float(qpos[int(record["qposadr"])])
+        raise KeyError(joint)
+
+    def _touch(self, scene: Any, a: str, b: str) -> bool:
+        from cloud_robotics_sim.core.success import _world_bodies_touch
+
+        return bool(_world_bodies_touch(self._world(scene), a, b))
+
+    def _geom_any_contact(self, scene: Any, geom: str) -> bool:
+        """True when the named geom appears in any live contact pair."""
+        world = self._world(scene)
+        contacts = world.get_self_contacts()
+        geom_names = world.geom_names()
+        link_names = world.link_names()
+        wanted = {geom}
+        pairs: list[tuple[str, str]] = []
+        ga = np.asarray(contacts.get("geom_a", [])).reshape(-1)
+        gb = np.asarray(contacts.get("geom_b", [])).reshape(-1)
+        la = np.asarray(contacts.get("link_a", [])).reshape(-1)
+        lb = np.asarray(contacts.get("link_b", [])).reshape(-1)
+        for i in range(la.size):
+            a = geom_names[ga[i]] if i < ga.size else link_names[la[i]]
+            b = geom_names[gb[i]] if i < gb.size else link_names[lb[i]]
+            pairs.append((a, b))
+        return any(a in wanted or b in wanted for a, b in pairs)
+
+    def _meta(self, scene: Any) -> dict:
+        if self._meta_cache is None:
+            import json
+
+            meta_path = self._world_cfg.get("meta_path")
+            if not meta_path:
+                raise KeyError("efe_djx world.meta_path missing")
+            self._meta_cache = json.loads(
+                Path(str(meta_path)).read_text(encoding="utf-8")
+            )
+        return self._meta_cache
+
+    # -- family success ports (verbatim from the env classes) --------------
+
+    def _step_family(self, scene: Any) -> bool:
+        family = self._djx.get("family", "")
+        trigger = False
+        if family == "water_plant":
+            ref = self._site_pos(scene, "ref_point")
+            plant = self._pos(scene, "plant")
+            dx, dy, dz = ref - plant
+            inside = (dx * dx + dy * dy <= 0.2 * 0.2) and (-0.2 <= dz <= 0.2)
+            joint = self._qpos(scene, "joint_0")
+            if joint < 0.25:
+                self._trigger_pulled = False
+            elif joint > 0.34:
+                self._trigger_pulled = True
+            if self._trigger_pulled and not inside:
+                self._failure = True
+            trigger = inside and self._trigger_pulled
+        elif family == "pick_bucket":
+            box_pos = self._pos(scene, self._djx.get("object_body", "boxed_food_0"))
+            corners = np.array(
+                [self._site_pos(scene, f"bucket_ref_{i}") for i in range(8)]
+            )
+            mins = corners.min(axis=0)
+            maxs = corners.max(axis=0)
+            inside = bool(np.all(box_pos >= mins) and np.all(box_pos <= maxs))
+            bottom = np.array(
+                [
+                    self._site_pos(scene, name)[2]
+                    for name in self._djx.get("bucket_bottom_sites", [])
+                ]
+            )
+            lifted = bool(np.all(bottom - float(self._djx["bucket_bottom_z0"]) >= 0.15))
+            return inside and lifted
+        elif family == "pinch_tongs":
+            joint = self._qpos(scene, "tongs_joint_0")
+            if joint <= -0.07 and self._pinch_in_progress:
+                self._pinch_in_progress = False
+                self._pinch_count += 1
+            elif joint >= 0.1 and not self._pinch_in_progress:
+                self._pinch_in_progress = True
+            tongs_z = float(self._pos(scene, self._djx.get("tongs_body", "tongs"))[2])
+            trigger = tongs_z >= float(self._djx["lift_z"]) and self._pinch_count >= 3
+        elif family == "fold_glasses":
+            glass = self._pos(scene, "glass")
+            box = self._pos(scene, "open_box")
+            local = glass - box
+            inside = (
+                -0.145 <= local[0] <= 0.145
+                and -0.145 <= local[1] <= 0.145
+                and -0.045 <= local[2] <= 0.0475 - 0.02
+            )
+            j0 = self._qpos(scene, "glass_joint_0")
+            j1 = self._qpos(scene, "glass_joint_1")
+            trigger = j0 > 1.1 and j1 > 1.1 and inside
+        elif family == "bimanual_microwave_cook":
+            closed = abs(self._qpos(scene, "microjoint")) < 1e-2
+            hot = self._pos(scene, "hot_dog")
+            micro = self._pos(scene, "microwave_object")
+            micro_quat = self._quat(scene, "microwave_object")
+            from cloud_robotics_sim.core.success import _quat_to_mat
+
+            local = _quat_to_mat(micro_quat).T @ (hot - micro)
+            sites = self._meta(scene).get("sites") or {}
+            p0 = np.asarray(sites["int_p0"]["local"], dtype=float)
+            px = np.asarray(sites["int_px"]["local"], dtype=float)
+            py = np.asarray(sites["int_py"]["local"], dtype=float)
+            pz = np.asarray(sites["int_pz"]["local"], dtype=float)
+            margin = 0.01
+            inside = (
+                p0[0] - margin <= local[0] <= px[0] + margin
+                and p0[1] - margin <= local[1] <= py[1] + margin
+                and p0[2] - margin <= local[2] <= pz[2] + margin
+            )
+            pressed = self._geom_any_contact(scene, "start_button")
+            return bool(inside and closed and pressed)
+        elif family == "bimanual_assembly":
+            trigger = self._touch(scene, "industreal_round_peg_8mm", "socket_bottom")
+        elif family == "click_mouse":
+            mouse = self._pos(scene, "mouse_root")
+            pad = self._pos(scene, "mousepad")
+            radius = float(self._djx["mousepad_radius"])
+            dx, dy, dz = mouse - pad
+            in_pad = (dx * dx + dy * dy <= radius * radius) and abs(dz) <= 0.05
+            clicked = (
+                self._qpos(scene, "mouse_joint_0")
+                - float(self._djx["mouse_joint0_init"])
+            ) > 0.001
+            if in_pad and clicked and not self._display_blue:
+                self._display_blue = True
+            trigger = in_pad and self._display_blue
+        else:
+            return False
+
+        # Held families: count consecutive trigger steps.
+        if self._success_target <= 1:
+            return bool(trigger)
+        self._success_count = self._success_count + 1 if trigger else 0
+        return self._success_count >= self._success_target
+
+    # -- Task API ----------------------------------------------------------
+
+    def reset(self, scene: Any, robot: Any, seed: int) -> dict:
+        info = super().reset(scene, robot, seed)
+        self._meta_cache = None
+        self._reset_state()
+        self._apply_frozen_state(scene)
+        if self._djx.get("family") == "click_mouse":
+            world = self._world(scene)
+            for record in self._meta(scene).get("joints") or []:
+                if record.get("name") == "mouse_joint_0":
+                    qpos = np.asarray(world.get_qpos(), dtype=float)
+                    self._djx["mouse_joint0_init"] = float(qpos[int(record["qposadr"])])
+        info["djx_success"] = False
+        return info
+
+    def step(self, scene: Any, robot: Any, action: np.ndarray):
+        reward, terminated, truncated, info = super().step(scene, robot, action)
+        success = self._step_family(scene)
+        info["djx_success"] = success
+        if self._failure:
+            return reward, True, truncated, info
+        return reward, terminated, truncated, info
+
+
+@register_task("efe_djx")
+def _make_efe_djx(**kwargs: Any) -> EfeDjxTask:
+    """DexJoCo frozen-scene task with world/djx YAML blocks."""
+    kwargs.pop("type", None)
+    max_steps = int(kwargs.pop("max_episode_steps", 500))
+    world = kwargs.pop("world", None)
+    djx = kwargs.pop("djx", None)
+    return EfeDjxTask(
+        TaskConfig(name="efe", max_episode_steps=max_steps),
+        world=world,
+        djx=djx,
+    )
+
+
 @register_task("efe_dtb")
 def _make_efe_dtb(**kwargs: Any) -> EfeDtbTask:
     """DexToolBench frozen-scene task with world/dtb YAML blocks."""

@@ -1291,6 +1291,20 @@ def _resolve_dtb(predicates: dict[str, Any]) -> dict[str, Any]:
 RESOLVERS["dextoolbench"] = _resolve_dtb
 
 
+def _resolve_djx(predicates: dict[str, Any]) -> dict[str, Any]:
+    """DexJoCo resolves from the replayed world packs, not a table."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        import djx_resolver
+
+        return djx_resolver.resolve_suite("dexjoco", load_inventory("dexjoco"))
+    finally:
+        sys.path.remove(str(Path(__file__).resolve().parent))
+
+
+RESOLVERS["dexjoco"] = _resolve_djx
+
+
 # ---------------------------------------------------------------------------
 # LIBERO-MAX resolver: probe dumps -> resolved KB
 # ---------------------------------------------------------------------------
@@ -1579,7 +1593,7 @@ def render_task_yaml(suite: str, name: str, record: dict[str, Any]) -> str:
             "    " + line
             for line in yaml.safe_dump(event, sort_keys=False).splitlines()
         )
-    for block in ("world", "appliances", "timers", "abc", "dtb"):
+    for block in ("world", "appliances", "timers", "abc", "dtb", "djx"):
         value = record.get(block)
         if value:
             lines.append(f"  {block}:")

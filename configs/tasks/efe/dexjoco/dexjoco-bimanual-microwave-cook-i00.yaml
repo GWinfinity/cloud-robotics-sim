@@ -1,0 +1,45 @@
+# EFE 迁移编译物（dexjoco）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: bimanual_microwave_cook | goal: 
+# fidelity: spec | notes: 判据逐字转写上游 bimanual_microwave_cook._compute_success（首次成功即终局，无 hold）；世界包=env XML + 194 个模型数组回放；instance_sha=6c16f3cfa1c737c7
+version: 1
+
+task:
+  name: dexjoco-bimanual-microwave-cook-i00
+  type: efe_djx
+  robot: franka_allegro_bimanual
+  scene: efe_world
+  max_episode_steps: 180000
+  world:
+    mjcf_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.xml
+    qpos_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.qpos.npy
+    qvel_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.qvel.npy
+    meta_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.meta.json
+  djx:
+    family: bimanual_microwave_cook
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: djx_success
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

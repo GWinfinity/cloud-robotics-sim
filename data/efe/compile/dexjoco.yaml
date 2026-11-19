@@ -1,0 +1,239 @@
+# 编译知识库（生成物）：--resolve 从判据表+上游模型生成；人工修正会被下次 --resolve 覆盖，
+# 持久标注请改 .predicates.yaml。
+suite: dexjoco
+robot: franka_allegro(+bimanual)
+scene: efe_world
+source:
+  benchmark: DexJoCo
+  repo: brave-eai/dexjoco
+  ref: 8d23b0fab23b17a58c4b55f3942e17013aaf8267
+  simulator: mujoco
+  robot: franka-allegro
+  note: 世界=env XML + model__ 数组回放（restorer 语义逐字）；判据=EfeDjxTask 逐字移植
+pending_tasks:
+- dexjoco-bimanual-hanoi-i00
+- dexjoco-bimanual-photograph-i00
+- dexjoco-bimanual-unlock-ipad-i00
+- dexjoco-hammer-nail-i00
+- dexjoco-pinch-tongs-i00
+pending_reasons:
+  dexjoco-bimanual-hanoi-i00: 盘塔重建几何（disk_assignment/柱位误差）移植量大，待专批
+  dexjoco-bimanual-photograph-i00: 需静态展示 geom 世界位姿（target_region/axis_z），世界实体无 geom
+    位姿接口
+  dexjoco-bimanual-unlock-ipad-i00: 数字序列 + 屏幕材质状态机，需 geom_matid 运行时语义
+  dexjoco-hammer-nail-i00: 需锤头预冲击速度（qvel 缓冲），世界实体无 get_qvel
+  dexjoco-pinch-tongs-i00: tongs_pos 传感器框架映射未核实（实例冻结态 tongs 体 z=0.05 与 lift_z=1.02
+    语义需 sensor 表确认）
+tasks:
+  dexjoco-bimanual-assembly-i00:
+    family: bimanual_assembly
+    goal: ''
+    robot: franka_allegro_bimanual
+    scene: efe_world
+    task_type: efe_djx
+    world:
+      mjcf_path: assets/dexjoco/worlds/dexjoco-bimanual-assembly-i00.xml
+      qpos_path: assets/dexjoco/worlds/dexjoco-bimanual-assembly-i00.qpos.npy
+      qvel_path: assets/dexjoco/worlds/dexjoco-bimanual-assembly-i00.qvel.npy
+      meta_path: assets/dexjoco/worlds/dexjoco-bimanual-assembly-i00.meta.json
+    djx:
+      family: bimanual_assembly
+    success:
+      type: djx_success
+    max_episode_steps: 180000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 bimanual_assembly._compute_success（首次成功即终局，无 hold）；世界包=env XML
+        + 194 个模型数组回放；instance_sha=e39abc9b3d77cd72
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/dexjoco/worlds/dexjoco-bimanual-assembly-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  dexjoco-bimanual-microwave-cook-i00:
+    family: bimanual_microwave_cook
+    goal: ''
+    robot: franka_allegro_bimanual
+    scene: efe_world
+    task_type: efe_djx
+    world:
+      mjcf_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.xml
+      qpos_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.qpos.npy
+      qvel_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.qvel.npy
+      meta_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.meta.json
+    djx:
+      family: bimanual_microwave_cook
+    success:
+      type: djx_success
+    max_episode_steps: 180000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 bimanual_microwave_cook._compute_success（首次成功即终局，无 hold）；世界包=env
+        XML + 194 个模型数组回放；instance_sha=6c16f3cfa1c737c7
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/dexjoco/worlds/dexjoco-bimanual-microwave-cook-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  dexjoco-click-mouse-i00:
+    family: click_mouse
+    goal: ''
+    robot: franka_allegro
+    scene: efe_world
+    task_type: efe_djx
+    world:
+      mjcf_path: assets/dexjoco/worlds/dexjoco-click-mouse-i00.xml
+      qpos_path: assets/dexjoco/worlds/dexjoco-click-mouse-i00.qpos.npy
+      qvel_path: assets/dexjoco/worlds/dexjoco-click-mouse-i00.qvel.npy
+      meta_path: assets/dexjoco/worlds/dexjoco-click-mouse-i00.meta.json
+    djx:
+      family: click_mouse
+      mousepad_radius: 0.15
+    success:
+      type: djx_success
+    max_episode_steps: 180000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 click_mouse._compute_success（首次成功即终局，无 hold）；世界包=env XML + 194
+        个模型数组回放；instance_sha=ad73bedaf42257f0
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/dexjoco/worlds/dexjoco-click-mouse-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  dexjoco-fold-glasses-i00:
+    family: fold_glasses
+    goal: ''
+    robot: franka_allegro
+    scene: efe_world
+    task_type: efe_djx
+    world:
+      mjcf_path: assets/dexjoco/worlds/dexjoco-fold-glasses-i00.xml
+      qpos_path: assets/dexjoco/worlds/dexjoco-fold-glasses-i00.qpos.npy
+      qvel_path: assets/dexjoco/worlds/dexjoco-fold-glasses-i00.qvel.npy
+      meta_path: assets/dexjoco/worlds/dexjoco-fold-glasses-i00.meta.json
+    djx:
+      family: fold_glasses
+    success:
+      type: djx_success
+    max_episode_steps: 180000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 fold_glasses._compute_success（首次成功即终局，无 hold）；世界包=env XML +
+        194 个模型数组回放；instance_sha=35849caecf4a0f6d
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/dexjoco/worlds/dexjoco-fold-glasses-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  dexjoco-pick-bucket-i00:
+    family: pick_bucket
+    goal: ''
+    robot: franka_allegro
+    scene: efe_world
+    task_type: efe_djx
+    world:
+      mjcf_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.xml
+      qpos_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.qpos.npy
+      qvel_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.qvel.npy
+      meta_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.meta.json
+    djx:
+      family: pick_bucket
+      object_body: boxed_food_0
+      bucket_bottom_sites:
+      - bucket_ref_0
+      - bucket_ref_2
+      - bucket_ref_4
+      - bucket_ref_6
+      bucket_bottom_z0: 0.92
+    success:
+      type: djx_success
+    max_episode_steps: 180000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 pick_bucket._compute_success（首次成功即终局，无 hold）；世界包=env XML + 194
+        个模型数组回放；instance_sha=1cb042bf6d46ad45
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  dexjoco-water-plant-i00:
+    family: water_plant
+    goal: ''
+    robot: franka_allegro
+    scene: efe_world
+    task_type: efe_djx
+    world:
+      mjcf_path: assets/dexjoco/worlds/dexjoco-water-plant-i00.xml
+      qpos_path: assets/dexjoco/worlds/dexjoco-water-plant-i00.qpos.npy
+      qvel_path: assets/dexjoco/worlds/dexjoco-water-plant-i00.qvel.npy
+      meta_path: assets/dexjoco/worlds/dexjoco-water-plant-i00.meta.json
+    djx:
+      family: water_plant
+    success:
+      type: djx_success
+    max_episode_steps: 180000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 water_plant._compute_success（首次成功即终局，无 hold）；世界包=env XML + 194
+        个模型数组回放；instance_sha=04f14553ced4b0ed
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/dexjoco/worlds/dexjoco-water-plant-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true

@@ -242,6 +242,15 @@ def extract_one(task: str) -> dict[str, Any]:
         "joints": joints,
         "bodies": bodies,
         "sites": sites,
+        "geoms": {
+            model.geom(i).name: {
+                "body": model.body(int(model.geom_bodyid[i])).name,
+                "size": [round(float(v), 6) for v in model.geom_size[i]],
+                "type": int(model.geom_type[i]),
+            }
+            for i in range(model.ngeom)
+            if model.geom(i).name
+        },
     }
     (out_dir / f"{task}.meta.json").write_text(
         json.dumps(meta, indent=1, sort_keys=True), encoding="utf-8"

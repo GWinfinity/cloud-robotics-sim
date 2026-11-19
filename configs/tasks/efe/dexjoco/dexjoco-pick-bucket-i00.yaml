@@ -1,0 +1,52 @@
+# EFE 迁移编译物（dexjoco）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: pick_bucket | goal: 
+# fidelity: spec | notes: 判据逐字转写上游 pick_bucket._compute_success（首次成功即终局，无 hold）；世界包=env XML + 194 个模型数组回放；instance_sha=1cb042bf6d46ad45
+version: 1
+
+task:
+  name: dexjoco-pick-bucket-i00
+  type: efe_djx
+  robot: franka_allegro
+  scene: efe_world
+  max_episode_steps: 180000
+  world:
+    mjcf_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.xml
+    qpos_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.qpos.npy
+    qvel_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.qvel.npy
+    meta_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.meta.json
+  djx:
+    family: pick_bucket
+    object_body: boxed_food_0
+    bucket_bottom_sites:
+    - bucket_ref_0
+    - bucket_ref_2
+    - bucket_ref_4
+    - bucket_ref_6
+    bucket_bottom_z0: 0.92
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/dexjoco/worlds/dexjoco-pick-bucket-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: djx_success
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

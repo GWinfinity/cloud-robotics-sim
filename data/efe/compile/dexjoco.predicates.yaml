@@ -1,0 +1,12 @@
+# DexJoCo 判据表（占位说明）。判据语义的逐字源是上游各 env 的
+# _compute_success（brave-eai/dexjoco @ 8d23b0f，镜像于
+# data/efe/upstream/djx-src）；EfeDjxTask 已移植 6/11 家族，其余 5 个
+# pending 理由见 data/efe/compile/dexjoco.yaml 的 pending_reasons。
+source:
+  benchmark: DexJoCo
+  repo: brave-eai/dexjoco
+  ref: 8d23b0fab23b17a58c4b55f3942e17013aaf8267
+  simulator: mujoco
+  robot: franka-allegro
+  note: 判据逐字出自各 env _compute_success
+envs: {}

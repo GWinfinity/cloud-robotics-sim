@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-19T10:36:20.529930+00:00",
+  "generated_at": "2026-11-19T12:30:46.760072+00:00",
   "paper": {
     "arxiv": "2611.12177",
     "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
@@ -200,6 +200,7 @@
         "source": null,
         "simulator": "mujoco",
         "kinds": [
+          "arm",
           "hand"
         ],
         "robots": [
@@ -212,9 +213,9 @@
       },
       "project": {
         "tier": "T1",
-        "status": "planned",
-        "target": "plugins/manipulation/dexterous_gnn_qp 扩展",
-        "note": "任务导向灵巧操作工具包；Allegro 手 URDF 公开可得"
+        "status": "partial",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族（efe_djx）",
+        "note": "6/11 已编译（2026-11-19，spec 级；offline nop 门绿 + Genesis 引擎冒烟 6/6 RC=0）。世界包 11/11=env XML+194 个 model__ 数组回放（restorer 语义逐字，mjSTATE_INTEGRATION 423 维按 3.4 位序拆）；判据逐字移植 6 家族（water_plant/pick_bucket/fold_glasses/microwave_cook/assembly/click_mouse，首次成功即终局无 hold）；pending 5：pinch_tongs（传感器框架未核实）/hammer_nail（需 qvel）/hanoi（塔重建）/unlock_ipad（序列+材质）/photograph（geom 位姿），理由见编译 KB"
       },
       "inventory": {
         "n_tasks": 11,
@@ -1793,8 +1794,8 @@
       "T0": 1
     },
     "by_status": {
-      "partial": 11,
-      "planned": 22,
+      "partial": 12,
+      "planned": 21,
       "excluded": 2,
       "ported": 1
     }

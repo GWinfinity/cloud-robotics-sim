@@ -78,6 +78,7 @@ SUCCESS_TYPES = (
     "abc_hold",
     "abc_drawer_sequence",
     "dtb_all_goals",
+    "djx_success",
     "all",
     "any",
     "not",
@@ -2959,6 +2960,20 @@ class DtbAllGoalsCondition(SuccessCondition):
 
 
 @dataclass
+class DjxSuccessCondition(SuccessCondition):
+    """DexJoCo verdict: the episode ends at the env's own first success (the
+    EFE suite adds no hold on this suite). ``EfeDjxTask`` evaluates the
+    family's ported ``_compute_success`` each step and publishes
+    ``info['djx_success']``; missing info is a failure (nop-safe).
+    """
+
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        return bool((info or {}).get("djx_success"))
+
+
+@dataclass
 class AbcDrawerSequenceCondition(SuccessCondition):
     """``multi_drawer_target_in_bin``: the prompted targets reach the goal
     bin *in order* — the task advances the latch (upstream's evaluator-side
@@ -3389,6 +3404,8 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return _build_abc_drawer_sequence(params)
     if success_type == "dtb_all_goals":
         return _build_dtb_all_goals(params)
+    if success_type == "djx_success":
+        return DjxSuccessCondition()
     if success_type == "all":
         return _build_all(params)
     if success_type == "any":
