@@ -1,0 +1,33 @@
+# EFE abc-sim 套件汇总（编译物）；由 tools/compile_efe_suite.py 生成。
+version: 1
+name: efe-abc-sim
+tasks:
+  - ../../configs/tasks/efe/abc-sim/abc-sim-ball-tray-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-chess-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-conveyor-pick-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-count-four-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-count-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-count-one-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-count-three-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-count-two-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-dish-rack-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-drawer-search-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-grab-clutter-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-hang-mug-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-inhand-transfer-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-lego-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-nuts-bolts-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-pouring-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-put-bottles-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-put-relative-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-spell-abc-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-spell-agi-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-spell-bair-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-spell-cat-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-spell-dog-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-spell-fish-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-spell-xdof-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-spell-yam-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-sweep-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-throw-bottles-i00.yaml
+  - ../../configs/tasks/efe/abc-sim/abc-sim-turn-mug-i00.yaml

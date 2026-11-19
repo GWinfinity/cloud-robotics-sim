@@ -1,0 +1,296 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: throw_bottles | goal: 
+# fidelity: spec | notes: 判据逐字转写上游 throw_plastic_bottles_in_bin evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=aadad7bdb8c0，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-throw-bottles-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-throw-bottles-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-throw-bottles-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-throw-bottles-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-throw-bottles-i00.meta.json
+  abc:
+    family: throw_bottles
+    rule: event
+    hold_steps: 30
+    step_check:
+      type: abc_bottles_throw
+      params:
+        objects:
+        - name: bottle_1
+          offset:
+          - 0.0
+          - 0.0
+          - 0.03770647943019867
+          reach: 0.11430367082357407
+        - name: bottle_2
+          offset:
+          - 0.0
+          - 0.0
+          - 0.03784701228141785
+          reach: 0.11472970992326736
+        - name: bottle_3
+          offset:
+          - 0.0
+          - 0.0
+          - 0.03700226545333862
+          reach: 0.1121688187122345
+        - name: bottle_4
+          offset:
+          - 0.0
+          - 0.0
+          - 0.03544256091117859
+          reach: 0.10744083672761917
+        bin: bin
+        apothem: 0.11100322
+        floor_z: 0.00297329
+        top_z: 0.1813707
+        success_count: 4
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      bottle_1_joint:
+        qposadr: 0
+        qveladr: 0
+      bottle_2_joint:
+        qposadr: 7
+        qveladr: 6
+      bottle_3_joint:
+        qposadr: 14
+        qveladr: 12
+      bottle_4_joint:
+        qposadr: 21
+        qveladr: 18
+      bin_joint:
+        qposadr: 28
+        qveladr: 24
+      left_joint1:
+        qposadr: 35
+        qveladr: 30
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 36
+        qveladr: 31
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 37
+        qveladr: 32
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 38
+        qveladr: 33
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 39
+        qveladr: 34
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 40
+        qveladr: 35
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 41
+        qveladr: 36
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 42
+        qveladr: 37
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 43
+        qveladr: 38
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 44
+        qveladr: 39
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 45
+        qveladr: 40
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 46
+        qveladr: 41
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 47
+        qveladr: 42
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 48
+        qveladr: 43
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 49
+        qveladr: 44
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 50
+        qveladr: 45
+        range:
+        - -0.0475
+        - 0.00205
+    randomization_seed: 0
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-throw-bottles-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_hold
+  params:
+    steps: 30
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

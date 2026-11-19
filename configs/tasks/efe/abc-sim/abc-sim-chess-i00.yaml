@@ -1,0 +1,530 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: chess | goal: 
+# fidelity: spec | notes: 判据逐字转写上游 set_up_chess_pieces_on_board evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=65f14022364f，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-chess-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-chess-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-chess-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-chess-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-chess-i00.meta.json
+  abc:
+    family: chess
+    rule: event
+    hold_steps: 30
+    step_check:
+      type: abc_chess
+      params:
+        board: chessboard
+        normal_local:
+        - 0.0
+        - 0.9999999999932538
+        - -3.6732051033488457e-06
+        targets:
+        - name: black_pawn_8_jnt
+          goal:
+          - -0.1384
+          - 0.046899324129944645
+          - -0.18400017227207807
+        - name: black_bishop_1_jnt
+          goal:
+          - -0.1941
+          - 0.04689970393935233
+          - -0.08060017227277563
+        - name: black_king_1_jnt
+          goal:
+          - -0.194
+          - 0.04690008962588818
+          - 0.02439982772651607
+        - name: black_queen_1_jnt
+          goal:
+          - -0.1958
+          - 0.04689989164013311
+          - -0.029500172273120333
+        - name: black_pawn_1_jnt
+          goal:
+          - -0.1403
+          - 0.04690028430575866
+          - 0.07739982772615848
+        - name: black_pawn_4_jnt
+          goal:
+          - -0.14459999999999995
+          - 0.04690008595268308
+          - 0.0233998277265228
+        classes:
+        - black_pawn
+        - black_bishop
+        - black_king
+        - black_queen
+        - black_pawn
+        - black_pawn
+        non_targets:
+        - name: black_bishop_2_jnt
+          goal:
+          - -0.19409999999999994
+          - 0.04690028540772019
+          - 0.07769982772615647
+        - name: black_knight_1_jnt
+          goal:
+          - -0.19269999999999993
+          - 0.04690047788366761
+          - 0.13009982772580292
+        - name: black_knight_2_jnt
+          goal:
+          - -0.19190000000000002
+          - 0.04689951293268695
+          - -0.1326001722724248
+        - name: black_pawn_2_jnt
+          goal:
+          - -0.13760000000000003
+          - 0.04690065309555103
+          - 0.17779982772548122
+        - name: black_pawn_3_jnt
+          goal:
+          - -0.14029999999999998
+          - 0.046900467966013826
+          - 0.1273998277258212
+        - name: black_pawn_5_jnt
+          goal:
+          - -0.13710000000000006
+          - 0.04689990780223557
+          - -0.025100172273150007
+        - name: black_pawn_6_jnt
+          goal:
+          - -0.13990000000000002
+          - 0.046899701000788246
+          - -0.0814001722727702
+        - name: black_pawn_7_jnt
+          goal:
+          - -0.1376
+          - 0.04689953313531502
+          - -0.12710017227246193
+        - name: black_rook_1_jnt
+          goal:
+          - -0.19319999999999998
+          - 0.046899312008367805
+          - -0.1873001722720558
+        - name: black_rook_2_jnt
+          goal:
+          - -0.18939999999999996
+          - 0.046900674032820125
+          - 0.1834998277254427
+        - name: white_bishop_1_jnt
+          goal:
+          - 0.18069999999999997
+          - 0.04689970540863437
+          - -0.0802001722727783
+        - name: white_bishop_2_jnt
+          goal:
+          - 0.1814
+          - 0.04690029752929703
+          - 0.08099982772613423
+        - name: white_king_1_jnt
+          goal:
+          - 0.17839999999999995
+          - 0.04690009550301635
+          - 0.02599982772650526
+        - name: white_knight_1_jnt
+          goal:
+          - 0.18180000000000007
+          - 0.04689951844249461
+          - -0.13110017227243492
+        - name: white_knight_2_jnt
+          goal:
+          - 0.1818000000000001
+          - 0.04690047788366761
+          - 0.13009982772580295
+        - name: white_pawn_1_jnt
+          goal:
+          - 0.12570000000000006
+          - 0.0469006732981791
+          - 0.18329982772544406
+        - name: white_pawn_2_jnt
+          goal:
+          - 0.12419999999999994
+          - 0.04690045804836005
+          - 0.12469982772583946
+        - name: white_pawn_3_jnt
+          goal:
+          - 0.12650000000000006
+          - 0.04690029018288683
+          - 0.07899982772614768
+        - name: white_pawn_4_jnt
+          goal:
+          - 0.12219999999999992
+          - 0.046900082646798485
+          - 0.02249982772652888
+        - name: white_pawn_5_jnt
+          goal:
+          - 0.12189999999999997
+          - 0.046899905230991995
+          - -0.025800172273145294
+        - name: white_pawn_6_jnt
+          goal:
+          - 0.12450000000000006
+          - 0.04689970724523692
+          - -0.07970017227278169
+        - name: white_pawn_7_jnt
+          goal:
+          - 0.1268
+          - 0.046899522850340734
+          - -0.12990017227244302
+        - name: white_pawn_8_jnt
+          goal:
+          - 0.12420000000000006
+          - 0.04689933772080353
+          - -0.18030017227210302
+        - name: white_queen_1_jnt
+          goal:
+          - 0.17400000000000004
+          - 0.04689988723228699
+          - -0.030700172273112232
+        - name: white_rook_1_jnt
+          goal:
+          - 0.17700000000000002
+          - 0.046899325966547195
+          - -0.1835001722720814
+        - name: white_rook_2_jnt
+          goal:
+          - 0.17980000000000002
+          - 0.04690067880798676
+          - 0.18479982772543396
+        position_tolerance: 0.028
+        height_tolerance: 0.05
+        upright_z_min: 0.85
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      chessboard:
+        qposadr: 0
+        qveladr: 0
+      tin_box_joint:
+        qposadr: 7
+        qveladr: 6
+      black_bishop_1_jnt:
+        qposadr: 14
+        qveladr: 12
+      black_bishop_2_jnt:
+        qposadr: 21
+        qveladr: 18
+      black_king_1_jnt:
+        qposadr: 28
+        qveladr: 24
+      black_knight_1_jnt:
+        qposadr: 35
+        qveladr: 30
+      black_knight_2_jnt:
+        qposadr: 42
+        qveladr: 36
+      black_pawn_1_jnt:
+        qposadr: 49
+        qveladr: 42
+      black_pawn_2_jnt:
+        qposadr: 56
+        qveladr: 48
+      black_pawn_3_jnt:
+        qposadr: 63
+        qveladr: 54
+      black_pawn_4_jnt:
+        qposadr: 70
+        qveladr: 60
+      black_pawn_5_jnt:
+        qposadr: 77
+        qveladr: 66
+      black_pawn_6_jnt:
+        qposadr: 84
+        qveladr: 72
+      black_pawn_7_jnt:
+        qposadr: 91
+        qveladr: 78
+      black_pawn_8_jnt:
+        qposadr: 98
+        qveladr: 84
+      black_queen_1_jnt:
+        qposadr: 105
+        qveladr: 90
+      black_rook_1_jnt:
+        qposadr: 112
+        qveladr: 96
+      black_rook_2_jnt:
+        qposadr: 119
+        qveladr: 102
+      white_bishop_1_jnt:
+        qposadr: 126
+        qveladr: 108
+      white_bishop_2_jnt:
+        qposadr: 133
+        qveladr: 114
+      white_king_1_jnt:
+        qposadr: 140
+        qveladr: 120
+      white_knight_1_jnt:
+        qposadr: 147
+        qveladr: 126
+      white_knight_2_jnt:
+        qposadr: 154
+        qveladr: 132
+      white_pawn_1_jnt:
+        qposadr: 161
+        qveladr: 138
+      white_pawn_2_jnt:
+        qposadr: 168
+        qveladr: 144
+      white_pawn_3_jnt:
+        qposadr: 175
+        qveladr: 150
+      white_pawn_4_jnt:
+        qposadr: 182
+        qveladr: 156
+      white_pawn_5_jnt:
+        qposadr: 189
+        qveladr: 162
+      white_pawn_6_jnt:
+        qposadr: 196
+        qveladr: 168
+      white_pawn_7_jnt:
+        qposadr: 203
+        qveladr: 174
+      white_pawn_8_jnt:
+        qposadr: 210
+        qveladr: 180
+      white_queen_1_jnt:
+        qposadr: 217
+        qveladr: 186
+      white_rook_1_jnt:
+        qposadr: 224
+        qveladr: 192
+      white_rook_2_jnt:
+        qposadr: 231
+        qveladr: 198
+      left_joint1:
+        qposadr: 238
+        qveladr: 204
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 239
+        qveladr: 205
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 240
+        qveladr: 206
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 241
+        qveladr: 207
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 242
+        qveladr: 208
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 243
+        qveladr: 209
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 244
+        qveladr: 210
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 245
+        qveladr: 211
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 246
+        qveladr: 212
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 247
+        qveladr: 213
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 248
+        qveladr: 214
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 249
+        qveladr: 215
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 250
+        qveladr: 216
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 251
+        qveladr: 217
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 252
+        qveladr: 218
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 253
+        qveladr: 219
+        range:
+        - -0.0475
+        - 0.00205
+    randomization_seed: 0
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-chess-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_hold
+  params:
+    steps: 30
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

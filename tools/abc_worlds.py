@@ -45,7 +45,6 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any
 from xml.etree import ElementTree as ET
 
 import numpy as np
@@ -102,7 +101,6 @@ def rewrite_xml(xml: str) -> tuple[str, list[str]]:
     Returns the rewritten XML and the distinct rewritten paths missing on
     disk (the caller reports them).
     """
-
     missing: list[str] = []
 
     def fix(match: re.Match[str]) -> str:
@@ -165,12 +163,12 @@ def _joint_spec(root: ET.Element) -> tuple[list[dict], int, int]:
                 forced_type = "free"
             elif element.tag != "joint":
                 continue
-            jtype = forced_type or element.get("type") or defaults.get(
-                element.get("class", ""), "hinge"
+            jtype = (
+                forced_type
+                or element.get("type")
+                or defaults.get(element.get("class", ""), "hinge")
             )
             dnq, dnv = _JOINT_Q.get(jtype, (1, 1))
-            nq += dnq
-            nv += dnv
             joints.append(
                 {
                     "name": element.get("name", ""),
@@ -178,8 +176,12 @@ def _joint_spec(root: ET.Element) -> tuple[list[dict], int, int]:
                     "range": element.get("range"),
                     "limited": element.get("limited"),
                     "body": body.get("name", ""),
+                    "qposadr": nq,
+                    "qveladr": nv,
                 }
             )
+            nq += dnq
+            nv += dnv
     return joints, nq, nv
 
 
@@ -200,22 +202,26 @@ def _world_poses(
     sites: dict[str, dict] = {}
     cursor = 0
 
-    def walk(element: ET.Element, parent_pos: np.ndarray, parent_quat: np.ndarray) -> None:
+    def walk(
+        element: ET.Element, parent_pos: np.ndarray, parent_quat: np.ndarray
+    ) -> None:
         nonlocal cursor
         for body in element.findall("body"):
             name = body.get("name", "")
             pos = np.array([float(v) for v in body.get("pos", "0 0 0").split()])
-            quat = np.array(
-                [float(v) for v in body.get("quat", "1 0 0 0").split()]
-            )
+            quat = np.array([float(v) for v in body.get("quat", "1 0 0 0").split()])
             world_pos = parent_pos + _quat_rot(parent_quat, pos)[0]
             world_quat = _quat_mul(parent_quat, quat[None, :])[0]
             for joint in body:
                 if joint.tag not in ("joint", "freejoint"):
                     continue
-                jtype = "free" if joint.tag == "freejoint" else (
-                    joint.get("type")
-                    or defaults.get(joint.get("class", ""), "hinge")
+                jtype = (
+                    "free"
+                    if joint.tag == "freejoint"
+                    else (
+                        joint.get("type")
+                        or defaults.get(joint.get("class", ""), "hinge")
+                    )
                 )
                 width = _JOINT_Q.get(jtype, (1, 1))[0]
                 if jtype == "free" and cursor + 7 <= qpos.size:
@@ -264,7 +270,9 @@ def extract_one(task: str, instance: Path, check_assets: bool) -> dict:
     root = ET.fromstring(xml)
     joints, nq, nv = _joint_spec(root)
     if qpos0.size != nq:
-        raise ValueError(f"{task}: qpos0 has {qpos0.size}, XML joint walk gives nq={nq}")
+        raise ValueError(
+            f"{task}: qpos0 has {qpos0.size}, XML joint walk gives nq={nq}"
+        )
     bodies, sites = _world_poses(root, joints, qpos0)
 
     rewritten, missing = rewrite_xml(xml)

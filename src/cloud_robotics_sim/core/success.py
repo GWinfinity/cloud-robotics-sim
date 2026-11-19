@@ -60,6 +60,23 @@ SUCCESS_TYPES = (
     "rc_basin",
     "rc_on_burner",
     "rc_closer",
+    "abc_count_box",
+    "abc_bottles_throw",
+    "abc_bottles_put",
+    "abc_in_local_box",
+    "abc_put_relative",
+    "abc_inhand_transfer",
+    "abc_pour",
+    "abc_mug_tree",
+    "abc_not_touching",
+    "abc_mugs_upright",
+    "abc_sweep",
+    "abc_dishrack",
+    "abc_chess",
+    "abc_spell",
+    "abc_ball_tray",
+    "abc_hold",
+    "abc_drawer_sequence",
     "all",
     "any",
     "not",
@@ -2355,6 +2372,883 @@ def _build_all(params: dict) -> AllCondition:
     )
 
 
+def _abc_pos(scene: Any, name: str) -> np.ndarray:
+    """World position of one MuJoCo body inside the whole-world entity."""
+    return np.asarray(_body_entity(scene, name).get_pos(), dtype=float)
+
+
+def _abc_quat(scene: Any, name: str) -> np.ndarray:
+    """World orientation (wxyz) of one MuJoCo body in the whole-world entity."""
+    return np.asarray(_body_entity(scene, name).get_quat(), dtype=float)
+
+
+def _abc_local(
+    frame_pos: np.ndarray, frame_quat: np.ndarray, point: np.ndarray
+) -> np.ndarray:
+    """``point`` given in the frame's local coordinates (frame -> world)."""
+    local: np.ndarray = _quat_to_mat(frame_quat).T @ (
+        np.asarray(point, dtype=float) - frame_pos
+    )
+    return local
+
+
+@dataclass
+class AbcCountBoxCondition(SuccessCondition):
+    """``count_into_opaque_box``: exactly ``target_count`` eligible objects
+    (and zero ineligible) inside the geometry-derived box interior.
+
+    The AABB/floor/ceiling constants are baked by the resolver (upstream
+    derives them from the box body's geoms once per model); membership is the
+    frozen-world verbatim test: x/y inside the bounds, z between
+    ``floor_z - floor_tolerance`` and the lid underside.
+    """
+
+    objects: tuple[tuple[str, bool], ...]  # (body name, eligible)
+    target_count: int
+    x_bounds: tuple[float, float]
+    y_bounds: tuple[float, float]
+    floor_z: float
+    ceiling_z: float
+    floor_tolerance: float = 0.01
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        x_lo, x_hi = self.x_bounds
+        y_lo, y_hi = self.y_bounds
+        z_lo = self.floor_z - self.floor_tolerance
+        eligible_in = ineligible_in = 0
+        for name, eligible in self.objects:
+            p = _abc_pos(scene, name)
+            inside = (
+                x_lo <= p[0] <= x_hi
+                and y_lo <= p[1] <= y_hi
+                and z_lo <= p[2] <= self.ceiling_z
+            )
+            if inside:
+                if eligible:
+                    eligible_in += 1
+                else:
+                    ineligible_in += 1
+        return eligible_in == self.target_count and ineligible_in == 0
+
+
+@dataclass
+class AbcBottlesThrowCondition(SuccessCondition):
+    """``bottles_in_bin`` (throw): bottle *centres* inside the free bin's
+    inner walls, above the floor, within rim + per-bottle collision reach.
+    """
+
+    objects: tuple[
+        tuple[str, tuple[float, float, float], float], ...
+    ]  # name, center offset, reach
+    bin_body: str
+    apothem: float
+    floor_z: float
+    top_z: float
+    success_count: int
+    floor_tolerance: float = 0.005
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        bin_pos = _abc_pos(scene, self.bin_body)
+        bin_rot_t = _quat_to_mat(_abc_quat(scene, self.bin_body)).T
+        count = 0
+        for name, offset, reach in self.objects:
+            pos = _abc_pos(scene, name)
+            quat = _abc_quat(scene, name)
+            center = pos + _quat_to_mat(quat) @ np.asarray(offset, dtype=float)
+            local = bin_rot_t @ (center - bin_pos)
+            radial = float(np.hypot(local[0], local[1]))
+            if (
+                radial <= self.apothem
+                and local[2] >= self.floor_z - self.floor_tolerance
+                and local[2] <= self.top_z + reach
+            ):
+                count += 1
+        return count >= self.success_count
+
+
+@dataclass
+class AbcBottlesPutCondition(SuccessCondition):
+    """``put_bottles_in_bin``: bottle centres inside the tub's tapered cone,
+    measured in ``bin_container``'s own frame (local y is the tub axis).
+    """
+
+    objects: tuple[tuple[str, tuple[float, float, float]], ...]  # name, center offset
+    bin_body: str
+    bottom_y: float
+    top_y: float
+    radius_bottom: float
+    radius_top: float
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        bin_pos = _abc_pos(scene, self.bin_body)
+        bin_rot_t = _quat_to_mat(_abc_quat(scene, self.bin_body)).T
+        span = max(self.top_y - self.bottom_y, 1.0e-9)
+        inside_count = 0
+        for name, offset in self.objects:
+            pos = _abc_pos(scene, name)
+            quat = _abc_quat(scene, name)
+            center = pos + _quat_to_mat(quat) @ np.asarray(offset, dtype=float)
+            local = bin_rot_t @ (center - bin_pos)
+            frac = min(max((local[1] - self.bottom_y) / span, 0.0), 1.0)
+            allowed = self.radius_bottom + frac * (self.radius_top - self.radius_bottom)
+            radial = float(np.hypot(local[0], local[2]))
+            if radial <= allowed and self.bottom_y <= local[1] <= self.top_y:
+                inside_count += 1
+        return inside_count == len(self.objects)
+
+
+@dataclass
+class AbcInLocalBoxCondition(SuccessCondition):
+    """Object origins inside a box given in a (possibly moving) frame's
+    local coordinates — the shared shape of ``conveyor_pick`` (welded bin:
+    world frame), ``grab_clutter_target_in_box``, the per-class lego /
+    nuts-bolts goal sites, and the drawer-search goal region.
+    """
+
+    objects: tuple[str, ...]
+    frame: str  # empty string = world frame
+    local_center: tuple[float, float, float]
+    half_size: tuple[float, float, float]
+    mode: str = "all"  # "all" objects in, or "count_ge" with success_count
+    success_count: int = 0
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        if self.frame:
+            frame_pos = _abc_pos(scene, self.frame)
+            frame_rot_t = _quat_to_mat(_abc_quat(scene, self.frame)).T
+        else:
+            frame_pos = np.zeros(3)
+            frame_rot_t = np.eye(3)
+        center = np.asarray(self.local_center, dtype=float)
+        half = np.asarray(self.half_size, dtype=float)
+        count = 0
+        for name in self.objects:
+            local = frame_rot_t @ (_abc_pos(scene, name) - frame_pos)
+            if bool(np.all(np.abs(local - center) <= half)):
+                count += 1
+        if self.mode == "count_ge":
+            return count >= self.success_count
+        return count == len(self.objects)
+
+
+@dataclass
+class AbcPutRelativeCondition(SuccessCondition):
+    """``put_relative``: the mover sits in the directive's directional cone
+    from the live reference, placed low (not carried).
+    """
+
+    mover: str
+    reference: str
+    axis: tuple[float, float]
+    along_min: float = 0.06
+    along_max: float = 0.30
+    perp_max: float = 0.08
+    spawn_z: float | None = None
+    placed_z_tolerance: float = 0.03
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        mover_p = _abc_pos(scene, self.mover)
+        reference_p = _abc_pos(scene, self.reference)
+        rel = mover_p[:2] - reference_p[:2]
+        axis = np.asarray(self.axis, dtype=float)
+        perp_axis = np.asarray([-axis[1], axis[0]], dtype=float)
+        along = float(rel @ axis)
+        perp = abs(float(rel @ perp_axis))
+        in_cone = self.along_min <= along <= self.along_max and perp <= self.perp_max
+        placed = (
+            True
+            if self.spawn_z is None
+            else mover_p[2] <= self.spawn_z + self.placed_z_tolerance
+        )
+        return bool(in_cone and placed)
+
+
+@dataclass
+class AbcInhandTransferCondition(SuccessCondition):
+    """``inhand_transfer_item_to_other_side``: the item crossed the y band to
+    the other side of the table, rests low, and stays on the tabletop.
+    """
+
+    object_name: str
+    start_sign: float
+    other_side_min_y: float = 0.10
+    max_resting_height: float = 0.10
+    table_x_bounds: tuple[float, float] = (-np.inf, np.inf)
+    table_y_bounds: tuple[float, float] = (-np.inf, np.inf)
+    table_z: float = 0.0
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        p = _abc_pos(scene, self.object_name)
+        crossed = p[1] * self.start_sign <= -self.other_side_min_y
+        placed = p[2] <= self.table_z + self.max_resting_height
+        on_table = (
+            self.table_x_bounds[0] <= p[0] <= self.table_x_bounds[1]
+            and self.table_y_bounds[0] <= p[1] <= self.table_y_bounds[1]
+        )
+        return bool(crossed and placed and on_table)
+
+
+@dataclass
+class AbcPourCondition(SuccessCondition):
+    """``pour_beads_in_container``: beads inside the receiving container's
+    cylinder (its live frame), only while the container is upright.
+    """
+
+    beads: tuple[str, ...]
+    cup: str
+    radius: float
+    floor_z: float
+    rim_z: float
+    success_count: int
+    upright_z_min: float = 0.5
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        cup_pos = _abc_pos(scene, self.cup)
+        cup_rot = _quat_to_mat(_abc_quat(scene, self.cup))
+        upright = float(cup_rot[2, 2]) >= self.upright_z_min
+        if not upright:
+            return False
+        cup_rot_t = cup_rot.T
+        count = 0
+        for bead in self.beads:
+            local = cup_rot_t @ (_abc_pos(scene, bead) - cup_pos)
+            radial = float(np.hypot(local[0], local[1]))
+            if radial <= self.radius and self.floor_z <= local[2] <= self.rim_z:
+                count += 1
+        return count >= self.success_count
+
+
+@dataclass
+class AbcMugTreeCondition(SuccessCondition):
+    """``mug_on_rack``: every dealt mug's origin hangs within ``hang_radius``
+    of the tree axis inside the measured z band. The EFE suite adds the
+    released check (no table/finger contact) via ``abc_not_touching``.
+    """
+
+    mugs: tuple[str, ...]
+    axis_xy: tuple[float, float]
+    hang_radius: float = 0.115
+    z_band: tuple[float, float] = (-np.inf, np.inf)
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        axis = np.asarray(self.axis_xy, dtype=float)
+        for mug in self.mugs:
+            p = _abc_pos(scene, mug)
+            radial = float(np.hypot(p[0] - axis[0], p[1] - axis[1]))
+            if radial > self.hang_radius or not (
+                self.z_band[0] <= p[2] <= self.z_band[1]
+            ):
+                return False
+        return True
+
+
+@dataclass
+class AbcNotTouchingCondition(SuccessCondition):
+    """EFE's hang-a-mug addition: no subject body touches any obstacle body
+    (the mug hangs released, not standing on the table or held).
+    """
+
+    subjects: tuple[str, ...]
+    obstacles: tuple[str, ...]
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        world = _world_entity(scene)
+        for subject in self.subjects:
+            for obstacle in self.obstacles:
+                if _world_bodies_touch(world, subject, obstacle):
+                    return False
+        return True
+
+
+@dataclass
+class AbcMugsUprightCondition(SuccessCondition):
+    """``mug_flip_upright``: every mug's axis within ~18 degrees of vertical
+    and back near its recorded rest height (a mug mid-flip in the gripper is
+    still too high). Rest heights are the frozen instance's first-eval
+    heights, pinned by the resolver.
+    """
+
+    mugs: tuple[tuple[str, float], ...]  # (body name, rest_z)
+    upright_z_min: float = 0.95
+    max_lift_m: float = 0.03
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        for name, rest_z in self.mugs:
+            p = _abc_pos(scene, name)
+            upright = (
+                float(_quat_to_mat(_abc_quat(scene, name))[2, 2]) >= self.upright_z_min
+            )
+            if not upright or p[2] > rest_z + self.max_lift_m:
+                return False
+        return True
+
+
+@dataclass
+class AbcSweepCondition(SuccessCondition):
+    """``sweep_away``: every *active* scrap (the task latches activity from
+    ``z > active_z_min``, upstream's evaluator-side latch) sits inside the
+    bin's local radial/height margins.
+    """
+
+    scraps: tuple[str, ...]
+    bin_body: str
+    bin_radius: float
+    bin_radial_margin: float
+    bin_bottom_y: float
+    bin_top_y: float
+    bin_height_margin: float
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        active = (info or {}).get("abc_sweep_active")
+        if not active:
+            return False
+        bin_pos = _abc_pos(scene, self.bin_body)
+        bin_rot_t = _quat_to_mat(_abc_quat(scene, self.bin_body)).T
+        active_count = 0
+        for name, is_active in zip(self.scraps, active):
+            if not is_active:
+                continue
+            active_count += 1
+            local = bin_rot_t @ (_abc_pos(scene, name) - bin_pos)
+            radial = float(np.hypot(local[0], local[2]))
+            if radial > self.bin_radius + self.bin_radial_margin:
+                return False
+            if not (
+                self.bin_bottom_y - self.bin_height_margin
+                <= local[1]
+                <= self.bin_top_y + self.bin_height_margin
+            ):
+                return False
+        return active_count > 0
+
+
+@dataclass
+class AbcDishrackCondition(SuccessCondition):
+    """``dishrack_plates_in_rack``: every plate stands upright in the rack —
+    inside the measured extents, touching the rack, not the grippers, plate
+    normal horizontal (``|normal_z| <= upright_normal_z_max``).
+    """
+
+    plates: tuple[str, ...]
+    rack: str
+    rack_half_extents: tuple[float, float]
+    margin: float
+    height_band: tuple[float, float]
+    upright_normal_z_max: float
+    gripper_bodies: tuple[str, ...]
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        rack_pos = _abc_pos(scene, self.rack)
+        rack_rot = _quat_to_mat(_abc_quat(scene, self.rack))
+        rack_rot_t = rack_rot.T
+        world = _world_entity(scene)
+        half_x, half_y = self.rack_half_extents
+        count = 0
+        for plate in self.plates:
+            local = rack_rot_t @ (_abc_pos(scene, plate) - rack_pos)
+            spatial = (
+                abs(local[0]) <= half_x + self.margin
+                and abs(local[1]) <= half_y + self.margin
+                and self.height_band[0] <= local[2] <= self.height_band[1]
+            )
+            if not spatial:
+                continue
+            if not _world_bodies_touch(world, plate, self.rack):
+                continue
+            if any(_world_bodies_touch(world, plate, g) for g in self.gripper_bodies):
+                continue
+            normal_abs_z = abs(float(_quat_to_mat(_abc_quat(scene, plate))[2, 2]))
+            if normal_abs_z <= self.upright_normal_z_max:
+                count += 1
+        return count == len(self.plates)
+
+
+@dataclass
+class AbcChessCondition(SuccessCondition):
+    """``chess_board_setup``: every target piece stands upright on its goal
+    square (greedy nearest-first matching within each class, in the board's
+    live frame), and every non-target piece stays on its recorded pose.
+    """
+
+    board: str
+    normal_local: tuple[float, float, float]
+    targets: tuple[
+        tuple[str, tuple[float, float, float]], ...
+    ]  # (body, goal in board frame)
+    classes: tuple[str, ...]
+    non_targets: tuple[tuple[str, tuple[float, float, float]], ...]
+    position_tolerance: float
+    height_tolerance: float
+    upright_z_min: float
+    failure_stage: str = "error"
+
+    def _placement(self, scene, entries, classes):
+        board_pos = _abc_pos(scene, self.board)
+        board_rot_t = _quat_to_mat(_abc_quat(scene, self.board)).T
+        normal = np.asarray(self.normal_local, dtype=float)
+        in_square = np.zeros(len(entries), dtype=bool)
+        upright = np.zeros(len(entries), dtype=bool)
+        rels = []
+        quats = []
+        for index, (_, goal) in enumerate(entries):
+            pos = _abc_pos(scene, entries[index][0])
+            rels.append(board_rot_t @ (pos - board_pos))
+            quats.append(_abc_quat(scene, entries[index][0]))
+        rels_arr = np.asarray(rels)
+        if classes is None:
+            # Non-targets are judged against their own recorded poses (one
+            # goal per piece, no class matching).
+            goals = np.asarray([g for _, g in entries], dtype=float)
+            delta = rels_arr - goals
+            h = delta @ normal
+            p = np.linalg.norm(delta - h[:, None] * normal[None, :], axis=1)
+            in_square = (p <= self.position_tolerance) & (
+                np.abs(h) <= self.height_tolerance
+            )
+        else:
+            for cls in dict.fromkeys(classes):
+                idx = np.asarray(
+                    [i for i, c in enumerate(classes) if c == cls], dtype=int
+                )
+                sub_rel = rels_arr[idx]
+                goals = np.asarray([entries[i][1] for i in idx], dtype=float)
+                delta = sub_rel[:, None, :] - goals[None, :, :]
+                h = delta @ normal
+                p = np.linalg.norm(delta - h[..., None] * normal[None, :], axis=2)
+                ok = (p <= self.position_tolerance) & (
+                    np.abs(h) <= self.height_tolerance
+                )
+                order = np.argsort(p, axis=None)
+                used_p: set[int] = set()
+                used_g: set[int] = set()
+                for flat in order:
+                    pi, gi = divmod(int(flat), len(idx))
+                    if pi in used_p or gi in used_g:
+                        continue
+                    used_p.add(pi)
+                    used_g.add(gi)
+                    if ok[pi, gi]:
+                        in_square[idx[pi]] = True
+        for index, quat in enumerate(quats):
+            upright[index] = float(_quat_to_mat(quat)[2, 2]) >= self.upright_z_min
+        return in_square, upright
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        in_square, upright = self._placement(scene, self.targets, list(self.classes))
+        if not bool(np.all(in_square & upright)):
+            return False
+        if self.non_targets:
+            nt_in, nt_up = self._placement(scene, self.non_targets, None)
+            if not bool(np.all(nt_in & nt_up)):
+                return False
+        return True
+
+
+@dataclass
+class AbcSpellCondition(SuccessCondition):
+    """``spell_word``: the word's letter cubes sit in a left-to-right row
+    (each next letter at ``-gap`` in y within tolerance), every block resting
+    at table height with a letter face up (local x vertical, either sign —
+    the letter is printed on both x faces).
+    """
+
+    letters: tuple[str, ...]
+    gap_min: float
+    gap_max: float
+    row_dx_max: float
+    rest_z: tuple[float, ...]
+    z_tolerance: float
+    upright_dot_min: float
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        positions = []
+        for name, rz in zip(self.letters, self.rest_z):
+            p = _abc_pos(scene, name)
+            if abs(p[2] - rz) > self.z_tolerance:
+                return False
+            rot = _quat_to_mat(_abc_quat(scene, name))
+            if abs(float(rot[2, 0])) < self.upright_dot_min:
+                return False
+            positions.append(p)
+        for a, b in zip(positions, positions[1:]):
+            dy = b[1] - a[1]
+            dx = b[0] - a[0]
+            if not (
+                -self.gap_max <= dy <= -self.gap_min and abs(dx) <= self.row_dx_max
+            ):
+                return False
+        return True
+
+
+@dataclass
+class AbcBallTrayCondition(SuccessCondition):
+    """``ball_tray_balancing`` under the EFE rule: the ball stays inside the
+    tray's usable area and above the dropped threshold; when
+    ``require_complete`` is set the task's countdown verdict
+    (``info['abc_tray_complete']``) is part of success.
+    """
+
+    ball: str
+    tray: str
+    usable_half_extents: tuple[float, float]
+    dropped_local_z: float
+    require_complete: bool = False
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        tray_pos = _abc_pos(scene, self.tray)
+        tray_rot_t = _quat_to_mat(_abc_quat(scene, self.tray)).T
+        local = tray_rot_t @ (_abc_pos(scene, self.ball) - tray_pos)
+        alive = (
+            abs(local[0]) <= self.usable_half_extents[0]
+            and abs(local[1]) <= self.usable_half_extents[1]
+            and local[2] >= self.dropped_local_z
+        )
+        if not alive:
+            return False
+        if self.require_complete:
+            return bool((info or {}).get("abc_tray_complete"))
+        return True
+
+
+@dataclass
+class AbcHoldCondition(SuccessCondition):
+    """The EFE suite's 30-consecutive-control-step hold (1.02 s): upstream's
+    single-step ``ever_success`` must persist. The task publishes the running
+    counter ``info['abc_success_run']``; missing info is a failure (nop-safe
+    and, with the ball-tray family, superseded by ``abc_ball_tray``'s own
+    countdown verdict).
+    """
+
+    steps: int = 30
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        return int((info or {}).get("abc_success_run", 0)) >= self.steps
+
+
+@dataclass
+class AbcDrawerSequenceCondition(SuccessCondition):
+    """``multi_drawer_target_in_bin``: the prompted targets reach the goal
+    bin *in order* — the task advances the latch (upstream's evaluator-side
+    ``_completed_target_count``) and publishes
+    ``info['abc_drawer_completed']``.
+    """
+
+    target_count: int
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        return int((info or {}).get("abc_drawer_completed", 0)) >= self.target_count
+
+
+def _float_pair(value: Any, name: str) -> tuple[float, float]:
+    pair = _vec(value, 2, name)
+    return (float(pair[0]), float(pair[1]))
+
+
+def _float_triplet(value: Any, name: str) -> tuple[float, float, float]:
+    triplet = _vec(value, 3, name)
+    return (float(triplet[0]), float(triplet[1]), float(triplet[2]))
+
+
+def _str_tuple(value: Any, name: str) -> tuple[str, ...]:
+    if not isinstance(value, (list, tuple)) or not all(
+        isinstance(v, str) for v in value
+    ):
+        raise ConfigError(f"{name} must be a sequence of strings, got {value!r}")
+    return tuple(value)
+
+
+def _build_abc_count_box(params: dict) -> AbcCountBoxCondition:
+    raw_objects = _require(params, "objects", "abc_count_box")
+    objects: list[tuple[str, bool]] = []
+    for entry in raw_objects:
+        if isinstance(entry, str):
+            objects.append((entry, True))
+        elif isinstance(entry, dict):
+            objects.append((str(entry["name"]), bool(entry.get("eligible", True))))
+        else:
+            raise ConfigError(
+                f"abc_count_box objects entries must be names or mappings, got {entry!r}"
+            )
+    return AbcCountBoxCondition(
+        objects=tuple(objects),
+        target_count=int(_require(params, "target_count", "abc_count_box")),
+        x_bounds=_float_pair(
+            _require(params, "x_bounds", "abc_count_box"), "params.x_bounds"
+        ),
+        y_bounds=_float_pair(
+            _require(params, "y_bounds", "abc_count_box"), "params.y_bounds"
+        ),
+        floor_z=float(_require(params, "floor_z", "abc_count_box")),
+        ceiling_z=float(_require(params, "ceiling_z", "abc_count_box")),
+        floor_tolerance=float(params.get("floor_tolerance", 0.01)),
+    )
+
+
+def _build_abc_bottles_throw(params: dict) -> AbcBottlesThrowCondition:
+    raw_objects = _require(params, "objects", "abc_bottles_throw")
+    objects: list[tuple[str, tuple[float, float, float], float]] = []
+    for entry in raw_objects:
+        objects.append(
+            (
+                str(entry["name"]),
+                _float_triplet(entry["offset"], "params.objects[].offset"),
+                float(entry["reach"]),
+            )
+        )
+    success_count = params.get("success_count")
+    return AbcBottlesThrowCondition(
+        objects=tuple(objects),
+        bin_body=str(_require(params, "bin", "abc_bottles_throw")),
+        apothem=float(_require(params, "apothem", "abc_bottles_throw")),
+        floor_z=float(_require(params, "floor_z", "abc_bottles_throw")),
+        top_z=float(_require(params, "top_z", "abc_bottles_throw")),
+        success_count=len(objects) if success_count is None else int(success_count),
+        floor_tolerance=float(params.get("floor_tolerance", 0.005)),
+    )
+
+
+def _build_abc_bottles_put(params: dict) -> AbcBottlesPutCondition:
+    raw_objects = _require(params, "objects", "abc_bottles_put")
+    objects: list[tuple[str, tuple[float, float, float]]] = []
+    for entry in raw_objects:
+        objects.append(
+            (
+                str(entry["name"]),
+                _float_triplet(entry["offset"], "params.objects[].offset"),
+            )
+        )
+    cone = _require(params, "cone", "abc_bottles_put")
+    return AbcBottlesPutCondition(
+        objects=tuple(objects),
+        bin_body=str(_require(params, "bin", "abc_bottles_put")),
+        bottom_y=float(cone["bottom_y"]),
+        top_y=float(cone["top_y"]),
+        radius_bottom=float(cone["radius_bottom"]),
+        radius_top=float(cone["radius_top"]),
+    )
+
+
+def _build_abc_in_local_box(params: dict) -> AbcInLocalBoxCondition:
+    objects = _str_tuple(
+        _require(params, "objects", "abc_in_local_box"), "params.objects"
+    )
+    bounds = params.get("bounds")
+    if bounds is not None:
+        x = _float_pair(bounds["x"], "params.bounds.x")
+        y = _float_pair(bounds["y"], "params.bounds.y")
+        z = _float_pair(bounds["z"], "params.bounds.z")
+        center = ((x[0] + x[1]) / 2.0, (y[0] + y[1]) / 2.0, (z[0] + z[1]) / 2.0)
+        half = ((x[1] - x[0]) / 2.0, (y[1] - y[0]) / 2.0, (z[1] - z[0]) / 2.0)
+    else:
+        center = _float_triplet(
+            _require(params, "local_center", "abc_in_local_box"), "params.local_center"
+        )
+        half = _float_triplet(
+            _require(params, "half_size", "abc_in_local_box"), "params.half_size"
+        )
+    return AbcInLocalBoxCondition(
+        objects=objects,
+        frame=str(params.get("frame", "")),
+        local_center=center,
+        half_size=half,
+        mode=str(params.get("mode", "all")),
+        success_count=int(params.get("success_count", 0)),
+    )
+
+
+def _build_abc_put_relative(params: dict) -> AbcPutRelativeCondition:
+    spawn_z = params.get("spawn_z")
+    return AbcPutRelativeCondition(
+        mover=str(_require(params, "mover", "abc_put_relative")),
+        reference=str(_require(params, "reference", "abc_put_relative")),
+        axis=_float_pair(_require(params, "axis", "abc_put_relative"), "params.axis"),
+        along_min=float(params.get("along_min", 0.06)),
+        along_max=float(params.get("along_max", 0.30)),
+        perp_max=float(params.get("perp_max", 0.08)),
+        spawn_z=None if spawn_z is None else float(spawn_z),
+        placed_z_tolerance=float(params.get("placed_z_tolerance", 0.03)),
+    )
+
+
+def _build_abc_inhand_transfer(params: dict) -> AbcInhandTransferCondition:
+    return AbcInhandTransferCondition(
+        object_name=str(_require(params, "object", "abc_inhand_transfer")),
+        start_sign=float(_require(params, "start_sign", "abc_inhand_transfer")),
+        other_side_min_y=float(params.get("other_side_min_y", 0.10)),
+        max_resting_height=float(params.get("max_resting_height", 0.10)),
+        table_x_bounds=_float_pair(
+            params.get("table_x_bounds", [-np.inf, np.inf]), "params.table_x_bounds"
+        ),
+        table_y_bounds=_float_pair(
+            params.get("table_y_bounds", [-np.inf, np.inf]), "params.table_y_bounds"
+        ),
+        table_z=float(params.get("table_z", 0.0)),
+    )
+
+
+def _build_abc_pour(params: dict) -> AbcPourCondition:
+    beads = _str_tuple(_require(params, "beads", "abc_pour"), "params.beads")
+    success_count = params.get("success_count")
+    return AbcPourCondition(
+        beads=beads,
+        cup=str(_require(params, "cup", "abc_pour")),
+        radius=float(_require(params, "radius", "abc_pour")),
+        floor_z=float(_require(params, "floor_z", "abc_pour")),
+        rim_z=float(_require(params, "rim_z", "abc_pour")),
+        success_count=len(beads) if success_count is None else int(success_count),
+        upright_z_min=float(params.get("upright_z_min", 0.5)),
+    )
+
+
+def _build_abc_mug_tree(params: dict) -> AbcMugTreeCondition:
+    return AbcMugTreeCondition(
+        mugs=_str_tuple(_require(params, "mugs", "abc_mug_tree"), "params.mugs"),
+        axis_xy=_float_pair(
+            _require(params, "axis_xy", "abc_mug_tree"), "params.axis_xy"
+        ),
+        hang_radius=float(params.get("hang_radius", 0.115)),
+        z_band=_float_pair(params.get("z_band", [-np.inf, np.inf]), "params.z_band"),
+    )
+
+
+def _build_abc_not_touching(params: dict) -> AbcNotTouchingCondition:
+    return AbcNotTouchingCondition(
+        subjects=_str_tuple(
+            _require(params, "subjects", "abc_not_touching"), "params.subjects"
+        ),
+        obstacles=_str_tuple(
+            _require(params, "obstacles", "abc_not_touching"), "params.obstacles"
+        ),
+    )
+
+
+def _build_abc_mugs_upright(params: dict) -> AbcMugsUprightCondition:
+    raw_mugs = _require(params, "mugs", "abc_mugs_upright")
+    mugs: list[tuple[str, float]] = []
+    for entry in raw_mugs:
+        if isinstance(entry, str):
+            mugs.append((entry, float("inf")))
+        elif isinstance(entry, dict):
+            mugs.append((str(entry["name"]), float(entry["rest_z"])))
+        else:
+            raise ConfigError(
+                f"abc_mugs_upright mugs entries must be names or mappings, got {entry!r}"
+            )
+    return AbcMugsUprightCondition(
+        mugs=tuple(mugs),
+        upright_z_min=float(params.get("upright_z_min", 0.95)),
+        max_lift_m=float(params.get("max_lift_m", 0.03)),
+    )
+
+
+def _build_abc_sweep(params: dict) -> AbcSweepCondition:
+    return AbcSweepCondition(
+        scraps=_str_tuple(_require(params, "scraps", "abc_sweep"), "params.scraps"),
+        bin_body=str(_require(params, "bin", "abc_sweep")),
+        bin_radius=float(_require(params, "bin_radius", "abc_sweep")),
+        bin_radial_margin=float(params.get("bin_radial_margin", 0.0)),
+        bin_bottom_y=float(_require(params, "bin_bottom_y", "abc_sweep")),
+        bin_top_y=float(_require(params, "bin_top_y", "abc_sweep")),
+        bin_height_margin=float(params.get("bin_height_margin", 0.0)),
+    )
+
+
+def _build_abc_dishrack(params: dict) -> AbcDishrackCondition:
+    return AbcDishrackCondition(
+        plates=_str_tuple(_require(params, "plates", "abc_dishrack"), "params.plates"),
+        rack=str(_require(params, "rack", "abc_dishrack")),
+        rack_half_extents=_float_pair(
+            _require(params, "rack_half_extents", "abc_dishrack"),
+            "params.rack_half_extents",
+        ),
+        margin=float(params.get("margin", 0.0)),
+        height_band=_float_pair(
+            _require(params, "height_band", "abc_dishrack"), "params.height_band"
+        ),
+        upright_normal_z_max=float(params.get("upright_normal_z_max", 0.5)),
+        gripper_bodies=_str_tuple(
+            params.get("gripper_bodies", []), "params.gripper_bodies"
+        ),
+    )
+
+
+def _build_abc_chess(params: dict) -> AbcChessCondition:
+    raw_targets = _require(params, "targets", "abc_chess")
+    targets: list[tuple[str, tuple[float, float, float]]] = [
+        (str(entry["name"]), _float_triplet(entry["goal"], "params.targets[].goal"))
+        for entry in raw_targets
+    ]
+    raw_non = params.get("non_targets", [])
+    non_targets: list[tuple[str, tuple[float, float, float]]] = [
+        (str(entry["name"]), _float_triplet(entry["goal"], "params.non_targets[].goal"))
+        for entry in raw_non
+    ]
+    return AbcChessCondition(
+        board=str(_require(params, "board", "abc_chess")),
+        normal_local=_float_triplet(
+            _require(params, "normal_local", "abc_chess"), "params.normal_local"
+        ),
+        targets=tuple(targets),
+        classes=_str_tuple(params.get("classes", []), "params.classes")
+        or tuple("" for _ in targets),
+        non_targets=tuple(non_targets),
+        position_tolerance=float(_require(params, "position_tolerance", "abc_chess")),
+        height_tolerance=float(_require(params, "height_tolerance", "abc_chess")),
+        upright_z_min=float(params.get("upright_z_min", 0.95)),
+    )
+
+
+def _build_abc_spell(params: dict) -> AbcSpellCondition:
+    return AbcSpellCondition(
+        letters=_str_tuple(_require(params, "letters", "abc_spell"), "params.letters"),
+        gap_min=float(_require(params, "gap_min", "abc_spell")),
+        gap_max=float(_require(params, "gap_max", "abc_spell")),
+        row_dx_max=float(_require(params, "row_dx_max", "abc_spell")),
+        rest_z=tuple(float(v) for v in _require(params, "rest_z", "abc_spell")),
+        z_tolerance=float(_require(params, "z_tolerance", "abc_spell")),
+        upright_dot_min=float(params.get("upright_dot_min", 0.85)),
+    )
+
+
+def _build_abc_ball_tray(params: dict) -> AbcBallTrayCondition:
+    return AbcBallTrayCondition(
+        ball=str(_require(params, "ball", "abc_ball_tray")),
+        tray=str(_require(params, "tray", "abc_ball_tray")),
+        usable_half_extents=_float_pair(
+            _require(params, "usable_half_extents", "abc_ball_tray"),
+            "params.usable_half_extents",
+        ),
+        dropped_local_z=float(_require(params, "dropped_local_z", "abc_ball_tray")),
+        require_complete=bool(params.get("require_complete", False)),
+    )
+
+
+def _build_abc_hold(params: dict) -> AbcHoldCondition:
+    return AbcHoldCondition(steps=int(params.get("steps", 30)))
+
+
+def _build_abc_drawer_sequence(params: dict) -> AbcDrawerSequenceCondition:
+    return AbcDrawerSequenceCondition(
+        target_count=int(_require(params, "target_count", "abc_drawer_sequence"))
+    )
+
+
 def create_success_condition(spec: dict | None) -> SuccessCondition:
     """Build a SuccessCondition from a ``success:`` YAML block.
 
@@ -2437,6 +3331,40 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return _build_rc_on_burner(params)
     if success_type == "rc_closer":
         return _build_rc_closer(params)
+    if success_type == "abc_count_box":
+        return _build_abc_count_box(params)
+    if success_type == "abc_bottles_throw":
+        return _build_abc_bottles_throw(params)
+    if success_type == "abc_bottles_put":
+        return _build_abc_bottles_put(params)
+    if success_type == "abc_in_local_box":
+        return _build_abc_in_local_box(params)
+    if success_type == "abc_put_relative":
+        return _build_abc_put_relative(params)
+    if success_type == "abc_inhand_transfer":
+        return _build_abc_inhand_transfer(params)
+    if success_type == "abc_pour":
+        return _build_abc_pour(params)
+    if success_type == "abc_mug_tree":
+        return _build_abc_mug_tree(params)
+    if success_type == "abc_not_touching":
+        return _build_abc_not_touching(params)
+    if success_type == "abc_mugs_upright":
+        return _build_abc_mugs_upright(params)
+    if success_type == "abc_sweep":
+        return _build_abc_sweep(params)
+    if success_type == "abc_dishrack":
+        return _build_abc_dishrack(params)
+    if success_type == "abc_chess":
+        return _build_abc_chess(params)
+    if success_type == "abc_spell":
+        return _build_abc_spell(params)
+    if success_type == "abc_ball_tray":
+        return _build_abc_ball_tray(params)
+    if success_type == "abc_hold":
+        return _build_abc_hold(params)
+    if success_type == "abc_drawer_sequence":
+        return _build_abc_drawer_sequence(params)
     if success_type == "all":
         return _build_all(params)
     if success_type == "any":

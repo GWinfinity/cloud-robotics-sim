@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-19T00:04:04.909567+00:00",
+  "generated_at": "2026-11-19T08:12:12.104311+00:00",
   "paper": {
     "arxiv": "2611.12177",
     "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
@@ -31,9 +31,9 @@
       },
       "project": {
         "tier": "T1",
-        "status": "planned",
-        "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
-        "note": "I2RT YAM 双臂协作（托盘运球/摆棋等）；core=0 说明未进核心集但迁移价值在双臂协调"
+        "status": "partial",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族（efe_abc）",
+        "note": "29/29 已编译（2026-11-19，spec 级；offline nop 门绿）。判据不走人工表：tools/abc_probe.py 在探针 venv 直跑上游 evaluator（abc_sim/task_eval @ d0832d1）导出冻结常量（29/29 与冻结实例状态哈希逐位一致），tools/abc_worlds.py 提取世界包，tools/abc_resolver.py 逐字绑定 + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；双臂 I2RT YAM 随世界 XML 嵌入（world-embedded 机器人）；3 个动态运行时（传送带/托盘/抽屉序列）移植到 EfeAbcTask，控制步粒度（1 控制步=17×2ms 上游物理步）"
       },
       "inventory": {
         "n_tasks": 29,
@@ -1613,8 +1613,8 @@
       "T0": 1
     },
     "by_status": {
-      "planned": 25,
-      "partial": 8,
+      "partial": 9,
+      "planned": 24,
       "excluded": 1,
       "ported": 1,
       "blocked": 1

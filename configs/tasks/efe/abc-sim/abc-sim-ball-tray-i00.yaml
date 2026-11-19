@@ -1,0 +1,295 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: ball_tray | goal: grab the tray handles and keep the ball balanced on the tray
+# fidelity: spec | notes: 判据逐字转写上游 ball_tray_balancing evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=6cdaa86a4500，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-ball-tray-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-ball-tray-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-ball-tray-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-ball-tray-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-ball-tray-i00.meta.json
+  abc:
+    family: ball_tray
+    rule: tray
+    hold_steps: 30
+    step_check:
+      type: abc_ball_tray
+      params:
+        ball: ball_tray_ball
+        tray: ball_tray
+        usable_half_extents:
+        - 0.12901732325553894
+        - 0.12440955638885498
+        dropped_local_z: 0.008
+        require_complete: true
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      left_joint1:
+        qposadr: 0
+        qveladr: 0
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 1
+        qveladr: 1
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 2
+        qveladr: 2
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 3
+        qveladr: 3
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 4
+        qveladr: 4
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 5
+        qveladr: 5
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 6
+        qveladr: 6
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 7
+        qveladr: 7
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 8
+        qveladr: 8
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 9
+        qveladr: 9
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 10
+        qveladr: 10
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 11
+        qveladr: 11
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 12
+        qveladr: 12
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 13
+        qveladr: 13
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 14
+        qveladr: 14
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 15
+        qveladr: 15
+        range:
+        - -0.0475
+        - 0.00205
+      ball_tray_joint:
+        qposadr: 16
+        qveladr: 16
+      ball_tray_ball_joint:
+        qposadr: 23
+        qveladr: 22
+    randomization_seed: 2968431077
+    tray:
+      ball: ball_tray_ball
+      tray: ball_tray
+      duration_s: 11
+      grace_s: 0.1
+      usable_half_extents:
+      - 0.12901732325553894
+      - 0.12440955638885498
+      dropped_local_z: 0.008
+      left_handle_geom: ball_tray_left_handle_collision
+      right_handle_geom: ball_tray_right_handle_collision
+      finger_bodies:
+        left:
+        - left_link_left_finger
+        - left_link_right_finger
+        right:
+        - right_link_right_finger
+        - right_link_left_finger
+      pulse_interval_s: 0.5
+      pulse_duration_s: 0.1
+      force_range_n:
+      - 0.024
+      - 0.034
+      run_length_min: 3
+      run_length_max: 5
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-ball-tray-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_ball_tray
+  params:
+    ball: ball_tray_ball
+    tray: ball_tray
+    usable_half_extents:
+    - 0.12901732325553894
+    - 0.12440955638885498
+    dropped_local_z: 0.008
+    require_complete: true
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

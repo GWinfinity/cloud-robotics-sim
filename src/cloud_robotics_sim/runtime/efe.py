@@ -429,6 +429,417 @@ def _make_fourier_gr1(**kwargs: Any) -> Any:
     return _WorldEmbeddedRobot("fourier_gr1")
 
 
+@register_robot("i2rt_yam_bimanual")
+def _make_i2rt_yam_bimanual(**kwargs: Any) -> Any:
+    """Twin I2RT YAM arms (ABC Sim / YAMLab, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("i2rt_yam_bimanual")
+
+
+class EfeAbcTask(EfeBaseTask):
+    """ABC Sim frozen-world task (two I2RT YAM arms at a table).
+
+    The task YAML carries the whole frozen scene as one ``world`` MJCF asset
+    (robot + table + objects at the frozen poses), plus an ``abc`` block the
+    resolver bakes from the upstream probe:
+
+    * ``step_check`` — the verbatim per-control-step success predicate
+      (an ``abc_*`` success spec; latched families see below);
+    * ``hold_steps`` — the EFE suite's 30-consecutive-step rule (the task
+      counts and publishes ``info['abc_success_run']``; the outer success
+      condition is :class:`AbcHoldCondition`);
+    * ``runtime`` — the three Python-side upstream runtimes, ported at
+      control-step granularity (one task step = 17 upstream physics steps):
+      the ball-tray countdown + perturbation pulses, the conveyor belt's
+      kinematic carry, and the drawer-search ordered target latch.
+
+    The ball-tray family instead publishes ``info['abc_tray_complete']`` and
+    terminates the episode itself on upstream's failure conditions (ball
+    leaves the tray / handle let go during the countdown); drawer search
+    publishes ``info['abc_drawer_completed']``; sweep publishes the active
+    scrap mask ``info['abc_sweep_active']`` (upstream's evaluator-side latch
+    ``active |= z > active_z_min``).
+
+    Actions are the 14 upstream joint-position targets
+    ``[left_j1..6, left_grip, right_j1..6, right_grip]``; when the world
+    entity exposes Genesis dof control they are float32-rounded, clamped to
+    the actuator ctrlranges (upstream servo semantics) and applied as
+    position targets — otherwise control is a documented no-op, matching
+    the RoboCasa world-embedded precedent (EFE grades final states).
+    """
+
+    def __init__(
+        self,
+        config: TaskConfig,
+        world: dict | None = None,
+        abc: dict | None = None,
+    ):
+        super().__init__(config)
+        if world is not None and not isinstance(world, dict):
+            raise TypeError("efe_abc world must be a mapping or None")
+        if abc is not None and not isinstance(abc, dict):
+            raise TypeError("efe_abc abc must be a mapping or None")
+        self._world_cfg = world or {}
+        self._abc = abc or {}
+        self._step_condition: Any = None
+        self._drawer_condition: Any = None
+        self._servo_warned = False
+        self._reset_state()
+
+    # -- state -------------------------------------------------------------
+
+    def _reset_state(self) -> None:
+        """Per-episode latches (upstream evaluator/runtime instance state)."""
+        self._success_run = 0
+        self._step_condition = None
+        self._drawer_condition = None
+        tray = self._abc.get("tray") or {}
+        self._tray: dict[str, Any] = {
+            "started": False,
+            "start_time": None,
+            "deadline": None,
+            "grip_since": None,
+            "last_both_contact_time": None,
+            "next_pulse_at": None,
+            "pulse_until": None,
+            "direction": 0.0,
+            "run_pulses": 0,
+            "complete": False,
+            "sim_time": 0.0,
+        }
+        if tray:
+            seed = int((self._abc.get("randomization_seed") or 0))
+            import numpy as _np
+
+            rng = _np.random.default_rng(seed)
+            self._tray["direction"] = float(rng.uniform(0.0, 2.0 * _np.pi))
+            self._tray["run_pulses"] = int(
+                rng.integers(
+                    int(tray.get("run_length_min", 3)),
+                    int(tray.get("run_length_max", 5)) + 1,
+                )
+            )
+        self._drawer_completed = 0
+        sweep = self._abc.get("sweep") or {}
+        self._sweep_active = [False] * len(sweep.get("scraps", []))
+
+    def _world(self, scene: Any) -> Any:
+        entities = getattr(scene, "entities", None) or {}
+        entity = entities.get("world")
+        if entity is None:
+            raise KeyError(
+                "efe_abc expects the 'world' asset in scene.entities; "
+                f"available: {sorted(entities)}"
+            )
+        return entity
+
+    # -- helpers -----------------------------------------------------------
+
+    def _apply_frozen_state(self, scene: Any) -> None:
+        world = self._world(scene)
+        qpos_path = self._world_cfg.get("qpos_path")
+        qvel_path = self._world_cfg.get("qvel_path")
+        if qpos_path:
+            world.set_qpos(np.load(qpos_path))
+        if qvel_path:
+            set_qvel = getattr(world, "set_qvel", None)
+            if set_qvel is not None:
+                set_qvel(np.load(qvel_path))
+        conveyor = self._abc.get("conveyor") or {}
+        if conveyor:
+            self._open_idle_grippers(world)
+
+    def _open_idle_grippers(self, world: Any) -> None:
+        """conveyor_pick runtime: start each gripper parked open.
+
+        The whole-world entity backend exposes ``get_qpos``/``set_qpos``
+        but no ``get_qvel`` (Genesis 1.4 RigidEntity has no velocity
+        getter), so this is a qpos read-modify-write; the frozen qvel is
+        zeros and stays zeros for the parked fingers.
+        """
+        qpos = np.asarray(world.get_qpos(), dtype=np.float64).copy()
+        joints = self._abc.get("joints") or {}
+        for side in ("left", "right"):
+            for finger, target in (
+                (f"{side}_left_finger", "open_hi"),
+                (f"{side}_right_finger", "open_lo"),
+            ):
+                record = joints.get(finger)
+                if not record:
+                    continue
+                adr = int(record["qposadr"])
+                lo, hi = (float(v) for v in record.get("range") or (0.0, 0.0))
+                qpos[adr] = hi if target == "open_hi" else lo
+        world.set_qpos(qpos)
+
+    def _apply_action_targets(self, scene: Any, action: np.ndarray) -> None:
+        """Servo the 14 upstream joint targets (best effort; see class doc)."""
+        control = self._abc.get("control") or {}
+        joints = control.get("joints") or []
+        if not joints or action is None or len(action) < len(joints):
+            return
+        world = self._world(scene)
+        control_fn = getattr(world, "control_dofs_position", None)
+        idx_fn = getattr(world, "get_joint_dofs_idx_local", None)
+        if control_fn is None or idx_fn is None:
+            if not self._servo_warned:
+                logger.info(
+                    "efe_abc: world entity exposes no dof position control; "
+                    "joint-target actions are not applied"
+                )
+                self._servo_warned = True
+            return
+        rows = np.asarray(action, dtype=np.float32).reshape(-1)[: len(joints)]
+        targets = rows.astype(np.float64)
+        for i, joint in enumerate(joints):
+            lo, hi = (
+                float(v)
+                for v in (
+                    joint.get("ctrlrange") or joint.get("range") or (-np.inf, np.inf)
+                )
+            )
+            targets[i] = min(max(targets[i], lo), hi)
+        try:
+            dofs_idx = [idx_fn(j["name"]) for j in joints]
+            flat = [
+                i for sub in dofs_idx for i in (sub if isinstance(sub, list) else [sub])
+            ]
+            control_fn(targets=np.asarray(targets), dofs_idx=flat)
+        except Exception as exc:  # noqa: BLE001 - servo is best effort
+            if not self._servo_warned:
+                logger.info(f"efe_abc: dof position control unavailable: {exc}")
+                self._servo_warned = True
+
+    # -- runtimes (control-step granularity; see class doc) -----------------
+
+    def _update_conveyor(self, scene: Any, dt: float) -> None:
+        from cloud_robotics_sim.core.success import _world_bodies_touch
+
+        conveyor = self._abc.get("conveyor") or {}
+        if not conveyor:
+            return
+        world = self._world(scene)
+        speed = float(conveyor.get("belt_speed_y", -0.20))
+        joints = self._abc.get("joints") or {}
+        belt = conveyor.get("belt_geom")
+        # One read-modify-write per step (the entity backend has no qvel
+        # getter; the kinematic carry upstream pairs with qvel[y] = 0, which
+        # the frozen zero-qvel state already satisfies between carries).
+        qpos = np.asarray(world.get_qpos(), dtype=np.float64).copy()
+        dirty = False
+        for obj in conveyor.get("objects", []):
+            if not _world_bodies_touch(world, obj, belt):
+                continue
+            record = joints.get(obj)
+            if not record:
+                continue
+            adr = int(record["qposadr"])
+            qpos[adr + 1] += speed * dt  # upstream: qpos[y] += speed*dt
+            dirty = True
+        if dirty:
+            world.set_qpos(qpos)
+
+    def _update_tray(self, scene: Any, dt: float) -> bool:
+        """Ball-tray runtime + Session.step rule. Returns True on episode end."""
+        from cloud_robotics_sim.core.success import (
+            _abc_local,
+            _abc_pos,
+            _abc_quat,
+            _world_bodies_touch,
+        )
+
+        tray = self._abc.get("tray") or {}
+        if not tray:
+            return False
+        world = self._world(scene)
+        t = self._tray
+        t["sim_time"] = float(t.get("sim_time", 0.0)) + dt
+        now = t["sim_time"]
+
+        ball, tray_body = tray["ball"], tray["tray"]
+        local = _abc_local(
+            _abc_pos(scene, tray_body),
+            _abc_quat(scene, tray_body),
+            _abc_pos(scene, ball),
+        )
+        dropped = local[2] < float(tray["dropped_local_z"])
+        inside = abs(local[0]) <= float(tray["usable_half_extents"][0]) and abs(
+            local[1]
+        ) <= float(tray["usable_half_extents"][1])
+        alive = inside and not dropped
+        if not alive:
+            return True  # failure: the ball left the tray
+
+        left = tray.get("left_handle_geom")
+        right = tray.get("right_handle_geom")
+        sides = tray.get("finger_bodies") or {}
+        left_held = any(
+            _world_bodies_touch(world, b, left) for b in sides.get("left", [])
+        )
+        right_held = any(
+            _world_bodies_touch(world, b, right) for b in sides.get("right", [])
+        )
+        if left_held and right_held:
+            t["last_both_contact_time"] = now
+        held = (
+            t["last_both_contact_time"] is not None
+            and now - float(t["last_both_contact_time"])
+            <= float(tray.get("grace_s", 0.1)) + 1e-9
+        )
+        if not t["started"]:
+            if left_held and right_held:
+                if t["grip_since"] is None:
+                    t["grip_since"] = now
+                t["started"] = True
+                t["start_time"] = now
+                t["deadline"] = now + float(tray["duration_s"])
+                t["next_pulse_at"] = now + float(tray.get("pulse_interval_s", 0.5))
+        elif not held:
+            return True  # failure: a handle was let go during the countdown
+
+        if t["started"] and not t["complete"]:
+            if t["next_pulse_at"] is not None and now >= float(t["next_pulse_at"]):
+                self._fire_pulse(scene, tray)
+                t["next_pulse_at"] = now + float(tray.get("pulse_interval_s", 0.5))
+            if t["deadline"] is not None and now >= float(t["deadline"]):
+                t["complete"] = True
+        return False
+
+    def _fire_pulse(self, scene: Any, tray: dict) -> None:
+        """Upstream perturbation: a 0.1 s force pulse in the tray's plane."""
+        import numpy as _np
+
+        from cloud_robotics_sim.core.success import (
+            _abc_quat,
+            _quat_to_mat,
+        )
+
+        t = self._tray
+        lo, hi = (float(v) for v in tray.get("force_range_n", [0.024, 0.034]))
+        force_n = (lo + hi) / 2.0  # magnitude is sampled per pulse upstream
+        direction = float(t["direction"])
+        rot = _quat_to_mat(_abc_quat(scene, tray["tray"]))
+        axis = rot[:, 0] * _np.cos(direction) + rot[:, 1] * _np.sin(direction)
+        force = axis * force_n
+        world = self._world(scene)
+        resolver = getattr(world, "_resolve_entity", None)
+        if resolver is None:
+            return
+        try:
+            link = resolver().get_link(tray["ball"])
+            apply = getattr(link, "apply_external_force", None)
+            if apply is not None:
+                apply(_np.asarray(force, dtype=_np.float64))
+        except Exception as exc:  # noqa: BLE001 - force application is best effort
+            if not self._servo_warned:
+                logger.info(f"efe_abc: tray perturbation force unavailable: {exc}")
+                self._servo_warned = True
+
+    def _update_drawer(self, scene: Any) -> None:
+        drawer = self._abc.get("drawer") or {}
+        if not drawer:
+            return
+        from cloud_robotics_sim.core.success import create_success_condition
+
+        if self._drawer_condition is None:
+            self._drawer_condition = create_success_condition(
+                {
+                    "type": "abc_in_local_box",
+                    "params": {
+                        "objects": [drawer["targets"][self._drawer_completed]],
+                        "frame": drawer["bin"],
+                        "local_center": drawer["local_center"],
+                        "half_size": drawer["half_size"],
+                    },
+                }
+            )
+        while self._drawer_completed < len(drawer["targets"]):
+            if not self._drawer_condition.evaluate(scene, None, {}):
+                break
+            self._drawer_completed += 1
+            if self._drawer_completed < len(drawer["targets"]):
+                self._drawer_condition = create_success_condition(
+                    {
+                        "type": "abc_in_local_box",
+                        "params": {
+                            "objects": [drawer["targets"][self._drawer_completed]],
+                            "frame": drawer["bin"],
+                            "local_center": drawer["local_center"],
+                            "half_size": drawer["half_size"],
+                        },
+                    }
+                )
+
+    def _update_sweep(self, scene: Any) -> None:
+        sweep = self._abc.get("sweep") or {}
+        if not sweep:
+            return
+        from cloud_robotics_sim.core.success import _abc_pos
+
+        z_min = float(sweep["active_z_min"])
+        for index, scrap in enumerate(sweep.get("scraps", [])):
+            if not self._sweep_active[index] and _abc_pos(scene, scrap)[2] > z_min:
+                self._sweep_active[index] = True
+
+    # -- Task API ----------------------------------------------------------
+
+    def reset(self, scene: Any, robot: Any, seed: int) -> dict:
+        info = super().reset(scene, robot, seed)
+        self._reset_state()
+        self._apply_frozen_state(scene)
+        info["abc_success_run"] = 0
+        info["abc_tray_complete"] = False
+        info["abc_drawer_completed"] = 0
+        info["abc_sweep_active"] = list(self._sweep_active)
+        return info
+
+    def step(self, scene: Any, robot: Any, action: np.ndarray):
+        reward, terminated, truncated, info = super().step(scene, robot, action)
+        dt = float(self._abc.get("control_dt", 0.034))
+        self._apply_action_targets(scene, action)
+        self._update_conveyor(scene, dt)
+        tray_over = self._update_tray(scene, dt)
+        self._update_drawer(scene)
+        self._update_sweep(scene)
+
+        if tray_over:
+            info["abc_tray_complete"] = False
+            return reward, True, truncated, info
+        if self._abc.get("tray"):
+            info["abc_tray_complete"] = bool(self._tray["complete"])
+            self._success_run = 0
+        else:
+            step_check = self._abc.get("step_check")
+            if step_check and self._step_condition is None:
+                from cloud_robotics_sim.core.success import create_success_condition
+
+                self._step_condition = create_success_condition(step_check)
+            ok = (
+                bool(self._step_condition.evaluate(scene, robot, info))
+                if self._step_condition
+                else False
+            )
+            self._success_run = self._success_run + 1 if ok else 0
+            info["abc_success_run"] = self._success_run
+        info["abc_drawer_completed"] = self._drawer_completed
+        info["abc_sweep_active"] = list(self._sweep_active)
+        return reward, terminated, truncated, info
+
+
+@register_task("efe_abc")
+def _make_efe_abc(**kwargs: Any) -> EfeAbcTask:
+    """ABC Sim frozen-world task with world/abc YAML blocks."""
+    kwargs.pop("type", None)
+    max_steps = int(kwargs.pop("max_episode_steps", 500))
+    world = kwargs.pop("world", None)
+    abc = kwargs.pop("abc", None)
+    return EfeAbcTask(
+        TaskConfig(name="efe", max_episode_steps=max_steps),
+        world=world,
+        abc=abc,
+    )
+
+
 class EfeRobocasaTask(EfeBaseTask):
     """RoboCasa frozen-world task.
 

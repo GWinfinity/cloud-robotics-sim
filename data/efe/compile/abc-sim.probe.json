@@ -1,5 +1,12 @@
 {
  "abc-sim-ball-tray-i00": {
+  "evaluator_attrs": {
+   "dropped_local_z_threshold_m": 0.008,
+   "usable_half_extents": [
+    0.12901732325553894,
+    0.12440955638885498
+   ]
+  },
   "family": "ball_tray",
   "instance_exact": true,
   "instance_sha": "6cdaa86a450092e7",
@@ -844,6 +851,196 @@
   "worldpack_sha": "6cdaa86a450092e7"
  },
  "abc-sim-chess-i00": {
+  "evaluator_attrs": {
+   "chess_classes": [
+    "black_pawn",
+    "black_bishop",
+    "black_king",
+    "black_queen",
+    "black_pawn",
+    "black_pawn"
+   ],
+   "chess_goals_board": [
+    [
+     -0.1384,
+     0.046899324129944645,
+     -0.18400017227207807
+    ],
+    [
+     -0.1941,
+     0.04689970393935233,
+     -0.08060017227277563
+    ],
+    [
+     -0.194,
+     0.04690008962588818,
+     0.02439982772651607
+    ],
+    [
+     -0.1958,
+     0.04689989164013311,
+     -0.029500172273120333
+    ],
+    [
+     -0.1403,
+     0.04690028430575866,
+     0.07739982772615848
+    ],
+    [
+     -0.14459999999999995,
+     0.04690008595268308,
+     0.0233998277265228
+    ]
+   ],
+   "chess_joints": [
+    "black_pawn_8_jnt",
+    "black_bishop_1_jnt",
+    "black_king_1_jnt",
+    "black_queen_1_jnt",
+    "black_pawn_1_jnt",
+    "black_pawn_4_jnt"
+   ],
+   "chess_non_target_goals": [
+    [
+     -0.19409999999999994,
+     0.04690028540772019,
+     0.07769982772615647
+    ],
+    [
+     -0.19269999999999993,
+     0.04690047788366761,
+     0.13009982772580292
+    ],
+    [
+     -0.19190000000000002,
+     0.04689951293268695,
+     -0.1326001722724248
+    ],
+    [
+     -0.13760000000000003,
+     0.04690065309555103,
+     0.17779982772548122
+    ],
+    [
+     -0.14029999999999998,
+     0.046900467966013826,
+     0.1273998277258212
+    ],
+    [
+     -0.13710000000000006,
+     0.04689990780223557,
+     -0.025100172273150007
+    ],
+    [
+     -0.13990000000000002,
+     0.046899701000788246,
+     -0.0814001722727702
+    ],
+    [
+     -0.1376,
+     0.04689953313531502,
+     -0.12710017227246193
+    ],
+    [
+     -0.19319999999999998,
+     0.046899312008367805,
+     -0.1873001722720558
+    ],
+    [
+     -0.18939999999999996,
+     0.046900674032820125,
+     0.1834998277254427
+    ],
+    [
+     0.18069999999999997,
+     0.04689970540863437,
+     -0.0802001722727783
+    ],
+    [
+     0.1814,
+     0.04690029752929703,
+     0.08099982772613423
+    ],
+    [
+     0.17839999999999995,
+     0.04690009550301635,
+     0.02599982772650526
+    ],
+    [
+     0.18180000000000007,
+     0.04689951844249461,
+     -0.13110017227243492
+    ],
+    [
+     0.1818000000000001,
+     0.04690047788366761,
+     0.13009982772580295
+    ],
+    [
+     0.12570000000000006,
+     0.0469006732981791,
+     0.18329982772544406
+    ],
+    [
+     0.12419999999999994,
+     0.04690045804836005,
+     0.12469982772583946
+    ],
+    [
+     0.12650000000000006,
+     0.04690029018288683,
+     0.07899982772614768
+    ],
+    [
+     0.12219999999999992,
+     0.046900082646798485,
+     0.02249982772652888
+    ],
+    [
+     0.12189999999999997,
+     0.046899905230991995,
+     -0.025800172273145294
+    ],
+    [
+     0.12450000000000006,
+     0.04689970724523692,
+     -0.07970017227278169
+    ],
+    [
+     0.1268,
+     0.046899522850340734,
+     -0.12990017227244302
+    ],
+    [
+     0.12420000000000006,
+     0.04689933772080353,
+     -0.18030017227210302
+    ],
+    [
+     0.17400000000000004,
+     0.04689988723228699,
+     -0.030700172273112232
+    ],
+    [
+     0.17700000000000002,
+     0.046899325966547195,
+     -0.1835001722720814
+    ],
+    [
+     0.17980000000000002,
+     0.04690067880798676,
+     0.18479982772543396
+    ]
+   ],
+   "chess_normal_local": [
+    0.0,
+    0.9999999999932538,
+    -3.6732051033488457e-06
+   ],
+   "height_tolerance_m": 0.05,
+   "position_tolerance_m": 0.028,
+   "upright_z_min": 0.85
+  },
   "family": "chess",
   "instance_exact": true,
   "instance_sha": "65f14022364f054f",
@@ -2545,6 +2742,19 @@
   "worldpack_sha": "65f14022364f054f"
  },
  "abc-sim-conveyor-pick-i00": {
+  "evaluator_attrs": {
+   "bin_floor_z": 0.775,
+   "bin_rim_z": 0.9249999999999999,
+   "bin_x_bounds": [
+    0.627,
+    0.843
+   ],
+   "bin_y_bounds": [
+    -0.16299999999999998,
+    0.16299999999999998
+   ],
+   "floor_tolerance_m": 0.01
+  },
   "family": "conveyor_pick",
   "instance_exact": true,
   "instance_sha": "73fd8e08bd4000ee",
@@ -3412,6 +3622,9 @@
   "worldpack_sha": "73fd8e08bd4000ee"
  },
  "abc-sim-count-four-i00": {
+  "evaluator_attrs": {
+   "floor_tolerance_m": 0.01
+  },
   "family": "count_four",
   "instance_exact": true,
   "instance_sha": "c8a0c7b3eb8622b4",
@@ -4398,6 +4611,9 @@
   "worldpack_sha": "c8a0c7b3eb8622b4"
  },
  "abc-sim-count-i00": {
+  "evaluator_attrs": {
+   "floor_tolerance_m": 0.01
+  },
   "family": "count",
   "instance_exact": true,
   "instance_sha": "080ddb7334cfb5d4",
@@ -5378,6 +5594,9 @@
   "worldpack_sha": "080ddb7334cfb5d4"
  },
  "abc-sim-count-one-i00": {
+  "evaluator_attrs": {
+   "floor_tolerance_m": 0.01
+  },
   "family": "count_one",
   "instance_exact": true,
   "instance_sha": "39fcd07ad171ba75",
@@ -6356,6 +6575,9 @@
   "worldpack_sha": "39fcd07ad171ba75"
  },
  "abc-sim-count-three-i00": {
+  "evaluator_attrs": {
+   "floor_tolerance_m": 0.01
+  },
   "family": "count_three",
   "instance_exact": true,
   "instance_sha": "4a649f7e73ba4df1",
@@ -7342,6 +7564,9 @@
   "worldpack_sha": "4a649f7e73ba4df1"
  },
  "abc-sim-count-two-i00": {
+  "evaluator_attrs": {
+   "floor_tolerance_m": 0.01
+  },
   "family": "count_two",
   "instance_exact": true,
   "instance_sha": "5099066e29874d64",
@@ -8328,6 +8553,7 @@
   "worldpack_sha": "5099066e29874d64"
  },
  "abc-sim-dish-rack-i00": {
+  "evaluator_attrs": {},
   "family": "dish_rack",
   "instance_exact": true,
   "instance_sha": "f008c6c643f75ca1",
@@ -9180,6 +9406,18 @@
   "worldpack_sha": "f008c6c643f75ca1"
  },
  "abc-sim-drawer-search-i00": {
+  "evaluator_attrs": {
+   "goal_half_size": [
+    0.0560000017285347,
+    0.052000001072883606,
+    0.1599999964237213
+   ],
+   "goal_local_center": [
+    0.0,
+    0.0,
+    0.10000000149011612
+   ]
+  },
   "family": "drawer_search",
   "instance_exact": true,
   "instance_sha": "c2f19b21de544dd2",
@@ -10577,6 +10815,18 @@
   "worldpack_sha": "c2f19b21de544dd2"
  },
  "abc-sim-grab-clutter-i00": {
+  "evaluator_attrs": {
+   "goal_half_size": [
+    0.05999999865889549,
+    0.054999999701976776,
+    0.18000000715255737
+   ],
+   "goal_local_center": [
+    0.0,
+    0.0,
+    0.10999999940395355
+   ]
+  },
   "family": "grab_clutter",
   "instance_exact": true,
   "instance_sha": "a2e0c4bffcd832d7",
@@ -11537,6 +11787,12 @@
   "worldpack_sha": "a2e0c4bffcd832d7"
  },
  "abc-sim-hang-mug-i00": {
+  "evaluator_attrs": {
+   "axis_xy": [
+    0.5354073219212002,
+    -0.09715894428973543
+   ]
+  },
   "family": "hang_mug",
   "instance_exact": true,
   "instance_sha": "f971caba9bc2c81c",
@@ -12287,6 +12543,17 @@
   "worldpack_sha": "f971caba9bc2c81c"
  },
  "abc-sim-inhand-transfer-i00": {
+  "evaluator_attrs": {
+   "table_x_bounds": [
+    0.3025,
+    0.8975
+   ],
+   "table_y_bounds": [
+    -0.65,
+    0.65
+   ],
+   "table_z": 0.75
+  },
   "family": "inhand_transfer",
   "instance_exact": true,
   "instance_sha": "2fee35e343f1e9d5",
@@ -13019,6 +13286,46 @@
   "worldpack_sha": "2fee35e343f1e9d5"
  },
  "abc-sim-lego-i00": {
+  "evaluator_attrs": {
+   "goal_regions": {
+    "blue": [
+     [
+      0.0,
+      0.0,
+      0.04051459953188896
+     ],
+     [
+      0.049722399562597275,
+      0.04603929817676544,
+      0.03683140128850937
+     ]
+    ],
+    "red": [
+     [
+      0.0,
+      0.0,
+      0.04494849964976311
+     ],
+     [
+      0.05516409873962402,
+      0.05107780173420906,
+      0.040862299501895905
+     ]
+    ],
+    "yellow": [
+     [
+      0.0,
+      0.0,
+      0.04463040083646774
+     ],
+     [
+      0.05477369949221611,
+      0.050716400146484375,
+      0.04057310149073601
+     ]
+    ]
+   }
+  },
   "family": "lego",
   "instance_exact": true,
   "instance_sha": "2ebc48bf64974f98",
@@ -13994,6 +14301,28 @@
   "worldpack_sha": "2ebc48bf64974f98"
  },
  "abc-sim-nuts-bolts-i00": {
+  "evaluator_attrs": {
+   "bolts_goal_local_center": [
+    0.0,
+    0.0,
+    0.05098380148410797
+   ],
+   "bolts_goal_size": [
+    0.0722270980477333,
+    0.08497299998998642,
+    0.044610798358917236
+   ],
+   "nuts_goal_local_center": [
+    0.0,
+    0.0,
+    0.044106900691986084
+   ],
+   "nuts_goal_size": [
+    0.062484800815582275,
+    0.073511503636837,
+    0.03859350085258484
+   ]
+  },
   "family": "nuts_bolts",
   "instance_exact": true,
   "instance_sha": "36a10f65fd90f73b",
@@ -15040,6 +15369,12 @@
   "worldpack_sha": "36a10f65fd90f73b"
  },
  "abc-sim-pouring-i00": {
+  "evaluator_attrs": {
+   "container_floor_z": -0.04396326094865799,
+   "container_radius": 0.03596812533214688,
+   "container_rim_z": 0.04396326094865799,
+   "target_joint_name": "cup_1_jnt"
+  },
   "family": "pouring",
   "instance_exact": true,
   "instance_sha": "b54e0a7dafa2a18d",
@@ -15963,6 +16298,12 @@
   "worldpack_sha": "b54e0a7dafa2a18d"
  },
  "abc-sim-put-bottles-i00": {
+  "evaluator_attrs": {
+   "bin_bottom_y": -0.10998638719320297,
+   "bin_radius_bottom": 0.08985079824924469,
+   "bin_radius_top": 0.11484844982624054,
+   "bin_top_y": 0.1549915224313736
+  },
   "family": "put_bottles",
   "instance_exact": true,
   "instance_sha": "9caab7a4776d5af8",
@@ -16767,6 +17108,7 @@
   "worldpack_sha": "9caab7a4776d5af8"
  },
  "abc-sim-put-relative-i00": {
+  "evaluator_attrs": {},
   "family": "put_relative",
   "instance_exact": true,
   "instance_sha": "f99f99ccb4ee5da8",
@@ -17592,6 +17934,13 @@
   "worldpack_sha": "f99f99ccb4ee5da8"
  },
  "abc-sim-spell-abc-i00": {
+  "evaluator_attrs": {
+   "gap_max_m": 0.06,
+   "gap_min_m": 0.015,
+   "row_dx_max_m": 0.03,
+   "upright_dot_min": 0.85,
+   "z_tolerance_m": 0.02
+  },
   "family": "spell_abc",
   "instance_exact": true,
   "instance_sha": "2a83e3a237ac1ddd",
@@ -18645,6 +18994,13 @@
   "worldpack_sha": "2a83e3a237ac1ddd"
  },
  "abc-sim-spell-agi-i00": {
+  "evaluator_attrs": {
+   "gap_max_m": 0.06,
+   "gap_min_m": 0.015,
+   "row_dx_max_m": 0.03,
+   "upright_dot_min": 0.85,
+   "z_tolerance_m": 0.02
+  },
   "family": "spell_agi",
   "instance_exact": true,
   "instance_sha": "6cc75a0bd3f48db4",
@@ -19698,6 +20054,13 @@
   "worldpack_sha": "6cc75a0bd3f48db4"
  },
  "abc-sim-spell-bair-i00": {
+  "evaluator_attrs": {
+   "gap_max_m": 0.06,
+   "gap_min_m": 0.015,
+   "row_dx_max_m": 0.03,
+   "upright_dot_min": 0.85,
+   "z_tolerance_m": 0.02
+  },
   "family": "spell_bair",
   "instance_exact": true,
   "instance_sha": "62be37b797ce4431",
@@ -20753,6 +21116,13 @@
   "worldpack_sha": "62be37b797ce4431"
  },
  "abc-sim-spell-cat-i00": {
+  "evaluator_attrs": {
+   "gap_max_m": 0.06,
+   "gap_min_m": 0.015,
+   "row_dx_max_m": 0.03,
+   "upright_dot_min": 0.85,
+   "z_tolerance_m": 0.02
+  },
   "family": "spell_cat",
   "instance_exact": true,
   "instance_sha": "8e921bf2a751b52d",
@@ -21806,6 +22176,13 @@
   "worldpack_sha": "8e921bf2a751b52d"
  },
  "abc-sim-spell-dog-i00": {
+  "evaluator_attrs": {
+   "gap_max_m": 0.06,
+   "gap_min_m": 0.015,
+   "row_dx_max_m": 0.03,
+   "upright_dot_min": 0.85,
+   "z_tolerance_m": 0.02
+  },
   "family": "spell_dog",
   "instance_exact": true,
   "instance_sha": "3913975861559c17",
@@ -22886,6 +23263,13 @@
   "worldpack_sha": "3913975861559c17"
  },
  "abc-sim-spell-fish-i00": {
+  "evaluator_attrs": {
+   "gap_max_m": 0.06,
+   "gap_min_m": 0.015,
+   "row_dx_max_m": 0.03,
+   "upright_dot_min": 0.85,
+   "z_tolerance_m": 0.02
+  },
   "family": "spell_fish",
   "instance_exact": true,
   "instance_sha": "288971f6896c9bfd",
@@ -23941,6 +24325,13 @@
   "worldpack_sha": "288971f6896c9bfd"
  },
  "abc-sim-spell-xdof-i00": {
+  "evaluator_attrs": {
+   "gap_max_m": 0.06,
+   "gap_min_m": 0.015,
+   "row_dx_max_m": 0.03,
+   "upright_dot_min": 0.85,
+   "z_tolerance_m": 0.02
+  },
   "family": "spell_xdof",
   "instance_exact": true,
   "instance_sha": "2566d3e2b18fb048",
@@ -24996,6 +25387,13 @@
   "worldpack_sha": "2566d3e2b18fb048"
  },
  "abc-sim-spell-yam-i00": {
+  "evaluator_attrs": {
+   "gap_max_m": 0.06,
+   "gap_min_m": 0.015,
+   "row_dx_max_m": 0.03,
+   "upright_dot_min": 0.85,
+   "z_tolerance_m": 0.02
+  },
   "family": "spell_yam",
   "instance_exact": true,
   "instance_sha": "f9108c924a91c829",
@@ -26049,6 +26447,10 @@
   "worldpack_sha": "f9108c924a91c829"
  },
  "abc-sim-sweep-i00": {
+  "evaluator_attrs": {
+   "bin_bottom_y": -0.08587771896444715,
+   "bin_top_y": 0.1218007629720079
+  },
   "family": "sweep",
   "instance_exact": true,
   "instance_sha": "acdf58bdd8888ca2",
@@ -26973,6 +27375,10 @@
   "worldpack_sha": "acdf58bdd8888ca2"
  },
  "abc-sim-throw-bottles-i00": {
+  "evaluator_attrs": {
+   "bin_floor_z": 0.00297329,
+   "floor_tolerance_m": 0.005
+  },
   "family": "throw_bottles",
   "instance_exact": true,
   "instance_sha": "aadad7bdb8c02a78",
@@ -27804,6 +28210,9 @@
   "worldpack_sha": "aadad7bdb8c02a78"
  },
  "abc-sim-turn-mug-i00": {
+  "evaluator_attrs": {
+   "upright_z_min": 0.95
+  },
   "family": "turn_mug",
   "instance_exact": true,
   "instance_sha": "daf231053bf05830",

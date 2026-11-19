@@ -1,0 +1,344 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: spell_fish | goal: 
+# fidelity: spec | notes: 判据逐字转写上游 spell_fish evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=288971f6896c，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-spell-fish-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-spell-fish-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-spell-fish-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-spell-fish-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-spell-fish-i00.meta.json
+  abc:
+    family: spell_fish
+    rule: event
+    hold_steps: 30
+    step_check:
+      type: abc_spell
+      params:
+        letters:
+        - block_F
+        - block_I
+        - block_S
+        - block_H
+        gap_min: 0.015
+        gap_max: 0.06
+        row_dx_max: 0.03
+        rest_z:
+        - 0.764999
+        - 0.764999
+        - 0.764999
+        - 0.764999
+        z_tolerance: 0.02
+        upright_dot_min: 0.85
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      block_A_jnt:
+        qposadr: 0
+        qveladr: 0
+      block_B_jnt:
+        qposadr: 7
+        qveladr: 6
+      block_C_jnt:
+        qposadr: 14
+        qveladr: 12
+      block_D_jnt:
+        qposadr: 21
+        qveladr: 18
+      block_E_jnt:
+        qposadr: 28
+        qveladr: 24
+      block_F_jnt:
+        qposadr: 35
+        qveladr: 30
+      block_G_jnt:
+        qposadr: 42
+        qveladr: 36
+      block_H_jnt:
+        qposadr: 49
+        qveladr: 42
+      block_I_jnt:
+        qposadr: 56
+        qveladr: 48
+      block_J_jnt:
+        qposadr: 63
+        qveladr: 54
+      block_K_jnt:
+        qposadr: 70
+        qveladr: 60
+      block_L_jnt:
+        qposadr: 77
+        qveladr: 66
+      block_M_jnt:
+        qposadr: 84
+        qveladr: 72
+      block_N_jnt:
+        qposadr: 91
+        qveladr: 78
+      block_O_jnt:
+        qposadr: 98
+        qveladr: 84
+      block_P_jnt:
+        qposadr: 105
+        qveladr: 90
+      block_Q_jnt:
+        qposadr: 112
+        qveladr: 96
+      block_R_jnt:
+        qposadr: 119
+        qveladr: 102
+      block_S_jnt:
+        qposadr: 126
+        qveladr: 108
+      block_T_jnt:
+        qposadr: 133
+        qveladr: 114
+      block_U_jnt:
+        qposadr: 140
+        qveladr: 120
+      block_V_jnt:
+        qposadr: 147
+        qveladr: 126
+      block_W_jnt:
+        qposadr: 154
+        qveladr: 132
+      block_X_jnt:
+        qposadr: 161
+        qveladr: 138
+      block_Y_jnt:
+        qposadr: 168
+        qveladr: 144
+      block_Z_jnt:
+        qposadr: 175
+        qveladr: 150
+      left_joint1:
+        qposadr: 182
+        qveladr: 156
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 183
+        qveladr: 157
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 184
+        qveladr: 158
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 185
+        qveladr: 159
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 186
+        qveladr: 160
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 187
+        qveladr: 161
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 188
+        qveladr: 162
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 189
+        qveladr: 163
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 190
+        qveladr: 164
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 191
+        qveladr: 165
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 192
+        qveladr: 166
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 193
+        qveladr: 167
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 194
+        qveladr: 168
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 195
+        qveladr: 169
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 196
+        qveladr: 170
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 197
+        qveladr: 171
+        range:
+        - -0.0475
+        - 0.00205
+    randomization_seed: 0
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-spell-fish-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_hold
+  params:
+    steps: 30
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

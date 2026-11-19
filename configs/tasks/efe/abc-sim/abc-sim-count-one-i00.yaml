@@ -1,0 +1,327 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: count_one | goal: put exactly 1 red object in the box
+# fidelity: spec | notes: 判据逐字转写上游 count_one_into_opaque_box evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=39fcd07ad171，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-count-one-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-count-one-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-count-one-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-count-one-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-count-one-i00.meta.json
+  abc:
+    family: count_one
+    rule: event
+    hold_steps: 30
+    step_check:
+      type: abc_count_box
+      params:
+        objects:
+        - name: count_obj_01
+          eligible: false
+        - name: count_obj_02
+          eligible: false
+        - name: count_obj_03
+          eligible: true
+        - name: count_obj_04
+          eligible: false
+        - name: count_obj_05
+          eligible: false
+        - name: count_obj_06
+          eligible: false
+        - name: count_obj_07
+          eligible: false
+        - name: count_obj_08
+          eligible: false
+        - name: count_obj_09
+          eligible: false
+        - name: count_obj_10
+          eligible: false
+        - name: count_obj_11
+          eligible: true
+        - name: count_obj_12
+          eligible: false
+        target_count: 1
+        x_bounds:
+        - 0.594
+        - 0.8059999999999999
+        y_bounds:
+        - -0.13799999999999998
+        - 0.13799999999999998
+        floor_z: 0.766
+        ceiling_z: 0.942
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      count_box_top_flap_hinge:
+        qposadr: 0
+        qveladr: 0
+        range:
+        - -1.6
+        - 0.15
+      count_obj_01_joint:
+        qposadr: 1
+        qveladr: 1
+      count_obj_02_joint:
+        qposadr: 8
+        qveladr: 7
+      count_obj_03_joint:
+        qposadr: 15
+        qveladr: 13
+      count_obj_04_joint:
+        qposadr: 22
+        qveladr: 19
+      count_obj_05_joint:
+        qposadr: 29
+        qveladr: 25
+      count_obj_06_joint:
+        qposadr: 36
+        qveladr: 31
+      count_obj_07_joint:
+        qposadr: 43
+        qveladr: 37
+      count_obj_08_joint:
+        qposadr: 50
+        qveladr: 43
+      count_obj_09_joint:
+        qposadr: 57
+        qveladr: 49
+      count_obj_10_joint:
+        qposadr: 64
+        qveladr: 55
+      count_obj_11_joint:
+        qposadr: 71
+        qveladr: 61
+      count_obj_12_joint:
+        qposadr: 78
+        qveladr: 67
+      left_joint1:
+        qposadr: 85
+        qveladr: 73
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 86
+        qveladr: 74
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 87
+        qveladr: 75
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 88
+        qveladr: 76
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 89
+        qveladr: 77
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 90
+        qveladr: 78
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 91
+        qveladr: 79
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 92
+        qveladr: 80
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 93
+        qveladr: 81
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 94
+        qveladr: 82
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 95
+        qveladr: 83
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 96
+        qveladr: 84
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 97
+        qveladr: 85
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 98
+        qveladr: 86
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 99
+        qveladr: 87
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 100
+        qveladr: 88
+        range:
+        - -0.0475
+        - 0.00205
+    randomization_seed: 0
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-count-one-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_hold
+  params:
+    steps: 30
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

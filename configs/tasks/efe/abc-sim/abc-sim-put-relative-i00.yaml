@@ -1,0 +1,269 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: put_relative | goal: put the soap dispenser to the right of the boxed food
+# fidelity: spec | notes: 判据逐字转写上游 put_relative evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=f99f99ccb4ee，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-put-relative-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-put-relative-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-put-relative-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-put-relative-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-put-relative-i00.meta.json
+  abc:
+    family: put_relative
+    rule: event
+    hold_steps: 30
+    step_check:
+      type: abc_put_relative
+      params:
+        mover: relative_obj_03
+        reference: relative_obj_04
+        axis:
+        - 0.0
+        - -1.0
+        spawn_z: 0.79915
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      relative_obj_01_joint:
+        qposadr: 0
+        qveladr: 0
+      relative_obj_02_joint:
+        qposadr: 7
+        qveladr: 6
+      relative_obj_03_joint:
+        qposadr: 14
+        qveladr: 12
+      relative_obj_04_joint:
+        qposadr: 21
+        qveladr: 18
+      left_joint1:
+        qposadr: 28
+        qveladr: 24
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 29
+        qveladr: 25
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 30
+        qveladr: 26
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 31
+        qveladr: 27
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 32
+        qveladr: 28
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 33
+        qveladr: 29
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 34
+        qveladr: 30
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 35
+        qveladr: 31
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 36
+        qveladr: 32
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 37
+        qveladr: 33
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 38
+        qveladr: 34
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 39
+        qveladr: 35
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 40
+        qveladr: 36
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 41
+        qveladr: 37
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 42
+        qveladr: 38
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 43
+        qveladr: 39
+        range:
+        - -0.0475
+        - 0.00205
+    randomization_seed: 0
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-put-relative-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_hold
+  params:
+    steps: 30
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

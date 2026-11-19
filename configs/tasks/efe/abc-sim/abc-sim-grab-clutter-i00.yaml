@@ -1,0 +1,292 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: grab_clutter | goal: grab the ketchup and place it in the box
+# fidelity: spec | notes: 判据逐字转写上游 grab_specific_object_from_clutter evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=a2e0c4bffcd8，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-grab-clutter-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-grab-clutter-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-grab-clutter-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-grab-clutter-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-grab-clutter-i00.meta.json
+  abc:
+    family: grab_clutter
+    rule: event
+    hold_steps: 30
+    step_check:
+      type: abc_in_local_box
+      params:
+        objects:
+        - target_object
+        frame: grab_clutter_target_box
+        local_center:
+        - 0.0
+        - 0.0
+        - 0.10999999940395355
+        half_size:
+        - 0.05999999865889549
+        - 0.054999999701976776
+        - 0.18000000715255737
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      grab_clutter_target_box_joint:
+        qposadr: 0
+        qveladr: 0
+      clutter_obj_01_joint:
+        qposadr: 7
+        qveladr: 6
+      clutter_obj_02_joint:
+        qposadr: 14
+        qveladr: 12
+      clutter_obj_03_joint:
+        qposadr: 21
+        qveladr: 18
+      clutter_obj_04_joint:
+        qposadr: 28
+        qveladr: 24
+      clutter_obj_05_joint:
+        qposadr: 35
+        qveladr: 30
+      target_object_joint:
+        qposadr: 42
+        qveladr: 36
+      clutter_obj_06_joint:
+        qposadr: 49
+        qveladr: 42
+      clutter_obj_07_joint:
+        qposadr: 56
+        qveladr: 48
+      clutter_obj_08_joint:
+        qposadr: 63
+        qveladr: 54
+      left_joint1:
+        qposadr: 70
+        qveladr: 60
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 71
+        qveladr: 61
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 72
+        qveladr: 62
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 73
+        qveladr: 63
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 74
+        qveladr: 64
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 75
+        qveladr: 65
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 76
+        qveladr: 66
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 77
+        qveladr: 67
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 78
+        qveladr: 68
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 79
+        qveladr: 69
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 80
+        qveladr: 70
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 81
+        qveladr: 71
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 82
+        qveladr: 72
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 83
+        qveladr: 73
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 84
+        qveladr: 74
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 85
+        qveladr: 75
+        range:
+        - -0.0475
+        - 0.00205
+    randomization_seed: 0
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-grab-clutter-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_hold
+  params:
+    steps: 30
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

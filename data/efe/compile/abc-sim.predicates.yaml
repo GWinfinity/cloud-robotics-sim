@@ -1,0 +1,17 @@
+# ABC Sim 判据表（占位说明）。ABC Sim 的判据常量不走人工策划表：
+# `tools/abc_probe.py` 在探针 venv 里直接运行上游 evaluator 的构建/绑定
+# 代码（abc_sim/task_eval/* @ d0832d1），把每个冻结实例的几何常量导出到
+# `abc-sim.probe.json`（29/29 与冻结实例状态哈希逐位一致），
+# `tools/abc_resolver.py` 以该 dump 为唯一事实来源生成编译 KB。
+# 本文件仅满足 --resolve 的表存在性检查；判据语义见
+# src/cloud_robotics_sim/core/success.py 的 abc_* 条件 docstring
+# （逐字转写上游 evaluator + EFE 三处修订：30 步 hold / 挂杯释放检查 /
+# 托盘倒计时）。
+source:
+  benchmark: ABC Sim
+  repo: amazon-far/abc
+  ref: d0832d12651d1b260a652861a14648dc5f3660c7
+  simulator: mujoco
+  robot: i2rt-yam-bimanual
+  note: 常量唯一事实来源为 abc-sim.probe.json（探针=上游代码自测）
+envs: {}

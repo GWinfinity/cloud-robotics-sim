@@ -1174,6 +1174,20 @@ for _suite in ("robocasa", "robocasa365", "robocasa-gr1"):
     RESOLVERS[_suite] = _resolve_robocasa(_suite)
 
 
+def _resolve_abc(predicates: dict[str, Any]) -> dict[str, Any]:
+    """ABC Sim resolves from the probe dump, not a curated predicate table."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        import abc_resolver
+
+        return abc_resolver.resolve_suite("abc-sim", load_inventory("abc-sim"))
+    finally:
+        sys.path.remove(str(Path(__file__).resolve().parent))
+
+
+RESOLVERS["abc-sim"] = _resolve_abc
+
+
 # ---------------------------------------------------------------------------
 # LIBERO-MAX resolver: probe dumps -> resolved KB
 # ---------------------------------------------------------------------------
@@ -1462,7 +1476,7 @@ def render_task_yaml(suite: str, name: str, record: dict[str, Any]) -> str:
             "    " + line
             for line in yaml.safe_dump(event, sort_keys=False).splitlines()
         )
-    for block in ("world", "appliances", "timers"):
+    for block in ("world", "appliances", "timers", "abc"):
         value = record.get(block)
         if value:
             lines.append(f"  {block}:")

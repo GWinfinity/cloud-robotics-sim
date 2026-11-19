@@ -1,0 +1,345 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: lego | goal: 
+# fidelity: spec | notes: 判据逐字转写上游 sort_lego_blocks evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=2ebc48bf6497，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-lego-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-lego-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-lego-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-lego-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-lego-i00.meta.json
+  abc:
+    family: lego
+    rule: event
+    hold_steps: 30
+    step_check:
+      type: all
+      params:
+        conditions:
+        - type: abc_in_local_box
+          params:
+            objects:
+            - blue_lego_1
+            - blue_lego_3
+            - blue_lego_5
+            frame: blue_lego_sorting_bin
+            local_center:
+            - 0.0
+            - 0.0
+            - 0.04051459953188896
+            half_size:
+            - 0.049722399562597275
+            - 0.04603929817676544
+            - 0.03683140128850937
+        - type: abc_in_local_box
+          params:
+            objects:
+            - red_lego_1
+            - red_lego_2
+            - red_lego_3
+            - red_lego_4
+            - red_lego_7
+            - red_lego_8
+            frame: red_lego_sorting_bin
+            local_center:
+            - 0.0
+            - 0.0
+            - 0.04494849964976311
+            half_size:
+            - 0.05516409873962402
+            - 0.05107780173420906
+            - 0.040862299501895905
+        - type: abc_in_local_box
+          params:
+            objects:
+            - yellow_lego_2
+            - yellow_lego_4
+            - yellow_lego_7
+            frame: yellow_lego_sorting_bin
+            local_center:
+            - 0.0
+            - 0.0
+            - 0.04463040083646774
+            half_size:
+            - 0.05477369949221611
+            - 0.050716400146484375
+            - 0.04057310149073601
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      red_lego_sorting_bin_joint:
+        qposadr: 0
+        qveladr: 0
+      yellow_lego_sorting_bin_joint:
+        qposadr: 7
+        qveladr: 6
+      blue_lego_sorting_bin_joint:
+        qposadr: 14
+        qveladr: 12
+      red_lego_1_joint:
+        qposadr: 21
+        qveladr: 18
+      red_lego_2_joint:
+        qposadr: 28
+        qveladr: 24
+      red_lego_3_joint:
+        qposadr: 35
+        qveladr: 30
+      yellow_lego_2_joint:
+        qposadr: 42
+        qveladr: 36
+      blue_lego_1_joint:
+        qposadr: 49
+        qveladr: 42
+      blue_lego_3_joint:
+        qposadr: 56
+        qveladr: 48
+      left_joint1:
+        qposadr: 63
+        qveladr: 54
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 64
+        qveladr: 55
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 65
+        qveladr: 56
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 66
+        qveladr: 57
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 67
+        qveladr: 58
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 68
+        qveladr: 59
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 69
+        qveladr: 60
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 70
+        qveladr: 61
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 71
+        qveladr: 62
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 72
+        qveladr: 63
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 73
+        qveladr: 64
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 74
+        qveladr: 65
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 75
+        qveladr: 66
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 76
+        qveladr: 67
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 77
+        qveladr: 68
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 78
+        qveladr: 69
+        range:
+        - -0.0475
+        - 0.00205
+      red_lego_4_joint:
+        qposadr: 79
+        qveladr: 70
+      red_lego_7_joint:
+        qposadr: 86
+        qveladr: 76
+      red_lego_8_joint:
+        qposadr: 93
+        qveladr: 82
+      yellow_lego_4_joint:
+        qposadr: 100
+        qveladr: 88
+      yellow_lego_7_joint:
+        qposadr: 107
+        qveladr: 94
+      blue_lego_5_joint:
+        qposadr: 114
+        qveladr: 100
+    randomization_seed: 0
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-lego-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_hold
+  params:
+    steps: 30
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

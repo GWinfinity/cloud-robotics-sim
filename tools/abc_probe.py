@@ -37,6 +37,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -86,7 +87,6 @@ _MODEL_SKIP = (
 
 
 def _model_arrays(model):  # rcb_abc._model_arrays equivalent
-    import mujoco
 
     out = {}
     for name in dir(model):
@@ -103,6 +103,7 @@ def _model_arrays(model):  # rcb_abc._model_arrays equivalent
 
 def state_sha(model, data):
     """rcb_abc.Session.state_sha: integration state + sorted model arrays."""
+    """rcb_abc.Session.state_sha: integration state + sorted model arrays."""
     import mujoco
 
     sig = mujoco.mjtState.mjSTATE_INTEGRATION
@@ -116,6 +117,7 @@ def state_sha(model, data):
 
 
 def load_instance(path: Path) -> dict:
+    """Read one EFE ABC instance.npz into plain Python/numpy values."""
     d = np.load(path, allow_pickle=False)
     return {
         "family": str(d["family"]),
@@ -187,11 +189,10 @@ def model_card(model) -> dict:
     import mujoco
 
     card: dict = {"nq": int(model.nq), "nv": int(model.nv), "nu": int(model.nu)}
-    joints = ARM_JOINTS + list(ACTION_FINGERS)
     # 14-dim action layout: 6 left arm, left finger, 6 right arm, right finger
-    ordered = ARM_JOINTS[:6] + ["left_left_finger"] + ARM_JOINTS[6:] + [
-        "right_left_finger"
-    ]
+    ordered = (
+        ARM_JOINTS[:6] + ["left_left_finger"] + ARM_JOINTS[6:] + ["right_left_finger"]
+    )
     entries = []
     for name in ordered:
         jid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)
@@ -243,6 +244,7 @@ def model_card(model) -> dict:
 
 
 def probe_one(task: str) -> dict:
+    """Probe one task: exact-hash proof plus evaluator/runtime/model facts."""
     from abc_sim.randomization.core import RandomizationState
 
     inst = load_instance(TASKS / f"{task}-privileged" / "environment" / "instance.npz")
@@ -287,13 +289,73 @@ def probe_one(task: str) -> dict:
         result["nop_success"] = bool(res.success[0])
         result["nop_reward"] = float(res.reward[0])
         result["nop_metrics"] = _jsonable(res.metrics)
+        result["evaluator_attrs"] = _scrape_evaluator(ev)
     rt = env._task_runtime
     if rt is not None:
         result["runtime_debug_state"] = _jsonable(rt.debug_state())
     return result
 
 
+def _scrape_evaluator(ev: Any) -> dict[str, Any]:
+    """Collect the resolver-facing constants each evaluator bound at init."""
+    out: dict[str, Any] = {}
+    names = (
+        "gap_min_m",
+        "gap_max_m",
+        "row_dx_max_m",
+        "z_tolerance_m",
+        "upright_dot_min",
+        "position_tolerance_m",
+        "height_tolerance_m",
+        "upright_z_min",
+        "_table_x_bounds",
+        "_table_y_bounds",
+        "_table_z",
+        "_container_radius",
+        "_container_floor_z",
+        "_container_rim_z",
+        "_target_joint_name",
+        "_bin_bottom_y",
+        "_bin_top_y",
+        "_bin_radius_bottom",
+        "_bin_radius_top",
+        "_goal_local_center",
+        "_goal_half_size",
+        "_nuts_goal_local_center",
+        "_nuts_goal_size",
+        "_bolts_goal_local_center",
+        "_bolts_goal_size",
+        "_bin_x_bounds",
+        "_bin_y_bounds",
+        "_bin_floor_z",
+        "_bin_rim_z",
+        "_axis_xy",
+        "_dropped_local_z_threshold_m",
+        "_usable_half_extents",
+        "floor_tolerance_m",
+    )
+    for name in names:
+        if hasattr(ev, name):
+            out[name.lstrip("_")] = _jsonable(getattr(ev, name))
+    goal_regions = getattr(ev, "_goal_regions", None)
+    if isinstance(goal_regions, dict):
+        out["goal_regions"] = {
+            str(key): [_jsonable(center), _jsonable(half)]
+            for key, (center, half) in goal_regions.items()
+        }
+    directive = getattr(ev, "_directive", None)
+    if isinstance(directive, dict) and "goals_board" in directive:
+        out["chess_goals_board"] = _jsonable(directive["goals_board"])
+        out["chess_classes"] = _jsonable(directive["classes"])
+        out["chess_normal_local"] = _jsonable(directive["normal_local"])
+        out["chess_joints"] = _jsonable(directive["joints"])
+        if "non_target_goals" in directive:
+            out["chess_non_target_goals"] = _jsonable(directive["non_target_goals"])
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
+    """CLI entry point."""
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--task")
     ap.add_argument("--all", action="store_true")
@@ -326,10 +388,10 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(
-        json.dumps(results, indent=1, sort_keys=True), encoding="utf-8"
+    args.out.write_text(json.dumps(results, indent=1, sort_keys=True), encoding="utf-8")
+    print(
+        f"wrote {args.out.relative_to(ROOT)} ({len(results)} tasks, {failures} failed)"
     )
-    print(f"wrote {args.out.relative_to(ROOT)} ({len(results)} tasks, {failures} failed)")
     return 1 if failures else 0
 
 

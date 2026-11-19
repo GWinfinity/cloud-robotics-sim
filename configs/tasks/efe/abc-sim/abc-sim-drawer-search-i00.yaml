@@ -1,0 +1,400 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: drawer_search | goal: find the measuring cup
+# fidelity: spec | notes: 判据逐字转写上游 multi_drawer_search evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=c2f19b21de54，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-drawer-search-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-drawer-search-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-drawer-search-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-drawer-search-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-drawer-search-i00.meta.json
+  abc:
+    family: drawer_search
+    rule: event
+    hold_steps: 30
+    step_check:
+      type: abc_drawer_sequence
+      params:
+        target_count: 2
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      drawer_stack_1_joint_top_drawer_low:
+        qposadr: 0
+        qveladr: 0
+        range:
+        - 0.0
+        - 0.216
+      drawer_stack_1_joint_middle_drawer_low:
+        qposadr: 1
+        qveladr: 1
+        range:
+        - 0.0
+        - 0.216
+      drawer_stack_1_joint_bottom_drawer_low:
+        qposadr: 2
+        qveladr: 2
+        range:
+        - 0.0
+        - 0.216
+      drawer_stack_2_joint_top_drawer_low:
+        qposadr: 3
+        qveladr: 3
+        range:
+        - 0.0
+        - 0.216
+      drawer_stack_2_joint_middle_drawer_low:
+        qposadr: 4
+        qveladr: 4
+        range:
+        - 0.0
+        - 0.216
+      drawer_stack_2_joint_bottom_drawer_low:
+        qposadr: 5
+        qveladr: 5
+        range:
+        - 0.0
+        - 0.216
+      drawer_stack_3_joint_top_drawer_low:
+        qposadr: 6
+        qveladr: 6
+        range:
+        - 0.0
+        - 0.216
+      drawer_stack_3_joint_middle_drawer_low:
+        qposadr: 7
+        qveladr: 7
+        range:
+        - 0.0
+        - 0.216
+      drawer_stack_3_joint_bottom_drawer_low:
+        qposadr: 8
+        qveladr: 8
+        range:
+        - 0.0
+        - 0.216
+      drawer_search_goal_bin_joint:
+        qposadr: 9
+        qveladr: 9
+      drawer_search_target_joint:
+        qposadr: 16
+        qveladr: 15
+      drawer_search_distractor_01_joint:
+        qposadr: 23
+        qveladr: 21
+      drawer_search_distractor_02_joint:
+        qposadr: 30
+        qveladr: 27
+      drawer_search_distractor_03_joint:
+        qposadr: 37
+        qveladr: 33
+      drawer_search_distractor_04_joint:
+        qposadr: 44
+        qveladr: 39
+      drawer_search_distractor_05_joint:
+        qposadr: 51
+        qveladr: 45
+      drawer_search_distractor_06_joint:
+        qposadr: 58
+        qveladr: 51
+      drawer_search_distractor_07_joint:
+        qposadr: 65
+        qveladr: 57
+      drawer_search_distractor_08_joint:
+        qposadr: 72
+        qveladr: 63
+      drawer_search_distractor_09_joint:
+        qposadr: 79
+        qveladr: 69
+      drawer_search_distractor_10_joint:
+        qposadr: 86
+        qveladr: 75
+      drawer_search_distractor_11_joint:
+        qposadr: 93
+        qveladr: 81
+      drawer_search_distractor_12_joint:
+        qposadr: 100
+        qveladr: 87
+      drawer_search_distractor_13_joint:
+        qposadr: 107
+        qveladr: 93
+      drawer_search_distractor_14_joint:
+        qposadr: 114
+        qveladr: 99
+      drawer_search_distractor_15_joint:
+        qposadr: 121
+        qveladr: 105
+      drawer_search_distractor_16_joint:
+        qposadr: 128
+        qveladr: 111
+      drawer_search_distractor_17_joint:
+        qposadr: 135
+        qveladr: 117
+      drawer_search_distractor_18_joint:
+        qposadr: 142
+        qveladr: 123
+      drawer_search_distractor_19_joint:
+        qposadr: 149
+        qveladr: 129
+      drawer_search_distractor_20_joint:
+        qposadr: 156
+        qveladr: 135
+      drawer_search_distractor_21_joint:
+        qposadr: 163
+        qveladr: 141
+      drawer_search_distractor_22_joint:
+        qposadr: 170
+        qveladr: 147
+      drawer_search_distractor_23_joint:
+        qposadr: 177
+        qveladr: 153
+      drawer_search_distractor_24_joint:
+        qposadr: 184
+        qveladr: 159
+      drawer_search_distractor_25_joint:
+        qposadr: 191
+        qveladr: 165
+      left_joint1:
+        qposadr: 198
+        qveladr: 171
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 199
+        qveladr: 172
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 200
+        qveladr: 173
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 201
+        qveladr: 174
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 202
+        qveladr: 175
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 203
+        qveladr: 176
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 204
+        qveladr: 177
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 205
+        qveladr: 178
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 206
+        qveladr: 179
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 207
+        qveladr: 180
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 208
+        qveladr: 181
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 209
+        qveladr: 182
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 210
+        qveladr: 183
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 211
+        qveladr: 184
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 212
+        qveladr: 185
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 213
+        qveladr: 186
+        range:
+        - -0.0475
+        - 0.00205
+    randomization_seed: 0
+    drawer:
+      targets:
+      - drawer_search_distractor_15
+      - drawer_search_distractor_14
+      bin: drawer_search_goal_bin
+      local_center:
+      - 0.0
+      - 0.0
+      - 0.10000000149011612
+      half_size:
+      - 0.0560000017285347
+      - 0.052000001072883606
+      - 0.1599999964237213
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-drawer-search-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_drawer_sequence
+  params:
+    target_count: 2
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

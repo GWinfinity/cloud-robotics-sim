@@ -1,0 +1,303 @@
+# EFE 迁移编译物（abc-sim）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: pouring | goal: 
+# fidelity: spec | notes: 判据逐字转写上游 pouring evaluator + EFE 三处修订（30 步 hold / 挂杯释放检查 / 托盘倒计时）；instance_sha=b54e0a7dafa2，探针逐位复现=True
+version: 1
+
+task:
+  name: abc-sim-pouring-i00
+  type: efe_abc
+  robot: i2rt_yam_bimanual
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/abc-sim/worlds/abc-sim-pouring-i00.xml
+    qpos_path: assets/abc-sim/worlds/abc-sim-pouring-i00.qpos.npy
+    qvel_path: assets/abc-sim/worlds/abc-sim-pouring-i00.qvel.npy
+    meta_path: assets/abc-sim/worlds/abc-sim-pouring-i00.meta.json
+  abc:
+    family: pouring
+    rule: event
+    hold_steps: 30
+    step_check:
+      type: abc_pour
+      params:
+        beads:
+        - bead_1
+        - bead_2
+        - bead_3
+        - bead_4
+        - bead_5
+        - bead_6
+        - bead_7
+        - bead_8
+        - bead_9
+        - bead_10
+        cup: cup_1
+        radius: 0.03596812533214688
+        floor_z: -0.04396326094865799
+        rim_z: 0.04396326094865799
+        success_count: 9
+    control:
+      joints:
+      - name: left_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: left_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: left_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: left_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: left_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      - name: right_joint1
+        ctrlrange:
+        - -2.61799
+        - 3.05433
+        range:
+        - -2.61799
+        - 3.05433
+      - name: right_joint2
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint3
+        ctrlrange:
+        - 0.0
+        - 3.66519
+        range:
+        - 0.0
+        - 3.66519
+      - name: right_joint4
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint5
+        ctrlrange:
+        - -1.5708
+        - 1.5708
+        range:
+        - -1.5708
+        - 1.5708
+      - name: right_joint6
+        ctrlrange:
+        - -2.0944
+        - 2.0944
+        range:
+        - -2.0944
+        - 2.0944
+      - name: right_left_finger
+        ctrlrange:
+        - 0.0
+        - 0.0495
+        range:
+        - -0.00205
+        - 0.0475
+      control_dt: 0.034
+    joints:
+      mug_1_jnt:
+        qposadr: 0
+        qveladr: 0
+      bead_1_jnt:
+        qposadr: 7
+        qveladr: 6
+      bead_2_jnt:
+        qposadr: 14
+        qveladr: 12
+      bead_3_jnt:
+        qposadr: 21
+        qveladr: 18
+      bead_4_jnt:
+        qposadr: 28
+        qveladr: 24
+      bead_5_jnt:
+        qposadr: 35
+        qveladr: 30
+      bead_6_jnt:
+        qposadr: 42
+        qveladr: 36
+      bead_7_jnt:
+        qposadr: 49
+        qveladr: 42
+      bead_8_jnt:
+        qposadr: 56
+        qveladr: 48
+      bead_9_jnt:
+        qposadr: 63
+        qveladr: 54
+      bead_10_jnt:
+        qposadr: 70
+        qveladr: 60
+      cup_1_jnt:
+        qposadr: 77
+        qveladr: 66
+      left_joint1:
+        qposadr: 84
+        qveladr: 72
+        range:
+        - -2.61799
+        - 3.05433
+      left_joint2:
+        qposadr: 85
+        qveladr: 73
+        range:
+        - 0.0
+        - 3.66519
+      left_joint3:
+        qposadr: 86
+        qveladr: 74
+        range:
+        - 0.0
+        - 3.66519
+      left_joint4:
+        qposadr: 87
+        qveladr: 75
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint5:
+        qposadr: 88
+        qveladr: 76
+        range:
+        - -1.5708
+        - 1.5708
+      left_joint6:
+        qposadr: 89
+        qveladr: 77
+        range:
+        - -2.0944
+        - 2.0944
+      left_left_finger:
+        qposadr: 90
+        qveladr: 78
+        range:
+        - -0.00205
+        - 0.0475
+      left_right_finger:
+        qposadr: 91
+        qveladr: 79
+        range:
+        - -0.0475
+        - 0.00205
+      right_joint1:
+        qposadr: 92
+        qveladr: 80
+        range:
+        - -2.61799
+        - 3.05433
+      right_joint2:
+        qposadr: 93
+        qveladr: 81
+        range:
+        - 0.0
+        - 3.66519
+      right_joint3:
+        qposadr: 94
+        qveladr: 82
+        range:
+        - 0.0
+        - 3.66519
+      right_joint4:
+        qposadr: 95
+        qveladr: 83
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint5:
+        qposadr: 96
+        qveladr: 84
+        range:
+        - -1.5708
+        - 1.5708
+      right_joint6:
+        qposadr: 97
+        qveladr: 85
+        range:
+        - -2.0944
+        - 2.0944
+      right_left_finger:
+        qposadr: 98
+        qveladr: 86
+        range:
+        - -0.00205
+        - 0.0475
+      right_right_finger:
+        qposadr: 99
+        qveladr: 87
+        range:
+        - -0.0475
+        - 0.00205
+    randomization_seed: 0
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/abc-sim/worlds/abc-sim-pouring-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: abc_hold
+  params:
+    steps: 30
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu
