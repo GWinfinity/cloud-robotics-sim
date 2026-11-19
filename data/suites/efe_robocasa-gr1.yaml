@@ -5,6 +5,24 @@ tasks:
   - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-bottle-to-cabinet-close-i00.yaml
   - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-can-to-drawer-close-i00.yaml
   - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-cup-to-drawer-close-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-cuttingboard-to-basket-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-cuttingboard-to-cardboardbox-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-cuttingboard-to-pan-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-cuttingboard-to-pot-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-cuttingboard-to-tieredbasket-i00.yaml
   - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-milk-to-microwave-close-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-placemat-to-basket-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-placemat-to-bowl-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-placemat-to-plate-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-placemat-to-tieredshelf-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-plate-to-bowl-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-plate-to-cardboardbox-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-plate-to-pan-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-plate-to-plate-i00.yaml
   - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-potato-to-microwave-close-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-tray-to-cardboardbox-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-tray-to-plate-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-tray-to-pot-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-tray-to-tieredbasket-i00.yaml
+  - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-tray-to-tieredshelf-i00.yaml
   - ../../configs/tasks/efe/robocasa-gr1/robocasa-gr1-wine-to-cabinet-close-i00.yaml

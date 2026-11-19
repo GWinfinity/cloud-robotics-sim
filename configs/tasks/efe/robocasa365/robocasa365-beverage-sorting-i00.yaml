@@ -1,0 +1,424 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/BeverageSorting | goal: Sort all alcoholic drinks to one cabinet, and non-alcoholic drinks to the other.
+# fidelity: spec | notes: 判据逐字转写上游 BeverageSorting._check_success；instance_sha=9417dbbe4e75
+version: 1
+
+task:
+  name: robocasa365-beverage-sorting-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_gripper_far
+      params:
+        target: alcohol1_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: alcohol2_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: non_alcohol1_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: non_alcohol2_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: any
+      params:
+        conditions:
+        - type: all
+          params:
+            conditions:
+            - type: rc_inside
+              params:
+                object: alcohol1_main
+                fixture: hingecabinet_1_right_group_1_main
+                regions:
+                - center:
+                  - 0.0
+                  - 0.0
+                  - -0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.170277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.0
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                object_bbox: &id001
+                - - -0.024346
+                  - -0.024346
+                  - -0.08
+                - - 0.024346
+                  - -0.024346
+                  - -0.08
+                - - -0.024346
+                  - 0.024345
+                  - -0.08
+                - - -0.024346
+                  - -0.024346
+                  - 0.079996
+                - - 0.024346
+                  - 0.024345
+                  - 0.079996
+                - - -0.024346
+                  - 0.024345
+                  - 0.079996
+                - - 0.024346
+                  - -0.024346
+                  - 0.079996
+                - - 0.024346
+                  - 0.024345
+                  - -0.08
+                tolerance: 0.05
+            - type: rc_inside
+              params:
+                object: alcohol2_main
+                fixture: hingecabinet_1_right_group_1_main
+                regions:
+                - center:
+                  - 0.0
+                  - 0.0
+                  - -0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.170277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.0
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                object_bbox: &id002
+                - - -0.024172
+                  - -0.024172
+                  - -0.08088
+                - - 0.024172
+                  - -0.024172
+                  - -0.08088
+                - - -0.024172
+                  - 0.024172
+                  - -0.08088
+                - - -0.024172
+                  - -0.024172
+                  - 0.08088
+                - - 0.024172
+                  - 0.024172
+                  - 0.08088
+                - - -0.024172
+                  - 0.024172
+                  - 0.08088
+                - - 0.024172
+                  - -0.024172
+                  - 0.08088
+                - - 0.024172
+                  - 0.024172
+                  - -0.08088
+                tolerance: 0.05
+            - type: rc_inside
+              params:
+                object: non_alcohol1_main
+                fixture: hingecabinet_2_right_group_1_main
+                regions:
+                - center:
+                  - 0.0
+                  - 0.0
+                  - -0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.170277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.0
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                object_bbox: &id003
+                - - -0.0286
+                  - -0.02763
+                  - -0.055512
+                - - 0.0286
+                  - -0.02763
+                  - -0.055512
+                - - -0.0286
+                  - 0.02763
+                  - -0.055512
+                - - -0.0286
+                  - -0.02763
+                  - 0.055391
+                - - 0.0286
+                  - 0.02763
+                  - 0.055391
+                - - -0.0286
+                  - 0.02763
+                  - 0.055391
+                - - 0.0286
+                  - -0.02763
+                  - 0.055391
+                - - 0.0286
+                  - 0.02763
+                  - -0.055512
+                tolerance: 0.05
+            - type: rc_inside
+              params:
+                object: non_alcohol2_main
+                fixture: hingecabinet_2_right_group_1_main
+                regions:
+                - center:
+                  - 0.0
+                  - 0.0
+                  - -0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.170277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.0
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                object_bbox: &id004
+                - - -0.025667
+                  - -0.025672
+                  - -0.083399
+                - - 0.025667
+                  - -0.025672
+                  - -0.083399
+                - - -0.025667
+                  - 0.025672
+                  - -0.083399
+                - - -0.025667
+                  - -0.025672
+                  - 0.083319
+                - - 0.025667
+                  - 0.025672
+                  - 0.083319
+                - - -0.025667
+                  - 0.025672
+                  - 0.083319
+                - - 0.025667
+                  - -0.025672
+                  - 0.083319
+                - - 0.025667
+                  - 0.025672
+                  - -0.083399
+                tolerance: 0.05
+        - type: all
+          params:
+            conditions:
+            - type: rc_inside
+              params:
+                object: alcohol1_main
+                fixture: hingecabinet_2_right_group_1_main
+                regions:
+                - center:
+                  - 0.0
+                  - 0.0
+                  - -0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.170277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.0
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                object_bbox: *id001
+                tolerance: 0.05
+            - type: rc_inside
+              params:
+                object: alcohol2_main
+                fixture: hingecabinet_2_right_group_1_main
+                regions:
+                - center:
+                  - 0.0
+                  - 0.0
+                  - -0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.170277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.0
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                object_bbox: *id002
+                tolerance: 0.05
+            - type: rc_inside
+              params:
+                object: non_alcohol1_main
+                fixture: hingecabinet_1_right_group_1_main
+                regions:
+                - center:
+                  - 0.0
+                  - 0.0
+                  - -0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.170277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.0
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                object_bbox: *id003
+                tolerance: 0.05
+            - type: rc_inside
+              params:
+                object: non_alcohol2_main
+                fixture: hingecabinet_1_right_group_1_main
+                regions:
+                - center:
+                  - 0.0
+                  - 0.0
+                  - -0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.170277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.0
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                - center:
+                  - 0.0
+                  - 0.005
+                  - 0.296667
+                  halfsize:
+                  - 0.47
+                  - 0.165277
+                  - 0.133333
+                object_bbox: *id004
+                tolerance: 0.05
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

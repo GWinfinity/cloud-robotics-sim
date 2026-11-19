@@ -1,0 +1,80 @@
+# EFE 迁移编译物（robocasa-gr1）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa-gr1/PosttrainPnPNovelFromPlateToPlateSplitA | goal: pick the sweet potato from the plate and place it in the plate
+# fidelity: spec | notes: 判据逐字转写上游 PosttrainPnPNovelFromPlateToPlateSplitA._check_success；instance_sha=4f2bbdf19d0e
+version: 1
+
+task:
+  name: robocasa-gr1-plate-to-plate-i00
+  type: efe_robocasa
+  robot: fourier_gr1
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-plate-to-plate-i00.xml
+    qpos_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-plate-to-plate-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-plate-to-plate-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-plate-to-plate-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa-gr1/worlds/robocasa-gr1-plate-to-plate-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_gripper_far
+      params:
+        target: container_main
+        sites:
+        - gripper0_right_grip_site
+        - robot0_left_eef_site
+        - gripper0_left_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: obj_main
+        sites:
+        - gripper0_right_grip_site
+        - robot0_left_eef_site
+        - gripper0_left_grip_site
+        threshold: 0.25
+    - type: rc_in_receptacle
+      params:
+        object: obj_main
+        receptacle: container_main
+        radius: 0.086359
+        factor: 0.7
+    - type: not
+      params:
+        condition:
+          type: rc_contact
+          params:
+            object: obj_main
+            fixture: table_main_group_main
+    - type: rc_upright
+      params:
+        object: container_main
+        threshold: 0.8
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

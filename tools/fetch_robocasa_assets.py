@@ -265,8 +265,93 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _content_length(url: str) -> int:
+    """Total size of a (redirected) HTTP resource."""
+    request = urllib.request.Request(url, method="HEAD")
+    with urllib.request.urlopen(request, timeout=60) as response:
+        return int(response.headers["Content-Length"])
+
+
+def download_parallel(
+    url: str,
+    dest: Path,
+    sha256: str,
+    *,
+    chunk_size: int = 8 << 20,
+    workers: int = 16,
+) -> str:
+    """Range-parallel downloader with per-chunk resume (throttled mirrors).
+
+    Single connections to the mirror throttle to ~50-230 KB/s; N parallel
+    range requests scale the aggregate roughly linearly. Chunks land in
+    ``<dest>.parts/`` and are assembled + SHA-256 verified only when every
+    chunk is present, so re-runs continue where a killed run stopped (the
+    finished ``dest`` with a matching hash is never re-downloaded).
+    """
+    if dest.is_file() and sha256_of(dest) == sha256:
+        return "present"
+    total = _content_length(url)
+    parts = dest.with_suffix(dest.suffix + ".parts")
+    parts.mkdir(parents=True, exist_ok=True)
+    n_chunks = (total + chunk_size - 1) // chunk_size
+
+    def fetch(index: int) -> str:
+        chunk = parts / f"{index:06d}"
+        expect = min(chunk_size, total - index * chunk_size)
+        if chunk.is_file() and chunk.stat().st_size == expect:
+            return "skip"
+        tmp = chunk.with_suffix(".tmp")
+        attempt = 0
+        while time.time() < DEADLINE:
+            attempt += 1
+            try:
+                request = urllib.request.Request(url)
+                start = index * chunk_size
+                request.add_header("Range", f"bytes={start}-{start + expect - 1}")
+                with urllib.request.urlopen(request, timeout=300) as response:
+                    if response.status != 206:
+                        raise OSError(f"no partial content: {response.status}")
+                    with tmp.open("wb") as handle:
+                        shutil.copyfileobj(response, handle, 1 << 20)
+                if tmp.stat().st_size == expect:
+                    tmp.replace(chunk)
+                    return "ok"
+                tmp.unlink(missing_ok=True)
+            except Exception as exc:  # noqa: BLE001 - network is flaky
+                wait = min(30, 2**attempt)
+                log(f"chunk {index} attempt {attempt}: {exc}; wait {wait}s")
+                time.sleep(wait)
+        raise TimeoutError(f"chunk {index} failed after {attempt} attempts")
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    done = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for status in pool.map(fetch, range(n_chunks)):
+            done += 1
+            if status == "ok" or done % 25 == 0:
+                log(f"{dest.name}: chunks {done}/{n_chunks}")
+    assembled = dest.with_suffix(dest.suffix + ".assembled")
+    with assembled.open("wb") as out:
+        for index in range(n_chunks):
+            chunk = parts / f"{index:06d}"
+            expect = min(chunk_size, total - index * chunk_size)
+            if not chunk.is_file() or chunk.stat().st_size != expect:
+                raise OSError(f"chunk {index} missing after assembly scan")
+            with chunk.open("rb") as handle:
+                shutil.copyfileobj(handle, out, 1 << 20)
+    if assembled.stat().st_size != total:
+        raise OSError(f"assembled size mismatch: {assembled.stat().st_size} != {total}")
+    if sha256_of(assembled) != sha256:
+        assembled.unlink()
+        raise OSError("assembled sha256 mismatch")
+    assembled.replace(dest)
+    shutil.rmtree(parts, ignore_errors=True)
+    return "downloaded"
+
+
 def download(url: str, dest: Path, sha256: str) -> str:
-    """Download url -> dest (resuming), verify sha256; return a status word."""
+    """Single-connection resumable download; see download_parallel for bulk."""
     if dest.is_file() and sha256_of(dest) == sha256:
         return "present"
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -381,8 +466,8 @@ _SUITE_POPULATE = {
     },
     "robocasa-gr1": {
         "robosuite": "robosuite-151-src",
-        "root": (),
-        "objects": ("lightwheel", "sketchfab"),
+        "root": ("textures", "fixtures_v02"),
+        "objects": ("lightwheel", "sketchfab", "objaverse"),
     },
 }
 
@@ -429,13 +514,26 @@ def mirror_assets() -> None:
                 archive = zips / f"{name}.zip"
                 if not archive.is_file():
                     continue
-                members = {n for n in zipfile.ZipFile(archive).namelist() if n in refs}
+                dest_root = root if sub == "root" else root / "objects"
+                # Archives carry their own top level (objaverse.zip holds
+                # ``objaverse/<cat>/...`` and is unpacked into ``objects/``),
+                # so members match reference paths with the destination
+                # prefix stripped.
+                prefix = "" if sub == "root" else "objects/"
+                wanted = {r[len(prefix) :] for r in refs if r.startswith(prefix)}
+                # The object-library MJCF (<obj>/model.xml) is loaded by
+                # robocasa code, never referenced by the world XML's file=
+                # attributes — extract it alongside the referenced members
+                # so radii/bbox baking finds it.
+                dirs = {"/".join(w.split("/")[:3]) + "/model.xml" for w in wanted}
+                members = {
+                    n for n in zipfile.ZipFile(archive).namelist() if n in wanted
+                } | {n for n in dirs if n in zipfile.ZipFile(archive).namelist()}
                 if not members:
+                    log(f"extract {name} -> {suite}/{sub}: 0 members")
                     continue
                 with zipfile.ZipFile(archive) as zf:
-                    zf.extractall(
-                        root if sub == "root" else root / "objects", members=members
-                    )
+                    zf.extractall(dest_root, members=members)
                 log(f"extract {name} -> {suite}/{sub}: {len(members)} members")
         rs_root = _RS_TREE[groups["robosuite"]]
         if rs_root.is_dir():

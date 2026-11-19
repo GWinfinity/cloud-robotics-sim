@@ -6,62 +6,103 @@ scene: efe_world
 source:
   suite: robocasa365
 pending_tasks:
-- robocasa365-add-lemon-to-fish-i00
-- robocasa365-beverage-sorting-i00
-- robocasa365-bread-and-cheese-i00
 - robocasa365-candle-cleanup-i00
 - robocasa365-clear-food-waste-i00
-- robocasa365-cookie-dough-prep-i00
-- robocasa365-dessert-upgrade-i00
-- robocasa365-display-meat-variety-i00
 - robocasa365-divide-basins-i00
 - robocasa365-drain-veggies-i00
-- robocasa365-drinkware-consolidation-i00
-- robocasa365-make-loaded-potato-i00
-- robocasa365-meal-prep-staging-i00
 - robocasa365-microwave-defrost-meat-i00
 - robocasa365-pack-dessert-i00
-- robocasa365-pick-place-sink-to-counter-i00
-- robocasa365-plate-steak-meal-i00
 - robocasa365-portion-in-tupperware-i00
 - robocasa365-pre-rinse-station-i00
-- robocasa365-prep-marinating-meat-i00
 - robocasa365-reheat-meal-i00
-- robocasa365-retrieve-meat-i00
-- robocasa365-set-up-cutting-station-i00
-- robocasa365-stocking-breakfast-foods-i00
-- robocasa365-sweeten-coffee-i00
-- robocasa365-thaw-in-sink-i00
 - robocasa365-turn-on-toaster-oven-i00
 pending_reasons:
-  robocasa365-add-lemon-to-fish-i00: 物体 'fish_container' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-beverage-sorting-i00: 物体 'alcohol1' 库 XML 缺失（bbox 站点）
-  robocasa365-bread-and-cheese-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-candle-cleanup-i00: 物体 'obj1' 库 XML 缺失（bbox 站点）
+  robocasa365-candle-cleanup-i00: 物体 'obj2' 库 XML 缺失（bbox 站点）
   robocasa365-clear-food-waste-i00: 物体 'colander' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-cookie-dough-prep-i00: 物体 'bowl' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-dessert-upgrade-i00: 物体 'receptacle' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-display-meat-variety-i00: 物体 'serving_tray' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-divide-basins-i00: 物体 'obj_to_wash' 库 XML 缺失（bbox 站点）
+  robocasa365-divide-basins-i00: 物体 'obj_drying' 库 XML 缺失（bbox 站点）
   robocasa365-drain-veggies-i00: 物体 'obj' 库 XML 缺失（bbox 站点）
-  robocasa365-drinkware-consolidation-i00: 物体 'obj_0' 库 XML 缺失（bbox 站点）
-  robocasa365-make-loaded-potato-i00: 物体 'cutting_board' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-meal-prep-staging-i00: 物体 'pan1' 库 XML 缺失（horizontal_radius_site）
   robocasa365-microwave-defrost-meat-i00: 物体 'tupperware' 库 XML 缺失（bbox 站点）
   robocasa365-pack-dessert-i00: 物体 'cooked_food_container' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-pick-place-sink-to-counter-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-plate-steak-meal-i00: 物体 'plate' 库 XML 缺失（horizontal_radius_site）
   robocasa365-portion-in-tupperware-i00: 物体 'tupperware1' 库 XML 缺失（horizontal_radius_site）
   robocasa365-pre-rinse-station-i00: 物体 'stackable' 库 XML 缺失（bbox 站点）
-  robocasa365-prep-marinating-meat-i00: 物体 'cutting_board' 库 XML 缺失（horizontal_radius_site）
   robocasa365-reheat-meal-i00: 物体 'tupperware' 库 XML 缺失（bbox 站点）
-  robocasa365-retrieve-meat-i00: 物体 'receptacle' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-set-up-cutting-station-i00: 物体 'receptacle' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-stocking-breakfast-foods-i00: 物体 'obj1' 库 XML 缺失（bbox 站点）
-  robocasa365-sweeten-coffee-i00: 物体 'coffee' 库 XML 缺失（horizontal_radius_site）
-  robocasa365-thaw-in-sink-i00: 物体 'obj' 库 XML 缺失（bbox 站点）
   robocasa365-turn-on-toaster-oven-i00: TurnOnToasterOven：time 状态机（realtime 动态任务），本批挂起
 tasks:
+  robocasa365-add-lemon-to-fish-i00:
+    family: robocasa365/AddLemonToFish
+    goal: Take the lemon wedge from the fridge and place it on the plate with fish
+      on the dining counter.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: lemon_wedge_main
+            receptacle: fish_container_main
+            radius: 0.091079
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: fish_main
+            receptacle: fish_container_main
+            radius: 0.091079
+            factor: 0.7
+        - type: rc_contact_any
+          params:
+            object: fish_container_main
+            fixtures:
+            - counter_1_left_group_1_main
+            - cube_1_island_group_1_main
+            - cube_2_island_group_1_main
+            - cube_3_island_group_1_main
+            - cube_4_island_group_1_main
+            - dishwasher_1_island_group_1_main
+            - island_island_group_1_main
+            - paper_towel_island_group_1_main
+            - sink_island_group_1_main
+            - stack_1_island_group_1_1_main
+            - stack_1_island_group_1_base_main
+            - stack_2_island_group_1_1_main
+            - stack_2_island_group_1_base_main
+            - stack_3_island_group_1_1_main
+            - stack_3_island_group_1_base_main
+        - type: rc_gripper_far
+          params:
+            target: lemon_wedge_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 AddLemonToFish._check_success；instance_sha=8d360a51bb92
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
   robocasa365-assemble-cooking-array-i00:
     family: robocasa365/AssembleCookingArray
     goal: Move the shrimp onto the pan on the stove. Then move the syrup bottle and
@@ -133,6 +174,476 @@ tasks:
     - name: world
       shape_type: mjcf
       mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-assemble-cooking-array-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-beverage-sorting-i00:
+    family: robocasa365/BeverageSorting
+    goal: Sort all alcoholic drinks to one cabinet, and non-alcoholic drinks to the
+      other.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_gripper_far
+          params:
+            target: alcohol1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: alcohol2_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: non_alcohol1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: non_alcohol2_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: any
+          params:
+            conditions:
+            - type: all
+              params:
+                conditions:
+                - type: rc_inside
+                  params:
+                    object: alcohol1_main
+                    fixture: hingecabinet_1_right_group_1_main
+                    regions:
+                    - center:
+                      - 0.0
+                      - 0.0
+                      - -0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.170277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.0
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    object_bbox: &id001
+                    - - -0.024346
+                      - -0.024346
+                      - -0.08
+                    - - 0.024346
+                      - -0.024346
+                      - -0.08
+                    - - -0.024346
+                      - 0.024345
+                      - -0.08
+                    - - -0.024346
+                      - -0.024346
+                      - 0.079996
+                    - - 0.024346
+                      - 0.024345
+                      - 0.079996
+                    - - -0.024346
+                      - 0.024345
+                      - 0.079996
+                    - - 0.024346
+                      - -0.024346
+                      - 0.079996
+                    - - 0.024346
+                      - 0.024345
+                      - -0.08
+                    tolerance: 0.05
+                - type: rc_inside
+                  params:
+                    object: alcohol2_main
+                    fixture: hingecabinet_1_right_group_1_main
+                    regions:
+                    - center:
+                      - 0.0
+                      - 0.0
+                      - -0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.170277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.0
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    object_bbox: &id002
+                    - - -0.024172
+                      - -0.024172
+                      - -0.08088
+                    - - 0.024172
+                      - -0.024172
+                      - -0.08088
+                    - - -0.024172
+                      - 0.024172
+                      - -0.08088
+                    - - -0.024172
+                      - -0.024172
+                      - 0.08088
+                    - - 0.024172
+                      - 0.024172
+                      - 0.08088
+                    - - -0.024172
+                      - 0.024172
+                      - 0.08088
+                    - - 0.024172
+                      - -0.024172
+                      - 0.08088
+                    - - 0.024172
+                      - 0.024172
+                      - -0.08088
+                    tolerance: 0.05
+                - type: rc_inside
+                  params:
+                    object: non_alcohol1_main
+                    fixture: hingecabinet_2_right_group_1_main
+                    regions:
+                    - center:
+                      - 0.0
+                      - 0.0
+                      - -0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.170277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.0
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    object_bbox: &id003
+                    - - -0.0286
+                      - -0.02763
+                      - -0.055512
+                    - - 0.0286
+                      - -0.02763
+                      - -0.055512
+                    - - -0.0286
+                      - 0.02763
+                      - -0.055512
+                    - - -0.0286
+                      - -0.02763
+                      - 0.055391
+                    - - 0.0286
+                      - 0.02763
+                      - 0.055391
+                    - - -0.0286
+                      - 0.02763
+                      - 0.055391
+                    - - 0.0286
+                      - -0.02763
+                      - 0.055391
+                    - - 0.0286
+                      - 0.02763
+                      - -0.055512
+                    tolerance: 0.05
+                - type: rc_inside
+                  params:
+                    object: non_alcohol2_main
+                    fixture: hingecabinet_2_right_group_1_main
+                    regions:
+                    - center:
+                      - 0.0
+                      - 0.0
+                      - -0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.170277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.0
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    object_bbox: &id004
+                    - - -0.025667
+                      - -0.025672
+                      - -0.083399
+                    - - 0.025667
+                      - -0.025672
+                      - -0.083399
+                    - - -0.025667
+                      - 0.025672
+                      - -0.083399
+                    - - -0.025667
+                      - -0.025672
+                      - 0.083319
+                    - - 0.025667
+                      - 0.025672
+                      - 0.083319
+                    - - -0.025667
+                      - 0.025672
+                      - 0.083319
+                    - - 0.025667
+                      - -0.025672
+                      - 0.083319
+                    - - 0.025667
+                      - 0.025672
+                      - -0.083399
+                    tolerance: 0.05
+            - type: all
+              params:
+                conditions:
+                - type: rc_inside
+                  params:
+                    object: alcohol1_main
+                    fixture: hingecabinet_2_right_group_1_main
+                    regions:
+                    - center:
+                      - 0.0
+                      - 0.0
+                      - -0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.170277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.0
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    object_bbox: *id001
+                    tolerance: 0.05
+                - type: rc_inside
+                  params:
+                    object: alcohol2_main
+                    fixture: hingecabinet_2_right_group_1_main
+                    regions:
+                    - center:
+                      - 0.0
+                      - 0.0
+                      - -0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.170277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.0
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    object_bbox: *id002
+                    tolerance: 0.05
+                - type: rc_inside
+                  params:
+                    object: non_alcohol1_main
+                    fixture: hingecabinet_1_right_group_1_main
+                    regions:
+                    - center:
+                      - 0.0
+                      - 0.0
+                      - -0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.170277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.0
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    object_bbox: *id003
+                    tolerance: 0.05
+                - type: rc_inside
+                  params:
+                    object: non_alcohol2_main
+                    fixture: hingecabinet_1_right_group_1_main
+                    regions:
+                    - center:
+                      - 0.0
+                      - 0.0
+                      - -0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.170277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.0
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    - center:
+                      - 0.0
+                      - 0.005
+                      - 0.296667
+                      halfsize:
+                      - 0.47
+                      - 0.165277
+                      - 0.133333
+                    object_bbox: *id004
+                    tolerance: 0.05
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 BeverageSorting._check_success；instance_sha=9417dbbe4e75
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-beverage-sorting-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-bread-and-cheese-i00:
+    family: robocasa365/BreadAndCheese
+    goal: Place the bread and cheese on the cutting board.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-bread-and-cheese-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-bread-and-cheese-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-bread-and-cheese-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-bread-and-cheese-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: obj_main
+            receptacle: container_main
+            radius: 0.073574
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: obj2_main
+            receptacle: container_main
+            radius: 0.073574
+            factor: 0.7
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 BreadAndCheese._check_success；instance_sha=75e8b207abbb
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-bread-and-cheese-i00.xml
       position:
       - 0.0
       - 0.0
@@ -566,6 +1077,109 @@ tasks:
       - 0.0
       - 0.0
       static: true
+  robocasa365-cookie-dough-prep-i00:
+    family: robocasa365/CookieDoughPrep
+    goal: Pick the egg and butter from the fridge and place them by the bowl for mixing.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-cookie-dough-prep-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-cookie-dough-prep-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-cookie-dough-prep-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-cookie-dough-prep-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact_any
+          params:
+            object: egg_main
+            fixtures:
+            - counter_1_left_group_main
+            - counter_1_main_group_main
+            - counter_1_right_group_main
+            - counter_2_left_group_main
+            - counter_corner_1_main_group_main
+            - counter_corner_2_main_group_main
+            - island_1_island_group_main
+            - island_2_island_group_main
+            - island_box_island_group_main
+            - panel_stack_1_island_group_1_main
+            - panel_stack_1_island_group_base_main
+            - panel_stack_2_island_group_1_main
+            - panel_stack_2_island_group_base_main
+            - stack_1_island_group_1_main
+            - stack_1_island_group_base_main
+            - stack_2_island_group_1_main
+            - stack_2_island_group_base_main
+        - type: rc_contact_any
+          params:
+            object: butter_main
+            fixtures:
+            - counter_1_left_group_main
+            - counter_1_main_group_main
+            - counter_1_right_group_main
+            - counter_2_left_group_main
+            - counter_corner_1_main_group_main
+            - counter_corner_2_main_group_main
+            - island_1_island_group_main
+            - island_2_island_group_main
+            - island_box_island_group_main
+            - panel_stack_1_island_group_1_main
+            - panel_stack_1_island_group_base_main
+            - panel_stack_2_island_group_1_main
+            - panel_stack_2_island_group_base_main
+            - stack_1_island_group_1_main
+            - stack_1_island_group_base_main
+            - stack_2_island_group_1_main
+            - stack_2_island_group_base_main
+        - type: rc_near
+          params:
+            object: egg_main
+            target: bowl_main
+            radius: 0.316148
+            axes: 2
+        - type: rc_near
+          params:
+            object: butter_main
+            target: bowl_main
+            radius: 0.316148
+            axes: 2
+        - type: rc_gripper_far
+          params:
+            target: egg_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+        - type: rc_gripper_far
+          params:
+            target: butter_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.15
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 CookieDoughPrep._check_success；instance_sha=d42caf96db73
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-cookie-dough-prep-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
   robocasa365-deliver-brewed-coffee-i00:
     family: robocasa365/DeliverBrewedCoffee
     goal: Pick up the brewed coffee from the coffee machine and place it next to the
@@ -620,6 +1234,242 @@ tasks:
     - name: world
       shape_type: mjcf
       mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-deliver-brewed-coffee-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-dessert-upgrade-i00:
+    family: robocasa365/DessertUpgrade
+    goal: Move the dessert items from the plates to the tray.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-dessert-upgrade-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-dessert-upgrade-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-dessert-upgrade-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-dessert-upgrade-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: dessert1_main
+            receptacle: receptacle_main
+            radius: 0.071386
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: dessert2_main
+            receptacle: receptacle_main
+            radius: 0.071386
+            factor: 0.7
+        - type: rc_gripper_far
+          params:
+            target: receptacle_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 DessertUpgrade._check_success；instance_sha=8d62ee2901a9
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-dessert-upgrade-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-display-meat-variety-i00:
+    family: robocasa365/DisplayMeatVariety
+    goal: Retrieve the chicken drumstick, shrimp, and steak from the fridge and place
+      them on the serving tray on the dining counter.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-display-meat-variety-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-display-meat-variety-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-display-meat-variety-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-display-meat-variety-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: chicken_main
+            receptacle: serving_tray_main
+            radius: 0.06856
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: shrimp_main
+            receptacle: serving_tray_main
+            radius: 0.06856
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: beef_main
+            receptacle: serving_tray_main
+            radius: 0.06856
+            factor: 0.7
+        - type: rc_contact_any
+          params:
+            object: serving_tray_main
+            fixtures:
+            - stack_2_island_group_1_main
+            - stack_2_island_group_2_main
+        - type: rc_gripper_far
+          params:
+            target: chicken_main
+            sites:
+            - gripper0_right_grip_site
+            - beef_default_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: shrimp_main
+            sites:
+            - gripper0_right_grip_site
+            - beef_default_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: beef_main
+            sites:
+            - gripper0_right_grip_site
+            - beef_default_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 DisplayMeatVariety._check_success；instance_sha=da1a79222d83
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-display-meat-variety-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-drinkware-consolidation-i00:
+    family: robocasa365/DrinkwareConsolidation
+    goal: Pick the bottled water from the counter and place it in the open cabinet.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-drinkware-consolidation-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-drinkware-consolidation-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-drinkware-consolidation-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-drinkware-consolidation-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_0_main
+            fixture: cab_1_right_group_main
+            regions:
+            - center:
+              - 0.0
+              - 0.0
+              - -0.296667
+              halfsize:
+              - 0.31
+              - 0.17
+              - 0.133333
+            - center:
+              - 0.0
+              - 0.005
+              - 0.0
+              halfsize:
+              - 0.31
+              - 0.165
+              - 0.133333
+            - center:
+              - 0.0
+              - 0.005
+              - 0.296667
+              halfsize:
+              - 0.31
+              - 0.165
+              - 0.133333
+            object_bbox:
+            - - -0.024977
+              - -0.025405
+              - -0.073838
+            - - 0.025825
+              - -0.025405
+              - -0.073838
+            - - -0.024977
+              - 0.025412
+              - -0.073838
+            - - -0.024977
+              - -0.025405
+              - 0.075
+            - - 0.025825
+              - 0.025412
+              - 0.075
+            - - -0.024977
+              - 0.025412
+              - 0.075
+            - - 0.025825
+              - -0.025405
+              - 0.075
+            - - 0.025825
+              - 0.025412
+              - -0.073838
+            tolerance: 0.05
+        - type: rc_gripper_far
+          params:
+            target: obj_0_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 DrinkwareConsolidation._check_success；instance_sha=152ae19f3b11
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-drinkware-consolidation-i00.xml
       position:
       - 0.0
       - 0.0
@@ -694,6 +1544,358 @@ tasks:
     - name: world
       shape_type: mjcf
       mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-make-ice-lemonade-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-make-loaded-potato-i00:
+    family: robocasa365/MakeLoadedPotato
+    goal: Retrieve the reheated potato from the microwave, then place the potato,
+      cheese, and condiment on the cutting board.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-make-loaded-potato-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-make-loaded-potato-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-make-loaded-potato-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-make-loaded-potato-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_gripper_far
+          params:
+            target: potato_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: condiment_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: cheese_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_in_receptacle
+          params:
+            object: potato_main
+            receptacle: cutting_board_main
+            radius: 0.073574
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: condiment_main
+            receptacle: cutting_board_main
+            radius: 0.073574
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: cheese_main
+            receptacle: cutting_board_main
+            radius: 0.073574
+            factor: 0.7
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 MakeLoadedPotato._check_success；instance_sha=68b793ec6064
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-make-loaded-potato-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-meal-prep-staging-i00:
+    family: robocasa365/MealPrepStaging
+    goal: Place both pans onto different burners. Then place the corn and the steak
+      on different pans.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-meal-prep-staging-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-meal-prep-staging-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-meal-prep-staging-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-meal-prep-staging-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: any
+          params:
+            conditions:
+            - type: all
+              params:
+                conditions:
+                - type: rc_in_receptacle
+                  params:
+                    object: vegetable_main
+                    receptacle: pan1_main
+                    radius: 0.077365
+                    factor: 0.7
+                - type: rc_in_receptacle
+                  params:
+                    object: meat_main
+                    receptacle: pan2_main
+                    radius: 0.069715
+                    factor: 0.7
+            - type: all
+              params:
+                conditions:
+                - type: rc_in_receptacle
+                  params:
+                    object: vegetable_main
+                    receptacle: pan2_main
+                    radius: 0.069715
+                    factor: 0.7
+                - type: rc_in_receptacle
+                  params:
+                    object: meat_main
+                    receptacle: pan1_main
+                    radius: 0.077365
+                    factor: 0.7
+        - type: any
+          params:
+            conditions:
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_front_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_front_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_front_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_rear_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_front_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_rear_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_front_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_front_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_front_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_rear_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_front_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_rear_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_rear_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_front_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_rear_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_front_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_rear_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_rear_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_rear_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_front_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_rear_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_front_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+            - type: all
+              params:
+                conditions:
+                - type: rc_on_burner
+                  params:
+                    object: pan1_main
+                    burner_site: stovetop_left_group_burner_rear_right_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+                - type: rc_on_burner
+                  params:
+                    object: pan2_main
+                    burner_site: stovetop_left_group_burner_rear_left_place_site
+                    threshold: 0.15
+                    knob_joint: stovetop_left_group_knob_front_left_joint
+                    require_knob_on: true
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 MealPrepStaging._check_success；instance_sha=0e389440ccb6
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-meal-prep-staging-i00.xml
       position:
       - 0.0
       - 0.0
@@ -931,6 +2133,138 @@ tasks:
       - 0.0
       - 0.0
       static: true
+  robocasa365-pick-place-sink-to-counter-i00:
+    family: robocasa365/PickPlaceSinkToCounter
+    goal: Pick the egg from the sink and place it on the plate located on the counter.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-sink-to-counter-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-sink-to-counter-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-sink-to-counter-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-sink-to-counter-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: obj_main
+            receptacle: container_main
+            radius: 0.09183
+            factor: 0.7
+        - type: rc_contact_any
+          params:
+            object: container_main
+            fixtures:
+            - counter_1_right_group_main
+            - counter_2_right_group_main
+            - counter_corner_left_right_group_main
+            - counter_corner_main_main_group_main
+            - counter_main_main_group_main
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PickPlaceSinkToCounter._check_success；instance_sha=78117969cdfe
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-pick-place-sink-to-counter-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-plate-steak-meal-i00:
+    family: robocasa365/PlateSteakMeal
+    goal: Create a steak meal by picking up the steak and asparagus from the tray
+      and placing them on the plate. Leave the chili pepper on the tray.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-plate-steak-meal-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-plate-steak-meal-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-plate-steak-meal-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-plate-steak-meal-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: steak_main
+            receptacle: plate_main
+            radius: 0.086336
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: asparagus_main
+            receptacle: plate_main
+            radius: 0.086336
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: random_food_main
+            receptacle: tray_main
+            radius: 0.062114
+            factor: 0.7
+        - type: rc_gripper_far
+          params:
+            target: steak_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: asparagus_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: random_food_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PlateSteakMeal._check_success；instance_sha=bfd86f47d8d6
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-plate-steak-meal-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
   robocasa365-prep-for-sanitizing-i00:
     family: robocasa365/PrepForSanitizing
     goal: Pick the bar soap and dish brush from the cabinet and place them on the
@@ -991,6 +2325,129 @@ tasks:
     - name: world
       shape_type: mjcf
       mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-for-sanitizing-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-prep-marinating-meat-i00:
+    family: robocasa365/PrepMarinatingMeat
+    goal: Pick the shrimp from the plate and place it on the cutting board. Then pick
+      the condiment bottle from the cabinet and place it next to the cutting board.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-marinating-meat-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-marinating-meat-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-marinating-meat-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-marinating-meat-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_gripper_far
+          params:
+            target: condiment_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: meat_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_contact_any
+          params:
+            object: condiment_main
+            fixtures:
+            - stack_09_island_group_1_1_main
+            - stack_09_island_group_1_2_main
+            - stack_09_island_group_1_3_main
+            - stack_10_island_group_1_2_main
+            - stack_11_island_group_1_2_main
+        - type: rc_in_receptacle
+          params:
+            object: meat_main
+            receptacle: cutting_board_main
+            radius: 0.076288
+            factor: 0.7
+        - type: rc_contact_any
+          params:
+            object: cutting_board_main
+            fixtures:
+            - stack_09_island_group_1_1_main
+            - stack_09_island_group_1_2_main
+            - stack_09_island_group_1_3_main
+            - stack_10_island_group_1_2_main
+            - stack_11_island_group_1_2_main
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PrepMarinatingMeat._check_success；instance_sha=d3153ed37400
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-prep-marinating-meat-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-retrieve-meat-i00:
+    family: robocasa365/RetrieveMeat
+    goal: Retrieve the fish from the fridge and place it on the cutting board.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-retrieve-meat-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-retrieve-meat-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-retrieve-meat-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-retrieve-meat-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: meat_main
+            receptacle: receptacle_main
+            radius: 0.076288
+            factor: 0.7
+        - type: rc_gripper_far
+          params:
+            target: meat_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 RetrieveMeat._check_success；instance_sha=63210d164e2c
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-retrieve-meat-i00.xml
       position:
       - 0.0
       - 0.0
@@ -1275,6 +2732,406 @@ tasks:
     - name: world
       shape_type: mjcf
       mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-seasoning-spice-setup-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-set-up-cutting-station-i00:
+    family: robocasa365/SetUpCuttingStation
+    goal: Pick up the knife from the drawer and place it on the cutting board. Then
+      place the meat from the plate to the cutting board.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-set-up-cutting-station-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-set-up-cutting-station-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-set-up-cutting-station-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-set-up-cutting-station-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: meat_main
+            receptacle: receptacle_main
+            radius: 0.078188
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: knife_main
+            receptacle: receptacle_main
+            radius: 0.078188
+            factor: 0.7
+        - type: rc_gripper_far
+          params:
+            target: knife_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: receptacle_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 SetUpCuttingStation._check_success；instance_sha=213adbffea11
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-set-up-cutting-station-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-stocking-breakfast-foods-i00:
+    family: robocasa365/StockingBreakfastFoods
+    goal: Pick the canned food and bar from the counter and place them in the cabinets
+      closest to them.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj1_main
+            fixture: hingecabinet_2_main_group_1_main
+            regions:
+            - center:
+              - 0.0
+              - 0.0
+              - -0.296667
+              halfsize:
+              - 0.492326
+              - 0.17
+              - 0.133333
+            - center:
+              - 0.0
+              - 0.005
+              - 0.0
+              halfsize:
+              - 0.492326
+              - 0.165
+              - 0.133333
+            - center:
+              - 0.0
+              - 0.005
+              - 0.296667
+              halfsize:
+              - 0.492326
+              - 0.165
+              - 0.133333
+            object_bbox:
+            - - -0.032893
+              - -0.032893
+              - -0.035
+            - - 0.032893
+              - -0.032893
+              - -0.035
+            - - -0.032893
+              - 0.032893
+              - -0.035
+            - - -0.032893
+              - -0.032893
+              - 0.035
+            - - 0.032893
+              - 0.032893
+              - 0.035
+            - - -0.032893
+              - 0.032893
+              - 0.035
+            - - 0.032893
+              - -0.032893
+              - 0.035
+            - - 0.032893
+              - 0.032893
+              - -0.035
+            tolerance: 0.05
+        - type: rc_inside
+          params:
+            object: obj2_main
+            fixture: stack_01_main_group_1_1_main
+            regions:
+            - center:
+              - 0.0
+              - 0.0
+              - -0.27
+              halfsize:
+              - 0.367355
+              - 0.27
+              - 0.12
+            - center:
+              - 0.0
+              - 0.005
+              - 0.0
+              halfsize:
+              - 0.367355
+              - 0.265
+              - 0.12
+            - center:
+              - 0.0
+              - 0.005
+              - 0.27
+              halfsize:
+              - 0.367355
+              - 0.265
+              - 0.12
+            object_bbox:
+            - - -0.030389
+              - -0.081719
+              - -0.041323
+            - - 0.028621
+              - -0.081719
+              - -0.041323
+            - - -0.030389
+              - 0.079052
+              - -0.041323
+            - - -0.030389
+              - -0.081719
+              - 0.039996
+            - - 0.028621
+              - 0.079052
+              - 0.039996
+            - - -0.030389
+              - 0.079052
+              - 0.039996
+            - - 0.028621
+              - -0.081719
+              - 0.039996
+            - - 0.028621
+              - 0.079052
+              - -0.041323
+            tolerance: 0.05
+        - type: rc_gripper_far
+          params:
+            target: obj1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: obj2_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 StockingBreakfastFoods._check_success；instance_sha=6ff45bd5c3ad
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-sweeten-coffee-i00:
+    family: robocasa365/SweetenCoffee
+    goal: 'Take a sugar cube from the saucer and place it inside the coffee. Then,
+      grab milk from the fridge and place it next to the coffee on the counter to
+      sweeten the coffee. '
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-sweeten-coffee-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-sweeten-coffee-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-sweeten-coffee-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-sweeten-coffee-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_contact_any
+          params:
+            object: milk_main
+            fixtures:
+            - counter_1_left_group_1_main
+            - counter_1_right_group_1_main
+            - counter_corner_1_main_group_3_main
+            - counter_corner_right_group_1_main
+        - type: rc_contact_any
+          params:
+            object: coffee_main
+            fixtures:
+            - counter_1_left_group_1_main
+            - counter_1_right_group_1_main
+            - counter_corner_1_main_group_3_main
+            - counter_corner_right_group_1_main
+        - type: rc_near
+          params:
+            object: milk_main
+            target: coffee_main
+            radius: 0.25
+            axes: 2
+        - type: rc_in_receptacle
+          params:
+            object: sugar_cube_main
+            receptacle: coffee_main
+            radius: 0.039316
+            factor: 0.7
+        - type: rc_gripper_far
+          params:
+            target: milk_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: sugar_cube_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 SweetenCoffee._check_success；instance_sha=e8bdf6aa78aa
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-sweeten-coffee-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa365-thaw-in-sink-i00:
+    family: robocasa365/ThawInSink
+    goal: Pick the orange from the counter and place it in the sink. Then turn on
+      the sink faucet.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.xml
+      qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_main
+            fixture: sink_island_group_1_main
+            regions:
+            - center:
+              - -0.227099
+              - -0.037331
+              - -0.046268
+              halfsize:
+              - 0.174344
+              - 0.187413
+              - 0.060073
+            - center:
+              - 0.226368
+              - -0.037331
+              - -0.046335
+              halfsize:
+              - 0.174344
+              - 0.187413
+              - 0.060031
+            - center:
+              - 0.0
+              - 0.0
+              - -0.100233
+              halfsize:
+              - 0.447061
+              - 0.265
+              - 0.119845
+            object_bbox:
+            - - -0.035621
+              - -0.035998
+              - -0.025389
+            - - 0.032635
+              - -0.035998
+              - -0.025389
+            - - -0.035621
+              - 0.031838
+              - -0.025389
+            - - -0.035621
+              - -0.035998
+              - 0.0111
+            - - 0.032635
+              - 0.031838
+              - 0.0111
+            - - -0.035621
+              - 0.031838
+              - 0.0111
+            - - 0.032635
+              - -0.035998
+              - 0.0111
+            - - 0.032635
+              - 0.031838
+              - -0.025389
+            tolerance: 0.05
+        - type: rc_joint_state
+          params:
+            joint: sink_island_group_1_handle_joint
+            mode: mod2pi
+            min: 0.4
+            max: 3.141592653589793
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 ThawInSink._check_success；instance_sha=3c90b079e163
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.xml
       position:
       - 0.0
       - 0.0

@@ -1,0 +1,108 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/ThawInSink | goal: Pick the orange from the counter and place it in the sink. Then turn on the sink faucet.
+# fidelity: spec | notes: 判据逐字转写上游 ThawInSink._check_success；instance_sha=3c90b079e163
+version: 1
+
+task:
+  name: robocasa365-thaw-in-sink-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-thaw-in-sink-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_inside
+      params:
+        object: obj_main
+        fixture: sink_island_group_1_main
+        regions:
+        - center:
+          - -0.227099
+          - -0.037331
+          - -0.046268
+          halfsize:
+          - 0.174344
+          - 0.187413
+          - 0.060073
+        - center:
+          - 0.226368
+          - -0.037331
+          - -0.046335
+          halfsize:
+          - 0.174344
+          - 0.187413
+          - 0.060031
+        - center:
+          - 0.0
+          - 0.0
+          - -0.100233
+          halfsize:
+          - 0.447061
+          - 0.265
+          - 0.119845
+        object_bbox:
+        - - -0.035621
+          - -0.035998
+          - -0.025389
+        - - 0.032635
+          - -0.035998
+          - -0.025389
+        - - -0.035621
+          - 0.031838
+          - -0.025389
+        - - -0.035621
+          - -0.035998
+          - 0.0111
+        - - 0.032635
+          - 0.031838
+          - 0.0111
+        - - -0.035621
+          - 0.031838
+          - 0.0111
+        - - 0.032635
+          - -0.035998
+          - 0.0111
+        - - 0.032635
+          - 0.031838
+          - -0.025389
+        tolerance: 0.05
+    - type: rc_joint_state
+      params:
+        joint: sink_island_group_1_handle_joint
+        mode: mod2pi
+        min: 0.4
+        max: 3.141592653589793
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

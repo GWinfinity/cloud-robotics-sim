@@ -1,0 +1,84 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/AddLemonToFish | goal: Take the lemon wedge from the fridge and place it on the plate with fish on the dining counter.
+# fidelity: spec | notes: 判据逐字转写上游 AddLemonToFish._check_success；instance_sha=8d360a51bb92
+version: 1
+
+task:
+  name: robocasa365-add-lemon-to-fish-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-add-lemon-to-fish-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_in_receptacle
+      params:
+        object: lemon_wedge_main
+        receptacle: fish_container_main
+        radius: 0.091079
+        factor: 0.7
+    - type: rc_in_receptacle
+      params:
+        object: fish_main
+        receptacle: fish_container_main
+        radius: 0.091079
+        factor: 0.7
+    - type: rc_contact_any
+      params:
+        object: fish_container_main
+        fixtures:
+        - counter_1_left_group_1_main
+        - cube_1_island_group_1_main
+        - cube_2_island_group_1_main
+        - cube_3_island_group_1_main
+        - cube_4_island_group_1_main
+        - dishwasher_1_island_group_1_main
+        - island_island_group_1_main
+        - paper_towel_island_group_1_main
+        - sink_island_group_1_main
+        - stack_1_island_group_1_1_main
+        - stack_1_island_group_1_base_main
+        - stack_2_island_group_1_1_main
+        - stack_2_island_group_1_base_main
+        - stack_3_island_group_1_1_main
+        - stack_3_island_group_1_base_main
+    - type: rc_gripper_far
+      params:
+        target: lemon_wedge_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

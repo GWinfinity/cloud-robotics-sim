@@ -1,0 +1,102 @@
+# EFE 迁移编译物（robocasa）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa/MicrowaveThawing | goal: Pick the squash from the counter and place it in the microwave. Then turn on the microwave.
+# fidelity: spec | notes: 判据逐字转写上游 MicrowaveThawing._check_success；instance_sha=0ef66e26d964
+version: 1
+
+task:
+  name: robocasa-microwave-thawing-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.xml
+    qpos_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+  appliances:
+    - name: microwave_right_group
+      door_joint: microwave_right_group_microjoint
+      door_range:
+      - -1.57
+      - 0.0
+      start_button: microwave_right_group_start_button
+      stop_button: microwave_right_group_stop_button
+      gripper_body: gripper0_right
+      initial_on: false
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_inside
+      params:
+        object: obj_main
+        fixture: microwave_right_group_main
+        fixture_sites:
+        - microwave_right_group_int_p0
+        - microwave_right_group_int_px
+        - microwave_right_group_int_py
+        - microwave_right_group_int_pz
+        object_bbox:
+        - - -0.037935
+          - -0.037858
+          - -0.039151
+        - - 0.034482
+          - -0.037858
+          - -0.039151
+        - - -0.037935
+          - 0.037876
+          - -0.039151
+        - - -0.037935
+          - -0.037858
+          - 0.03173
+        - - 0.034482
+          - 0.037876
+          - 0.03173
+        - - -0.037935
+          - 0.037876
+          - 0.03173
+        - - 0.034482
+          - -0.037858
+          - 0.03173
+        - - 0.034482
+          - 0.037876
+          - -0.039151
+        tolerance: 0.05
+    - type: rc_gripper_far
+      params:
+        target: obj_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_appliance
+      params:
+        name: microwave_right_group
+        state: 'on'
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

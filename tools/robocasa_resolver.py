@@ -369,27 +369,34 @@ class Ctx:
                 bottom = sites.get("bottom_site")
                 top = sites.get("top_site")
                 if hr and bottom and top:
-                    hr_x, hr_y = float(hr[0]), float(hr[1] if len(hr) > 1 else hr[0])
+                    hr_x = float(hr[0])
+                    hr_y = float(hr[1]) if len(hr) > 1 else hr_x
                     bottom_v = np.array([float(v) for v in bottom])
                     top_v = np.array([float(v) for v in top])
                     center = (bottom_v + top_v) / 2.0
                     half = np.array([hr_x, hr_y, top_v[2] - center[2]])
-                    corners = [
-                        (center + half * np.array(signs)).round(6).tolist()
-                        for signs in (
-                            (-1, -1, -1),
-                            (1, -1, -1),
-                            (-1, 1, -1),
-                            (-1, -1, 1),
-                            (1, 1, 1),
-                            (-1, 1, 1),
-                            (1, -1, 1),
-                            (1, 1, -1),
-                        )
-                    ]
                     result = {
                         "horizontal_radius": round(hr_x, 6),
-                        "bbox": corners,
+                        "bbox": _corners(center, half),
+                    }
+                    break
+                # objaverse / aigen objects carry no placement sites; their
+                # ``reg_bbox`` region geom is the oriented bounding box.
+                reg = None
+                for g in root.iter("geom"):
+                    if "reg_bbox" in (g.get("name") or ""):
+                        reg = g
+                        break
+                if reg is not None and (reg.get("pos") and reg.get("size")):
+                    center = np.array(
+                        [float(v) for v in reg.get("pos").split()]  # type: ignore[union-attr]
+                    )
+                    half = np.array(
+                        [float(v) for v in reg.get("size").split()]  # type: ignore[union-attr]
+                    )
+                    result = {
+                        "horizontal_radius": round(float(half[0]), 6),
+                        "bbox": _corners(center, half),
                     }
                     break
         self._library[obj] = result
@@ -604,6 +611,23 @@ def _not(cond: dict[str, Any]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Family builders
 # ---------------------------------------------------------------------------
+
+
+def _corners(center: np.ndarray, half: np.ndarray) -> list[list[float]]:
+    """The eight bbox corner offsets (``get_bbox_points`` order)."""
+    return [
+        (center + half * np.array(signs)).round(6).tolist()
+        for signs in (
+            (-1, -1, -1),
+            (1, -1, -1),
+            (-1, 1, -1),
+            (-1, -1, 1),
+            (1, 1, 1),
+            (-1, 1, 1),
+            (1, -1, 1),
+            (1, 1, -1),
+        )
+    ]
 
 
 def _b_drawer(ctx: Ctx, open_: bool) -> dict[str, Any]:
@@ -1615,31 +1639,44 @@ def _gr1_inside_close(ctx: Ctx, fixture_kind: str) -> dict[str, Any]:
 def _gr1_splita(ctx: Ctx) -> dict[str, Any]:
     """PosttrainPnPNovelFromXToYSplitA generated families."""
     target = str(ctx.env.get("target_container") or "")
+    tables = [n for n in ctx.fixtures if n.startswith("table")]
+    if not tables:
+        raise Reason("无 table 夹具")
+    on_table = {
+        "type": "rc_contact",
+        "params": {"object": ctx.obj_body("obj"), "fixture": ctx.fx_body(tables[0])},
+    }
     conds = [
         ctx.gripper_far("container"),
         ctx.gripper_far("obj"),
         ctx.in_receptacle("obj", "container"),
-        _not(ctx.contact_any_counter("obj")),
+        _not(on_table),
         {
             "type": "rc_upright",
             "params": {"object": ctx.obj_body("container"), "threshold": 0.8},
         },
     ]
     if target in ("tiered_basket", "tiered_shelf"):
-        sites = [
-            (s, bool(re.search(r"spawn", s)))
-            for s in ctx.sites
-            if s.startswith(f"{ctx.obj_body('container').removesuffix('_main')}_")
-            and "spawn" in s
-        ]
-        if not sites:
-            raise Reason(f"容器无 spawn 站点（target={target!r}）")
+        # 层级容器：spawn 区域是容器上的 cylinder geom；目标层号在任务
+        # 语言里（"level #N"），spawn_id = N-1（geom 文档序）。
+        geoms = re.findall(r'<geom name="(container_spawn_\d+)"', ctx.world_xml)
+        if not geoms:
+            raise Reason(f"容器无 spawn 区域 geom（target={target!r}）")
+        level = 1
+        match = re.search(r"level #(\d+)", ctx.meta.get("language") or "")
+        if match:
+            level = int(match.group(1))
+        target_geom = geoms[min(level, len(geoms)) - 1]
+        entries = []
+        for g in geoms:
+            ctx.geom_site(g)
+            entries.append({"site": g, "target": g == target_geom})
         conds.append(
             {
                 "type": "rc_at_spawn",
                 "params": {
                     "object": ctx.obj_body("obj"),
-                    "spawn_sites": [{"site": s, "target": t} for s, t in sites],
+                    "spawn_sites": entries,
                 },
             }
         )

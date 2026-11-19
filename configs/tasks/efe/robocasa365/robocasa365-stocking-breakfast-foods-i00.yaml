@@ -1,0 +1,169 @@
+# EFE 迁移编译物（robocasa365）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa365/StockingBreakfastFoods | goal: Pick the canned food and bar from the counter and place them in the cabinets closest to them.
+# fidelity: spec | notes: 判据逐字转写上游 StockingBreakfastFoods._check_success；instance_sha=6ff45bd5c3ad
+version: 1
+
+task:
+  name: robocasa365-stocking-breakfast-foods-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.xml
+    qpos_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa365/worlds/robocasa365-stocking-breakfast-foods-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_inside
+      params:
+        object: obj1_main
+        fixture: hingecabinet_2_main_group_1_main
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - -0.296667
+          halfsize:
+          - 0.492326
+          - 0.17
+          - 0.133333
+        - center:
+          - 0.0
+          - 0.005
+          - 0.0
+          halfsize:
+          - 0.492326
+          - 0.165
+          - 0.133333
+        - center:
+          - 0.0
+          - 0.005
+          - 0.296667
+          halfsize:
+          - 0.492326
+          - 0.165
+          - 0.133333
+        object_bbox:
+        - - -0.032893
+          - -0.032893
+          - -0.035
+        - - 0.032893
+          - -0.032893
+          - -0.035
+        - - -0.032893
+          - 0.032893
+          - -0.035
+        - - -0.032893
+          - -0.032893
+          - 0.035
+        - - 0.032893
+          - 0.032893
+          - 0.035
+        - - -0.032893
+          - 0.032893
+          - 0.035
+        - - 0.032893
+          - -0.032893
+          - 0.035
+        - - 0.032893
+          - 0.032893
+          - -0.035
+        tolerance: 0.05
+    - type: rc_inside
+      params:
+        object: obj2_main
+        fixture: stack_01_main_group_1_1_main
+        regions:
+        - center:
+          - 0.0
+          - 0.0
+          - -0.27
+          halfsize:
+          - 0.367355
+          - 0.27
+          - 0.12
+        - center:
+          - 0.0
+          - 0.005
+          - 0.0
+          halfsize:
+          - 0.367355
+          - 0.265
+          - 0.12
+        - center:
+          - 0.0
+          - 0.005
+          - 0.27
+          halfsize:
+          - 0.367355
+          - 0.265
+          - 0.12
+        object_bbox:
+        - - -0.030389
+          - -0.081719
+          - -0.041323
+        - - 0.028621
+          - -0.081719
+          - -0.041323
+        - - -0.030389
+          - 0.079052
+          - -0.041323
+        - - -0.030389
+          - -0.081719
+          - 0.039996
+        - - 0.028621
+          - 0.079052
+          - 0.039996
+        - - -0.030389
+          - 0.079052
+          - 0.039996
+        - - 0.028621
+          - -0.081719
+          - 0.039996
+        - - 0.028621
+          - 0.079052
+          - -0.041323
+        tolerance: 0.05
+    - type: rc_gripper_far
+      params:
+        target: obj1_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: obj2_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

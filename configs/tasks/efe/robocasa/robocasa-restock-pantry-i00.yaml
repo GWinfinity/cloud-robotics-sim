@@ -1,0 +1,139 @@
+# EFE 迁移编译物（robocasa）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa/RestockPantry | goal: Pick the cans from the counter and place them in their designated side in the cabinet.
+# fidelity: spec | notes: 判据逐字转写上游 RestockPantry._check_success；instance_sha=7ce4a2129528
+version: 1
+
+task:
+  name: robocasa-restock-pantry-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.xml
+    qpos_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_inside
+      params:
+        object: obj1_main
+        fixture: stack_1_main_group_1_main
+        fixture_sites:
+        - stack_1_main_group_1_int_p0
+        - stack_1_main_group_1_int_px
+        - stack_1_main_group_1_int_py
+        - stack_1_main_group_1_int_pz
+        object_bbox:
+        - - -0.034055
+          - -0.034055
+          - -0.0475
+        - - 0.034055
+          - -0.034055
+          - -0.0475
+        - - -0.034055
+          - 0.034055
+          - -0.0475
+        - - -0.034055
+          - -0.034055
+          - 0.0475
+        - - 0.034055
+          - 0.034055
+          - 0.0475
+        - - -0.034055
+          - 0.034055
+          - 0.0475
+        - - 0.034055
+          - -0.034055
+          - 0.0475
+        - - 0.034055
+          - 0.034055
+          - -0.0475
+        tolerance: 0.05
+    - type: rc_inside
+      params:
+        object: obj2_main
+        fixture: stack_1_main_group_1_main
+        fixture_sites:
+        - stack_1_main_group_1_int_p0
+        - stack_1_main_group_1_int_px
+        - stack_1_main_group_1_int_py
+        - stack_1_main_group_1_int_pz
+        object_bbox:
+        - - -0.033101
+          - -0.03384
+          - -0.05
+        - - 0.033101
+          - -0.03384
+          - -0.05
+        - - -0.033101
+          - 0.033839
+          - -0.05
+        - - -0.033101
+          - -0.03384
+          - 0.05
+        - - 0.033101
+          - 0.033839
+          - 0.05
+        - - -0.033101
+          - 0.033839
+          - 0.05
+        - - 0.033101
+          - -0.03384
+          - 0.05
+        - - 0.033101
+          - 0.033839
+          - -0.05
+        tolerance: 0.05
+    - type: rc_closer
+      params:
+        object: obj1_main
+        anchor: cab_obj1_main
+        other: cab_obj2_main
+    - type: rc_closer
+      params:
+        object: obj2_main
+        anchor: cab_obj1_main
+        other: cab_obj1_main
+    - type: rc_gripper_far
+      params:
+        target: obj1_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+    - type: rc_gripper_far
+      params:
+        target: obj2_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

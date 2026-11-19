@@ -6,24 +6,67 @@ scene: efe_world
 source:
   suite: robocasa
 pending_tasks:
-- robocasa-arrange-vegetables-i00
-- robocasa-microwave-thawing-i00
-- robocasa-pnp-counter-to-cab-i00
 - robocasa-pnp-counter-to-sink-i00
-- robocasa-pnp-microwave-to-counter-i00
-- robocasa-pnp-sink-to-counter-i00
 - robocasa-pre-soak-pan-i00
-- robocasa-restock-pantry-i00
 pending_reasons:
-  robocasa-arrange-vegetables-i00: 物体 'cutting_board' 库 XML 缺失（horizontal_radius_site）
-  robocasa-microwave-thawing-i00: 物体 'obj' 库 XML 缺失（bbox 站点）
-  robocasa-pnp-counter-to-cab-i00: 物体 'obj' 库 XML 缺失（bbox 站点）
   robocasa-pnp-counter-to-sink-i00: 夹具 'sink_left_group' 无 int 站点也无 reg 区域
-  robocasa-pnp-microwave-to-counter-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
-  robocasa-pnp-sink-to-counter-i00: 物体 'container' 库 XML 缺失（horizontal_radius_site）
   robocasa-pre-soak-pan-i00: 夹具 'sink_main_group' 无 int 站点也无 reg 区域
-  robocasa-restock-pantry-i00: 物体 'obj1' 库 XML 缺失（bbox 站点）
 tasks:
+  robocasa-arrange-vegetables-i00:
+    family: robocasa/ArrangeVegetables
+    goal: Pick the vegetables from the sink and place them on the cutting board.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: vegetable1_main
+            receptacle: cutting_board_main
+            radius: 0.073574
+            factor: 0.7
+        - type: rc_in_receptacle
+          params:
+            object: vegetable2_main
+            receptacle: cutting_board_main
+            radius: 0.073574
+            factor: 0.7
+        - type: rc_gripper_far
+          params:
+            target: cutting_board_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 ArrangeVegetables._check_success；instance_sha=512f1d546771
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
   robocasa-close-double-door-i00:
     family: robocasa/CloseDoubleDoor
     goal: close the cabinet doors
@@ -330,6 +373,98 @@ tasks:
       - 0.0
       - 0.0
       static: true
+  robocasa-microwave-thawing-i00:
+    family: robocasa/MicrowaveThawing
+    goal: Pick the squash from the counter and place it in the microwave. Then turn
+      on the microwave.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances:
+    - name: microwave_right_group
+      door_joint: microwave_right_group_microjoint
+      door_range:
+      - -1.57
+      - 0.0
+      start_button: microwave_right_group_start_button
+      stop_button: microwave_right_group_stop_button
+      gripper_body: gripper0_right
+      initial_on: false
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_main
+            fixture: microwave_right_group_main
+            fixture_sites:
+            - microwave_right_group_int_p0
+            - microwave_right_group_int_px
+            - microwave_right_group_int_py
+            - microwave_right_group_int_pz
+            object_bbox:
+            - - -0.037935
+              - -0.037858
+              - -0.039151
+            - - 0.034482
+              - -0.037858
+              - -0.039151
+            - - -0.037935
+              - 0.037876
+              - -0.039151
+            - - -0.037935
+              - -0.037858
+              - 0.03173
+            - - 0.034482
+              - 0.037876
+              - 0.03173
+            - - -0.037935
+              - 0.037876
+              - 0.03173
+            - - 0.034482
+              - -0.037858
+              - 0.03173
+            - - 0.034482
+              - 0.037876
+              - -0.039151
+            tolerance: 0.05
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_appliance
+          params:
+            name: microwave_right_group
+            state: 'on'
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 MicrowaveThawing._check_success；instance_sha=0ef66e26d964
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-microwave-thawing-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
   robocasa-open-double-door-i00:
     family: robocasa/OpenDoubleDoor
     goal: open the cabinet doors
@@ -529,6 +664,84 @@ tasks:
       - 0.0
       - 0.0
       static: true
+  robocasa-pnp-counter-to-cab-i00:
+    family: robocasa/PnPCounterToCab
+    goal: pick the cake from the counter and place it in the cabinet
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-cab-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-cab-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-cab-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-cab-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj_main
+            fixture: cab_2_left_group_main
+            fixture_sites:
+            - cab_2_left_group_int_p0
+            - cab_2_left_group_int_px
+            - cab_2_left_group_int_py
+            - cab_2_left_group_int_pz
+            object_bbox:
+            - - -0.034811
+              - -0.0338
+              - -0.018292
+            - - 0.034568
+              - -0.0338
+              - -0.018292
+            - - -0.034811
+              - 0.033875
+              - -0.018292
+            - - -0.034811
+              - -0.0338
+              - 0.018346
+            - - 0.034568
+              - 0.033875
+              - 0.018346
+            - - -0.034811
+              - 0.033875
+              - 0.018346
+            - - 0.034568
+              - -0.0338
+              - 0.018346
+            - - 0.034568
+              - 0.033875
+              - -0.018292
+            tolerance: 0.05
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPCounterToCab._check_success；instance_sha=e95a84172b1b
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-cab-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
   robocasa-pnp-counter-to-microwave-i00:
     family: robocasa/PnPCounterToMicrowave
     goal: pick the corn from the counter and place it in the microwave
@@ -618,6 +831,116 @@ tasks:
     - name: world
       shape_type: mjcf
       mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-counter-to-stove-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-pnp-microwave-to-counter-i00:
+    family: robocasa/PnPMicrowaveToCounter
+    goal: pick the onion from the microwave and place it on plate located on the counter
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-microwave-to-counter-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-pnp-microwave-to-counter-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-pnp-microwave-to-counter-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-pnp-microwave-to-counter-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: obj_main
+            receptacle: container_main
+            radius: 0.085648
+            factor: 0.7
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPMicrowaveToCounter._check_success；instance_sha=dff6415b3df4
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-microwave-to-counter-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-pnp-sink-to-counter-i00:
+    family: robocasa/PnPSinkToCounter
+    goal: pick the tomato from the sink and place it on the plate located on the counter
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-sink-to-counter-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-pnp-sink-to-counter-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-pnp-sink-to-counter-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-pnp-sink-to-counter-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_in_receptacle
+          params:
+            object: obj_main
+            receptacle: container_main
+            radius: 0.095049
+            factor: 0.7
+        - type: rc_contact_any
+          params:
+            object: container_main
+            fixtures:
+            - counter_1_left_group_main
+            - counter_1_right_group_main
+            - counter_2_right_group_main
+            - counter_corner_left_group_main
+            - counter_corner_left_main_group_main
+            - counter_corner_right_group_main
+            - counter_corner_right_main_group_main
+            - counter_main_main_group_main
+        - type: rc_gripper_far
+          params:
+            target: obj_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 PnPSinkToCounter._check_success；instance_sha=337584e93136
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-pnp-sink-to-counter-i00.xml
       position:
       - 0.0
       - 0.0
@@ -734,6 +1057,136 @@ tasks:
     - name: world
       shape_type: mjcf
       mjcf_path: assets/robocasa/robocasa/worlds/robocasa-prepare-coffee-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robocasa-restock-pantry-i00:
+    family: robocasa/RestockPantry
+    goal: Pick the cans from the counter and place them in their designated side in
+      the cabinet.
+    robot: franka_panda_omron
+    scene: efe_world
+    task_type: efe_robocasa
+    world:
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.xml
+      qpos_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.qpos.npy
+      qvel_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.qvel.npy
+      meta_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.meta.json
+      extra_sites: {}
+      qpos_overrides: {}
+    appliances: []
+    timers: []
+    success:
+      type: all
+      params:
+        conditions:
+        - type: rc_inside
+          params:
+            object: obj1_main
+            fixture: stack_1_main_group_1_main
+            fixture_sites:
+            - stack_1_main_group_1_int_p0
+            - stack_1_main_group_1_int_px
+            - stack_1_main_group_1_int_py
+            - stack_1_main_group_1_int_pz
+            object_bbox:
+            - - -0.034055
+              - -0.034055
+              - -0.0475
+            - - 0.034055
+              - -0.034055
+              - -0.0475
+            - - -0.034055
+              - 0.034055
+              - -0.0475
+            - - -0.034055
+              - -0.034055
+              - 0.0475
+            - - 0.034055
+              - 0.034055
+              - 0.0475
+            - - -0.034055
+              - 0.034055
+              - 0.0475
+            - - 0.034055
+              - -0.034055
+              - 0.0475
+            - - 0.034055
+              - 0.034055
+              - -0.0475
+            tolerance: 0.05
+        - type: rc_inside
+          params:
+            object: obj2_main
+            fixture: stack_1_main_group_1_main
+            fixture_sites:
+            - stack_1_main_group_1_int_p0
+            - stack_1_main_group_1_int_px
+            - stack_1_main_group_1_int_py
+            - stack_1_main_group_1_int_pz
+            object_bbox:
+            - - -0.033101
+              - -0.03384
+              - -0.05
+            - - 0.033101
+              - -0.03384
+              - -0.05
+            - - -0.033101
+              - 0.033839
+              - -0.05
+            - - -0.033101
+              - -0.03384
+              - 0.05
+            - - 0.033101
+              - 0.033839
+              - 0.05
+            - - -0.033101
+              - 0.033839
+              - 0.05
+            - - 0.033101
+              - -0.03384
+              - 0.05
+            - - 0.033101
+              - 0.033839
+              - -0.05
+            tolerance: 0.05
+        - type: rc_closer
+          params:
+            object: obj1_main
+            anchor: cab_obj1_main
+            other: cab_obj2_main
+        - type: rc_closer
+          params:
+            object: obj2_main
+            anchor: cab_obj1_main
+            other: cab_obj1_main
+        - type: rc_gripper_far
+          params:
+            target: obj1_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+        - type: rc_gripper_far
+          params:
+            target: obj2_main
+            sites:
+            - gripper0_right_grip_site
+            threshold: 0.25
+    max_episode_steps: 9000
+    efe:
+      fidelity: spec
+      notes: 判据逐字转写上游 RestockPantry._check_success；instance_sha=7ce4a2129528
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robocasa/robocasa/worlds/robocasa-restock-pantry-i00.xml
       position:
       - 0.0
       - 0.0

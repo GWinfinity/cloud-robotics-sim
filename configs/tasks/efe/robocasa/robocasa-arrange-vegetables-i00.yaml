@@ -1,0 +1,65 @@
+# EFE 迁移编译物（robocasa）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: robocasa/ArrangeVegetables | goal: Pick the vegetables from the sink and place them on the cutting board.
+# fidelity: spec | notes: 判据逐字转写上游 ArrangeVegetables._check_success；instance_sha=512f1d546771
+version: 1
+
+task:
+  name: robocasa-arrange-vegetables-i00
+  type: efe_robocasa
+  robot: franka_panda_omron
+  scene: efe_world
+  max_episode_steps: 9000
+  world:
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.xml
+    qpos_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.qpos.npy
+    qvel_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.qvel.npy
+    meta_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.meta.json
+    extra_sites: {}
+    qpos_overrides: {}
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robocasa/robocasa/worlds/robocasa-arrange-vegetables-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: all
+  params:
+    conditions:
+    - type: rc_in_receptacle
+      params:
+        object: vegetable1_main
+        receptacle: cutting_board_main
+        radius: 0.073574
+        factor: 0.7
+    - type: rc_in_receptacle
+      params:
+        object: vegetable2_main
+        receptacle: cutting_board_main
+        radius: 0.073574
+        factor: 0.7
+    - type: rc_gripper_far
+      params:
+        target: cutting_board_main
+        sites:
+        - gripper0_right_grip_site
+        threshold: 0.25
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

@@ -2,24 +2,41 @@
 version: 1
 name: efe-robocasa365
 tasks:
+  - ../../configs/tasks/efe/robocasa365/robocasa365-add-lemon-to-fish-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-assemble-cooking-array-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-beverage-sorting-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-bread-and-cheese-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-cereal-and-bowl-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-choose-measuring-cup-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-clear-sink-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-close-drawer-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-close-oven-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-close-stand-mixer-head-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-cookie-dough-prep-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-deliver-brewed-coffee-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-dessert-upgrade-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-display-meat-variety-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-drinkware-consolidation-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-make-ice-lemonade-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-make-loaded-potato-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-meal-prep-staging-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-open-dishwasher-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-organize-coffee-condiments-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-oven-broil-fish-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-pick-place-cabinet-to-counter-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-pick-place-sink-to-counter-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-plate-steak-meal-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-prep-for-sanitizing-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-prep-marinating-meat-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-retrieve-meat-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-sanitize-prep-cutting-board-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-scrub-bowl-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-searing-meat-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-seasoning-spice-setup-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-set-up-cutting-station-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-stocking-breakfast-foods-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-sweeten-coffee-i00.yaml
+  - ../../configs/tasks/efe/robocasa365/robocasa365-thaw-in-sink-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-tong-buffet-setup-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-turn-off-microwave-i00.yaml
   - ../../configs/tasks/efe/robocasa365/robocasa365-turn-on-microwave-i00.yaml

@@ -551,7 +551,12 @@ class EfeRobocasaTask(EfeBaseTask):
             if door_joint:
                 value = float(world.get_joint_position(door_joint))
                 lo, hi = (float(v) for v in cfg.get("door_range", [0.0, 1.5707963]))
-                door_open = (value - lo) / (hi - lo) > 0.005
+                sign = 1.0
+                if lo < 0.0 <= hi:
+                    # drawer/door convention: range [-d, 0] with upstream
+                    # sign -1 (closed at q=0 must read 0, not 1)
+                    sign, lo, hi = -1.0, 0.0, -lo
+                door_open = (sign * value - lo) / (hi - lo) > 0.005
             gripper = cfg.get("gripper_body", "gripper0_right")
             if door_open:
                 self._appliance_states[name] = False

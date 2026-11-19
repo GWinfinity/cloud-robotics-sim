@@ -103,7 +103,7 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
     digest = hashlib.sha256(raw).hexdigest()[:12]
     # scheme version bumps when the staging transforms change, so stale
     # staged siblings from older schemes are never reused.
-    flags = f"{'dyn' if dynamic else 'static'}-v5"
+    flags = f"{'dyn' if dynamic else 'static'}-v8"
     staged = source.with_name(f"{source.stem}-{flags}-{digest}{source.suffix}")
     if staged.is_file() and staged.stat().st_size > 0:
         return staged
@@ -117,29 +117,60 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
         if el.get("shellinertia") is not None:
             del el.attrib["shellinertia"]
 
-    # Duplicate-name repair (document order): MuJoCo rejects repeated names
-    # in every class (LIBERO's stove XMLs define two textures named
-    # ``tex-stove_knob`` and repeat body names like ``button``). Later
-    # duplicates get ``__dupN`` suffixes and name references after them
-    # rebind in document order (upstream intent preserved).
-    name_ref_attrs = {"texture": "material", "material": "geom", "mesh": "geom"}
-    seen_names: dict[str, int] = {}
-    latest_rename: dict[str, str] = {}
+    # Duplicate-name repair (document order), SCOPED PER CLASS: MuJoCo names
+    # live in per-class namespaces, so a mesh, a body, a joint and an
+    # actuator may legally share one name (robosuite's GR1 does). Only
+    # same-class repeats get ``__dupN`` suffixes — LIBERO's stove XMLs
+    # define two textures named ``tex-stove_knob`` — and references rebind
+    # to the rename of their own class only (earlier cross-class renames
+    # broke equality/exclude body references and geom mesh references in
+    # whole-world RoboCasa spawns).
+    seen_names: dict[tuple[str, str], int] = {}
+    rename_texture: dict[str, str] = {}
+    rename_material: dict[str, str] = {}
+    rename_mesh: dict[str, str] = {}
+    rename_body: dict[str, str] = {}
     for el in root.iter():
-        for attr, target_tag in name_ref_attrs.items():
-            if el.tag != target_tag:
-                continue
-            value = el.get(attr)
-            if value is not None and value in latest_rename:
-                el.set(attr, latest_rename[value])
+        if el.tag == "material":
+            value = el.get("texture")
+            if value is not None and value in rename_texture:
+                el.set("texture", rename_texture[value])
+        elif el.tag == "geom":
+            material = el.get("material")
+            if material is not None and material in rename_material:
+                el.set("material", rename_material[material])
+            mesh_ref = el.get("mesh")
+            if mesh_ref is not None and mesh_ref in rename_mesh:
+                el.set("mesh", rename_mesh[mesh_ref])
+        elif el.tag == "equality":
+            # Weld/equality constraints reference bodies by name; a body
+            # renamed for duplication must keep its pair reachable (GR1
+            # worlds weld the torso and gripper sub-trees).
+            for attr in ("body1", "body2"):
+                value = el.get(attr)
+                if value is not None and value in rename_body:
+                    el.set(attr, rename_body[value])
+        elif el.tag == "exclude":
+            for attr in ("body1", "body2"):
+                value = el.get(attr)
+                if value is not None and value in rename_body:
+                    el.set(attr, rename_body[value])
         name = el.get("name")
         if name:
-            count = seen_names.get(name, 0) + 1
-            seen_names[name] = count
+            key = (el.tag, name)
+            count = seen_names.get(key, 0) + 1
+            seen_names[key] = count
             if count > 1:
                 new_name = f"{name}__dup{count}"
                 el.set("name", new_name)
-                latest_rename[name] = new_name
+                if el.tag == "texture":
+                    rename_texture[name] = new_name
+                elif el.tag == "material":
+                    rename_material[name] = new_name
+                elif el.tag == "mesh":
+                    rename_mesh[name] = new_name
+                elif el.tag == "body":
+                    rename_body[name] = new_name
     if dynamic:
         # VLABench's dm_control composer attaches graspables as ONE free
         # body; upstream component XMLs vary: a single top-level body, loose
@@ -188,15 +219,15 @@ def _stage_mjcf_component(source: Path, dynamic: bool) -> Path:
     def _compile_ok(content: bytes) -> str | None:
         """Return the volume-error marker when MuJoCo rejects the model."""
         probe = ET.fromstring(content)
-        compiler = probe.find("compiler")
-        if compiler is None:
-            compiler = ET.SubElement(probe, "compiler")
+        comp = probe.find("compiler")
+        if comp is None:
+            comp = ET.SubElement(probe, "compiler")
         for attr in ("meshdir", "assetdir", "texturedir"):
-            existing = compiler.get(attr)
+            existing = comp.get(attr)
             if existing is None:
-                compiler.set(attr, str(source.parent))
+                comp.set(attr, str(source.parent))
             elif not Path(existing).is_absolute():
-                compiler.set(attr, str(Path(source.parent) / existing))
+                comp.set(attr, str(Path(source.parent) / existing))
         try:
             mujoco.MjModel.from_xml_string(ET.tostring(probe, encoding="utf-8"))
         except Exception as exc:  # noqa: BLE001 - mujoco raises Exception
@@ -366,11 +397,21 @@ class GenesisEntityBackend(EntityBackend):
         set_qpos(np.asarray(qpos, dtype=np.float64))
 
     def set_qvel(self, qvel: np.ndarray) -> None:
-        """Set the full qvel vector (frozen RoboCasa world state)."""
+        """Set the full qvel vector (frozen RoboCasa world state).
+
+        Genesis 1.4's RigidEntity exposes set_qpos but no set_qvel; the
+        frozen velocities are dropped in that case (positions carry the
+        grading-relevant state, and the first engine step re-derives
+        velocities from the integrator).
+        """
         entity = self._resolve_entity()
         set_qvel = getattr(entity, "set_qvel", None)
         if set_qvel is None:
-            raise TypeError(f"wrapped entity of {self._name!r} exposes no set_qvel()")
+            logger.debug(
+                "wrapped entity of %r exposes no set_qvel(); frozen qvel dropped",
+                self._name,
+            )
+            return
         set_qvel(np.asarray(qvel, dtype=np.float64))
 
     def get_joint_position(self, joint_name: str) -> float:

@@ -21,4 +21,4 @@ project:
   tier: T1
   status: partial
   target: plugins/envs/humanoid_falling 同层新增
-  note: GR1 人形厨房操作；GR1 URDF 公开。6/24 已编译（2026-11-18，spec 级；offline nop 门绿）；GR1 双臂 any_gripper_far×2；SplitA 生成家族 19 个待 objaverse 对象库落地后重 resolve
+  note: GR1 人形厨房操作；GR1 URDF 公开。24/24 已编译（2026-11-18，spec 级；offline nop 门绿）；GR1 双臂 any_gripper_far×2；SplitA 生成家族 19 个待 objaverse 对象库落地后重 resolve

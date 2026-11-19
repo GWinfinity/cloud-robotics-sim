@@ -2,20 +2,26 @@
 version: 1
 name: efe-robocasa
 tasks:
+  - ../../configs/tasks/efe/robocasa/robocasa-arrange-vegetables-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-close-double-door-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-close-drawer-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-close-single-door-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-coffee-press-button-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-coffee-serve-mug-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-coffee-setup-mug-i00.yaml
+  - ../../configs/tasks/efe/robocasa/robocasa-microwave-thawing-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-open-double-door-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-open-drawer-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-open-single-door-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-pnp-cab-to-counter-i00.yaml
+  - ../../configs/tasks/efe/robocasa/robocasa-pnp-counter-to-cab-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-pnp-counter-to-microwave-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-pnp-counter-to-stove-i00.yaml
+  - ../../configs/tasks/efe/robocasa/robocasa-pnp-microwave-to-counter-i00.yaml
+  - ../../configs/tasks/efe/robocasa/robocasa-pnp-sink-to-counter-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-pnp-stove-to-counter-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-prepare-coffee-i00.yaml
+  - ../../configs/tasks/efe/robocasa/robocasa-restock-pantry-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-turn-off-microwave-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-turn-off-sink-faucet-i00.yaml
   - ../../configs/tasks/efe/robocasa/robocasa-turn-off-stove-i00.yaml
