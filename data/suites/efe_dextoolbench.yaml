@@ -1,0 +1,25 @@
+# EFE dextoolbench 套件汇总（编译物）；由 tools/compile_efe_suite.py 生成。
+version: 1
+name: efe-dextoolbench
+tasks:
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_brush_blue_brush_sweep_forward.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_brush_red_brush_sweep_forward.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_brush_red_brush_sweep_right.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_eraser_handle_eraser_wipe_c.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_eraser_handle_eraser_wipe_smile.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_hammer_claw_hammer_swing_down.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_hammer_claw_hammer_swing_side.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_hammer_mallet_hammer_swing_down.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_hammer_mallet_hammer_swing_side.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_marker_sharpie_marker_draw_smile.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_marker_sharpie_marker_write_c.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_marker_staples_marker_draw_smile.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_marker_staples_marker_write_c.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_screwdriver_long_screwdriver_spin_horizontal.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_screwdriver_long_screwdriver_spin_vertical.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_screwdriver_short_screwdriver_spin_horizontal.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_screwdriver_short_screwdriver_spin_vertical.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_spatula_flat_spatula_flip_over.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_spatula_flat_spatula_serve_plate.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_spatula_spoon_spatula_flip_over.yaml
+  - ../../configs/tasks/efe/dextoolbench/dextoolbench_spatula_spoon_spatula_serve_plate.yaml

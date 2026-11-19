@@ -77,6 +77,7 @@ SUCCESS_TYPES = (
     "abc_ball_tray",
     "abc_hold",
     "abc_drawer_sequence",
+    "dtb_all_goals",
     "all",
     "any",
     "not",
@@ -2941,6 +2942,23 @@ class AbcHoldCondition(SuccessCondition):
 
 
 @dataclass
+class DtbAllGoalsCondition(SuccessCondition):
+    """DexToolBench verdict: the ordered goal trajectory is complete.
+
+    ``EfeDtbTask`` counts a goal when all 8 corners of the tool's grasp box
+    (the instruction's dims x scale, in the tool frame) are within the corner
+    tolerance of the same corners at the goal pose, and publishes
+    ``info['dtb_goals_reached']``; missing info is a failure (nop-safe).
+    """
+
+    target: int
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        return int((info or {}).get("dtb_goals_reached", 0)) >= self.target
+
+
+@dataclass
 class AbcDrawerSequenceCondition(SuccessCondition):
     """``multi_drawer_target_in_bin``: the prompted targets reach the goal
     bin *in order* — the task advances the latch (upstream's evaluator-side
@@ -3243,6 +3261,10 @@ def _build_abc_hold(params: dict) -> AbcHoldCondition:
     return AbcHoldCondition(steps=int(params.get("steps", 30)))
 
 
+def _build_dtb_all_goals(params: dict) -> DtbAllGoalsCondition:
+    return DtbAllGoalsCondition(target=int(_require(params, "target", "dtb_all_goals")))
+
+
 def _build_abc_drawer_sequence(params: dict) -> AbcDrawerSequenceCondition:
     return AbcDrawerSequenceCondition(
         target_count=int(_require(params, "target_count", "abc_drawer_sequence"))
@@ -3365,6 +3387,8 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return _build_abc_hold(params)
     if success_type == "abc_drawer_sequence":
         return _build_abc_drawer_sequence(params)
+    if success_type == "dtb_all_goals":
+        return _build_dtb_all_goals(params)
     if success_type == "all":
         return _build_all(params)
     if success_type == "any":

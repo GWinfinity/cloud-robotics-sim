@@ -1,8 +1,6 @@
 # DexToolBench — EFE 套件迁移记录（策划数据）。
 # `efe.*` 计数与类别来自 arXiv:2611.12177 Table 2；
-# 由 tools/build_efe_registry.py 对照 data/efe/tasks/dextoolbench.json 校验，
-# 并与论文总数（35 套件 / 47 机器人 / 1156 任务 / 2288 测试 / 456 核心）对账。
-# 修改 efe 计数后必须重跑 build 工具的 --check。
+# 由 tools/build_efe_registry.py 对照 data/efe/tasks/dextoolbench.json 校验。
 suite: dextoolbench
 name: DexToolBench
 efe:
@@ -11,6 +9,7 @@ efe:
   source: null
   simulator: mujoco
   kinds:
+  - arm
   - hand
   robots:
   - kuka-iiwa14-sharpa-ha4
@@ -19,6 +18,6 @@ efe:
   core: 20
 project:
   tier: T1
-  status: planned
-  target: plugins/manipulation/dexterous_gnn_qp 扩展
-  note: Kuka iiwa14 + SHARPA HA4 灵巧工具操作；iiwa14 在 Menagerie
+  status: partial
+  target: src/cloud_robotics_sim/runtime registry 新 task 族（efe_dtb）
+  note: 21/21 已编译（2026-11-19，spec 级；offline nop 门绿 + Genesis 引擎冒烟 21/21 RC=0）。场景按 SimToolReal mjoco_sim.py::_init_scene 用 MjSpec 组合（menagerie kuka_iiwa_14 + Sharpa HA4 offset 手 + 桌面 + 工具 CoACD，robot base (0,0.8,0)，condim=6）；判据逐字 instruction.md（统一 grasp box 0.141×0.030×0.027m×1.5，8 角点全在 1.5cm 内计一个有序 goal）；max_episode_steps 用任务自身上限 360000（60Hz×100min）；附加物理中性 visual-only 原网格（上游只渲染 CoACD 灰件）

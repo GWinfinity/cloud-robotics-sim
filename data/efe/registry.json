@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-19T08:12:12.104311+00:00",
+  "generated_at": "2026-11-19T10:36:20.529930+00:00",
   "paper": {
     "arxiv": "2611.12177",
     "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
@@ -153,7 +153,7 @@
         "tier": "T1",
         "status": "planned",
         "target": "plugins/envs/humanoid_falling 同层新增",
-        "note": "G1-dex3 人形家务（全身控制器接口）；g1 本体 Menagerie 可转"
+        "note": "G1-dex3 人形家务（全身控制器接口）；g1 本体 Menagerie 可转。本体门通过（人形 + 灵巧手），见 data/efe/embodiment_gate.json"
       },
       "inventory": {
         "n_tasks": 13,
@@ -184,7 +184,7 @@
         "tier": "T1",
         "status": "planned",
         "target": "plugins/manipulation/dexterous_gnn_qp 扩展为完整 env",
-        "note": "SHARPA Wave 灵巧手翻书/开罐/搅咖啡/USB/折纸/汉堡；接触丰富，复用 dexterous_gnn_qp 的灵巧操作与 Menagerie leap_hand 设施"
+        "note": "SHARPA Wave 灵巧手翻书/开罐/搅咖啡/USB/折纸/汉堡；接触丰富，复用 dexterous_gnn_qp 的灵巧操作与 Menagerie leap_hand 设施。本体门通过（灵巧手），见 data/efe/embodiment_gate.json"
       },
       "inventory": {
         "n_tasks": 30,
@@ -230,6 +230,7 @@
         "source": null,
         "simulator": "mujoco",
         "kinds": [
+          "arm",
           "hand"
         ],
         "robots": [
@@ -241,9 +242,9 @@
       },
       "project": {
         "tier": "T1",
-        "status": "planned",
-        "target": "plugins/manipulation/dexterous_gnn_qp 扩展",
-        "note": "Kuka iiwa14 + SHARPA HA4 灵巧工具操作；iiwa14 在 Menagerie"
+        "status": "partial",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族（efe_dtb）",
+        "note": "21/21 已编译（2026-11-19，spec 级；offline nop 门绿 + Genesis 引擎冒烟 21/21 RC=0）。场景按 SimToolReal mjoco_sim.py::_init_scene 用 MjSpec 组合（menagerie kuka_iiwa_14 + Sharpa HA4 offset 手 + 桌面 + 工具 CoACD，robot base (0,0.8,0)，condim=6）；判据逐字 instruction.md（统一 grasp box 0.141×0.030×0.027m×1.5，8 角点全在 1.5cm 内计一个有序 goal）；max_episode_steps 用任务自身上限 360000（60Hz×100min）；附加物理中性 visual-only 原网格（上游只渲染 CoACD 灰件）"
       },
       "inventory": {
         "n_tasks": 21,
@@ -273,7 +274,7 @@
         "tier": "T1",
         "status": "planned",
         "target": "plugins/envs/humanoid_falling 同层新增",
-        "note": "G1/H1-2 体育动作全家桶；项目已有 humanoid_falling 插件与桌球/羽毛球设施可参考"
+        "note": "G1/H1-2 体育动作全家桶；项目已有 humanoid_falling 插件与桌球/羽毛球设施可参考。本体门通过（人形 G1/H1-2），见 data/efe/embodiment_gate.json"
       },
       "inventory": {
         "n_tasks": 79,
@@ -342,7 +343,7 @@
         "tier": "T1",
         "status": "planned",
         "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
-        "note": "安全请求执行/有害请求拒止/风险解释；拒止判定是规则 verifier，物理要求低，与项目 SafetyViolationError 安全边界同源"
+        "note": "安全请求执行/有害请求拒止/风险解释；拒止判定是规则 verifier，物理要求低，与项目 SafetyViolationError 安全边界同源。本体门通过（UR5e/FR3 单臂、YAM 双臂、TidyBot++ 移动操作），见 data/efe/embodiment_gate.json"
       },
       "inventory": {
         "n_tasks": 72,
@@ -434,7 +435,7 @@
         "tier": "T1",
         "status": "planned",
         "target": "plugins/envs/humanoid_falling 同层新增",
-        "note": "H1/H1hand 全身 loco-manipulation；与 humanoid_falling 插件同栈"
+        "note": "H1/H1hand 全身 loco-manipulation；与 humanoid_falling 插件同栈。本体门通过（人形），见 data/efe/embodiment_gate.json"
       },
       "inventory": {
         "n_tasks": 10,
@@ -608,7 +609,7 @@
         "tier": "T1",
         "status": "partial",
         "target": "src/cloud_robotics_sim/runtime registry 新 task 族",
-        "note": "Meta-World v3 全 50 环境固定实例；Sawyer MJCF 随 MetaWorld(MIT) 发布。P1 进展：26/50 已编译并通过双层门（spec 保真级；判据句逐字转写自上游 instruction，目标语义取自上游 env .py 常量，代表点注明非冻结实例值；nop 门拦截 2 处 XML 位姿≠任务初始位姿并修正）；保真度说明：spec 级（非冻结实例位姿）；stick-push 夹持接触子句降级未建模；disassemble 行程值为预设待判据句核正；机构初始构型按 env reset 语义建模（door-close −90° 开门等）"
+        "note": "Meta-World v3 全 50 环境固定实例；Sawyer MJCF 随 MetaWorld(MIT) 发布。本体门通过（Sawyer 单臂）。50/50 已编译并通过双层门（spec 保真级；判据句逐字转写自上游 instruction，目标语义取自上游 env .py 常量，代表点注明非冻结实例值；nop 门拦截 2 处 XML 位姿≠任务初始位姿并修正）；保真度说明：spec 级（非冻结实例位姿）；stick-push 夹持接触子句降级未建模；disassemble 行程值为预设待判据句核正；机构初始构型按 env reset 语义建模（door-close −90° 开门等）"
       },
       "inventory": {
         "n_tasks": 50,
@@ -672,9 +673,9 @@
       },
       "project": {
         "tier": "T1",
-        "status": "planned",
-        "target": "plugins/envs 新增",
-        "note": "四足 locomotion + 少量臂任务；spot/barkour/go1 全在 Menagerie，是 T1 里机器人资产最省事的一套"
+        "status": "partial",
+        "target": "plugins/envs 新增（仅五类本体内的臂任务）",
+        "note": "本体门 partial，决定不放宽：4 个 aloha/panda 臂任务在五类内，9 个 go1/spot/barkour 四足任务永久排除并剥离出可执行配置（任务名见 data/efe/embodiment_gate.json 的 out_of_scope_task_names）。已编译 1/4 臂任务（panda_pick_cube_orientation，spec 级，判据句+实例位姿逐字落盘）；panda_open_cabinet 与 2 个 aloha 任务因手柄/盒体起点或 aloha-2 本体未镜像而 pending"
       },
       "inventory": {
         "n_tasks": 13,
@@ -706,9 +707,9 @@
       },
       "project": {
         "tier": "TX",
-        "status": "blocked",
+        "status": "excluded",
         "target": "无（Genesis 缺肌肉-肌腱致动模型）",
-        "note": "肌肉骨骼模型依赖 MuJoCo tendon/actuator 特性，Genesis 1.4.6 无等效；需先决策（自研 solver 插件或永久跳过）"
+        "note": "本体门不通过：6 台 MyoSuite 肌肉骨骼模型不属于单臂/双臂/灵巧手/人形/移动操作五类；且依赖 MuJoCo tendon/muscle 致动，Genesis 1.4.7 无等效。决定永久排除，不放宽本体门；从可执行迁移范围剥离，仅保留论文登记以维持 35 套件/47 机器人/1156 任务/2288 测试对账。见 data/efe/embodiment_gate.json"
       },
       "inventory": {
         "n_tasks": 22,
@@ -771,7 +772,7 @@
         "tier": "T1",
         "status": "planned",
         "target": "plugins/envs 新增 + cable_sim 复用",
-        "note": "绳结/穿绳/金属环/IKEA 装配/buzz-wire；可变形体(MuJoCo rope/cloth)需 Genesis 等效或降级为刚体链方案"
+        "note": "绳结/穿绳/金属环/IKEA 装配/buzz-wire；可变形体(MuJoCo rope/cloth)需 Genesis 等效或降级为刚体链方案。本体门通过（单臂 franka-robotiq + 双臂 aloha-2/franka-bimanual），见 data/efe/embodiment_gate.json"
       },
       "inventory": {
         "n_tasks": 106,
@@ -1108,6 +1109,9 @@
   "robots": [
     {
       "robot": "franka-panda",
+      "kinds": [
+        "arm"
+      ],
       "source": "have",
       "detail": "assets_genesis/embodiments/franka-panda (gold)",
       "suites": [
@@ -1123,6 +1127,9 @@
     },
     {
       "robot": "franka-panda-bimanual",
+      "kinds": [
+        "two_arms"
+      ],
       "source": "compose",
       "detail": "2x franka-panda 对称装配",
       "suites": [
@@ -1136,6 +1143,9 @@
     },
     {
       "robot": "franka-panda-longfinger",
+      "kinds": [
+        "arm"
+      ],
       "source": "compose",
       "detail": "franka-panda 派生长指版本（ManiGuard 修改）",
       "suites": [
@@ -1147,6 +1157,9 @@
     },
     {
       "robot": "franka-robotiq-2f85",
+      "kinds": [
+        "arm"
+      ],
       "source": "compose",
       "detail": "franka-panda + Robotiq 2F-85",
       "suites": [
@@ -1162,6 +1175,10 @@
     },
     {
       "robot": "franka-panda-omron",
+      "kinds": [
+        "mobile_manip",
+        "arm"
+      ],
       "source": "efe_custom",
       "detail": "RoboCasa 移动操作底座合成（Panda + Omron LD 底盘）",
       "suites": [
@@ -1171,6 +1188,10 @@
     },
     {
       "robot": "franka-allegro",
+      "kinds": [
+        "arm",
+        "hand"
+      ],
       "source": "compose",
       "detail": "franka-panda + Allegro 手",
       "suites": [
@@ -1183,6 +1204,10 @@
     },
     {
       "robot": "franka-allegro-bimanual",
+      "kinds": [
+        "two_arms",
+        "hand"
+      ],
       "source": "compose",
       "detail": "2x (franka-panda + Allegro 手)",
       "suites": [
@@ -1195,6 +1220,9 @@
     },
     {
       "robot": "ur5e-robotiq-2f85",
+      "kinds": [
+        "arm"
+      ],
       "source": "compose",
       "detail": "UR5e + Robotiq 2F-85",
       "suites": [
@@ -1208,6 +1236,10 @@
     },
     {
       "robot": "ur5e-dexhand-2f85-bimanual",
+      "kinds": [
+        "two_arms",
+        "hand"
+      ],
       "source": "efe_custom",
       "detail": "AutoBio 双臂（UR5e + DexHand + 2F-85）合成体",
       "suites": [
@@ -1219,6 +1251,9 @@
     },
     {
       "robot": "sawyer",
+      "kinds": [
+        "arm"
+      ],
       "source": "public",
       "detail": "MetaWorld MJCF 已镜像 assets/metaworld（objects/xyz_base.xml，MIT @59fc34d）；EFE P1 编译配置的默认机器人",
       "suites": [
@@ -1227,6 +1262,9 @@
     },
     {
       "robot": "aloha-agilex",
+      "kinds": [
+        "two_arms"
+      ],
       "source": "have",
       "detail": "assets_genesis/embodiments/aloha-agilex (silver)",
       "suites": [
@@ -1235,6 +1273,9 @@
     },
     {
       "robot": "arx-x5-bimanual",
+      "kinds": [
+        "two_arms"
+      ],
       "source": "compose",
       "detail": "2x ARX-X5（assets_genesis/embodiments/ARX-X5, silver）对称装配",
       "suites": [
@@ -1246,6 +1287,9 @@
     },
     {
       "robot": "ARX-X5",
+      "kinds": [
+        "arm"
+      ],
       "source": "have",
       "detail": "assets_genesis/embodiments/ARX-X5 (silver)",
       "suites": [],
@@ -1253,6 +1297,9 @@
     },
     {
       "robot": "aloha-2",
+      "kinds": [
+        "two_arms"
+      ],
       "source": "public",
       "detail": "Mobile ALOHA 仓库（VX300S 双臂 + 夹爪）",
       "suites": [
@@ -1263,6 +1310,9 @@
     },
     {
       "robot": "aloha-2-arm",
+      "kinds": [
+        "arm"
+      ],
       "source": "public",
       "detail": "Mobile ALOHA 单臂变体",
       "suites": [
@@ -1271,6 +1321,9 @@
     },
     {
       "robot": "marvin-bimanual",
+      "kinds": [
+        "two_arms"
+      ],
       "source": "efe_custom",
       "detail": "EFE Genesis 原生机器人（RoboWits 镜像内）",
       "suites": [
@@ -1279,6 +1332,10 @@
     },
     {
       "robot": "marvin-bimanual-sharpa-wave",
+      "kinds": [
+        "two_arms",
+        "hand"
+      ],
       "source": "efe_custom",
       "detail": "marvin 臂 + SHARPA Wave 灵巧手",
       "suites": [
@@ -1290,6 +1347,9 @@
     },
     {
       "robot": "sharpa-wave-floating",
+      "kinds": [
+        "hand"
+      ],
       "source": "efe_custom",
       "detail": "SHARPA Wave 手浮动本体",
       "suites": [
@@ -1298,6 +1358,10 @@
     },
     {
       "robot": "sharpa-wave-floating-bimanual",
+      "kinds": [
+        "hand",
+        "two_arms"
+      ],
       "source": "efe_custom",
       "detail": "2x SHARPA Wave 浮动本体",
       "suites": [
@@ -1309,6 +1373,9 @@
     },
     {
       "robot": "i2rt-yam-bimanual",
+      "kinds": [
+        "two_arms"
+      ],
       "source": "efe_custom",
       "detail": "I2RT YAM 双臂（ABC Sim/YAMLab 镜像内）",
       "suites": [
@@ -1319,6 +1386,9 @@
     },
     {
       "robot": "unitree-g1",
+      "kinds": [
+        "humanoid"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie unitree_g1",
       "suites": [
@@ -1329,6 +1399,10 @@
     },
     {
       "robot": "unitree-g1-dex1",
+      "kinds": [
+        "humanoid",
+        "hand"
+      ],
       "source": "menagerie",
       "detail": "G1 + dex1 手（Menagerie g1 + 公开 dex 手）",
       "suites": [
@@ -1340,6 +1414,10 @@
     },
     {
       "robot": "unitree-g1-dex3",
+      "kinds": [
+        "humanoid",
+        "hand"
+      ],
       "source": "menagerie",
       "detail": "G1 + dex3 手（Menagerie g1 + 公开 dex3 手）",
       "suites": [
@@ -1351,6 +1429,9 @@
     },
     {
       "robot": "unitree-h1",
+      "kinds": [
+        "humanoid"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie unitree_h1",
       "suites": [
@@ -1359,6 +1440,9 @@
     },
     {
       "robot": "unitree-h1-2",
+      "kinds": [
+        "humanoid"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie unitree_h1_2",
       "suites": [
@@ -1367,6 +1451,10 @@
     },
     {
       "robot": "unitree-h1hand",
+      "kinds": [
+        "humanoid",
+        "hand"
+      ],
       "source": "menagerie",
       "detail": "H1 + 手（Menagerie h1 + 公开手部）",
       "suites": [
@@ -1378,6 +1466,9 @@
     },
     {
       "robot": "unitree-go1",
+      "kinds": [
+        "quadruped"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie unitree_go1",
       "suites": [
@@ -1386,6 +1477,9 @@
     },
     {
       "robot": "unitree-go2",
+      "kinds": [
+        "quadruped"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie unitree_go2",
       "suites": [
@@ -1394,6 +1488,9 @@
     },
     {
       "robot": "boston-dynamics-spot",
+      "kinds": [
+        "quadruped"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie boston_dynamics_spot",
       "suites": [
@@ -1402,6 +1499,9 @@
     },
     {
       "robot": "google-barkour-vb",
+      "kinds": [
+        "quadruped"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie google_barkour_vb",
       "suites": [
@@ -1410,6 +1510,9 @@
     },
     {
       "robot": "fourier-gr1",
+      "kinds": [
+        "humanoid"
+      ],
       "source": "public",
       "detail": "Fourier Intelligence GR1 公开 URDF",
       "suites": [
@@ -1418,6 +1521,10 @@
     },
     {
       "robot": "rainbow-rby1",
+      "kinds": [
+        "mobile_manip",
+        "two_arms"
+      ],
       "source": "public",
       "detail": "Rainbow Robotics RB-Y1 公开 URDF",
       "suites": [
@@ -1426,6 +1533,10 @@
     },
     {
       "robot": "tidybot-plus-plus",
+      "kinds": [
+        "mobile_manip",
+        "arm"
+      ],
       "source": "public",
       "detail": "TidyBot++（Princeton）公开资产",
       "suites": [
@@ -1435,6 +1546,9 @@
     },
     {
       "robot": "booster-t1",
+      "kinds": [
+        "humanoid"
+      ],
       "source": "public",
       "detail": "Booster Robotics T1 公开 URDF",
       "suites": [
@@ -1443,6 +1557,9 @@
     },
     {
       "robot": "ssl-robot",
+      "kinds": [
+        "car"
+      ],
       "source": "efe_custom",
       "detail": "RoboCup SSL 小车（奥运会对抗镜像内）",
       "suites": [
@@ -1451,6 +1568,9 @@
     },
     {
       "robot": "foosball-rods",
+      "kinds": [
+        "mechanism"
+      ],
       "source": "efe_custom",
       "detail": "桌上足球杆组机构",
       "suites": [
@@ -1459,6 +1579,10 @@
     },
     {
       "robot": "ambench-fahexa",
+      "kinds": [
+        "aerial",
+        "arm"
+      ],
       "source": "efe_custom",
       "detail": "AM-Bench 空中操作平台（镜像内）",
       "suites": [
@@ -1467,6 +1591,9 @@
     },
     {
       "robot": "anycar",
+      "kinds": [
+        "car"
+      ],
       "source": "efe_custom",
       "detail": "RoboEngineer 小车（镜像内）",
       "suites": [
@@ -1475,6 +1602,9 @@
     },
     {
       "robot": "intel-aero-partial",
+      "kinds": [
+        "aerial"
+      ],
       "source": "efe_custom",
       "detail": "RoboEngineer Intel Aero 部分模型",
       "suites": [
@@ -1483,6 +1613,9 @@
     },
     {
       "robot": "neural-fly-partial",
+      "kinds": [
+        "aerial"
+      ],
       "source": "efe_custom",
       "detail": "RoboEngineer Neural-Fly 部分模型",
       "suites": [
@@ -1491,6 +1624,11 @@
     },
     {
       "robot": "r1pro",
+      "kinds": [
+        "mobile_manip",
+        "two_arms",
+        "hand"
+      ],
       "source": "efe_custom",
       "detail": "Galbot R1 Pro（BEHAVIOR/iSpatialGym 镜像内，数据集有许可门）",
       "suites": [
@@ -1500,6 +1638,9 @@
     },
     {
       "robot": "myoarm",
+      "kinds": [
+        "musculoskeletal"
+      ],
       "source": "blocked",
       "detail": "MyoSuite 肌肉骨骼模型：Genesis 无 tendon/muscle 致动",
       "suites": [
@@ -1508,6 +1649,9 @@
     },
     {
       "robot": "myoarm-mpl",
+      "kinds": [
+        "musculoskeletal"
+      ],
       "source": "blocked",
       "detail": "MyoSuite 肌肉骨骼模型（MPL 假肢）",
       "suites": [
@@ -1516,6 +1660,9 @@
     },
     {
       "robot": "myoarm-torso",
+      "kinds": [
+        "musculoskeletal"
+      ],
       "source": "blocked",
       "detail": "MyoSuite 肌肉骨骼模型（躯干）",
       "suites": [
@@ -1524,6 +1671,10 @@
     },
     {
       "robot": "myohand",
+      "kinds": [
+        "musculoskeletal",
+        "hand"
+      ],
       "source": "blocked",
       "detail": "MyoSuite 肌肉骨骼手",
       "suites": [
@@ -1532,6 +1683,9 @@
     },
     {
       "robot": "myoleg-osl",
+      "kinds": [
+        "musculoskeletal"
+      ],
       "source": "blocked",
       "detail": "MyoSuite 肌肉骨骼腿（OSL 假肢）",
       "suites": [
@@ -1540,6 +1694,10 @@
     },
     {
       "robot": "myolegs",
+      "kinds": [
+        "musculoskeletal",
+        "humanoid"
+      ],
       "source": "blocked",
       "detail": "MyoSuite 肌肉骨骼双腿",
       "suites": [
@@ -1548,12 +1706,18 @@
     },
     {
       "robot": "smplx-human",
+      "kinds": [
+        "humanoid"
+      ],
       "source": "out_of_paper",
       "detail": "SMPL-X 人形（HumanCLAW，论文计数之外）",
       "suites": []
     },
     {
       "robot": "robotiq-2f85",
+      "kinds": [
+        "hand"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie robotiq_2f85",
       "suites": [],
@@ -1561,6 +1725,9 @@
     },
     {
       "robot": "ur5e",
+      "kinds": [
+        "arm"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie universal_robots_ur5e",
       "suites": [],
@@ -1568,6 +1735,10 @@
     },
     {
       "robot": "kuka-iiwa14-sharpa-ha4",
+      "kinds": [
+        "arm",
+        "hand"
+      ],
       "source": "compose",
       "detail": "Menagerie kuka_iiwa_14 + SHARPA HA4 手",
       "suites": [
@@ -1580,6 +1751,9 @@
     },
     {
       "robot": "kuka-iiwa14",
+      "kinds": [
+        "arm"
+      ],
       "source": "menagerie",
       "detail": "MuJoCo Menagerie kuka_iiwa_14",
       "suites": [],
@@ -1587,6 +1761,9 @@
     },
     {
       "robot": "sharpa-ha4",
+      "kinds": [
+        "hand"
+      ],
       "source": "efe_custom",
       "detail": "SHARPA HA4 灵巧手（DexToolBench 镜像内）",
       "suites": [],
@@ -1594,6 +1771,9 @@
     },
     {
       "robot": "allegro-hand",
+      "kinds": [
+        "hand"
+      ],
       "source": "public",
       "detail": "Wonik/Wessling Allegro 手 URDF",
       "suites": [],
@@ -1613,11 +1793,10 @@
       "T0": 1
     },
     "by_status": {
-      "partial": 9,
-      "planned": 24,
-      "excluded": 1,
-      "ported": 1,
-      "blocked": 1
+      "partial": 11,
+      "planned": 22,
+      "excluded": 2,
+      "ported": 1
     }
   },
   "warnings": [

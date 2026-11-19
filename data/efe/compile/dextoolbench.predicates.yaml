@@ -1,0 +1,12 @@
+# DexToolBench 判据表（占位说明）。判据常量的唯一事实来源是每任务
+# instruction.md 的逐字句（tools/dtb_worlds.py 解析 grasp box 尺寸/缩放/
+# 角点容差）+ SimToolReal 的 mjoco_sim.py 场景配方；tools/dtb_resolver.py
+# 据此生成编译 KB。判据语义见 DtbAllGoalsCondition / EfeDtbTask docstring。
+source:
+  benchmark: DexToolBench
+  repo: tylerlum/simtoolreal
+  ref: 313d5ae
+  simulator: mujoco
+  robot: kuka-iiwa14+sharpa-ha4
+  note: 常量逐字出自各任务 instruction.md
+envs: {}

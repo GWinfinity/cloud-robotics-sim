@@ -429,6 +429,131 @@ def _make_fourier_gr1(**kwargs: Any) -> Any:
     return _WorldEmbeddedRobot("fourier_gr1")
 
 
+@register_robot("kuka_iiwa_sharpa")
+def _make_kuka_iiwa_sharpa(**kwargs: Any) -> Any:
+    """KUKA iiwa 14 with a Sharpa HA4 hand (DexToolBench, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("kuka_iiwa_sharpa")
+
+
+class EfeDtbTask(EfeBaseTask):
+    """DexToolBench frozen-scene task (KUKA iiwa 14 + Sharpa HA4 + tool).
+
+    The task YAML carries the composed world (``world`` block, see
+    ``tools/dtb_worlds.py``) and a ``dtb`` block with the ordered goal
+    trajectory and the grasp-box constants each task's ``instruction.md``
+    states verbatim. Each step the task transforms the tool's 8 grasp-box
+    corners by its live pose and by the current goal pose; the goal counts
+    when every corner pair is within the tolerance (1.5 cm), the latch
+    advances to the next goal, and ``info['dtb_goals_reached']`` is
+    published — the outer :class:`DtbAllGoalsCondition` ends the episode
+    the moment every goal is reached (the EFE suite's rule; no hold).
+    """
+
+    def __init__(
+        self,
+        config: TaskConfig,
+        world: dict | None = None,
+        dtb: dict | None = None,
+    ):
+        super().__init__(config)
+        if world is not None and not isinstance(world, dict):
+            raise TypeError("efe_dtb world must be a mapping or None")
+        if dtb is not None and not isinstance(dtb, dict):
+            raise TypeError("efe_dtb dtb must be a mapping or None")
+        self._world_cfg = world or {}
+        self._dtb = dtb or {}
+        self._goals_reached = 0
+        self._servo_warned = False
+
+    def _world(self, scene: Any) -> Any:
+        entities = getattr(scene, "entities", None) or {}
+        entity = entities.get("world")
+        if entity is None:
+            raise KeyError(
+                "efe_dtb expects the 'world' asset in scene.entities; "
+                f"available: {sorted(entities)}"
+            )
+        return entity
+
+    def _apply_frozen_state(self, scene: Any) -> None:
+        world = self._world(scene)
+        qpos_path = self._world_cfg.get("qpos_path")
+        qvel_path = self._world_cfg.get("qvel_path")
+        if qpos_path:
+            world.set_qpos(np.load(qpos_path))
+        if qvel_path:
+            set_qvel = getattr(world, "set_qvel", None)
+            if set_qvel is not None:
+                set_qvel(np.load(qvel_path))
+
+    # -- grasp-box corner test (instruction.md verbatim) --------------------
+
+    def _corners(self, pos: np.ndarray, quat: np.ndarray) -> np.ndarray:
+        """8 grasp-box corners (world frame): pose frame +- dims/2, all signs."""
+        dims = np.asarray(self._dtb["grasp_box_dims_m"], dtype=float) * float(
+            self._dtb.get("grasp_box_scale", 1.0)
+        )
+        half = dims / 2.0
+        signs = np.array(
+            [[sx, sy, sz] for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)],
+            dtype=float,
+        )
+        local = signs * half[None, :]
+        from cloud_robotics_sim.core.success import _quat_to_mat
+
+        corners: np.ndarray = np.asarray(pos)[None, :] + local @ _quat_to_mat(quat).T
+        return corners
+
+    def _goal_reached(self, scene: Any) -> bool:
+        from cloud_robotics_sim.core.success import _abc_pos, _abc_quat
+
+        goals = self._dtb.get("goals") or []
+        if self._goals_reached >= len(goals):
+            return False
+        goal = goals[self._goals_reached]
+        tol = float(self._dtb.get("corner_tolerance_m", 0.015))
+        object_pos = _abc_pos(scene, self._dtb.get("object_body", "object"))
+        object_quat = _abc_quat(scene, self._dtb.get("object_body", "object"))
+        goal_pos = np.asarray(goal[:3], dtype=float)
+        goal_quat = np.asarray(goal[3:7], dtype=float)  # stored wxyz by resolver
+        corners_tool = self._corners(object_pos, object_quat)
+        corners_goal = self._corners(goal_pos, goal_quat)
+        return bool(np.all(np.linalg.norm(corners_tool - corners_goal, axis=1) <= tol))
+
+    # -- Task API ----------------------------------------------------------
+
+    def reset(self, scene: Any, robot: Any, seed: int) -> dict:
+        info = super().reset(scene, robot, seed)
+        self._apply_frozen_state(scene)
+        self._goals_reached = 0
+        info["dtb_goals_reached"] = 0
+        return info
+
+    def step(self, scene: Any, robot: Any, action: np.ndarray):
+        reward, terminated, truncated, info = super().step(scene, robot, action)
+        while self._goals_reached < len(
+            self._dtb.get("goals") or []
+        ) and self._goal_reached(scene):
+            self._goals_reached += 1
+        info["dtb_goals_reached"] = self._goals_reached
+        return reward, terminated, truncated, info
+
+
+@register_task("efe_dtb")
+def _make_efe_dtb(**kwargs: Any) -> EfeDtbTask:
+    """DexToolBench frozen-scene task with world/dtb YAML blocks."""
+    kwargs.pop("type", None)
+    max_steps = int(kwargs.pop("max_episode_steps", 500))
+    world = kwargs.pop("world", None)
+    dtb = kwargs.pop("dtb", None)
+    return EfeDtbTask(
+        TaskConfig(name="efe", max_episode_steps=max_steps),
+        world=world,
+        dtb=dtb,
+    )
+
+
 @register_robot("i2rt_yam_bimanual")
 def _make_i2rt_yam_bimanual(**kwargs: Any) -> Any:
     """Twin I2RT YAM arms (ABC Sim / YAMLab, world-embedded)."""
