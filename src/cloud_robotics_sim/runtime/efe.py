@@ -605,6 +605,15 @@ class EfeDjxTask(EfeBaseTask):
         self._pinch_count = 0
         self._pinch_in_progress = False
         self._display_blue = False
+        self._nail_depth = 0.0
+        self._prev_face_z: float | None = None
+        self._vz_buf: list[float] = []
+        self._unlock_index = 0
+        self._unlock_failed = False
+        self._screen_unlocked = False
+        self._pressed_last: set[str] = set()
+        self._illegal_trigger_reason = ""
+        self._illegal_trigger_count = 0
         family = self._djx.get("family", "")
         target = {
             "water_plant": 30,
@@ -612,6 +621,8 @@ class EfeDjxTask(EfeBaseTask):
             "fold_glasses": 50,
             "pinch_tongs": 30,
             "bimanual_assembly": 30,
+            "bimanual_hanoi": 20,
+            "bimanual_unlock_ipad": 10,
         }.get(family, 1)
         self._success_target = int(self._djx.get("success_target") or target)
 
@@ -672,6 +683,52 @@ class EfeDjxTask(EfeBaseTask):
         from cloud_robotics_sim.core.success import _world_bodies_touch
 
         return bool(_world_bodies_touch(self._world(scene), a, b))
+
+    def _geom_pose(self, scene: Any, geom: str) -> tuple[np.ndarray, np.ndarray]:
+        """World (pos, wxyz quat) of one geom via meta local pose + body pose."""
+        record = (self._meta(scene).get("geoms") or {})[geom]
+        body_pos = self._pos(scene, record["body"])
+        body_quat = self._quat(scene, record["body"])
+        from cloud_robotics_sim.core.success import _quat_to_mat
+
+        local = np.asarray(record["local"], dtype=float)
+        local_quat = np.asarray(record["local_quat"], dtype=float)
+        rot = _quat_to_mat(body_quat) @ _quat_to_mat(local_quat)
+        # rotation matrix -> wxyz quat (active rotation, column-major safe)
+        qw = float(np.sqrt(max(0.0, 1.0 + rot[0, 0] + rot[1, 1] + rot[2, 2])) / 2.0)
+        qx = float((rot[2, 1] - rot[1, 2]) / (4.0 * qw)) if qw > 1e-9 else 0.0
+        qy = float((rot[0, 2] - rot[2, 0]) / (4.0 * qw)) if qw > 1e-9 else 0.0
+        qz = float((rot[1, 0] - rot[0, 1]) / (4.0 * qw)) if qw > 1e-9 else 0.0
+        quat = np.array([qw, qx, qy, qz], dtype=float)
+        return body_pos + _quat_to_mat(body_quat) @ local, quat
+
+    def _dofs_velocity(self, scene: Any) -> np.ndarray | None:
+        """Full DOF velocity vector when the wrapped entity exposes it."""
+        world = self._world(scene)
+        resolver = getattr(world, "_resolve_entity", None)
+        if resolver is None:
+            return None
+        try:
+            get_vel = getattr(resolver(), "get_dofs_velocity", None)
+            if get_vel is None:
+                return None
+            return np.asarray(get_vel(), dtype=float).reshape(-1)
+        except Exception:  # noqa: BLE001 - velocity is best effort
+            return None
+
+    def _joint_vel_norm(self, scene: Any, joint: str) -> float | None:
+        """Norm of one joint's DOF velocities (free=6, else 1)."""
+        qvel = self._dofs_velocity(scene)
+        if qvel is None:
+            return None
+        for record in self._meta(scene).get("joints") or []:
+            if record.get("name") == joint:
+                width = 6 if record.get("type") == "free" else 1
+                adr = int(record["qveladr"])
+                if adr + width <= qvel.size:
+                    return float(np.linalg.norm(qvel[adr : adr + width]))
+                return None
+        return None
 
     def _geom_any_contact(self, scene: Any, geom: str) -> bool:
         """True when the named geom appears in any live contact pair."""
@@ -737,15 +794,6 @@ class EfeDjxTask(EfeBaseTask):
             )
             lifted = bool(np.all(bottom - float(self._djx["bucket_bottom_z0"]) >= 0.15))
             return inside and lifted
-        elif family == "pinch_tongs":
-            joint = self._qpos(scene, "tongs_joint_0")
-            if joint <= -0.07 and self._pinch_in_progress:
-                self._pinch_in_progress = False
-                self._pinch_count += 1
-            elif joint >= 0.1 and not self._pinch_in_progress:
-                self._pinch_in_progress = True
-            tongs_z = float(self._pos(scene, self._djx.get("tongs_body", "tongs"))[2])
-            trigger = tongs_z >= float(self._djx["lift_z"]) and self._pinch_count >= 3
         elif family == "fold_glasses":
             glass = self._pos(scene, "glass")
             box = self._pos(scene, "open_box")
@@ -794,6 +842,58 @@ class EfeDjxTask(EfeBaseTask):
             if in_pad and clicked and not self._display_blue:
                 self._display_blue = True
             trigger = in_pad and self._display_blue
+        elif family == "pinch_tongs":
+            joint = self._qpos(scene, "tongs_joint_0")
+            if joint <= -0.07 and self._pinch_in_progress:
+                self._pinch_in_progress = False
+                self._pinch_count += 1
+            elif joint >= 0.1 and not self._pinch_in_progress:
+                self._pinch_in_progress = True
+            tongs_geom = (self._meta(scene).get("sensors") or {}).get("tongs_pos")
+            tongs_z = float(
+                self._geom_pose(scene, tongs_geom["objname"])[0][2]
+                if tongs_geom and tongs_geom.get("objkind") == "geom"
+                else self._pos(scene, self._djx.get("tongs_body", "tongs"))[2]
+            )
+            trigger = tongs_z >= float(self._djx["lift_z"]) and self._pinch_count >= 3
+        elif family == "hammer_nail":
+            face_pos, _ = self._geom_pose(scene, "face")
+            face_z = float(face_pos[2])
+            if self._prev_face_z is None:
+                self._prev_face_z = face_z
+            vz = (face_z - self._prev_face_z) / 0.02
+            self._prev_face_z = face_z
+            self._vz_buf.append(vz)
+            if len(self._vz_buf) > 12:
+                self._vz_buf.pop(0)
+            hit = self._touch(scene, "face", "nail_head") or self._touch(
+                scene, "face", "nail_shaft"
+            )
+            for head in ("head", "neck", "claw"):
+                if hit:
+                    break
+                hit = self._touch(scene, head, "nail_head") or self._touch(
+                    scene, head, "nail_shaft"
+                )
+            if hit:
+                preimpact_vz = min(self._vz_buf) if self._vz_buf else 0.0
+                threshold = float(self._djx.get("impact_vel_threshold", 0.02))
+                if preimpact_vz < -threshold:
+                    scale = min(3.0, abs(preimpact_vz) / max(threshold, 1e-6))
+                    delta = float(self._djx.get("impact_insert_step", 0.008)) * scale
+                    new_depth = min(
+                        float(self._djx.get("max_insert_depth", 0.0726)),
+                        self._nail_depth + delta,
+                    )
+                    if new_depth > self._nail_depth:
+                        self._nail_depth = new_depth
+            return self._nail_depth >= float(self._djx.get("success_depth", 0.04))
+        elif family == "bimanual_hanoi":
+            return self._hanoi_step(scene)
+        elif family == "bimanual_unlock_ipad":
+            return self._unlock_step(scene)
+        elif family == "bimanual_photograph":
+            return self._photograph_step(scene)
         else:
             return False
 
@@ -802,6 +902,149 @@ class EfeDjxTask(EfeBaseTask):
             return bool(trigger)
         self._success_count = self._success_count + 1 if trigger else 0
         return self._success_count >= self._success_target
+
+    # -- bimanual family ports ---------------------------------------------
+
+    def _hanoi_step(self, scene: Any) -> bool:
+        meta = self._meta(scene)
+        disks = ["hanoi_disk_large", "hanoi_disk_medium", "hanoi_disk_small"]
+        posts = {
+            "A": self._site_pos(scene, "hanoi_post_a_site"),
+            "B": self._site_pos(scene, "hanoi_post_b_site"),
+            "C": self._site_pos(scene, "hanoi_post_c_site"),
+        }
+        base_top_z = float(meta["bodies"]["hanoi_base"]["world"][2]) + float(
+            self._djx["base_upper_top_local_z"]
+        )
+        disk_pos = {}
+        disk_static = {}
+        for disk in disks:
+            disk_pos[disk] = self._pos(scene, disk)
+            vel = self._joint_vel_norm(scene, f"{disk}_joint")
+            disk_static[disk] = True if vel is None else vel <= 0.35
+        assign_tol = float(self._djx.get("post_assignment_tol", 0.04))
+        towers: dict[str, list[str]] = {"A": [], "B": [], "C": []}
+        assignment: dict[str, str] = {}
+        for disk in disks:
+            pos = disk_pos[disk]
+            closest = min(
+                posts, key=lambda k: float(np.linalg.norm(pos[:2] - posts[k][:2]))
+            )
+            if float(np.linalg.norm(pos[:2] - posts[closest][:2])) <= assign_tol:
+                assignment[disk] = closest
+                towers[closest].append(disk)
+            elif pos[2] <= base_top_z + 0.06:
+                assignment[disk] = "table"
+            else:
+                assignment[disk] = "floating"
+        for post in towers:
+            towers[post].sort(key=lambda d: disk_pos[d][2])
+        rank = {"hanoi_disk_large": 3, "hanoi_disk_medium": 2, "hanoi_disk_small": 1}
+        height_tol = float(self._djx.get("placement_height_tol", 0.012))
+
+        def errors(stack: list[str], post: str) -> tuple[float, float]:
+            running = base_top_z
+            xy_max = height_max = 0.0
+            half = self._djx["disk_half_height"]
+            for disk in stack:
+                expected = running + float(half[disk])
+                running += 2.0 * float(half[disk])
+                xy = float(np.linalg.norm(disk_pos[disk][:2] - posts[post][:2]))
+                hz = abs(float(disk_pos[disk][2]) - expected)
+                xy_max = max(xy_max, xy)
+                height_max = max(height_max, hz)
+            return xy_max, height_max
+
+        illegal = False
+        reason = ""
+        for post, stack in towers.items():
+            ranks = [rank[d] for d in stack]
+            if any(ranks[i] < ranks[i + 1] for i in range(len(ranks) - 1)):
+                if all(disk_static[d] for d in stack):
+                    xy_e, h_e = errors(stack, post)
+                    if xy_e <= assign_tol and h_e <= height_tol:
+                        illegal = True
+                        reason = f"illegal_stack_{post}"
+                        break
+        if not illegal and all(disk_static.values()):
+            if any(a == "table" for a in assignment.values()):
+                illegal = True
+                reason = "disk_on_table"
+        if illegal:
+            if reason == self._illegal_trigger_reason:
+                self._illegal_trigger_count += 1
+            else:
+                self._illegal_trigger_reason = reason
+                self._illegal_trigger_count = 1
+        else:
+            self._illegal_trigger_reason = ""
+            self._illegal_trigger_count = 0
+        if self._illegal_trigger_count >= int(
+            self._djx.get("illegal_trigger_target", 10)
+        ):
+            self._failure = True
+        target = ["hanoi_disk_large", "hanoi_disk_medium", "hanoi_disk_small"]
+        geom_ok = False
+        if towers["C"] == target and not towers["A"] and not towers["B"]:
+            xy_e, h_e = errors(target, "C")
+            geom_ok = (
+                xy_e <= assign_tol and h_e <= height_tol and all(disk_static.values())
+            )
+        trigger = geom_ok and not self._failure
+        self._success_count = self._success_count + 1 if trigger else 0
+        return self._success_count >= self._success_target
+
+    def _unlock_step(self, scene: Any) -> bool:
+        if self._unlock_failed:
+            return False
+        geoms = self._meta(scene).get("geoms") or {}
+        pressed = {
+            name
+            for name in geoms
+            if name.startswith("btn")
+            and name.endswith("_cyl")
+            and self._geom_any_contact(scene, name)
+        }
+        newly = pressed - self._pressed_last
+        self._pressed_last = pressed
+        sequence = [int(v) for v in self._djx.get("unlock_sequence", [1, 2, 3])]
+        for name in sorted(newly):
+            digit = int(name.replace("btn", "").replace("_cyl", ""))
+            expected = sequence[self._unlock_index]
+            if digit == expected:
+                self._unlock_index += 1
+                if self._unlock_index >= len(sequence):
+                    self._screen_unlocked = True
+            else:
+                self._unlock_failed = True
+                self._unlock_index = 0
+                self._screen_unlocked = False
+        if self._screen_unlocked:
+            self._success_count += 1
+        else:
+            self._success_count = 0
+        if self._unlock_failed:
+            self._failure = True
+        return self._success_count >= self._success_target
+
+    def _photograph_step(self, scene: Any) -> bool:
+        region_pos, _ = self._geom_pose(scene, "photograph_target_region_visual")
+        view = self._site_pos(scene, "view_direction_site")
+        delta = view - region_pos
+        radial = float(np.linalg.norm(delta[:2]))
+        height = float(abs(delta[2]))
+        region_pass = radial <= 0.16 and height <= 0.10
+        axis_pos, axis_quat = self._geom_pose(scene, "camera_axis_z")
+        from cloud_robotics_sim.core.success import _quat_to_mat
+
+        axis_z = _quat_to_mat(axis_quat)[:, 2]
+        norm = float(np.linalg.norm(axis_z))
+        axis_z = axis_z / norm if norm >= 1e-8 else np.array([0.0, 0.0, 1.0])
+        cos_val = float(np.clip(np.dot(axis_z, np.array([1.0, 0.0, 0.0])), -1.0, 1.0))
+        angle_deg = float(np.degrees(np.arccos(cos_val)))
+        angle_pass = angle_deg <= 10.0
+        shutter = self._geom_any_contact(scene, "camera_body_top_cap")
+        return bool(region_pass and angle_pass and shutter)
 
     # -- Task API ----------------------------------------------------------
 

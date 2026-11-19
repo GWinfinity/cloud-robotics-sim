@@ -63,6 +63,35 @@ FAMILY_XML = {
 #: MuJoCo joint type codes -> names.
 _JOINT_TYPES = {0: "free", 1: "ball", 2: "slide", 3: "hinge"}
 
+_OBJ_GETTERS = {}
+
+
+def _sensors_table(model: Any) -> dict[str, dict[str, Any]]:
+    """sensor name -> {type, objkind, objname} for frame* sensors."""
+    import mujoco
+
+    kinds = {
+        int(mujoco.mjtObj.mjOBJ_BODY): ("body", lambda i: model.body(i).name),
+        int(mujoco.mjtObj.mjOBJ_XBODY): ("body", lambda i: model.body(i).name),
+        int(mujoco.mjtObj.mjOBJ_GEOM): ("geom", lambda i: model.geom(i).name),
+        int(mujoco.mjtObj.mjOBJ_SITE): ("site", lambda i: model.site(i).name),
+    }
+    table: dict[str, dict[str, Any]] = {}
+    for i in range(model.nsensor):
+        name = model.sensor(i).name
+        if not name:
+            continue
+        objtype = int(model.sensor_objtype[i])
+        objid = int(model.sensor_objid[i])
+        kind, getter = kinds.get(objtype, ("", lambda i: ""))
+        table[name] = {
+            "type": int(model.sensor_type[i]),
+            "objtype": objtype,
+            "objkind": kind,
+            "objname": getter(objid) if kind else "",
+        }
+    return table
+
 
 def _absolutize_world_xml(path: Path) -> list[str]:
     """Rewrite every relative ``file=`` in a saved world XML to the mirror."""
@@ -247,10 +276,16 @@ def extract_one(task: str) -> dict[str, Any]:
                 "body": model.body(int(model.geom_bodyid[i])).name,
                 "size": [round(float(v), 6) for v in model.geom_size[i]],
                 "type": int(model.geom_type[i]),
+                "local": [round(float(v), 6) for v in model.geom_pos[i]],
+                "local_quat": [round(float(v), 6) for v in model.geom_quat[i]],
             }
             for i in range(model.ngeom)
             if model.geom(i).name
         },
+        # framepos/framequat sensors: the object they read (body/site/geom
+        # name) — the pose accessors the success ports need (e.g.
+        # pinch_tongs' tongs_pos).
+        "sensors": _sensors_table(model),
     }
     (out_dir / f"{task}.meta.json").write_text(
         json.dumps(meta, indent=1, sort_keys=True), encoding="utf-8"

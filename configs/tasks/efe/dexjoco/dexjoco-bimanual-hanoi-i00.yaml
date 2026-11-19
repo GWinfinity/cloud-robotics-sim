@@ -1,0 +1,54 @@
+# EFE 迁移编译物（dexjoco）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: bimanual_hanoi | goal: 
+# fidelity: spec | notes: 判据逐字转写上游 bimanual_hanoi._compute_success（首次成功即终局，无 hold）；世界包=env XML + 194 个模型数组回放；instance_sha=93165d7fd0c8813c
+version: 1
+
+task:
+  name: dexjoco-bimanual-hanoi-i00
+  type: efe_djx
+  robot: franka_allegro_bimanual
+  scene: efe_world
+  max_episode_steps: 180000
+  world:
+    mjcf_path: assets/dexjoco/worlds/dexjoco-bimanual-hanoi-i00.xml
+    qpos_path: assets/dexjoco/worlds/dexjoco-bimanual-hanoi-i00.qpos.npy
+    qvel_path: assets/dexjoco/worlds/dexjoco-bimanual-hanoi-i00.qvel.npy
+    meta_path: assets/dexjoco/worlds/dexjoco-bimanual-hanoi-i00.meta.json
+  djx:
+    family: bimanual_hanoi
+    post_assignment_tol: 0.04
+    placement_height_tol: 0.012
+    illegal_trigger_target: 10
+    base_upper_top_local_z: 0.036
+    disk_half_height:
+      hanoi_disk_large: 0.02475
+      hanoi_disk_medium: 0.02475
+      hanoi_disk_small: 0.02475
+    success_target: 20
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/dexjoco/worlds/dexjoco-bimanual-hanoi-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: djx_success
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

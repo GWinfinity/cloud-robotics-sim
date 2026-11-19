@@ -35,14 +35,13 @@ PORTED = {
     "bimanual_microwave_cook",
     "bimanual_assembly",
     "click_mouse",
+    "pinch_tongs",
+    "hammer_nail",
+    "bimanual_hanoi",
+    "bimanual_unlock_ipad",
+    "bimanual_photograph",
 }
-PENDING_REASONS = {
-    "pinch_tongs": "tongs_pos 传感器框架映射未核实（实例冻结态 tongs 体 z=0.05 与 lift_z=1.02 语义需 sensor 表确认）",
-    "hammer_nail": "需锤头预冲击速度（qvel 缓冲），世界实体无 get_qvel",
-    "bimanual_hanoi": "盘塔重建几何（disk_assignment/柱位误差）移植量大，待专批",
-    "bimanual_unlock_ipad": "数字序列 + 屏幕材质状态机，需 geom_matid 运行时语义",
-    "bimanual_photograph": "需静态展示 geom 世界位姿（target_region/axis_z），世界实体无 geom 位姿接口",
-}
+PENDING_REASONS: dict[str, str] = {}
 ROBOT_BY_FAMILY_PREFIX = "franka_allegro_bimanual"
 MAX_STEPS = 180_000  # 3600 s agent budget at 50 Hz control
 
@@ -71,6 +70,39 @@ def _djx_block(family: str, meta: dict) -> dict[str, Any]:
     elif family == "click_mouse":
         geoms = meta.get("geoms") or {}
         block["mousepad_radius"] = float(geoms["mousepad"]["size"][0])
+    elif family == "pinch_tongs":
+        # 上游 table_z=0.92 硬编码 + _LIFT_HEIGHT 0.1（env 构造器逐字）。
+        block["lift_z"] = 1.02
+    elif family == "hammer_nail":
+        attrs = meta.get("attrs") or {}
+        block["success_depth"] = float(attrs.get("_success_depth", 0.04))
+        block["max_insert_depth"] = float(attrs.get("_nail_max_depth", 0.0726))
+        block["impact_insert_step"] = float(attrs.get("_impact_insert_step", 0.008))
+        block["impact_vel_threshold"] = float(attrs.get("_impact_vel_threshold", 0.02))
+    elif family == "bimanual_hanoi":
+        attrs = meta.get("attrs") or {}
+        sites = meta.get("sites") or {}
+        geoms = meta.get("geoms") or {}
+        block["post_assignment_tol"] = float(attrs.get("_post_assignment_tol", 0.04))
+        block["placement_height_tol"] = float(attrs.get("_placement_height_tol", 0.012))
+        block["illegal_trigger_target"] = int(attrs.get("_illegal_trigger_target", 10))
+        upper = geoms["hanoi_base_upper_collision"]
+        block["base_upper_top_local_z"] = float(upper["local"][2]) + float(
+            upper["size"][2]
+        )
+        halves = {}
+        for disk in (
+            "hanoi_disk_large",
+            "hanoi_disk_medium",
+            "hanoi_disk_small",
+        ):
+            top = float(sites[f"{disk}_top_site"]["local"][2])
+            bottom = float(sites[f"{disk}_bottom_site"]["local"][2])
+            halves[disk] = 0.5 * (top - bottom)
+        block["disk_half_height"] = halves
+        block["success_target"] = int(attrs.get("_success_trigger_target", 20))
+    elif family == "bimanual_unlock_ipad":
+        block["unlock_sequence"] = [1, 2, 3]
     return block
 
 
