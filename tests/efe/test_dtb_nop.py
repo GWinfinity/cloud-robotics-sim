@@ -15,10 +15,14 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+MIRROR = REPO_ROOT / "assets/dextoolbench"
+
+pytestmark = pytest.mark.skipif(not MIRROR.is_dir(), reason="asset mirror not present")
 SUITE = "dextoolbench"
 
 

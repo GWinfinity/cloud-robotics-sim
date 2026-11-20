@@ -13,6 +13,7 @@ gates and is intentionally not duplicated here.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -82,11 +83,21 @@ def _stub_scene(spec):
 @pytest.mark.parametrize("suite_file", _suite_files(), ids=lambda p: p.stem)
 def test_compiled_suite_nop_must_fail(suite_file: Path) -> None:
     """Every compiled task: spec valid + success False under the nop policy."""
+    from cloud_robotics_sim.core.config_loader import ConfigError
+
     task_paths = _suite_task_paths(suite_file)
     assert task_paths, f"{suite_file} references no tasks"
     robot = _stub_robot()
     for path in task_paths:
-        spec = load_task_spec(path)
+        try:
+            spec = load_task_spec(path)
+        except ConfigError as exc:
+            # The compiled configs reference mirror-backed assets (world
+            # packs, object MJCFs) that stay local and uncommitted; without
+            # the mirror the config cannot be validated at all.
+            if "does not exist" in str(exc) and f"{os.sep}assets{os.sep}" in str(exc):
+                pytest.skip(f"asset mirror not present: {exc}")
+            raise
         scene = _stub_scene(spec)
         condition = spec.success_condition()
         assert condition is not None, f"{path}: no success condition"

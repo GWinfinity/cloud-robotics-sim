@@ -26,6 +26,9 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+MIRROR = REPO_ROOT / "assets/robocasa"
+
+pytestmark = pytest.mark.skipif(not MIRROR.is_dir(), reason="asset mirror not present")
 
 SUITES = ("robocasa", "robocasa365", "robocasa-gr1")
 
