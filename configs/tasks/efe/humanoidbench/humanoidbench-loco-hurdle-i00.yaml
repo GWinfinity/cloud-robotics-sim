@@ -1,0 +1,345 @@
+# EFE 迁移编译物（humanoidbench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: hurdle | goal: hurdle
+# fidelity: spec | notes: 判据=HumanoidBench 规则：累计稠密奖励 >= 700.0（bar 逐字自上游 hurdle 类），episode 上限 1000 控制步 @ 50 Hz；reward/termination 逐字移植 rewards.json + envs/*.py（dm_control tolerance 语义完整移植）；物理=上游 cb118903 + EFE 修复（box_feet/upstream-fixes）
+version: 1
+
+task:
+  name: humanoidbench-loco-hurdle-i00
+  type: efe_hb
+  robot: unitree_h1_embedded
+  scene: efe_world
+  max_episode_steps: 1000
+  world:
+    mjcf_path: assets/humanoidbench/worlds/humanoidbench-loco-hurdle-i00.xml
+    qpos_path: assets/humanoidbench/worlds/humanoidbench-loco-hurdle-i00.qpos.npy
+    qvel_path: assets/humanoidbench/worlds/humanoidbench-loco-hurdle-i00.qvel.npy
+    meta_path: assets/humanoidbench/worlds/humanoidbench-loco-hurdle-i00.meta.json
+  hb:
+    task_short: hurdle
+    env_id: h1-hurdle-v0
+    success_bar: 700.0
+    nu: 19
+    sites:
+      head:
+        body: torso_link
+        local:
+        - 0.0
+        - 0.0
+        - 0.7
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      imu:
+        body: torso_link
+        local:
+        - -0.04452
+        - -0.01891
+        - 0.27756
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      left_foot:
+        body: left_ankle_link
+        local:
+        - 0.0
+        - 0.0
+        - -0.05
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      left_hand:
+        body: left_elbow_link
+        local:
+        - 0.31
+        - 0.0
+        - -0.01
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      right_foot:
+        body: right_ankle_link
+        local:
+        - 0.0
+        - 0.0
+        - -0.05
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      right_hand:
+        body: right_elbow_link
+        local:
+        - 0.31
+        - 0.0
+        - -0.01
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+    termination:
+      kind: qpos_z
+      qpos_z_lt: 0.2
+      task: hurdle
+    class_consts:
+      _move_speed: 5
+    module_globals:
+      humanoid_bench.envs.basic_locomotion_envs: '_CRAWL_HEIGHT = 0.8
+    
+        _STAND_HEIGHT = 1.65'
+    task_state: {}
+    room_objects: []
+    robot_links:
+    - mass: 5.39
+      name: pelvis
+    - mass: 2.244
+      name: left_hip_yaw_link
+    - mass: 2.232
+      name: left_hip_roll_link
+    - mass: 4.152
+      name: left_hip_pitch_link
+    - mass: 1.721
+      name: left_knee_link
+    - mass: 0.552448
+      name: left_ankle_link
+    - mass: 2.244
+      name: right_hip_yaw_link
+    - mass: 2.232
+      name: right_hip_roll_link
+    - mass: 4.152
+      name: right_hip_pitch_link
+    - mass: 1.721
+      name: right_knee_link
+    - mass: 0.552448
+      name: right_ankle_link
+    - mass: 17.789
+      name: torso_link
+    - mass: 1.033
+      name: left_shoulder_pitch_link
+    - mass: 0.793
+      name: left_shoulder_roll_link
+    - mass: 0.839
+      name: left_shoulder_yaw_link
+    - mass: 0.669
+      name: left_elbow_link
+    - mass: 0.0
+      name: left_hand
+    - mass: 1.033
+      name: right_shoulder_pitch_link
+    - mass: 0.793
+      name: right_shoulder_roll_link
+    - mass: 0.839
+      name: right_shoulder_yaw_link
+    - mass: 0.669
+      name: right_elbow_link
+    - mass: 0.0
+      name: right_hand
+    actuated:
+    - ctrlrange:
+      - -0.43
+      - 0.43
+      dofadr: 6
+      joint: left_hip_yaw
+      moment:
+      - - 6
+        - 0.9999999999998899
+      name: left_hip_yaw
+    - ctrlrange:
+      - -0.43
+      - 0.43
+      dofadr: 7
+      joint: left_hip_roll
+      moment:
+      - - 7
+        - 1.0000000000000286
+      name: left_hip_roll
+    - ctrlrange:
+      - -3.14
+      - 2.53
+      dofadr: 8
+      joint: left_hip_pitch
+      moment:
+      - - 8
+        - 1.0000000000331966
+      name: left_hip_pitch
+    - ctrlrange:
+      - -0.26
+      - 2.05
+      dofadr: 9
+      joint: left_knee
+      moment:
+      - - 9
+        - 1.0000000000331966
+      name: left_knee
+    - ctrlrange:
+      - -0.87
+      - 0.52
+      dofadr: 10
+      joint: left_ankle
+      moment:
+      - - 10
+        - 0.9999999999621423
+      name: left_ankle
+    - ctrlrange:
+      - -0.43
+      - 0.43
+      dofadr: 11
+      joint: right_hip_yaw
+      moment:
+      - - 11
+        - 0.9999999999998899
+      name: right_hip_yaw
+    - ctrlrange:
+      - -0.43
+      - 0.43
+      dofadr: 12
+      joint: right_hip_roll
+      moment:
+      - - 12
+        - 0.9999999999998899
+      name: right_hip_roll
+    - ctrlrange:
+      - -3.14
+      - 2.53
+      dofadr: 13
+      joint: right_hip_pitch
+      moment:
+      - - 13
+        - 1.0000000000331966
+      name: right_hip_pitch
+    - ctrlrange:
+      - -0.26
+      - 2.05
+      dofadr: 14
+      joint: right_knee
+      moment:
+      - - 14
+        - 1.0000000000331966
+      name: right_knee
+    - ctrlrange:
+      - -0.87
+      - 0.52
+      dofadr: 15
+      joint: right_ankle
+      moment:
+      - - 15
+        - 1.0000000000065512
+      name: right_ankle
+    - ctrlrange:
+      - -2.35
+      - 2.35
+      dofadr: 16
+      joint: torso
+      moment:
+      - - 16
+        - 0.9999999999999823
+      name: torso
+    - ctrlrange:
+      - -2.87
+      - 2.87
+      dofadr: 17
+      joint: left_shoulder_pitch
+      moment:
+      - - 17
+        - 0.9999999999998899
+      name: left_shoulder_pitch
+    - ctrlrange:
+      - -0.34
+      - 3.11
+      dofadr: 18
+      joint: left_shoulder_roll
+      moment:
+      - - 18
+        - 0.9999999999998899
+      name: left_shoulder_roll
+    - ctrlrange:
+      - -1.3
+      - 4.45
+      dofadr: 19
+      joint: left_shoulder_yaw
+      moment:
+      - - 19
+        - 0.9999999999998899
+      name: left_shoulder_yaw
+    - ctrlrange:
+      - -1.25
+      - 2.61
+      dofadr: 20
+      joint: left_elbow
+      moment:
+      - - 20
+        - 0.9999999999998899
+      name: left_elbow
+    - ctrlrange:
+      - -2.87
+      - 2.87
+      dofadr: 21
+      joint: right_shoulder_pitch
+      moment:
+      - - 21
+        - 0.9999999999998899
+      name: right_shoulder_pitch
+    - ctrlrange:
+      - -3.11
+      - 0.34
+      dofadr: 22
+      joint: right_shoulder_roll
+      moment:
+      - - 22
+        - 0.9999999999998899
+      name: right_shoulder_roll
+    - ctrlrange:
+      - -4.45
+      - 1.3
+      dofadr: 23
+      joint: right_shoulder_yaw
+      moment:
+      - - 23
+        - 0.9999999999998899
+      name: right_shoulder_yaw
+    - ctrlrange:
+      - -1.25
+      - 2.61
+      dofadr: 24
+      joint: right_elbow
+      moment:
+      - - 24
+        - 0.9999999999998899
+      name: right_elbow
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/humanoidbench/worlds/humanoidbench-loco-hurdle-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: hb_success
+  params: {}
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

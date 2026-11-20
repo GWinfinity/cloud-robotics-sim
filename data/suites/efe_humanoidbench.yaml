@@ -1,0 +1,14 @@
+# EFE humanoidbench 套件汇总（编译物）；由 tools/compile_efe_suite.py 生成。
+version: 1
+name: efe-humanoidbench
+tasks:
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-loco-balance-hard-i00.yaml
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-loco-hurdle-i00.yaml
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-loco-sit-simple-i00.yaml
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-loco-walk-i00.yaml
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-manip-bookshelf-simple-i00.yaml
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-manip-cube-i00.yaml
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-manip-door-i00.yaml
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-manip-powerlift-i00.yaml
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-manip-room-i00.yaml
+  - ../../configs/tasks/efe/humanoidbench/humanoidbench-manip-window-i00.yaml

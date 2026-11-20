@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-20T01:56:11.734381+00:00",
+  "generated_at": "2026-11-20T02:55:30.951072+00:00",
   "paper": {
     "arxiv": "2611.12177",
     "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
@@ -434,9 +434,9 @@
       },
       "project": {
         "tier": "T1",
-        "status": "planned",
-        "target": "plugins/envs/humanoid_falling 同层新增",
-        "note": "H1/H1hand 全身 loco-manipulation；与 humanoid_falling 插件同栈。本体门通过（人形），见 data/efe/embodiment_gate.json"
+        "status": "partial",
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族（efe_hb）",
+        "note": "10/10 已编译（2026-11-20，spec 级）。判据=HumanoidBench 规则：累计稠密奖励 >= success_bar（walk/hurdle 700、balance_hard 800、sit 750、door 600、cube 370、powerlift 800、window 650、room 400、bookshelf 2000），episode 上限 1000 步（cube 500）+ 上游终止规则；10 个 get_reward 逐字移植（dm_control tolerance 语义完整移植；subtree_linvel 按 MuJoCo mj_subtreeVel 引擎语义逐字实现；腱绳手致动力经 FD 力矩矩阵 lstsq 复原），探针逐步等价验证 worst 1.1e-12；physics=上游 cb118903 + EFE 修复（box_feet/upstream-fixes）；offline nop 门绿 + Genesis 引擎冒烟通过"
       },
       "inventory": {
         "n_tasks": 10,
@@ -1794,8 +1794,8 @@
       "T0": 1
     },
     "by_status": {
-      "partial": 12,
-      "planned": 21,
+      "partial": 13,
+      "planned": 20,
       "excluded": 2,
       "ported": 1
     }

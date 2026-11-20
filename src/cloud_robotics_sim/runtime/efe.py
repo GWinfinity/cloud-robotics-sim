@@ -2240,3 +2240,747 @@ def _make_franka_panda_embedded(**kwargs: Any) -> Any:
     """Franka Panda inside a whole-world MJCF (MuJoCo Playground, world-embedded)."""
     kwargs.pop("type", None)
     return _WorldEmbeddedRobot("franka_panda_embedded")
+
+
+def _hb_tolerance(
+    x: Any,
+    bounds: tuple[float, float] = (0.0, 0.0),
+    margin: float = 0.0,
+    sigmoid: str = "gaussian",
+    value_at_margin: float = 0.1,
+) -> Any:
+    """Verbatim port of dm_control.utils.rewards.tolerance (rewards.py).
+
+    Returns 1 inside the inclusive bounds, decreasing sigmoidally with the
+    distance to the nearest bound outside them. Used by every HumanoidBench
+    reward term.
+    """
+    x = np.asarray(x, dtype=float)
+    lower, upper = bounds
+    in_bounds = np.logical_and(lower <= x, x <= upper)
+    if margin == 0:
+        value = np.where(in_bounds, 1.0, 0.0)
+    else:
+        d = np.where(x < lower, lower - x, x - upper) / margin
+        if sigmoid == "gaussian":
+            scale = float(np.sqrt(-2 * np.log(value_at_margin)))
+            s = np.exp(-0.5 * (d * scale) ** 2)
+        elif sigmoid == "linear":
+            scaled = d * (1 - value_at_margin)
+            s = np.where(np.abs(scaled) < 1, 1 - scaled, 0.0)
+        elif sigmoid == "quadratic":
+            scaled = d * float(np.sqrt(1 - value_at_margin))
+            s = np.where(np.abs(scaled) < 1, 1 - scaled**2, 0.0)
+        else:  # pragma: no cover - the ported tasks only use the three above
+            raise ValueError(f"hb_tolerance: unported sigmoid {sigmoid!r}")
+        value = np.where(in_bounds, 1.0, s)
+    return float(value) if value.ndim == 0 else value
+
+
+class EfeHbTask(EfeBaseTask):
+    """HumanoidBench frozen-scene task (Unitree H1 / H1+Shadow hands).
+
+    The task YAML carries the composed world (``world`` block, see
+    ``tools/hb_worlds.py``) and an ``hb`` block with the frozen-instance
+    constants (success bar, episode cap, termination spec, class/module
+    constants, task state, site table, robot link/mass table). Success is
+    HumanoidBench's own rule: the episode's summed dense reward reaches the
+    task's success bar (``episode_return >= success_bar``), with the episode
+    ending on the task's ported ``get_terminated``. The ten reward functions
+    (``rewards.json`` / upstream ``envs/*.py``) are ported verbatim at
+    control-step granularity, including the dm_control ``rewards.tolerance``
+    semantics, and accumulated as ``reward_sum``; ``info['hb']['success']``
+    is published each step and the outer :class:`HbSuccessCondition`
+    forwards it (missing info is a failure, nop-safe).
+
+    Sensor reads map onto the Genesis world entity: head/IMU/hand sites via
+    the recorded local poses, actuator forces via per-DoF actuator forces,
+    centre-of-mass velocity as the mass-weighted link-COM velocity over the
+    robot's links. Controls are best-effort: normalised [-1, 1] rows are
+    unnormalised to the actuator ranges and servoed with the entity's
+    dof-position control (same contract as ``EfeAbcTask``).
+    """
+
+    def __init__(
+        self,
+        config: TaskConfig,
+        world: dict | None = None,
+        hb: dict | None = None,
+    ):
+        super().__init__(config)
+        if world is not None and not isinstance(world, dict):
+            raise TypeError("efe_hb world must be a mapping or None")
+        if hb is not None and not isinstance(hb, dict):
+            raise TypeError("efe_hb hb must be a mapping or None")
+        self._world_cfg = world or {}
+        self._hb = hb or {}
+        self._servo_warned = False
+        self._ret = 0.0
+        self._hb_steps = 0
+        self._terminated = False
+        self._task_index = 0
+        self._link_idx: dict[str, int] = {}
+        self._ts: dict[str, Any] = {}
+
+    @staticmethod
+    def _decode_state(value: Any) -> Any:
+        """Undo the hb_worlds __ndarray__ JSON tagging."""
+        if isinstance(value, dict) and "__ndarray__" in value:
+            return np.asarray(value["__ndarray__"], dtype=value.get("dtype", float))
+        if isinstance(value, list):
+            return [EfeHbTask._decode_state(v) for v in value]
+        return value
+
+    # -- world access -------------------------------------------------------
+
+    def _world(self, scene: Any) -> Any:
+        entities = getattr(scene, "entities", None) or {}
+        entity = entities.get("world")
+        if entity is None:
+            raise KeyError(
+                "efe_hb expects the 'world' asset in scene.entities; "
+                f"available: {sorted(entities)}"
+            )
+        return entity
+
+    def _apply_frozen_state(self, scene: Any) -> None:
+        world = self._world(scene)
+        qpos_path = self._world_cfg.get("qpos_path")
+        qvel_path = self._world_cfg.get("qvel_path")
+        if qpos_path:
+            world.set_qpos(np.load(qpos_path))
+        if qvel_path:
+            set_qvel = getattr(world, "set_qvel", None)
+            if set_qvel is not None:
+                set_qvel(np.load(qvel_path))
+
+    # -- accessors -----------------------------------------------------------
+
+    def _qpos(self, scene: Any) -> np.ndarray:
+        return np.asarray(self._world(scene).get_qpos(), dtype=float)
+
+    def _body_pos(self, scene: Any, name: str) -> np.ndarray:
+        from cloud_robotics_sim.core.success import _abc_pos
+
+        return _abc_pos(scene, name)
+
+    def _body_quat(self, scene: Any, name: str) -> np.ndarray:
+        from cloud_robotics_sim.core.success import _abc_quat
+
+        return _abc_quat(scene, name)
+
+    def _site_pos(self, scene: Any, name: str) -> np.ndarray:
+        record = (self._hb.get("sites") or {})[name]
+        body_pos = self._body_pos(scene, record["body"])
+        body_quat = self._body_quat(scene, record["body"])
+        from cloud_robotics_sim.core.success import _quat_to_mat
+
+        offset = np.asarray(record["local"], dtype=float)
+        return np.asarray(body_pos + _quat_to_mat(body_quat) @ offset, dtype=float)
+
+    def _entity(self, scene: Any) -> Any:
+        resolver = getattr(self._world(scene), "_resolve_entity", None)
+        return None if resolver is None else resolver()
+
+    def _link_indices(self, scene: Any, names: list[str]) -> list[int]:
+        entity = self._entity(scene)
+        if entity is None or not hasattr(entity, "links"):
+            return []
+        if not self._link_idx:
+            self._link_idx = {
+                link.name: i for i, link in enumerate(entity.links) if link.name
+            }
+        return [self._link_idx[n] for n in names if n in self._link_idx]
+
+    def _subtree_linvel(self, scene: Any, names: list[str]) -> np.ndarray:
+        """MuJoCo ``subtree_linvel`` over the named links (verbatim formula).
+
+        mj_subtreeVel expresses each body's com-based velocity at the
+        subtree's com (mj_objectVelocity: ``v_at = v_com + w x (xipos -
+        subtree_com)``) and mass-averages; for a single-body subtree this
+        reduces to the link's com velocity (window tool case).
+        """
+        import genesis as gs
+
+        entity = self._entity(scene)
+        idx = self._link_indices(scene, names)
+        if entity is None or not idx:
+            return np.zeros(3)
+        vel = np.asarray(
+            entity.get_links_vel(links_idx_local=idx, ref=gs.link_ref_frame.link_COM),
+            dtype=float,
+        ).reshape(len(idx), 3)
+        com = np.asarray(
+            entity.get_links_COM(links_idx_local=idx), dtype=float
+        ).reshape(len(idx), 3)
+        ang = np.asarray(
+            entity.get_links_ang(links_idx_local=idx), dtype=float
+        ).reshape(len(idx), 3)
+        mass = np.asarray(entity.get_links_mass(links_idx_local=idx), dtype=float)
+        total = float(mass.sum())
+        if total <= 0.0:
+            return np.zeros(3)
+        com_sub = (com * mass[:, None]).sum(axis=0) / total
+        v_at = vel + np.cross(ang, com - com_sub[None, :])
+        linvel = (mass[:, None] * v_at).sum(axis=0) / total
+        return np.asarray(linvel, dtype=float)
+
+    def _actuator_forces(self, scene: Any) -> np.ndarray:
+        """Upstream per-actuator forces, recovered from the dof forces.
+
+        Upstream reads ``data.actuator_force`` (nu,). Tendon-routed hands
+        map one actuator to several dofs, so the dof forces are the moment
+        matrix times the actuator forces; the moment rows recorded in the
+        world pack make the recovery an exact lstsq while the mapping has
+        full column rank (it does for the H1 / H1+Shadow models).
+        """
+        entity = self._entity(scene)
+        actuated = self._hb.get("actuated") or []
+        if entity is None or not hasattr(entity, "get_dofs_actuator_force"):
+            return np.zeros(int(self._hb.get("nu", 0)))
+        qfrc = np.asarray(entity.get_dofs_actuator_force(), dtype=float)
+        if not actuated:
+            return qfrc.reshape(-1)
+        nv = int(qfrc.size)
+        moment = np.zeros((nv, len(actuated)), dtype=float)
+        for col, record in enumerate(actuated):
+            for dof, value in record.get("moment") or []:
+                if 0 <= int(dof) < nv:
+                    moment[int(dof), col] = float(value)
+        try:
+            recovered, *_ = np.linalg.lstsq(moment, qfrc, rcond=None)
+        except np.linalg.LinAlgError:  # pragma: no cover - fall back to dof slice
+            adrs = [int(a["dofadr"]) for a in actuated]
+            return qfrc[adrs] if qfrc.size > max(adrs) else qfrc
+        return np.asarray(recovered, dtype=float)
+
+    # -- robot helpers (humanoid_bench/robots.py) ----------------------------
+
+    def _head_height(self, scene: Any) -> float:
+        return float(self._site_pos(scene, "head")[2])
+
+    def _torso_upright(self, scene: Any) -> float:
+        from cloud_robotics_sim.core.success import _quat_to_mat
+
+        quat = self._body_quat(scene, "torso_link")
+        return float(_quat_to_mat(quat)[2, 2])
+
+    def _com_velocity(self, scene: Any) -> np.ndarray:
+        """Robot pelvis-subtree linear velocity (the pelvis_subtreelinvel sensor)."""
+        names = [r["name"] for r in self._hb.get("robot_links") or []]
+        return self._subtree_linvel(scene, names)
+
+    # -- shared terms --------------------------------------------------------
+
+    def _stand_height(self) -> float:
+        for expr in (self._hb.get("module_globals") or {}).values():
+            if "_STAND_HEIGHT" in str(expr):
+                try:
+                    return float(str(expr).split("=")[1].strip())
+                except (IndexError, ValueError):
+                    break
+        return 1.65
+
+    def _standing(self, scene: Any, margin_div: float = 4.0) -> Any:
+        h = self._stand_height()
+        return _hb_tolerance(
+            self._head_height(scene), bounds=(h, float("inf")), margin=h / margin_div
+        )
+
+    def _upright(
+        self,
+        scene: Any,
+        bound: float,
+        margin: float,
+        value_at_margin: float = 0.0,
+    ) -> Any:
+        return _hb_tolerance(
+            self._torso_upright(scene),
+            bounds=(bound, float("inf")),
+            sigmoid="linear",
+            margin=margin,
+            value_at_margin=value_at_margin,
+        )
+
+    def _small_control(self, scene: Any) -> Any:
+        t = _hb_tolerance(
+            self._actuator_forces(scene),
+            margin=10,
+            value_at_margin=0,
+            sigmoid="quadratic",
+        ).mean()
+        return (4 + t) / 5
+
+    def _dont_move(self, scene: Any) -> Any:
+        v = self._com_velocity(scene)[[0, 1]]
+        return _hb_tolerance(v, margin=2).mean()
+
+    def _pair_contact(self, scene: Any, geom_a: str, geom_b: str) -> bool:
+        world = self._world(scene)
+        contacts = world.get_self_contacts()
+        geom_names = world.geom_names()
+        link_names = world.link_names()
+        ga = np.asarray(contacts.get("geom_a", [])).reshape(-1)
+        gb = np.asarray(contacts.get("geom_b", [])).reshape(-1)
+        la = np.asarray(contacts.get("link_a", [])).reshape(-1)
+        lb = np.asarray(contacts.get("link_b", [])).reshape(-1)
+        for i in range(la.size):
+            a = geom_names[ga[i]] if i < ga.size else link_names[la[i]]
+            b = geom_names[gb[i]] if i < gb.size else link_names[lb[i]]
+            if (a == geom_a and b == geom_b) or (a == geom_b and b == geom_a):
+                return True
+        return False
+
+    def _any_geom_contact(self, scene: Any, geom: str) -> bool:
+        world = self._world(scene)
+        contacts = world.get_self_contacts()
+        geom_names = world.geom_names()
+        link_names = world.link_names()
+        ga = np.asarray(contacts.get("geom_a", [])).reshape(-1)
+        gb = np.asarray(contacts.get("geom_b", [])).reshape(-1)
+        la = np.asarray(contacts.get("link_a", [])).reshape(-1)
+        lb = np.asarray(contacts.get("link_b", [])).reshape(-1)
+        for i in range(la.size):
+            a = geom_names[ga[i]] if i < ga.size else link_names[la[i]]
+            b = geom_names[gb[i]] if i < gb.size else link_names[lb[i]]
+            if a == geom or b == geom:
+                return True
+        return False
+
+    # -- reward ports (rewards.json get_reward, verbatim formulas) -----------
+
+    def _reward(self, scene: Any) -> tuple[float, dict]:
+        short = self._hb.get("task_short")
+        method = getattr(self, f"_reward_{short}", None)
+        if method is None:  # pragma: no cover - resolver binds only the 10
+            raise KeyError(f"efe_hb: unported task {short!r}")
+        reward, detail = method(scene)
+        return float(reward), detail
+
+    def _reward_walk(self, scene: Any) -> tuple[float, dict]:
+        standing = self._standing(scene)
+        upright = self._upright(scene, 0.9, 1.9, 0.0)
+        stand_reward = standing * upright
+        small_control = self._small_control(scene)
+        move_speed = float((self._hb.get("class_consts") or {}).get("_move_speed", 1))
+        if move_speed == 0:
+            dont_move = self._dont_move(scene)
+            return small_control * stand_reward * dont_move, {
+                "standing": standing,
+                "upright": upright,
+                "dont_move": dont_move,
+            }
+        move = _hb_tolerance(
+            self._com_velocity(scene)[0],
+            bounds=(move_speed, float("inf")),
+            margin=move_speed,
+            value_at_margin=0,
+            sigmoid="linear",
+        )
+        move = (5 * move + 1) / 6
+        return small_control * stand_reward * move, {
+            "standing": standing,
+            "upright": upright,
+            "move": move,
+        }
+
+    def _reward_hurdle(self, scene: Any) -> tuple[float, dict]:
+        standing = self._standing(scene)
+        upright = self._upright(scene, 0.8, 1.9, 0.0)
+        stand_reward = standing * upright
+        small_control = self._small_control(scene)
+        move_speed = float((self._hb.get("class_consts") or {}).get("_move_speed", 5))
+        move = _hb_tolerance(
+            self._com_velocity(scene)[0],
+            bounds=(move_speed, float("inf")),
+            margin=move_speed,
+            value_at_margin=0,
+            sigmoid="linear",
+        )
+        move = (5 * move + 1) / 6
+        discount = 1.0
+        for wall in (
+            "left_barrier_collision",
+            "right_barrier_collision",
+            "behind_barrier_collision",
+        ):
+            if self._any_geom_contact(scene, wall):
+                discount = 0.1
+                break
+        return small_control * stand_reward * move * discount, {
+            "standing": standing,
+            "upright": upright,
+            "move": move,
+            "wall_collision_discount": discount,
+        }
+
+    def _reward_balance_hard(self, scene: Any) -> tuple[float, dict]:
+        h = self._stand_height()
+        standing = _hb_tolerance(
+            self._head_height(scene),
+            bounds=(h + 0.37, float("inf")),
+            margin=h / 4,
+        )
+        upright = self._upright(scene, 0.9, 1.9, 0.0)
+        stand_reward = standing * upright
+        small_control = self._small_control(scene)
+        dont_move = self._dont_move(scene)
+        return small_control * stand_reward * dont_move, {
+            "standing": standing,
+            "upright": upright,
+            "dont_move": dont_move,
+        }
+
+    def _reward_sit_simple(self, scene: Any) -> tuple[float, dict]:
+        qpos = self._qpos(scene)
+        sitting = _hb_tolerance(qpos[2], bounds=(0.68, 0.72), margin=0.2)
+        chair = self._body_pos(scene, "chair")
+        on_chair = _hb_tolerance(
+            qpos[0] - chair[0], bounds=(-0.19, 0.19), margin=0.2
+        ) * _hb_tolerance(qpos[1] - chair[1], margin=0.1)
+        sitting_posture = _hb_tolerance(
+            self._head_height(scene) - self._site_pos(scene, "imu")[2],
+            bounds=(0.35, 0.45),
+            margin=0.3,
+        )
+        upright = self._upright(scene, 0.95, 0.9, 0.0)
+        sit_reward = (0.5 * sitting + 0.5 * on_chair) * upright * sitting_posture
+        small_control = self._small_control(scene)
+        dont_move = self._dont_move(scene)
+        return small_control * sit_reward * dont_move, {
+            "sitting": sitting,
+            "on_chair": on_chair,
+            "sitting_posture": sitting_posture,
+            "upright": upright,
+        }
+
+    def _reward_door(self, scene: Any) -> tuple[float, dict]:
+        standing = self._standing(scene)
+        upright = self._upright(scene, 0.9, 0.9, 0.0)
+        stand_reward = standing * upright
+        small_control = self._small_control(scene)
+        qpos = self._qpos(scene)
+        door_openness = min(1.0, (qpos[-2] / 1.0) * abs(qpos[-2] / 1.0))
+        door_hatch = _hb_tolerance(
+            qpos[-1], bounds=(0.75, 2), margin=0.75, sigmoid="linear"
+        )
+        hatch_pos = self._body_pos(scene, "door_hatch")
+        left_d = float(np.linalg.norm(hatch_pos - self._site_pos(scene, "left_hand")))
+        right_d = float(np.linalg.norm(hatch_pos - self._site_pos(scene, "right_hand")))
+        proximity = _hb_tolerance(
+            min(right_d, left_d), bounds=(0, 0.25), margin=1, sigmoid="linear"
+        )
+        passage = _hb_tolerance(
+            self._site_pos(scene, "imu")[0],
+            bounds=(1.2, float("inf")),
+            margin=1,
+            value_at_margin=0,
+            sigmoid="linear",
+        )
+        reward = (
+            0.1 * stand_reward * small_control
+            + 0.45 * door_openness
+            + 0.05 * door_hatch
+            + 0.05 * proximity
+            + 0.35 * passage
+        )
+        return reward, {
+            "stand_reward": stand_reward,
+            "small_control": small_control,
+            "door_openness": door_openness,
+            "passage": passage,
+        }
+
+    def _reward_cube(self, scene: Any) -> tuple[float, dict]:
+        standing = self._standing(scene)
+        upright = self._upright(scene, 0.9, 1.9, 0.0)
+        stand_reward = standing * upright
+        small_control = self._small_control(scene)
+        dont_move = self._dont_move(scene)
+        target_quat = self._body_quat(scene, "target_cube")
+        orientations = []
+        for name in ("left_cube_to_rotate", "right_cube_to_rotate"):
+            quat = self._body_quat(scene, name)
+            orientations.append(
+                _hb_tolerance(np.linalg.norm(quat - target_quat), margin=0.3)
+            )
+        orientation_reward = (orientations[0] + orientations[1]) / 2
+        proximities = []
+        for name in ("left_cube_to_rotate", "right_cube_to_rotate"):
+            site = "left_hand" if name.startswith("left") else "right_hand"
+            dist = float(
+                np.linalg.norm(
+                    self._site_pos(scene, site) - self._body_pos(scene, name)
+                )
+            )
+            proximities.append(_hb_tolerance(dist, bounds=(0, 0.1), margin=0.5))
+        closeness = (proximities[0] + proximities[1]) / 2
+        reward = (
+            0.2 * (small_control * stand_reward * dont_move)
+            + 0.5 * orientation_reward
+            + 0.3 * closeness
+        )
+        return reward, {
+            "stand_reward": stand_reward,
+            "orientation_alignment_reward": orientation_reward,
+            "cube_closeness_reward": closeness,
+        }
+
+    def _reward_powerlift(self, scene: Any) -> tuple[float, dict]:
+        standing = self._standing(scene, margin_div=3.0)
+        upright = self._upright(scene, 0.8, 1.9, 0.0)
+        stand_reward = standing * upright
+        small_control = self._small_control(scene)
+        dumbbell_h = self._body_pos(scene, "dumbbell")[2]
+        lifted = _hb_tolerance(dumbbell_h, bounds=(1.9, 2.1), margin=2)
+        return 0.2 * (small_control * stand_reward) + 0.8 * lifted, {
+            "stand_reward": stand_reward,
+            "reward_dumbbell_lifted": lifted,
+        }
+
+    def _reward_window(self, scene: Any) -> tuple[float, dict]:
+        standing = self._standing(scene)
+        upright = self._upright(scene, 0.9, 1.9, 0.0)
+        stand_reward = standing * upright
+        small_control = self._small_control(scene)
+        contact_reward = float(
+            min(
+                _hb_tolerance(
+                    self._site_pos(scene, f"wipe_contact_site_{s}")[0],
+                    bounds=(0.92, 0.92),
+                    margin=0.4,
+                    sigmoid="linear",
+                )
+                for s in "abcde"
+            )
+        )
+        contact_filter = (
+            1.0
+            if self._pair_contact(
+                scene, "window_pane_collision", "window_wipe_collision"
+            )
+            else 0.0
+        )
+        tool_pos = self._body_pos(scene, "window_wiping_tool")
+        left_d = float(np.linalg.norm(self._site_pos(scene, "left_hand") - tool_pos))
+        right_d = float(np.linalg.norm(self._site_pos(scene, "right_hand") - tool_pos))
+        hand_tool = min(
+            _hb_tolerance(left_d, bounds=(0, 0.2), margin=0.5),
+            _hb_tolerance(right_d, bounds=(0, 0.2), margin=0.5),
+        )
+        tool_names = self._hb.get("tool_subtree") or ["window_wiping_tool"]
+        tool_vel_z = float(self._subtree_linvel(scene, list(tool_names))[2])
+        moving_wipe = _hb_tolerance(abs(tool_vel_z), bounds=(0.5, 0.5), margin=0.5)
+        head_pos0 = np.asarray(self._ts.get("head_pos0", [0, 0, 0]), dtype=float)
+        head_dist = _hb_tolerance(
+            float(np.linalg.norm(self._site_pos(scene, "head") - head_pos0)),
+            bounds=(0.4, 0.4),
+            margin=0.1,
+        )
+        manipulation = (
+            0.2 * (stand_reward * small_control * head_dist)
+            + 0.4 * moving_wipe
+            + 0.4 * hand_tool
+        )
+        total = 0.5 * manipulation + 0.5 * (contact_filter * contact_reward)
+        return total, {
+            "stand_reward": stand_reward,
+            "moving_wipe_reward": moving_wipe,
+            "hand_tool_proximity_reward": hand_tool,
+            "window_contact_total_reward": contact_filter * contact_reward,
+        }
+
+    def _reward_room(self, scene: Any) -> tuple[float, dict]:
+        standing = self._standing(scene)
+        upright = self._upright(scene, 0.9, 1.9, 0.0)
+        stand_reward = standing * upright
+        small_control = self._small_control(scene)
+        positions = np.vstack(
+            [self._body_pos(scene, n) for n in self._hb.get("room_objects") or []]
+        )
+        entropies = np.array([float(np.var(positions[:, col])) for col in range(2)])
+        organized = _hb_tolerance(np.max(entropies), margin=3)
+        return 0.2 * (small_control * stand_reward) + 0.8 * organized, {
+            "stand_reward": stand_reward,
+            "room_object_organized": organized,
+        }
+
+    def _reward_bookshelf_simple(self, scene: Any) -> tuple[float, dict]:
+        standing = self._standing(scene)
+        upright = self._upright(scene, 0.9, 1.9, 0.0)
+        stand_reward = standing * upright
+        small_control = self._small_control(scene)
+        objects = self._ts.get("bookshelf_objects") or []
+        goals = self._ts.get("placement_goals") or []
+        obj_pos = self._body_pos(scene, objects[self._task_index])
+        goal = np.asarray(goals[self._task_index], dtype=float)
+        dist = float(np.linalg.norm(obj_pos - goal))
+        proximity = _hb_tolerance(dist, bounds=(0, 0.15), margin=1, sigmoid="linear")
+        left_d = float(np.linalg.norm(self._site_pos(scene, "left_hand") - obj_pos))
+        right_d = float(np.linalg.norm(self._site_pos(scene, "right_hand") - obj_pos))
+        hand_proximity = float(np.exp(-min(left_d, right_d)))
+        reward = (
+            0.2 * (stand_reward * small_control)
+            + 0.4 * proximity
+            + 0.4 * hand_proximity
+        )
+        if dist < 0.15:
+            self._task_index += 1
+            reward += 100 * self._task_index
+        return reward, {
+            "stand_reward": stand_reward,
+            "reward_proximity": proximity,
+            "reward_hand_proximity": hand_proximity,
+            "success_subtasks": self._task_index,
+        }
+
+    # -- termination ports ----------------------------------------------------
+
+    def _check_terminated(self, scene: Any) -> bool:
+        spec = self._hb.get("termination") or {}
+        kind = spec.get("kind")
+        if kind in (None, "never"):
+            return False
+        qpos_z = float(self._qpos(scene)[2])
+        threshold = spec.get("qpos_z_lt")
+        if threshold is not None and qpos_z < float(threshold):
+            return True
+        if kind == "balance_hard":
+            # upstream: geom id 0 is the floor; any contact between the
+            # pivot sphere and something that is neither floor nor board,
+            # or between the floor and anything but the sphere, terminates
+            world = self._world(scene)
+            names = world.geom_names()
+            try:
+                sphere_id = names.index(str(spec.get("sphere_geom")))
+                board_id = names.index(str(spec.get("board_geom")))
+            except ValueError:
+                return False
+            contacts = world.get_self_contacts()
+            ga = np.asarray(contacts.get("geom_a", [])).reshape(-1)
+            gb = np.asarray(contacts.get("geom_b", [])).reshape(-1)
+            floor_id = 0
+            for i in range(min(ga.size, gb.size)):
+                pair = {int(ga[i]), int(gb[i])}
+                if sphere_id in pair and not ({floor_id, board_id} & pair):
+                    return True
+                if floor_id in pair and sphere_id not in pair:
+                    return True
+            return False
+        if kind == "cube":
+            for name in ("left_cube_to_rotate", "right_cube_to_rotate"):
+                if self._body_pos(scene, name)[2] < float(spec["min_obj_z_lt"]):
+                    return True
+            return False
+        if kind == "window":
+            return bool(
+                self._body_pos(scene, "window_wiping_tool")[2]
+                < float(spec["tool_z_lt"])
+            )
+        if kind == "bookshelf":
+            if self._task_index == 5:
+                return True
+            objects = self._ts.get("bookshelf_objects") or []
+            return bool(
+                self._body_pos(scene, objects[self._task_index])[2]
+                < float(spec["min_obj_z_lt"])
+            )
+        return False
+
+    # -- controls -------------------------------------------------------------
+
+    def _apply_targets(self, scene: Any, action: np.ndarray) -> None:
+        """Unnormalise [-1, 1] rows to actuator targets and servo (best effort)."""
+        actuated = self._hb.get("actuated") or []
+        if not actuated or action is None or len(action) < len(actuated):
+            return
+        rows = np.clip(
+            np.asarray(action, dtype=float).reshape(-1)[: len(actuated)], -1.0, 1.0
+        )
+        targets = np.array(
+            [
+                (r + 1) / 2 * (hi - lo) + lo
+                for r, (lo, hi) in (
+                    (rows[i], a["ctrlrange"]) for i, a in enumerate(actuated)
+                )
+            ],
+            dtype=float,
+        )
+        world = self._world(scene)
+        control_fn = getattr(world, "control_dofs_position", None)
+        if control_fn is None:
+            if not self._servo_warned:
+                logger.info("efe_hb: no dof position control; actions not applied")
+                self._servo_warned = True
+            return
+        try:
+            control_fn(
+                targets=targets,
+                dofs_idx_local=[int(a["dofadr"]) for a in actuated],
+            )
+        except Exception as exc:  # noqa: BLE001 - servo is best effort
+            if not self._servo_warned:
+                logger.info(f"efe_hb: dof position control unavailable: {exc}")
+                self._servo_warned = True
+
+    # -- Task API ----------------------------------------------------------
+
+    def reset(self, scene: Any, robot: Any, seed: int) -> dict:
+        info = super().reset(scene, robot, seed)
+        self._apply_frozen_state(scene)
+        self._link_idx = {}
+        self._ret = 0.0
+        self._hb_steps = 0
+        self._terminated = False
+        state = self._hb.get("task_state") or {}
+        self._ts = {k: self._decode_state(v) for k, v in state.items()}
+        self._task_index = int(self._ts.get("task_index", 0) or 0)
+        info["hb"] = {"success": False, "reward_sum": 0.0, "steps": 0}
+        return info
+
+    def step(self, scene: Any, robot: Any, action: np.ndarray):
+        reward, terminated, truncated, info = super().step(scene, robot, action)
+        self._apply_targets(scene, action)
+        self._hb_steps += 1
+        step_reward, detail = self._reward(scene)
+        self._ret += step_reward
+        terminated = self._check_terminated(scene)
+        self._terminated = bool(terminated)
+        info["hb"] = {
+            "success": bool(
+                self._ret >= float(self._hb.get("success_bar", float("inf")))
+            ),
+            "reward_sum": float(self._ret),
+            "terminated": self._terminated,
+            "steps": self._hb_steps,
+            **detail,
+        }
+        return float(step_reward), terminated, truncated, info
+
+
+@register_task("efe_hb")
+def _make_efe_hb(**kwargs: Any) -> EfeHbTask:
+    """HumanoidBench frozen-scene task with world/hb YAML blocks."""
+    kwargs.pop("type", None)
+    max_steps = int(kwargs.pop("max_episode_steps", 1000))
+    world = kwargs.pop("world", None)
+    hb = kwargs.pop("hb", None)
+    return EfeHbTask(
+        TaskConfig(name="efe", max_episode_steps=max_steps),
+        world=world,
+        hb=hb,
+    )
+
+
+@register_robot("unitree_h1_embedded")
+def _make_unitree_h1_embedded(**kwargs: Any) -> Any:
+    """Unitree H1 inside a whole-world MJCF (HumanoidBench, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("unitree_h1_embedded")
+
+
+@register_robot("unitree_h1hand_embedded")
+def _make_unitree_h1hand_embedded(**kwargs: Any) -> Any:
+    """Unitree H1 + Shadow hands inside a whole-world MJCF (world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("unitree_h1hand_embedded")

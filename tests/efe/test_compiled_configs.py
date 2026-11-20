@@ -28,15 +28,21 @@ SUITES_DIR = REPO_ROOT / "data" / "suites"
 
 
 def _suite_files() -> list[Path]:
-    # Whole-world RoboCasa / ABC Sim / MuJoCo Playground suites spawn one
-    # `world` asset; their nop gates need the extraction meta (compiled poses
-    # + frozen qpos) and live in test_robocasa_nop.py / test_abc_nop.py /
-    # test_pg_nop.py — the generic asset-layout stub cannot model them.
+    # Whole-world RoboCasa / ABC Sim / MuJoCo Playground / HumanoidBench
+    # suites spawn one `world` asset; their nop gates need the extraction
+    # meta (compiled poses + frozen qpos) and live in test_robocasa_nop.py /
+    # test_abc_nop.py / test_pg_nop.py / test_hb_nop.py — the generic
+    # asset-layout stub cannot model them.
     return sorted(
         p
         for p in SUITES_DIR.glob("efe_*.yaml")
         if not p.stem.startswith(
-            ("efe_robocasa", "efe_abc-sim", "efe_mujoco-playground")
+            (
+                "efe_robocasa",
+                "efe_abc-sim",
+                "efe_mujoco-playground",
+                "efe_humanoidbench",
+            )
         )
     )
 

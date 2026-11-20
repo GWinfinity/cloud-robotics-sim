@@ -80,6 +80,7 @@ SUCCESS_TYPES = (
     "dtb_all_goals",
     "djx_success",
     "pg_success",
+    "hb_success",
     "all",
     "any",
     "not",
@@ -2991,6 +2992,21 @@ class PgSuccessCondition(SuccessCondition):
 
 
 @dataclass
+class HbSuccessCondition(SuccessCondition):
+    """HumanoidBench verdict: the episode's return reaches the success bar.
+
+    ``EfeHbTask`` accumulates the ported dense reward each control step and
+    publishes ``info['hb']``; the episode also ends on the task's ported
+    termination rule. Missing info is a failure (nop-safe).
+    """
+
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        return bool((info or {}).get("hb", {}).get("success"))
+
+
+@dataclass
 class AbcDrawerSequenceCondition(SuccessCondition):
     """``multi_drawer_target_in_bin``: the prompted targets reach the goal
     bin *in order* — the task advances the latch (upstream's evaluator-side
@@ -3425,6 +3441,8 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return DjxSuccessCondition()
     if success_type == "pg_success":
         return PgSuccessCondition()
+    if success_type == "hb_success":
+        return HbSuccessCondition()
     if success_type == "all":
         return _build_all(params)
     if success_type == "any":

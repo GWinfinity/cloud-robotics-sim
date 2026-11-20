@@ -1184,8 +1184,22 @@ def _resolve_pg(predicates: dict[str, Any]) -> dict[str, Any]:
         sys.path.remove(str(Path(__file__).resolve().parent))
 
 
+def _resolve_hb(predicates: dict[str, Any]) -> dict[str, Any]:
+    """HumanoidBench resolves from the composed world packs, not a table."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        import hb_resolver
+
+        return hb_resolver.resolve_suite(
+            "humanoidbench", load_inventory("humanoidbench")
+        )
+    finally:
+        sys.path.remove(str(Path(__file__).resolve().parent))
+
+
 RESOLVERS = {"metaworldplus": resolve_metaworldplus, "vlabench": resolve_vlabench}
 RESOLVERS["mujoco-playground"] = _resolve_pg
+RESOLVERS["humanoidbench"] = _resolve_hb
 
 
 def _resolve_robocasa(suite: str):
@@ -1539,7 +1553,7 @@ def render_task_yaml(suite: str, name: str, record: dict[str, Any]) -> str:
             "    " + line
             for line in yaml.safe_dump(event, sort_keys=False).splitlines()
         )
-    for block in ("world", "appliances", "timers", "abc", "dtb", "djx", "pg"):
+    for block in ("world", "appliances", "timers", "abc", "dtb", "djx", "pg", "hb"):
         value = record.get(block)
         if value:
             lines.append(f"  {block}:")

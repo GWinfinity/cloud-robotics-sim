@@ -1,0 +1,833 @@
+# EFE 迁移编译物（humanoidbench）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: cube | goal: cube
+# fidelity: spec | notes: 判据=HumanoidBench 规则：累计稠密奖励 >= 370.0（bar 逐字自上游 cube 类），episode 上限 500 控制步 @ 50 Hz；reward/termination 逐字移植 rewards.json + envs/*.py（dm_control tolerance 语义完整移植）；物理=上游 cb118903 + EFE 修复（box_feet/upstream-fixes）
+version: 1
+
+task:
+  name: humanoidbench-manip-cube-i00
+  type: efe_hb
+  robot: unitree_h1hand_embedded
+  scene: efe_world
+  max_episode_steps: 500
+  world:
+    mjcf_path: assets/humanoidbench/worlds/humanoidbench-manip-cube-i00.xml
+    qpos_path: assets/humanoidbench/worlds/humanoidbench-manip-cube-i00.qpos.npy
+    qvel_path: assets/humanoidbench/worlds/humanoidbench-manip-cube-i00.qvel.npy
+    meta_path: assets/humanoidbench/worlds/humanoidbench-manip-cube-i00.meta.json
+  hb:
+    task_short: cube
+    env_id: h1hand-cube-v0
+    success_bar: 370.0
+    nu: 61
+    sites:
+      head:
+        body: torso_link
+        local:
+        - 0.0
+        - 0.0
+        - 0.7
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      imu:
+        body: torso_link
+        local:
+        - -0.04452
+        - -0.01891
+        - 0.27756
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      left_foot:
+        body: left_ankle_link
+        local:
+        - 0.0
+        - 0.0
+        - -0.05
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      left_hand:
+        body: left_elbow_link
+        local:
+        - 0.31
+        - 0.0
+        - -0.01
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      right_foot:
+        body: right_ankle_link
+        local:
+        - 0.0
+        - 0.0
+        - -0.05
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      right_hand:
+        body: right_elbow_link
+        local:
+        - 0.31
+        - 0.0
+        - -0.01
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+    termination:
+      kind: cube
+      min_obj_z_lt: 0.6
+      qpos_z_lt: 0.58
+      task: cube
+    class_consts: {}
+    module_globals:
+      humanoid_bench.envs.cube: _STAND_HEIGHT = 1.65
+    task_state: {}
+    room_objects: []
+    robot_links:
+    - mass: 5.39
+      name: pelvis
+    - mass: 2.244
+      name: left_hip_yaw_link
+    - mass: 2.232
+      name: left_hip_roll_link
+    - mass: 4.152
+      name: left_hip_pitch_link
+    - mass: 1.721
+      name: left_knee_link
+    - mass: 0.552448
+      name: left_ankle_link
+    - mass: 2.244
+      name: right_hip_yaw_link
+    - mass: 2.232
+      name: right_hip_roll_link
+    - mass: 4.152
+      name: right_hip_pitch_link
+    - mass: 1.721
+      name: right_knee_link
+    - mass: 0.552448
+      name: right_ankle_link
+    - mass: 17.789
+      name: torso_link
+    - mass: 1.033
+      name: left_shoulder_pitch_link
+    - mass: 0.793
+      name: left_shoulder_roll_link
+    - mass: 0.839
+      name: left_shoulder_yaw_link
+    - mass: 0.669
+      name: left_elbow_link
+    - mass: 0.001
+      name: left_hand
+    - mass: 0.1
+      name: lh_wrist
+    - mass: 0.3
+      name: lh_palm
+    - mass: 0.008
+      name: lh_ffknuckle
+    - mass: 0.03
+      name: lh_ffproximal
+    - mass: 0.017
+      name: lh_ffmiddle
+    - mass: 0.013
+      name: lh_ffdistal
+    - mass: 0.008
+      name: lh_mfknuckle
+    - mass: 0.03
+      name: lh_mfproximal
+    - mass: 0.017
+      name: lh_mfmiddle
+    - mass: 0.013
+      name: lh_mfdistal
+    - mass: 0.008
+      name: lh_rfknuckle
+    - mass: 0.03
+      name: lh_rfproximal
+    - mass: 0.017
+      name: lh_rfmiddle
+    - mass: 0.013
+      name: lh_rfdistal
+    - mass: 0.03
+      name: lh_lfmetacarpal
+    - mass: 0.008
+      name: lh_lfknuckle
+    - mass: 0.03
+      name: lh_lfproximal
+    - mass: 0.017
+      name: lh_lfmiddle
+    - mass: 0.013
+      name: lh_lfdistal
+    - mass: 0.01
+      name: lh_thbase
+    - mass: 0.04
+      name: lh_thproximal
+    - mass: 0.005
+      name: lh_thhub
+    - mass: 0.02
+      name: lh_thmiddle
+    - mass: 0.017
+      name: lh_thdistal
+    - mass: 1.033
+      name: right_shoulder_pitch_link
+    - mass: 0.793
+      name: right_shoulder_roll_link
+    - mass: 0.839
+      name: right_shoulder_yaw_link
+    - mass: 0.669
+      name: right_elbow_link
+    - mass: 0.001
+      name: right_hand
+    - mass: 0.1
+      name: rh_wrist
+    - mass: 0.3
+      name: rh_palm
+    - mass: 0.008
+      name: rh_ffknuckle
+    - mass: 0.03
+      name: rh_ffproximal
+    - mass: 0.017
+      name: rh_ffmiddle
+    - mass: 0.013
+      name: rh_ffdistal
+    - mass: 0.008
+      name: rh_mfknuckle
+    - mass: 0.03
+      name: rh_mfproximal
+    - mass: 0.017
+      name: rh_mfmiddle
+    - mass: 0.013
+      name: rh_mfdistal
+    - mass: 0.008
+      name: rh_rfknuckle
+    - mass: 0.03
+      name: rh_rfproximal
+    - mass: 0.017
+      name: rh_rfmiddle
+    - mass: 0.013
+      name: rh_rfdistal
+    - mass: 0.03
+      name: rh_lfmetacarpal
+    - mass: 0.008
+      name: rh_lfknuckle
+    - mass: 0.03
+      name: rh_lfproximal
+    - mass: 0.017
+      name: rh_lfmiddle
+    - mass: 0.013
+      name: rh_lfdistal
+    - mass: 0.01
+      name: rh_thbase
+    - mass: 0.04
+      name: rh_thproximal
+    - mass: 0.005
+      name: rh_thhub
+    - mass: 0.02
+      name: rh_thmiddle
+    - mass: 0.017
+      name: rh_thdistal
+    actuated:
+    - ctrlrange:
+      - -0.43
+      - 0.43
+      dofadr: 6
+      joint: left_hip_yaw
+      moment:
+      - - 6
+        - 1.0
+      name: left_hip_yaw
+    - ctrlrange:
+      - -0.43
+      - 0.43
+      dofadr: 7
+      joint: left_hip_roll
+      moment:
+      - - 7
+        - 1.0
+      name: left_hip_roll
+    - ctrlrange:
+      - -3.14
+      - 2.53
+      dofadr: 8
+      joint: left_hip_pitch
+      moment:
+      - - 8
+        - 1.0000000000331966
+      name: left_hip_pitch
+    - ctrlrange:
+      - -0.26
+      - 2.05
+      dofadr: 9
+      joint: left_knee
+      moment:
+      - - 9
+        - 1.0000000000331966
+      name: left_knee
+    - ctrlrange:
+      - -0.87
+      - 0.52
+      dofadr: 10
+      joint: left_ankle
+      moment:
+      - - 10
+        - 0.9999999999621423
+      name: left_ankle
+    - ctrlrange:
+      - -0.43
+      - 0.43
+      dofadr: 11
+      joint: right_hip_yaw
+      moment:
+      - - 11
+        - 1.0
+      name: right_hip_yaw
+    - ctrlrange:
+      - -0.43
+      - 0.43
+      dofadr: 12
+      joint: right_hip_roll
+      moment:
+      - - 12
+        - 1.0
+      name: right_hip_roll
+    - ctrlrange:
+      - -3.14
+      - 2.53
+      dofadr: 13
+      joint: right_hip_pitch
+      moment:
+      - - 13
+        - 1.0000000000331966
+      name: right_hip_pitch
+    - ctrlrange:
+      - -0.26
+      - 2.05
+      dofadr: 14
+      joint: right_knee
+      moment:
+      - - 14
+        - 1.0000000000331966
+      name: right_knee
+    - ctrlrange:
+      - -0.87
+      - 0.52
+      dofadr: 15
+      joint: right_ankle
+      moment:
+      - - 15
+        - 0.9999999999621423
+      name: right_ankle
+    - ctrlrange:
+      - -2.35
+      - 2.35
+      dofadr: 16
+      joint: torso
+      moment:
+      - - 16
+        - 1.0
+      name: torso
+    - ctrlrange:
+      - -2.87
+      - 2.87
+      dofadr: 17
+      joint: left_shoulder_pitch
+      moment:
+      - - 17
+        - 1.0
+      name: left_shoulder_pitch
+    - ctrlrange:
+      - -0.34
+      - 3.11
+      dofadr: 18
+      joint: left_shoulder_roll
+      moment:
+      - - 18
+        - 1.0
+      name: left_shoulder_roll
+    - ctrlrange:
+      - -1.3
+      - 4.45
+      dofadr: 19
+      joint: left_shoulder_yaw
+      moment:
+      - - 19
+        - 1.0
+      name: left_shoulder_yaw
+    - ctrlrange:
+      - -1.25
+      - 2.61
+      dofadr: 20
+      joint: left_elbow
+      moment:
+      - - 20
+        - 1.0
+      name: left_elbow
+    - ctrlrange:
+      - -0.15
+      - 1.57
+      dofadr: 21
+      joint: left_wrist_yaw
+      moment:
+      - - 21
+        - 1.0
+      name: left_wrist_yaw
+    - ctrlrange:
+      - -2.87
+      - 2.87
+      dofadr: 46
+      joint: right_shoulder_pitch
+      moment:
+      - - 46
+        - 1.0
+      name: right_shoulder_pitch
+    - ctrlrange:
+      - -3.11
+      - 0.34
+      dofadr: 47
+      joint: right_shoulder_roll
+      moment:
+      - - 47
+        - 1.0
+      name: right_shoulder_roll
+    - ctrlrange:
+      - -4.45
+      - 1.3
+      dofadr: 48
+      joint: right_shoulder_yaw
+      moment:
+      - - 48
+        - 1.0
+      name: right_shoulder_yaw
+    - ctrlrange:
+      - -1.25
+      - 2.61
+      dofadr: 49
+      joint: right_elbow
+      moment:
+      - - 49
+        - 1.0
+      name: right_elbow
+    - ctrlrange:
+      - -0.15
+      - 1.57
+      dofadr: 50
+      joint: right_wrist_yaw
+      moment:
+      - - 50
+        - 1.0
+      name: right_wrist_yaw
+    - ctrlrange:
+      - -0.523599
+      - 0.174533
+      dofadr: 22
+      joint: lh_WRJ2
+      moment:
+      - - 22
+        - 1.0
+      name: lh_A_WRJ2
+    - ctrlrange:
+      - -0.698132
+      - 0.488692
+      dofadr: 23
+      joint: lh_WRJ1
+      moment:
+      - - 23
+        - 1.0
+      name: lh_A_WRJ1
+    - ctrlrange:
+      - -1.0472
+      - 1.0472
+      dofadr: 41
+      joint: lh_THJ5
+      moment:
+      - - 41
+        - 1.0
+      name: lh_A_THJ5
+    - ctrlrange:
+      - 0.0
+      - 1.22173
+      dofadr: 42
+      joint: lh_THJ4
+      moment:
+      - - 42
+        - 1.0
+      name: lh_A_THJ4
+    - ctrlrange:
+      - -0.20944
+      - 0.20944
+      dofadr: 43
+      joint: lh_THJ3
+      moment:
+      - - 43
+        - 1.0
+      name: lh_A_THJ3
+    - ctrlrange:
+      - -0.698132
+      - 0.698132
+      dofadr: 44
+      joint: lh_THJ2
+      moment:
+      - - 44
+        - 1.0
+      name: lh_A_THJ2
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 45
+      joint: lh_THJ1
+      moment:
+      - - 45
+        - 1.0
+      name: lh_A_THJ1
+    - ctrlrange:
+      - -0.349066
+      - 0.349066
+      dofadr: 24
+      joint: lh_FFJ4
+      moment:
+      - - 24
+        - 1.0
+      name: lh_A_FFJ4
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 25
+      joint: lh_FFJ3
+      moment:
+      - - 25
+        - 1.0
+      name: lh_A_FFJ3
+    - ctrlrange:
+      - 0.0
+      - 3.1415
+      dofadr: 0
+      joint: free_base
+      moment:
+      - - 26
+        - 1.0
+      - - 27
+        - 1.0
+      name: lh_A_FFJ0
+    - ctrlrange:
+      - -0.349066
+      - 0.349066
+      dofadr: 28
+      joint: lh_MFJ4
+      moment:
+      - - 28
+        - 1.0
+      name: lh_A_MFJ4
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 29
+      joint: lh_MFJ3
+      moment:
+      - - 29
+        - 1.0
+      name: lh_A_MFJ3
+    - ctrlrange:
+      - 0.0
+      - 3.1415
+      dofadr: 6
+      joint: left_hip_yaw
+      moment:
+      - - 30
+        - 1.0
+      - - 31
+        - 1.0
+      name: lh_A_MFJ0
+    - ctrlrange:
+      - -0.349066
+      - 0.349066
+      dofadr: 32
+      joint: lh_RFJ4
+      moment:
+      - - 32
+        - 1.0
+      name: lh_A_RFJ4
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 33
+      joint: lh_RFJ3
+      moment:
+      - - 33
+        - 1.0
+      name: lh_A_RFJ3
+    - ctrlrange:
+      - 0.0
+      - 3.1415
+      dofadr: 7
+      joint: left_hip_roll
+      moment:
+      - - 34
+        - 1.0
+      - - 35
+        - 1.0
+      name: lh_A_RFJ0
+    - ctrlrange:
+      - 0.0
+      - 0.785398
+      dofadr: 36
+      joint: lh_LFJ5
+      moment:
+      - - 36
+        - 1.0
+      name: lh_A_LFJ5
+    - ctrlrange:
+      - -0.349066
+      - 0.349066
+      dofadr: 37
+      joint: lh_LFJ4
+      moment:
+      - - 37
+        - 1.0
+      name: lh_A_LFJ4
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 38
+      joint: lh_LFJ3
+      moment:
+      - - 38
+        - 1.0
+      name: lh_A_LFJ3
+    - ctrlrange:
+      - 0.0
+      - 3.1415
+      dofadr: 8
+      joint: left_hip_pitch
+      moment:
+      - - 39
+        - 1.0
+      - - 40
+        - 1.0
+      name: lh_A_LFJ0
+    - ctrlrange:
+      - -0.523599
+      - 0.174533
+      dofadr: 51
+      joint: rh_WRJ2
+      moment:
+      - - 51
+        - 1.0
+      name: rh_A_WRJ2
+    - ctrlrange:
+      - -0.698132
+      - 0.488692
+      dofadr: 52
+      joint: rh_WRJ1
+      moment:
+      - - 52
+        - 1.0
+      name: rh_A_WRJ1
+    - ctrlrange:
+      - -1.0472
+      - 1.0472
+      dofadr: 70
+      joint: rh_THJ5
+      moment:
+      - - 70
+        - 1.0
+      name: rh_A_THJ5
+    - ctrlrange:
+      - 0.0
+      - 1.22173
+      dofadr: 71
+      joint: rh_THJ4
+      moment:
+      - - 71
+        - 1.0
+      name: rh_A_THJ4
+    - ctrlrange:
+      - -0.20944
+      - 0.20944
+      dofadr: 72
+      joint: rh_THJ3
+      moment:
+      - - 72
+        - 1.0
+      name: rh_A_THJ3
+    - ctrlrange:
+      - -0.698132
+      - 0.698132
+      dofadr: 73
+      joint: rh_THJ2
+      moment:
+      - - 73
+        - 1.0
+      name: rh_A_THJ2
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 74
+      joint: rh_THJ1
+      moment:
+      - - 74
+        - 1.0
+      name: rh_A_THJ1
+    - ctrlrange:
+      - -0.349066
+      - 0.349066
+      dofadr: 53
+      joint: rh_FFJ4
+      moment:
+      - - 53
+        - 1.0
+      name: rh_A_FFJ4
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 54
+      joint: rh_FFJ3
+      moment:
+      - - 54
+        - 1.0
+      name: rh_A_FFJ3
+    - ctrlrange:
+      - 0.0
+      - 3.1415
+      dofadr: 9
+      joint: left_knee
+      moment:
+      - - 55
+        - 1.0
+      - - 56
+        - 1.0
+      name: rh_A_FFJ0
+    - ctrlrange:
+      - -0.349066
+      - 0.349066
+      dofadr: 57
+      joint: rh_MFJ4
+      moment:
+      - - 57
+        - 1.0
+      name: rh_A_MFJ4
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 58
+      joint: rh_MFJ3
+      moment:
+      - - 58
+        - 1.0
+      name: rh_A_MFJ3
+    - ctrlrange:
+      - 0.0
+      - 3.1415
+      dofadr: 10
+      joint: left_ankle
+      moment:
+      - - 59
+        - 1.0
+      - - 60
+        - 1.0
+      name: rh_A_MFJ0
+    - ctrlrange:
+      - -0.349066
+      - 0.349066
+      dofadr: 61
+      joint: rh_RFJ4
+      moment:
+      - - 61
+        - 1.0
+      name: rh_A_RFJ4
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 62
+      joint: rh_RFJ3
+      moment:
+      - - 62
+        - 1.0
+      name: rh_A_RFJ3
+    - ctrlrange:
+      - 0.0
+      - 3.1415
+      dofadr: 11
+      joint: right_hip_yaw
+      moment:
+      - - 63
+        - 1.0
+      - - 64
+        - 1.0
+      name: rh_A_RFJ0
+    - ctrlrange:
+      - 0.0
+      - 0.785398
+      dofadr: 65
+      joint: rh_LFJ5
+      moment:
+      - - 65
+        - 1.0
+      name: rh_A_LFJ5
+    - ctrlrange:
+      - -0.349066
+      - 0.349066
+      dofadr: 66
+      joint: rh_LFJ4
+      moment:
+      - - 66
+        - 1.0
+      name: rh_A_LFJ4
+    - ctrlrange:
+      - -0.261799
+      - 1.5708
+      dofadr: 67
+      joint: rh_LFJ3
+      moment:
+      - - 67
+        - 1.0
+      name: rh_A_LFJ3
+    - ctrlrange:
+      - 0.0
+      - 3.1415
+      dofadr: 12
+      joint: right_hip_roll
+      moment:
+      - - 68
+        - 1.0
+      - - 69
+        - 1.0
+      name: rh_A_LFJ0
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/humanoidbench/worlds/humanoidbench-manip-cube-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: hb_success
+  params: {}
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

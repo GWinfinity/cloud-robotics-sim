@@ -1,0 +1,14 @@
+# HumanoidBench 判据表（占位说明）。判据的唯一事实来源是上游
+# humanoid_bench/envs/*.py 的 get_reward / get_terminated（镜像
+# images/humanoidbench/rewards.json 逐字保留）+ 每任务冻结
+# instance.npz（rcb_hb.Session）；tools/hb_worlds.py 抽取世界包与常量，
+# tools/hb_resolver.py 据此生成编译 KB。判据语义见 HbSuccessCondition /
+# EfeHbTask docstring。
+source:
+  benchmark: HumanoidBench
+  repo: carlosferrazza/humanoid-bench
+  ref: cb1189039151c8aadaaa987b442da54383c87fab
+  simulator: mujoco+dm_control
+  robot: unitree-h1/h1hand
+  note: 公式逐字出自 rewards.json；bar/终止逐字自上游类属性
+envs: {}
