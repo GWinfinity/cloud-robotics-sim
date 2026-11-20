@@ -21,4 +21,4 @@ project:
   tier: T1
   status: partial
   target: src/cloud_robotics_sim/runtime registry 新 task 族
-  note: Meta-World v3 全 50 环境固定实例；Sawyer MJCF 随 MetaWorld(MIT) 发布。P1 进展：26/50 已编译并通过双层门（spec 保真级；判据句逐字转写自上游 instruction，目标语义取自上游 env .py 常量，代表点注明非冻结实例值；nop 门拦截 2 处 XML 位姿≠任务初始位姿并修正）；保真度说明：spec 级（非冻结实例位姿）；stick-push 夹持接触子句降级未建模；disassemble 行程值为预设待判据句核正；机构初始构型按 env reset 语义建模（door-close −90° 开门等）
+  note: Meta-World v3 全 50 环境固定实例；Sawyer MJCF 随 MetaWorld(MIT) 发布。本体门通过（Sawyer 单臂）。50/50 已编译并通过双层门（spec 保真级；判据句逐字转写自上游 instruction，目标语义取自上游 env .py 常量，代表点注明非冻结实例值；nop 门拦截 2 处 XML 位姿≠任务初始位姿并修正）；保真度说明：spec 级（非冻结实例位姿）；stick-push 夹持接触子句降级未建模；disassemble 行程值为预设待判据句核正；机构初始构型按 env reset 语义建模（door-close −90° 开门等）

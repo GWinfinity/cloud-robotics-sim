@@ -1,0 +1,58 @@
+# EFE 五类本体门的永久排除清单（人工策划，唯一事实来源）。
+#
+# 本文件只记录决定与边界，不替代论文登记：data/efe/suites/ 中仍保留完整
+# 论文元数据，以保证 35 套件 / 47 机器人 / 1,156 任务 / 2,288 测试的对账。
+# 被列出的任务不得进入 configs/tasks/efe/、data/suites/efe_*.yaml 或编译
+# 知识库的任何区域，也不得写入 compile/<suite>.yaml；本文件与论文门禁
+# 报告是它们唯一的记录位置。
+#
+# 对齐门禁：tools/audit_efe_embodiments.py 的 out_of_scope_task_names。
+# 执行范围门禁：tools/check_efe_execution_scope.py。
+version: 1
+policy:
+  decision: exclude
+  gate_relaxed: true
+  note: >-
+    五类本体门对 MyoSuite 不放宽：其肌肉骨骼本体与 MuJoCo tendon/muscle
+    致动不属于单臂/双臂/灵巧手/人形/移动操作，永久排除出可执行迁移范围。
+    Playground 的 9 个四足 locomotion 任务原被五类门排除，用户 2026-11-20
+    指令「Playground 27 全迁」覆盖该决定（embodiment_gate v2 将 quadruped
+    列入 allowed_kinds），四足任务已全部编译为 efe_pg 执行配置；原排除
+    记录存档于 embodiment_gate.yaml 的批次 note。
+suites:
+  - suite: myosuite
+    scope: suite
+    kinds: [musculoskeletal]
+    robots:
+      - myoarm
+      - myoarm-mpl
+      - myoarm-torso
+      - myohand
+      - myoleg-osl
+      - myolegs
+    tasks:
+      - myosuite-arm-reach-i00
+      - myosuite-baoding-i00
+      - myosuite-bimanual-i00
+      - myosuite-chase-tag-i00
+      - myosuite-dex-airplane-fly-i00
+      - myosuite-dex-apple-lift-i00
+      - myosuite-dex-bunny-inspect-i00
+      - myosuite-dex-cup-pour-i00
+      - myosuite-dex-cylinder-pass-i00
+      - myosuite-dex-hammer-use-i00
+      - myosuite-die-reorient-i00
+      - myosuite-hand-pose-i00
+      - myosuite-hand-reach-i00
+      - myosuite-key-turn-i00
+      - myosuite-obj-hold-i00
+      - myosuite-obj-reorient-i00
+      - myosuite-osl-run-i00
+      - myosuite-pen-twirl-i00
+      - myosuite-relocate-i00
+      - myosuite-sarc-key-turn-i00
+      - myosuite-soccer-i00
+      - myosuite-table-tennis-i00
+    reason: >-
+      6 台本体均为 musculoskeletal，且依赖 MuJoCo tendon/muscle 致动；
+      Genesis 1.4.7 无等效致动。整套永久排除，不生成任何执行配置。

@@ -1,0 +1,82 @@
+# EFE 迁移编译物（mujoco-playground）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: mujoco_playground/AlohaHandOver | goal: Pick up the red box with the left arm, hand it over to the right arm, and have the right arm hold it at the translucent target.
+# fidelity: spec | notes: AlohaHandOver 判据逐字转写 rcb_aloha.py::Session.check / rcb_panda.py::Session.check（3000 控制步上限 @ 0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle 一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+version: 1
+
+task:
+  name: mujoco_playground_aloha_hand_over
+  type: efe_pg
+  robot: aloha_2
+  scene: efe_world
+  max_episode_steps: 3000
+  world:
+    mjcf_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.xml
+    qpos_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.qpos.npy
+    qvel_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.qvel.npy
+    meta_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.meta.json
+  pg:
+    task_kind: AlohaHandOver
+    actuators:
+    - left/waist
+    - left/shoulder
+    - left/elbow
+    - left/forearm_roll
+    - left/wrist_angle
+    - left/wrist_rotate
+    - left/gripper
+    - right/waist
+    - right/shoulder
+    - right/elbow
+    - right/forearm_roll
+    - right/wrist_angle
+    - right/wrist_rotate
+    - right/gripper
+    max_steps: 3000
+    check:
+      box_body: box
+      box_geom: box
+      left_geoms:
+      - left/gripper_base
+      - left/left_finger_top
+      - left/left_finger_bottom
+      - left/right_finger_top
+      - left/right_finger_bottom
+      min_z: 0.05
+      right_finger_geoms:
+      - right/left_finger_top
+      - right/left_finger_bottom
+      - right/right_finger_top
+      - right/right_finger_bottom
+      target_pos:
+      - 0.28779004193577906
+      - 0.07941896970496498
+      - 0.2652514336542784
+      tol_m: 0.03
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: pg_success
+  params: {}
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

@@ -21,4 +21,4 @@ project:
   tier: T1
   status: planned
   target: plugins/envs/humanoid_falling 同层新增
-  note: G1-dex3 人形家务（全身控制器接口）；g1 本体 Menagerie 可转
+  note: G1-dex3 人形家务（全身控制器接口）；g1 本体 Menagerie 可转。本体门通过（人形 + 灵巧手），见 data/efe/embodiment_gate.json

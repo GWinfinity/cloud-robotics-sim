@@ -3,8 +3,13 @@ version: 1
 name: efe-dexjoco
 tasks:
   - ../../configs/tasks/efe/dexjoco/dexjoco-bimanual-assembly-i00.yaml
+  - ../../configs/tasks/efe/dexjoco/dexjoco-bimanual-hanoi-i00.yaml
   - ../../configs/tasks/efe/dexjoco/dexjoco-bimanual-microwave-cook-i00.yaml
+  - ../../configs/tasks/efe/dexjoco/dexjoco-bimanual-photograph-i00.yaml
+  - ../../configs/tasks/efe/dexjoco/dexjoco-bimanual-unlock-ipad-i00.yaml
   - ../../configs/tasks/efe/dexjoco/dexjoco-click-mouse-i00.yaml
   - ../../configs/tasks/efe/dexjoco/dexjoco-fold-glasses-i00.yaml
+  - ../../configs/tasks/efe/dexjoco/dexjoco-hammer-nail-i00.yaml
   - ../../configs/tasks/efe/dexjoco/dexjoco-pick-bucket-i00.yaml
+  - ../../configs/tasks/efe/dexjoco/dexjoco-pinch-tongs-i00.yaml
   - ../../configs/tasks/efe/dexjoco/dexjoco-water-plant-i00.yaml

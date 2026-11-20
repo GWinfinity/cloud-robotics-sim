@@ -19,6 +19,10 @@ compile/              编译层（生成物 + 策划）：<suite>.predicates.yam
                       <suite>.specs.md（判据句摘编，--extract-specs 产物）
 robots.yaml           47+4 台机器人资产来源对账（have/compose/menagerie/
                       public/efe_custom/blocked/out_of_paper）
+embodiment_gate.yaml  9 个请求套件的本体门决策（migrate/partial/exclude；v2 起
+                      quadruped 入 allowed_kinds，Playground 13 任务全迁）
+exclusions.yaml       永久排除清单：MyoSuite 整套（Playground 四足原排除，
+                      2026-11-20 用户指令覆盖后已全部迁移）
 registry.json         合并视图（生成物）：totals/by_tier/by_status/warnings
 ```
 
@@ -41,11 +45,14 @@ uv run python tools/compile_efe_suite.py --suite metaworldplus --check    # CI �
 ```bash
 uv run python tools/build_efe_registry.py --check
 uv run python tools/compile_efe_suite.py --suite metaworldplus --check   # 已编译套件
+uv run python tools/check_efe_execution_scope.py --check                 # 排除边界
 ```
 
 失败条件：结构错误（未知 tier/status/kind、机器人无来源登记）、策划 YAML
 与上游任务清单漂移（任务数/机器人集合）、论文总数漂移（35/47/1156/2288/456）。
 上游测试目录数多于论文（如 robodojo）只记 warning——以论文为基准定义。
+本体门不通过或部分不通过的任务只保留在 `exclusions.yaml` 与论文登记中，
+执行范围门禁禁止它们出现在任务配置、套件汇总或知识库可执行区。
 
 ## 再生成
 

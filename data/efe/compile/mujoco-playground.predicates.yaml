@@ -1,0 +1,47 @@
+# MuJoCo Playground 判据表（人工策划，唯一事实来源）。
+#
+# 本体门：本套件 13 个任务中 9 个是 go1/spot/barkour 四足 locomotion，
+# 不属于用户指定的五类本体（单臂/双臂/灵巧手/人形/移动操作）。永久排除
+# 记录在 data/efe/exclusions.yaml；本表只策划 4 个臂任务，且不再复制
+# 四足任务名，避免排除清单出现第二份事实来源。
+#
+# 判据句逐字转写自 EFE tasks/mujoco-playground/<task>-privileged/instruction.md
+# 的 "## Success" 节；实例数值取自同目录 environment/instance.json。
+# 不得凭记忆补阈值或位姿。
+version: 1
+source:
+  benchmark: MuJoCo Playground
+  repo: google-deepmind/mujoco_playground
+  ref: 4057c14
+  simulator: mujoco
+  note: EFE tasks/mujoco-playground（Apache-2.0）；仅五类本体内的臂任务入册
+robot: franka_panda
+scene: efe_tabletop
+tasks:
+  mujoco_playground_panda_pick_cube_orientation:
+    family: mujoco_playground/PandaPickCubeOrientation
+    goal: Pick up the green box and hold it at the target position and orientation
+    instance_seed: 60417
+    max_episode_steps: 3000
+    box:
+      name: green_box
+      size: [0.02, 0.02, 0.03]
+      position: [0.3012220157984224, -0.15335899138912554, 0.03]
+    target:
+      size: [0.02, 0.02, 0.03]
+      position: [0.6170533892477055, 0.10589195960662001, 0.3401676224361856]
+      orientation: [0.9783789048814469, -0.11660879357979351, 0.12073685077332773, -0.12082930359885873]
+    success:
+      type: pose_window
+      params:
+        object: green_box
+        target_position: [0.6170533892477055, 0.10589195960662001, 0.3401676224361856]
+        target_orientation: [0.9783789048814469, -0.11660879357979351, 0.12073685077332773, -0.12082930359885873]
+        pos_threshold: 0.02
+        rot_threshold_deg: 15.0
+    fidelity: spec
+    note: 判据句“within 2 cm of the target's centre and its orientation within 15°”；盒体质量未在实例中给出，按 1.0 kg 代表值，spec 级
+pending:
+  mujoco_playground_panda_open_cabinet: instance.json 只有 target_pos；cabinet/handle 场景与手柄起点未镜像，禁止猜位姿
+  mujoco_playground_aloha_hand_over: aloha-2 本体与红盒起点未入库（instance.json 只有 box_xy_offset），禁止猜位姿
+  mujoco_playground_aloha_single_peg_insertion: aloha-2 本体未入库，且判据是 peg 轴线/轴向参数，需专用谓词

@@ -1,0 +1,65 @@
+# EFE 五类本体批次闸门（人工策划，唯一事实来源）。
+#
+# 用户指定的 9 个待迁移套件：迁移前必须确认其机器人本体属于
+# 单臂 / 双臂 / 灵巧手 / 人形 / 移动操作五类。每个机器人的 kinds 记录在
+# data/efe/robots.yaml；本文件的 decision 只表达迁移动作，不复制套件事实。
+# tools/audit_efe_embodiments.py 从 registry.json + robots.yaml + 任务清单
+# 推导 verdict，并校验 decision 与 verdict 一致、expected_tests 与论文计数一致。
+#
+# decision:
+#   migrate  = 套件内全部机器人均在五类内，进入迁移
+#   partial  = 套件含五类外的机器人；只迁移 in_scope 任务，其余按本体门排除
+#   exclude  = 套件内没有五类内的机器人，永久排除出本批次可执行范围
+version: 2
+allowed_kinds:
+  arm: 单臂
+  two_arms: 双臂
+  hand: 灵巧手
+  humanoid: 人形
+  mobile_manip: 移动操作
+  quadruped: 四足
+batch:
+  id: efe-five-embodiments-plus-quadruped
+  note: >-
+    RoboARC / Olympics-Fun / MetaWorld+ / Safety Exam / DexHandExam /
+    BiGym / HumanoidBench 七套全量在五类内；MyoSuite 的肌肉骨骼
+    模型永久排除。Playground 的 9 个四足 locomotion 任务原本在五类
+    外，用户 2026-11-20 指令「Playground 27 全迁」覆盖本体门：
+    quadruped 加入 allowed_kinds，13 任务全量迁移。
+  requested:
+  - suite: roboarc
+    expected_tests: 212
+    decision: migrate
+    note: 单臂 franka-robotiq + 双臂 aloha-2/franka-bimanual
+  - suite: embodied-olympics-fun
+    expected_tests: 179
+    decision: migrate
+    note: Unitree G1 / H1-2 人形
+  - suite: metaworldplus
+    expected_tests: 100
+    decision: migrate
+    note: Sawyer 单臂
+  - suite: embodied-safety-exam
+    expected_tests: 76
+    decision: migrate
+    note: UR5e/FR3 单臂、YAM 双臂、TidyBot++ 移动操作
+  - suite: dexhand
+    expected_tests: 60
+    decision: migrate
+    note: SHARPA Wave 灵巧手（含双手浮动本体与 Marvin 双臂承载）
+  - suite: myosuite
+    expected_tests: 45
+    decision: exclude
+    note: 肌肉骨骼（tendon/muscle 致动）不属于五类，Genesis 1.4.7 也无等效致动；永久排除出可执行迁移范围，仅保留论文登记
+  - suite: bigym2
+    expected_tests: 39
+    decision: migrate
+    note: Unitree G1 + Dex1 灵巧手人形（GR00T-WBC 下肢控制器）
+  - suite: humanoidbench
+    expected_tests: 30
+    decision: migrate
+    note: Unitree H1 / H1+Shadow 手人形
+  - suite: mujoco-playground
+    expected_tests: 27
+    decision: migrate
+    note: 用户 2026-11-20 覆盖：9 个四足任务一并迁移（quadruped 入 allowed_kinds）

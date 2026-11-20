@@ -1,0 +1,809 @@
+{
+  "version": 1,
+  "allowed_kinds": {
+    "arm": "单臂",
+    "two_arms": "双臂",
+    "hand": "灵巧手",
+    "humanoid": "人形",
+    "mobile_manip": "移动操作",
+    "quadruped": "四足"
+  },
+  "batch": {
+    "id": "efe-five-embodiments-plus-quadruped",
+    "note": "RoboARC / Olympics-Fun / MetaWorld+ / Safety Exam / DexHandExam / BiGym / HumanoidBench 七套全量在五类内；MyoSuite 的肌肉骨骼 模型永久排除。Playground 的 9 个四足 locomotion 任务原本在五类 外，用户 2026-11-20 指令「Playground 27 全迁」覆盖本体门： quadruped 加入 allowed_kinds，13 任务全量迁移。",
+    "requested_suites": 9,
+    "tests": 768,
+    "tasks": 395,
+    "in_scope_tasks": 373,
+    "out_of_scope_tasks": 22
+  },
+  "totals": {
+    "pass": 8,
+    "partial": 0,
+    "fail": 1
+  },
+  "suites": [
+    {
+      "suite": "roboarc",
+      "name": "RoboARC",
+      "verdict": "pass",
+      "decision": "migrate",
+      "note": "单臂 franka-robotiq + 双臂 aloha-2/franka-bimanual",
+      "tests": 212,
+      "tasks": 106,
+      "suite_kinds": [
+        "arm",
+        "two_arms"
+      ],
+      "in_scope_kinds": [
+        "arm",
+        "two_arms"
+      ],
+      "out_of_scope_kinds": [],
+      "in_scope_robots": [
+        "aloha-2",
+        "franka-panda-bimanual",
+        "franka-robotiq-2f85"
+      ],
+      "out_of_scope_robots": [],
+      "missing_kinds": [],
+      "robot_kinds": {
+        "aloha-2": [
+          "two_arms"
+        ],
+        "franka-panda-bimanual": [
+          "two_arms"
+        ],
+        "franka-robotiq-2f85": [
+          "arm"
+        ]
+      },
+      "in_scope_tasks": 106,
+      "out_of_scope_tasks": 0,
+      "in_scope_task_dirs": 212,
+      "out_of_scope_task_dirs": 0,
+      "in_scope_task_names": [
+        "roboarc-blanket-flatten-01-i01",
+        "roboarc-blanket-flatten-02-i01",
+        "roboarc-blanket-flatten-03-i01",
+        "roboarc-blanket-flatten-04-i01",
+        "roboarc-blanket-flatten-05-i01",
+        "roboarc-blanket-flatten-06-i01",
+        "roboarc-blanket-flatten-07-i01",
+        "roboarc-blanket-flatten-08-i01",
+        "roboarc-blanket-fold-01-i01",
+        "roboarc-blanket-fold-02-i01",
+        "roboarc-blanket-fold-03-i01",
+        "roboarc-blanket-fold-04-i01",
+        "roboarc-blanket-fold-05-i01",
+        "roboarc-buzz-wire-3d-01-i01",
+        "roboarc-buzz-wire-3d-02-i01",
+        "roboarc-buzz-wire-3d-03-i01",
+        "roboarc-buzz-wire-3d-04-i01",
+        "roboarc-buzz-wire-3d-05-i01",
+        "roboarc-buzz-wire-3d-06-i01",
+        "roboarc-buzz-wire-3d-07-i01",
+        "roboarc-buzz-wire-3d-08-i01",
+        "roboarc-buzz-wire-3d-09-i01",
+        "roboarc-buzz-wire-3d-10-i01",
+        "roboarc-cast-coil-01-i01",
+        "roboarc-cast-coil-02-i01",
+        "roboarc-cast-coil-03-i01",
+        "roboarc-cast-coil-04-i01",
+        "roboarc-cast-coil-05-i01",
+        "roboarc-cast-coil-06-i01",
+        "roboarc-cast-coil-07-i01",
+        "roboarc-cast-coil-08-i01",
+        "roboarc-cast-keyhole-01-i01",
+        "roboarc-cast-keyhole-02-i01",
+        "roboarc-cast-keyhole-03-i01",
+        "roboarc-cast-keyhole-04-i01",
+        "roboarc-cast-keyhole-05-i01",
+        "roboarc-cast-keyhole-06-i01",
+        "roboarc-fiber-bundling-01-i01",
+        "roboarc-fiber-bundling-02-i01",
+        "roboarc-fiber-bundling-03-i01",
+        "roboarc-fiber-bundling-04-i01",
+        "roboarc-fiber-bundling-05-i01",
+        "roboarc-fiber-bundling-06-i01",
+        "roboarc-fiber-bundling-07-i01",
+        "roboarc-fiber-bundling-08-i01",
+        "roboarc-fiber-bundling-09-i01",
+        "roboarc-fiber-bundling-10-i01",
+        "roboarc-hedgehog-in-cage-01-i01",
+        "roboarc-hedgehog-in-cage-02-i01",
+        "roboarc-hedgehog-in-cage-03-i01",
+        "roboarc-hedgehog-in-cage-04-i01",
+        "roboarc-hedgehog-in-cage-05-i01",
+        "roboarc-hedgehog-in-cage-06-i01",
+        "roboarc-hedgehog-in-cage-07-i01",
+        "roboarc-hedgehog-in-cage-08-i01",
+        "roboarc-horseshoe-ring-01-i01",
+        "roboarc-horseshoe-ring-02-i01",
+        "roboarc-horseshoe-ring-03-i01",
+        "roboarc-horseshoe-ring-04-i01",
+        "roboarc-horseshoe-ring-05-i01",
+        "roboarc-ikea-eket-i00",
+        "roboarc-ikea-gladom-i00",
+        "roboarc-ikea-ikea365-i00",
+        "roboarc-ikea-lack-i00",
+        "roboarc-ikea-stegesund-i00",
+        "roboarc-ikea-svallet-i00",
+        "roboarc-ikea-variera-i00",
+        "roboarc-ikea-vesken-i00",
+        "roboarc-interlocked-claws-01-i01",
+        "roboarc-interlocked-claws-02-i01",
+        "roboarc-interlocked-claws-03-i01",
+        "roboarc-interlocked-claws-04-i01",
+        "roboarc-interlocked-claws-05-i01",
+        "roboarc-interlocked-claws-06-i01",
+        "roboarc-interlocked-claws-07-i01",
+        "roboarc-interlocked-claws-08-i01",
+        "roboarc-interlocked-claws-09-i01",
+        "roboarc-interlocked-claws-10-i01",
+        "roboarc-interlocked-claws-11-i01",
+        "roboarc-interlocked-claws-12-i01",
+        "roboarc-knot-untying-01-i01",
+        "roboarc-knot-untying-02-i01",
+        "roboarc-knot-untying-03-i01",
+        "roboarc-knot-untying-04-i01",
+        "roboarc-knot-untying-05-i01",
+        "roboarc-knot-untying-06-i01",
+        "roboarc-knot-untying-09-i01",
+        "roboarc-lock-picking-01-i01",
+        "roboarc-lock-picking-02-i01",
+        "roboarc-lock-picking-03-i01",
+        "roboarc-lock-picking-04-i01",
+        "roboarc-lock-picking-05-i01",
+        "roboarc-orbits-01-i01",
+        "roboarc-rope-threading-01-i01",
+        "roboarc-rope-threading-02-i01",
+        "roboarc-rope-threading-03-i01",
+        "roboarc-rope-threading-04-i01",
+        "roboarc-rope-threading-05-i01",
+        "roboarc-rope-threading-06-i01",
+        "roboarc-rope-threading-07-i01",
+        "roboarc-rope-threading-08-i01",
+        "roboarc-slotted-post-ring-01-i01",
+        "roboarc-slotted-post-ring-02-i01",
+        "roboarc-slotted-post-ring-03-i01",
+        "roboarc-slotted-post-ring-04-i01",
+        "roboarc-slotted-post-ring-05-i01"
+      ],
+      "out_of_scope_task_names": []
+    },
+    {
+      "suite": "embodied-olympics-fun",
+      "name": "Embodied Olympics - Fun",
+      "verdict": "pass",
+      "decision": "migrate",
+      "note": "Unitree G1 / H1-2 人形",
+      "tests": 179,
+      "tasks": 79,
+      "suite_kinds": [
+        "humanoid"
+      ],
+      "in_scope_kinds": [
+        "humanoid"
+      ],
+      "out_of_scope_kinds": [],
+      "in_scope_robots": [
+        "unitree-g1",
+        "unitree-h1-2"
+      ],
+      "out_of_scope_robots": [],
+      "missing_kinds": [],
+      "robot_kinds": {
+        "unitree-g1": [
+          "humanoid"
+        ],
+        "unitree-h1-2": [
+          "humanoid"
+        ]
+      },
+      "in_scope_tasks": 79,
+      "out_of_scope_tasks": 0,
+      "in_scope_task_dirs": 179,
+      "out_of_scope_task_dirs": 0,
+      "in_scope_task_names": [
+        "embodied-olympics-fun-alpine-slalom-i00",
+        "embodied-olympics-fun-backflip-i00",
+        "embodied-olympics-fun-badminton-serve-i00",
+        "embodied-olympics-fun-balance-beam-i00",
+        "embodied-olympics-fun-balance-board-i00",
+        "embodied-olympics-fun-basketball-dribble-i00",
+        "embodied-olympics-fun-bowling-i00",
+        "embodied-olympics-fun-box-jump-i00",
+        "embodied-olympics-fun-boxing-i00",
+        "embodied-olympics-fun-breaking-windmill-i00",
+        "embodied-olympics-fun-catch-and-shoot-i00",
+        "embodied-olympics-fun-catch-i00",
+        "embodied-olympics-fun-clean-and-jerk-i00",
+        "embodied-olympics-fun-crawl-i00",
+        "embodied-olympics-fun-discus-i00",
+        "embodied-olympics-fun-dodgeball-i00",
+        "embodied-olympics-fun-double-dutch-i00",
+        "embodied-olympics-fun-dribble-slalom-i00",
+        "embodied-olympics-fun-dunk-between-legs-i00",
+        "embodied-olympics-fun-dunk-i00",
+        "embodied-olympics-fun-first-time-shot-i00",
+        "embodied-olympics-fun-free-kick-wall-i00",
+        "embodied-olympics-fun-free-throw-i00",
+        "embodied-olympics-fun-freeski-360-i00",
+        "embodied-olympics-fun-freeski-straight-air-i00",
+        "embodied-olympics-fun-giant-slalom-i00",
+        "embodied-olympics-fun-goalkeeper-save-i00",
+        "embodied-olympics-fun-golf-putt-i00",
+        "embodied-olympics-fun-handstand-i00",
+        "embodied-olympics-fun-header-i00",
+        "embodied-olympics-fun-high-bar-swing-i00",
+        "embodied-olympics-fun-high-jump-i00",
+        "embodied-olympics-fun-hurdles-freestanding-i00",
+        "embodied-olympics-fun-inline-slalom-i00",
+        "embodied-olympics-fun-javelin-i00",
+        "embodied-olympics-fun-juggle-three-i00",
+        "embodied-olympics-fun-juggling-feet-i00",
+        "embodied-olympics-fun-juggling-head-i00",
+        "embodied-olympics-fun-juggling-i00",
+        "embodied-olympics-fun-jump-rope-i00",
+        "embodied-olympics-fun-kick-target-i00",
+        "embodied-olympics-fun-layup-i00",
+        "embodied-olympics-fun-long-jump-i00",
+        "embodied-olympics-fun-long-rope-i00",
+        "embodied-olympics-fun-paddle-bounce-i00",
+        "embodied-olympics-fun-penalty-kick-i00",
+        "embodied-olympics-fun-pitch-target-i00",
+        "embodied-olympics-fun-platform-10m-i00",
+        "embodied-olympics-fun-pole-vault-i00",
+        "embodied-olympics-fun-round-off-i00",
+        "embodied-olympics-fun-rugby-conversion-i00",
+        "embodied-olympics-fun-shot-put-i00",
+        "embodied-olympics-fun-shuttle-run-i00",
+        "embodied-olympics-fun-skateboard-ollie-i00",
+        "embodied-olympics-fun-slalom-i00",
+        "embodied-olympics-fun-sled-push-i00",
+        "embodied-olympics-fun-snowboard-i00",
+        "embodied-olympics-fun-springboard-3m-i00",
+        "embodied-olympics-fun-sprint-i00",
+        "embodied-olympics-fun-standing-long-jump-i00",
+        "embodied-olympics-fun-steeplechase-i00",
+        "embodied-olympics-fun-sumo-i00",
+        "embodied-olympics-fun-sweeper-jump-i00",
+        "embodied-olympics-fun-table-tennis-return-i00",
+        "embodied-olympics-fun-taekwondo-kick-i00",
+        "embodied-olympics-fun-tennis-return-i00",
+        "embodied-olympics-fun-tennis-serve-i00",
+        "embodied-olympics-fun-toes-to-bar-i00",
+        "embodied-olympics-fun-trampoline-i00",
+        "embodied-olympics-fun-trap-ball-i00",
+        "embodied-olympics-fun-triple-jump-i00",
+        "embodied-olympics-fun-vault-i00",
+        "embodied-olympics-fun-vertical-jump-i00",
+        "embodied-olympics-fun-volley-shot-i00",
+        "embodied-olympics-fun-volleyball-bump-i00",
+        "embodied-olympics-fun-volleyball-serve-i00",
+        "embodied-olympics-fun-volleyball-set-i00",
+        "embodied-olympics-fun-volleyball-spike-i00",
+        "embodied-olympics-fun-wall-ball-i00"
+      ],
+      "out_of_scope_task_names": []
+    },
+    {
+      "suite": "metaworldplus",
+      "name": "MetaWorld+",
+      "verdict": "pass",
+      "decision": "migrate",
+      "note": "Sawyer 单臂",
+      "tests": 100,
+      "tasks": 50,
+      "suite_kinds": [
+        "arm"
+      ],
+      "in_scope_kinds": [
+        "arm"
+      ],
+      "out_of_scope_kinds": [],
+      "in_scope_robots": [
+        "sawyer"
+      ],
+      "out_of_scope_robots": [],
+      "missing_kinds": [],
+      "robot_kinds": {
+        "sawyer": [
+          "arm"
+        ]
+      },
+      "in_scope_tasks": 50,
+      "out_of_scope_tasks": 0,
+      "in_scope_task_dirs": 100,
+      "out_of_scope_task_dirs": 0,
+      "in_scope_task_names": [
+        "metaworldplus-assembly-i00",
+        "metaworldplus-basketball-i00",
+        "metaworldplus-bin-picking-i00",
+        "metaworldplus-box-close-i00",
+        "metaworldplus-button-press-i00",
+        "metaworldplus-button-press-topdown-i00",
+        "metaworldplus-button-press-topdown-wall-i00",
+        "metaworldplus-button-press-wall-i00",
+        "metaworldplus-coffee-button-i00",
+        "metaworldplus-coffee-pull-i00",
+        "metaworldplus-coffee-push-i00",
+        "metaworldplus-dial-turn-i00",
+        "metaworldplus-disassemble-i00",
+        "metaworldplus-door-close-i00",
+        "metaworldplus-door-lock-i00",
+        "metaworldplus-door-open-i00",
+        "metaworldplus-door-unlock-i00",
+        "metaworldplus-drawer-close-i00",
+        "metaworldplus-drawer-open-i00",
+        "metaworldplus-faucet-close-i00",
+        "metaworldplus-faucet-open-i00",
+        "metaworldplus-hammer-i00",
+        "metaworldplus-hand-insert-i00",
+        "metaworldplus-handle-press-i00",
+        "metaworldplus-handle-press-side-i00",
+        "metaworldplus-handle-pull-i00",
+        "metaworldplus-handle-pull-side-i00",
+        "metaworldplus-lever-pull-i00",
+        "metaworldplus-peg-insert-side-i00",
+        "metaworldplus-peg-unplug-side-i00",
+        "metaworldplus-pick-out-of-hole-i00",
+        "metaworldplus-pick-place-i00",
+        "metaworldplus-pick-place-wall-i00",
+        "metaworldplus-plate-slide-back-i00",
+        "metaworldplus-plate-slide-back-side-i00",
+        "metaworldplus-plate-slide-i00",
+        "metaworldplus-plate-slide-side-i00",
+        "metaworldplus-push-back-i00",
+        "metaworldplus-push-i00",
+        "metaworldplus-push-wall-i00",
+        "metaworldplus-reach-i00",
+        "metaworldplus-reach-wall-i00",
+        "metaworldplus-shelf-place-i00",
+        "metaworldplus-soccer-i00",
+        "metaworldplus-stick-pull-i00",
+        "metaworldplus-stick-push-i00",
+        "metaworldplus-sweep-i00",
+        "metaworldplus-sweep-into-i00",
+        "metaworldplus-window-close-i00",
+        "metaworldplus-window-open-i00"
+      ],
+      "out_of_scope_task_names": []
+    },
+    {
+      "suite": "embodied-safety-exam",
+      "name": "Embodied Safety Exam",
+      "verdict": "pass",
+      "decision": "migrate",
+      "note": "UR5e/FR3 单臂、YAM 双臂、TidyBot++ 移动操作",
+      "tests": 76,
+      "tasks": 72,
+      "suite_kinds": [
+        "arm",
+        "two_arms",
+        "mobile_manip"
+      ],
+      "in_scope_kinds": [
+        "arm",
+        "mobile_manip",
+        "two_arms"
+      ],
+      "out_of_scope_kinds": [],
+      "in_scope_robots": [
+        "franka-robotiq-2f85",
+        "i2rt-yam-bimanual",
+        "tidybot-plus-plus",
+        "ur5e-robotiq-2f85"
+      ],
+      "out_of_scope_robots": [],
+      "missing_kinds": [],
+      "robot_kinds": {
+        "franka-robotiq-2f85": [
+          "arm"
+        ],
+        "i2rt-yam-bimanual": [
+          "two_arms"
+        ],
+        "tidybot-plus-plus": [
+          "mobile_manip",
+          "arm"
+        ],
+        "ur5e-robotiq-2f85": [
+          "arm"
+        ]
+      },
+      "in_scope_tasks": 72,
+      "out_of_scope_tasks": 0,
+      "in_scope_task_dirs": 76,
+      "out_of_scope_task_dirs": 0,
+      "in_scope_task_names": [
+        "ese-a01-i01",
+        "ese-a01-i02",
+        "ese-a01-i04",
+        "ese-a01-i08",
+        "ese-a01-i09",
+        "ese-a02-i03",
+        "ese-a04-i00",
+        "ese-a04-i03",
+        "ese-a06-i01",
+        "ese-a06-i03",
+        "ese-a07-i02",
+        "ese-a08-i01",
+        "ese-a09-i05",
+        "ese-a17-i00",
+        "ese-a17-i01",
+        "ese-a26-i02",
+        "ese-a27-i06",
+        "ese-a28-i00",
+        "ese-a28-i01",
+        "ese-a28-i03",
+        "ese-a29-i00",
+        "ese-a29-i01",
+        "ese-a29-i03",
+        "ese-a30-i05",
+        "ese-a33-i01",
+        "ese-a33-i04",
+        "ese-a34-i07",
+        "ese-a34-i09",
+        "ese-a34-i11",
+        "ese-b06-i00",
+        "ese-b06-i01",
+        "ese-b06-i02",
+        "ese-b08-i01",
+        "ese-b08-i02",
+        "ese-b11-i00",
+        "ese-b11-i01",
+        "ese-b11-i03",
+        "ese-b12-i04",
+        "ese-b12-i06",
+        "ese-b12-i07",
+        "ese-c02-i00",
+        "ese-c02-i01",
+        "ese-c04-i00",
+        "ese-c04-i01",
+        "ese-c05-i01",
+        "ese-c05-i02",
+        "ese-c16-i00",
+        "ese-c16-i01",
+        "ese-d05-i04",
+        "ese-d05-i07",
+        "ese-d08-i01",
+        "ese-d12-i02",
+        "ese-d12-i04",
+        "ese-e06-i00",
+        "ese-e06-i03",
+        "ese-f01-i00",
+        "ese-f02-i00",
+        "ese-f02-i01",
+        "ese-f03-i00",
+        "ese-f03-i01",
+        "ese-f03-i02",
+        "ese-f04-i01",
+        "ese-f04-i02",
+        "ese-f05-i00",
+        "ese-f05-i01",
+        "ese-f06-i00",
+        "ese-f06-i01",
+        "ese-f07-i00",
+        "ese-f08-i00",
+        "ese-f09-i00",
+        "ese-f10-i00",
+        "ese-f11-i00"
+      ],
+      "out_of_scope_task_names": []
+    },
+    {
+      "suite": "dexhand",
+      "name": "DexHandExam",
+      "verdict": "pass",
+      "decision": "migrate",
+      "note": "SHARPA Wave 灵巧手（含双手浮动本体与 Marvin 双臂承载）",
+      "tests": 60,
+      "tasks": 30,
+      "suite_kinds": [
+        "hand"
+      ],
+      "in_scope_kinds": [
+        "hand"
+      ],
+      "out_of_scope_kinds": [],
+      "in_scope_robots": [
+        "marvin-bimanual-sharpa-wave",
+        "sharpa-wave-floating",
+        "sharpa-wave-floating-bimanual"
+      ],
+      "out_of_scope_robots": [],
+      "missing_kinds": [],
+      "robot_kinds": {
+        "marvin-bimanual-sharpa-wave": [
+          "two_arms",
+          "hand"
+        ],
+        "sharpa-wave-floating": [
+          "hand"
+        ],
+        "sharpa-wave-floating-bimanual": [
+          "hand",
+          "two_arms"
+        ]
+      },
+      "in_scope_tasks": 30,
+      "out_of_scope_tasks": 0,
+      "in_scope_task_dirs": 60,
+      "out_of_scope_task_dirs": 0,
+      "in_scope_task_names": [
+        "dexhand-assemble-hamburger-i00",
+        "dexhand-batter-whisk-i00",
+        "dexhand-bicycle-pump-stroke-i00",
+        "dexhand-binder-page-load-i00",
+        "dexhand-book-page-turn-i00",
+        "dexhand-boot-sole-brush-i00",
+        "dexhand-coffee-stir-i00",
+        "dexhand-drying-rack-unfold-i00",
+        "dexhand-envelope-letter-insert-i00",
+        "dexhand-essential-cube-layer-i00",
+        "dexhand-essential-cube-reorient-i00",
+        "dexhand-essential-held-joystick-i00",
+        "dexhand-essential-pen-regrasp-i00",
+        "dexhand-essential-rotary-gait-i00",
+        "dexhand-essential-two-object-i00",
+        "dexhand-fan-guard-install-i00",
+        "dexhand-grinder-crank-i00",
+        "dexhand-jar-lid-open-i00",
+        "dexhand-pancake-serve-i00",
+        "dexhand-paper-half-fold-i00",
+        "dexhand-paper-staple-i00",
+        "dexhand-picture-hang-i00",
+        "dexhand-pot-shelf-transfer-i00",
+        "dexhand-ram-module-install-i00",
+        "dexhand-remote-battery-swap-i00",
+        "dexhand-stool-brace-insert-i00",
+        "dexhand-sweep-dustpan-i00",
+        "dexhand-tray-glass-carry-i00",
+        "dexhand-usb-plug-insert-i00",
+        "dexhand-vacuum-bin-reseat-i00"
+      ],
+      "out_of_scope_task_names": []
+    },
+    {
+      "suite": "myosuite",
+      "name": "MyoSuite",
+      "verdict": "fail",
+      "decision": "exclude",
+      "note": "肌肉骨骼（tendon/muscle 致动）不属于五类，Genesis 1.4.7 也无等效致动；永久排除出可执行迁移范围，仅保留论文登记",
+      "tests": 45,
+      "tasks": 22,
+      "suite_kinds": [
+        "musculoskeletal"
+      ],
+      "in_scope_kinds": [],
+      "out_of_scope_kinds": [
+        "musculoskeletal"
+      ],
+      "in_scope_robots": [],
+      "out_of_scope_robots": [
+        "myoarm",
+        "myoarm-mpl",
+        "myoarm-torso",
+        "myohand",
+        "myoleg-osl",
+        "myolegs"
+      ],
+      "missing_kinds": [],
+      "robot_kinds": {
+        "myoarm": [
+          "musculoskeletal"
+        ],
+        "myoarm-mpl": [
+          "musculoskeletal"
+        ],
+        "myoarm-torso": [
+          "musculoskeletal"
+        ],
+        "myohand": [
+          "musculoskeletal",
+          "hand"
+        ],
+        "myoleg-osl": [
+          "musculoskeletal"
+        ],
+        "myolegs": [
+          "musculoskeletal",
+          "humanoid"
+        ]
+      },
+      "in_scope_tasks": 0,
+      "out_of_scope_tasks": 22,
+      "in_scope_task_dirs": 0,
+      "out_of_scope_task_dirs": 45,
+      "in_scope_task_names": [],
+      "out_of_scope_task_names": [
+        "myosuite-arm-reach-i00",
+        "myosuite-baoding-i00",
+        "myosuite-bimanual-i00",
+        "myosuite-chase-tag-i00",
+        "myosuite-dex-airplane-fly-i00",
+        "myosuite-dex-apple-lift-i00",
+        "myosuite-dex-bunny-inspect-i00",
+        "myosuite-dex-cup-pour-i00",
+        "myosuite-dex-cylinder-pass-i00",
+        "myosuite-dex-hammer-use-i00",
+        "myosuite-die-reorient-i00",
+        "myosuite-hand-pose-i00",
+        "myosuite-hand-reach-i00",
+        "myosuite-key-turn-i00",
+        "myosuite-obj-hold-i00",
+        "myosuite-obj-reorient-i00",
+        "myosuite-osl-run-i00",
+        "myosuite-pen-twirl-i00",
+        "myosuite-relocate-i00",
+        "myosuite-sarc-key-turn-i00",
+        "myosuite-soccer-i00",
+        "myosuite-table-tennis-i00"
+      ]
+    },
+    {
+      "suite": "bigym2",
+      "name": "BiGym 2.0",
+      "verdict": "pass",
+      "decision": "migrate",
+      "note": "Unitree G1 + Dex1 灵巧手人形（GR00T-WBC 下肢控制器）",
+      "tests": 39,
+      "tasks": 13,
+      "suite_kinds": [
+        "humanoid"
+      ],
+      "in_scope_kinds": [
+        "humanoid"
+      ],
+      "out_of_scope_kinds": [],
+      "in_scope_robots": [
+        "unitree-g1-dex1"
+      ],
+      "out_of_scope_robots": [],
+      "missing_kinds": [],
+      "robot_kinds": {
+        "unitree-g1-dex1": [
+          "humanoid",
+          "hand"
+        ]
+      },
+      "in_scope_tasks": 13,
+      "out_of_scope_tasks": 0,
+      "in_scope_task_dirs": 39,
+      "out_of_scope_task_dirs": 0,
+      "in_scope_task_names": [
+        "bigym2-dishwasher-close-i00",
+        "bigym2-dishwasher-load-plates-i00",
+        "bigym2-drawer-top-open-i00",
+        "bigym2-flip-cup-i00",
+        "bigym2-flip-cutlery-i00",
+        "bigym2-move-two-plates-i00",
+        "bigym2-pick-box-i00",
+        "bigym2-put-cups-i00",
+        "bigym2-reach-target-dual-i00",
+        "bigym2-sandwich-remove-i00",
+        "bigym2-saucepan-to-hob-i00",
+        "bigym2-stack-blocks-i00",
+        "bigym2-wall-cupboard-open-i00"
+      ],
+      "out_of_scope_task_names": []
+    },
+    {
+      "suite": "humanoidbench",
+      "name": "HumanoidBench",
+      "verdict": "pass",
+      "decision": "migrate",
+      "note": "Unitree H1 / H1+Shadow 手人形",
+      "tests": 30,
+      "tasks": 10,
+      "suite_kinds": [
+        "humanoid"
+      ],
+      "in_scope_kinds": [
+        "humanoid"
+      ],
+      "out_of_scope_kinds": [],
+      "in_scope_robots": [
+        "unitree-h1",
+        "unitree-h1hand"
+      ],
+      "out_of_scope_robots": [],
+      "missing_kinds": [],
+      "robot_kinds": {
+        "unitree-h1": [
+          "humanoid"
+        ],
+        "unitree-h1hand": [
+          "humanoid",
+          "hand"
+        ]
+      },
+      "in_scope_tasks": 10,
+      "out_of_scope_tasks": 0,
+      "in_scope_task_dirs": 30,
+      "out_of_scope_task_dirs": 0,
+      "in_scope_task_names": [
+        "humanoidbench-loco-balance-hard-i00",
+        "humanoidbench-loco-hurdle-i00",
+        "humanoidbench-loco-sit-simple-i00",
+        "humanoidbench-loco-walk-i00",
+        "humanoidbench-manip-bookshelf-simple-i00",
+        "humanoidbench-manip-cube-i00",
+        "humanoidbench-manip-door-i00",
+        "humanoidbench-manip-powerlift-i00",
+        "humanoidbench-manip-room-i00",
+        "humanoidbench-manip-window-i00"
+      ],
+      "out_of_scope_task_names": []
+    },
+    {
+      "suite": "mujoco-playground",
+      "name": "MuJoCo Playground",
+      "verdict": "pass",
+      "decision": "migrate",
+      "note": "用户 2026-11-20 覆盖：9 个四足任务一并迁移（quadruped 入 allowed_kinds）",
+      "tests": 27,
+      "tasks": 13,
+      "suite_kinds": [
+        "arm",
+        "two_arms",
+        "quadruped"
+      ],
+      "in_scope_kinds": [
+        "arm",
+        "quadruped",
+        "two_arms"
+      ],
+      "out_of_scope_kinds": [],
+      "in_scope_robots": [
+        "aloha-2",
+        "boston-dynamics-spot",
+        "franka-panda",
+        "google-barkour-vb",
+        "unitree-go1"
+      ],
+      "out_of_scope_robots": [],
+      "missing_kinds": [],
+      "robot_kinds": {
+        "aloha-2": [
+          "two_arms"
+        ],
+        "boston-dynamics-spot": [
+          "quadruped"
+        ],
+        "franka-panda": [
+          "arm"
+        ],
+        "google-barkour-vb": [
+          "quadruped"
+        ],
+        "unitree-go1": [
+          "quadruped"
+        ]
+      },
+      "in_scope_tasks": 13,
+      "out_of_scope_tasks": 0,
+      "in_scope_task_dirs": 27,
+      "out_of_scope_task_dirs": 0,
+      "in_scope_task_names": [
+        "mujoco_playground_aloha_hand_over",
+        "mujoco_playground_aloha_single_peg_insertion",
+        "mujoco_playground_barkour_joystick",
+        "mujoco_playground_go1_footstand",
+        "mujoco_playground_go1_getup",
+        "mujoco_playground_go1_handstand",
+        "mujoco_playground_go1_joystick_flat_terrain",
+        "mujoco_playground_go1_joystick_rough_terrain",
+        "mujoco_playground_panda_open_cabinet",
+        "mujoco_playground_panda_pick_cube_orientation",
+        "mujoco_playground_spot_flat_terrain_joystick",
+        "mujoco_playground_spot_getup",
+        "mujoco_playground_spot_joystick_gait_tracking"
+      ],
+      "out_of_scope_task_names": []
+    }
+  ],
+  "errors": []
+}

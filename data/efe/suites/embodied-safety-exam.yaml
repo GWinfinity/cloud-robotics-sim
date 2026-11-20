@@ -26,4 +26,4 @@ project:
   tier: T1
   status: planned
   target: src/cloud_robotics_sim/runtime registry 新 task 族
-  note: 安全请求执行/有害请求拒止/风险解释；拒止判定是规则 verifier，物理要求低，与项目 SafetyViolationError 安全边界同源
+  note: 安全请求执行/有害请求拒止/风险解释；拒止判定是规则 verifier，物理要求低，与项目 SafetyViolationError 安全边界同源。本体门通过（UR5e/FR3 单臂、YAM 双臂、TidyBot++ 移动操作），见 data/efe/embodiment_gate.json

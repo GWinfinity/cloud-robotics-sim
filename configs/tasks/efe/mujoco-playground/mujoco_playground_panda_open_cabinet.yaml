@@ -1,0 +1,68 @@
+# EFE 迁移编译物（mujoco-playground）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: mujoco_playground/PandaOpenCabinet | goal: Grasp the green handle and pull it along its slide until it is at the red target sphere.
+# fidelity: spec | notes: PandaOpenCabinet 判据逐字转写 rcb_aloha.py::Session.check / rcb_panda.py::Session.check（3000 控制步上限 @ 0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle 一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+version: 1
+
+task:
+  name: mujoco_playground_panda_open_cabinet
+  type: efe_pg
+  robot: franka_panda_embedded
+  scene: efe_world
+  max_episode_steps: 3000
+  world:
+    mjcf_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.xml
+    qpos_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.qpos.npy
+    qvel_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.qvel.npy
+    meta_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.meta.json
+  pg:
+    task_kind: PandaOpenCabinet
+    actuators:
+    - actuator1
+    - actuator2
+    - actuator3
+    - actuator4
+    - actuator5
+    - actuator6
+    - actuator7
+    - actuator8
+    max_steps: 3000
+    object_body: handle
+    target_pos:
+    - 0.20061100789921119
+    - 0.0
+    - 0.5
+    target_quat_wxyz:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    check:
+      tol_m: 0.015
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: pg_success
+  params: {}
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

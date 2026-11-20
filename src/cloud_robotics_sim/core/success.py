@@ -79,6 +79,7 @@ SUCCESS_TYPES = (
     "abc_drawer_sequence",
     "dtb_all_goals",
     "djx_success",
+    "pg_success",
     "all",
     "any",
     "not",
@@ -2974,6 +2975,22 @@ class DjxSuccessCondition(SuccessCondition):
 
 
 @dataclass
+class PgSuccessCondition(SuccessCondition):
+    """MuJoCo Playground verdict: the session's own ``check()`` success.
+
+    ``EfePgTask`` ports the graders' check formulas verbatim (joystick
+    tracking bars + termination rules, getup/stand holds, peg/handover/pick/
+    cabinet end-state predicates) and publishes ``info['pg']`` each control
+    step; missing info is a failure (nop-safe).
+    """
+
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        return bool((info or {}).get("pg", {}).get("success"))
+
+
+@dataclass
 class AbcDrawerSequenceCondition(SuccessCondition):
     """``multi_drawer_target_in_bin``: the prompted targets reach the goal
     bin *in order* — the task advances the latch (upstream's evaluator-side
@@ -3406,6 +3423,8 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return _build_dtb_all_goals(params)
     if success_type == "djx_success":
         return DjxSuccessCondition()
+    if success_type == "pg_success":
+        return PgSuccessCondition()
     if success_type == "all":
         return _build_all(params)
     if success_type == "any":

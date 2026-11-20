@@ -24,6 +24,6 @@ efe:
   core: 13
 project:
   tier: TX
-  status: blocked
+  status: excluded
   target: 无（Genesis 缺肌肉-肌腱致动模型）
-  note: 肌肉骨骼模型依赖 MuJoCo tendon/actuator 特性，Genesis 1.4.6 无等效；需先决策（自研 solver 插件或永久跳过）
+  note: 本体门不通过：6 台 MyoSuite 肌肉骨骼模型不属于单臂/双臂/灵巧手/人形/移动操作五类；且依赖 MuJoCo tendon/muscle 致动，Genesis 1.4.7 无等效。决定永久排除，不放宽本体门；从可执行迁移范围剥离，仅保留论文登记以维持 35 套件/47 机器人/1156 任务/2288 测试对账。见 data/efe/embodiment_gate.json

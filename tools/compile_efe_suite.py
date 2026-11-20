@@ -1171,75 +1171,21 @@ def resolve_vlabench(predicates: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def resolve_mujoco_playground(predicates: dict[str, Any]) -> dict[str, Any]:
-    """Resolve the arm-only MuJoCo Playground tasks from the predicate table.
+def _resolve_pg(predicates: dict[str, Any]) -> dict[str, Any]:
+    """MuJoCo Playground resolves from the composed world packs, not a table."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        import pg_resolver
 
-    The nine quadruped tasks are recorded as excluded by the embodiment gate
-    (``tools/audit_efe_embodiments.py``); the three remaining arm tasks hold
-    when the frozen scene or start pose is not mirrored. Only tasks whose
-    success sentence and instance pose are both available are compiled.
-    """
-    robot = predicates.get("robot", "franka_panda")
-    scene = predicates.get("scene", "efe_tabletop")
-    tasks: dict[str, Any] = {}
-    for name, spec in sorted((predicates.get("tasks") or {}).items()):
-        box = spec["box"]
-        target = spec["target"]
-        target_position = list(target["position"])
-        target_orientation = list(target.get("orientation", [1.0, 0.0, 0.0, 0.0]))
-        assets = [
-            {
-                "name": box["name"],
-                "shape_type": "box",
-                "size": list(box["size"]),
-                "position": list(box["position"]),
-                "orientation": [1.0, 0.0, 0.0, 0.0],
-                "color": [0.1, 0.8, 0.1, 1.0],
-                "mass": 1.0,
-                "static": False,
-                "friction": 1.0,
-            },
-            {
-                "name": "target_box",
-                "shape_type": "box",
-                "size": list(target["size"]),
-                "position": target_position,
-                "orientation": target_orientation,
-                "color": [1.0, 0.0, 0.0, 0.3],
-                "mass": 1.0,
-                "static": True,
-                "friction": 1.0,
-            },
-        ]
-        tasks[name] = {
-            "family": spec["family"],
-            "goal": spec["goal"],
-            "robot": robot,
-            "scene": scene,
-            "task_type": "efe_static",
-            "assets_task_relevant": assets,
-            "success": json.loads(json.dumps(spec["success"])),
-            "max_episode_steps": int(spec.get("max_episode_steps", 3000)),
-            "efe": {
-                "fidelity": spec.get("fidelity", "spec"),
-                "notes": spec.get("note", ""),
-            },
-        }
-    pending_table = dict(predicates.get("pending") or {})
-    pending = sorted(pending_table)
-    return {
-        "suite": "mujoco-playground",
-        "robot": robot,
-        "scene": scene,
-        "source": predicates.get("source", {}),
-        "pending_tasks": pending,
-        "pending_reasons": pending_table,
-        "tasks": tasks,
-    }
+        return pg_resolver.resolve_suite(
+            "mujoco-playground", load_inventory("mujoco-playground")
+        )
+    finally:
+        sys.path.remove(str(Path(__file__).resolve().parent))
 
 
 RESOLVERS = {"metaworldplus": resolve_metaworldplus, "vlabench": resolve_vlabench}
-RESOLVERS["mujoco-playground"] = resolve_mujoco_playground
+RESOLVERS["mujoco-playground"] = _resolve_pg
 
 
 def _resolve_robocasa(suite: str):
@@ -1593,7 +1539,7 @@ def render_task_yaml(suite: str, name: str, record: dict[str, Any]) -> str:
             "    " + line
             for line in yaml.safe_dump(event, sort_keys=False).splitlines()
         )
-    for block in ("world", "appliances", "timers", "abc", "dtb", "djx"):
+    for block in ("world", "appliances", "timers", "abc", "dtb", "djx", "pg"):
         value = record.get(block)
         if value:
             lines.append(f"  {block}:")

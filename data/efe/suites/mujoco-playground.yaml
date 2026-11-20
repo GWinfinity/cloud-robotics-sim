@@ -25,6 +25,6 @@ efe:
   core: 7
 project:
   tier: T1
-  status: planned
-  target: plugins/envs 新增
-  note: 四足 locomotion + 少量臂任务；spot/barkour/go1 全在 Menagerie，是 T1 里机器人资产最省事的一套
+  status: partial
+  target: src/cloud_robotics_sim/runtime registry 新 task 族（efe_pg）
+  note: 13/13 已编译（2026-11-20，spec 级；用户指令覆盖五类本体门，quadruped 入 allowed_kinds）。9 四足（rcb_quadruped 判据：joystick 段均速误差 0.2/0.3 + 终止规则；getup/stand 保持段）+ 4 臂（peg t∈[-0.875,0.75]&轴线 5mm；handover 3cm+右指接触+非左臂+z≥0.05；pick 2cm/15°；cabinet 1.5cm）。世界包=场景 XML+冻结 qpos/qvel；mocap 目标转静态可视标记；Barkour 推力不重现；控制为 best-effort 伺服

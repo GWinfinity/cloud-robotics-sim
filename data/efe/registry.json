@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-19T13:00:20.600580+00:00",
+  "generated_at": "2026-11-20T01:56:11.734381+00:00",
   "paper": {
     "arxiv": "2611.12177",
     "repo": "https://github.com/mll-lab-nu/embodied-first-exam",
@@ -675,8 +675,8 @@
       "project": {
         "tier": "T1",
         "status": "partial",
-        "target": "plugins/envs 新增（仅五类本体内的臂任务）",
-        "note": "本体门 partial，决定不放宽：4 个 aloha/panda 臂任务在五类内，9 个 go1/spot/barkour 四足任务永久排除并剥离出可执行配置（任务名见 data/efe/embodiment_gate.json 的 out_of_scope_task_names）。已编译 1/4 臂任务（panda_pick_cube_orientation，spec 级，判据句+实例位姿逐字落盘）；panda_open_cabinet 与 2 个 aloha 任务因手柄/盒体起点或 aloha-2 本体未镜像而 pending"
+        "target": "src/cloud_robotics_sim/runtime registry 新 task 族（efe_pg）",
+        "note": "13/13 已编译（2026-11-20，spec 级；用户指令覆盖五类本体门，quadruped 入 allowed_kinds）。9 四足（rcb_quadruped 判据：joystick 段均速误差 0.2/0.3 + 终止规则；getup/stand 保持段）+ 4 臂（peg t∈[-0.875,0.75]&轴线 5mm；handover 3cm+右指接触+非左臂+z≥0.05；pick 2cm/15°；cabinet 1.5cm）。世界包=场景 XML+冻结 qpos/qvel；mocap 目标转静态可视标记；Barkour 推力不重现；控制为 best-effort 伺服"
       },
       "inventory": {
         "n_tasks": 13,

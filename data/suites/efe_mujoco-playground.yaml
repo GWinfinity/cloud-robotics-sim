@@ -1,0 +1,17 @@
+# EFE mujoco-playground 套件汇总（编译物）；由 tools/compile_efe_suite.py 生成。
+version: 1
+name: efe-mujoco-playground
+tasks:
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_aloha_hand_over.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_aloha_single_peg_insertion.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_barkour_joystick.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_go1_footstand.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_go1_getup.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_go1_handstand.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_go1_joystick_flat_terrain.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_go1_joystick_rough_terrain.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_panda_open_cabinet.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_panda_pick_cube_orientation.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_spot_flat_terrain_joystick.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_spot_getup.yaml
+  - ../../configs/tasks/efe/mujoco-playground/mujoco_playground_spot_joystick_gait_tracking.yaml

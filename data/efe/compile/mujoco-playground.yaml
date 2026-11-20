@@ -1,0 +1,2166 @@
+# 编译知识库（生成物）：--resolve 从判据表+上游模型生成；人工修正会被下次 --resolve 覆盖，
+# 持久标注请改 .predicates.yaml。
+suite: mujoco-playground
+robot: unitree_go1
+scene: efe_world
+source:
+  benchmark: MuJoCo Playground
+  repo: google-deepmind/mujoco_playground
+  ref: 4057c14
+  simulator: mujoco
+  note: 场景唯一事实来源为 efe-benchmark/rcb_{quadruped,aloha,panda}.py::load_model + reset（镜像
+    @4057c14 + menagerie@1b86ece）
+pending_tasks: []
+pending_reasons: {}
+tasks:
+  mujoco_playground_aloha_hand_over:
+    family: mujoco_playground/AlohaHandOver
+    goal: Pick up the red box with the left arm, hand it over to the right arm, and
+      have the right arm hold it at the translucent target.
+    robot: aloha_2
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.meta.json
+    pg:
+      task_kind: AlohaHandOver
+      actuators:
+      - left/waist
+      - left/shoulder
+      - left/elbow
+      - left/forearm_roll
+      - left/wrist_angle
+      - left/wrist_rotate
+      - left/gripper
+      - right/waist
+      - right/shoulder
+      - right/elbow
+      - right/forearm_roll
+      - right/wrist_angle
+      - right/wrist_rotate
+      - right/gripper
+      max_steps: 3000
+      check:
+        box_body: box
+        box_geom: box
+        left_geoms:
+        - left/gripper_base
+        - left/left_finger_top
+        - left/left_finger_bottom
+        - left/right_finger_top
+        - left/right_finger_bottom
+        min_z: 0.05
+        right_finger_geoms:
+        - right/left_finger_top
+        - right/left_finger_bottom
+        - right/right_finger_top
+        - right/right_finger_bottom
+        target_pos:
+        - 0.28779004193577906
+        - 0.07941896970496498
+        - 0.2652514336542784
+        tol_m: 0.03
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 3000
+    efe:
+      fidelity: spec
+      notes: AlohaHandOver 判据逐字转写 rcb_aloha.py::Session.check / rcb_panda.py::Session.check（3000
+        控制步上限 @ 0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_aloha_hand_over.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_aloha_single_peg_insertion:
+    family: mujoco_playground/AlohaSinglePegInsertion
+    goal: Pick up the blue socket with one arm and the red peg with the other, lift
+      both, and insert the peg end into the socket open end.
+    robot: aloha_2
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_aloha_single_peg_insertion.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_aloha_single_peg_insertion.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_aloha_single_peg_insertion.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_aloha_single_peg_insertion.meta.json
+    pg:
+      task_kind: AlohaSinglePegInsertion
+      actuators:
+      - left/waist
+      - left/shoulder
+      - left/elbow
+      - left/forearm_roll
+      - left/wrist_angle
+      - left/wrist_rotate
+      - left/gripper
+      - right/waist
+      - right/shoulder
+      - right/elbow
+      - right/forearm_roll
+      - right/wrist_angle
+      - right/wrist_rotate
+      - right/gripper
+      max_steps: 3000
+      sites:
+        peg_end2:
+          body: peg
+          local:
+          - -0.048
+          - 0.0
+          - 0.0
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        socket_entrance:
+          body: socket
+          local:
+          - 0.048
+          - 0.0
+          - 0.0
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        socket_rear:
+          body: socket
+          local:
+          - 0.0
+          - 0.0
+          - 0.0
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+      check:
+        depth_t_max: 0.75
+        line_tol_m: 0.005
+        sites:
+          peg_tip: peg_end2
+          socket_entrance: socket_entrance
+          socket_rear: socket_rear
+        t_min: -0.8749999999999999
+        t_wall: -0.8333333333333331
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 3000
+    efe:
+      fidelity: spec
+      notes: AlohaSinglePegInsertion 判据逐字转写 rcb_aloha.py::Session.check / rcb_panda.py::Session.check（3000
+        控制步上限 @ 0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_aloha_single_peg_insertion.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_barkour_joystick:
+    family: mujoco_playground/BarkourJoystick
+    goal: Make Google's Barkour quadruped follow the joystick command schedule for
+      the whole 10 s episode, through random pushes, without falling over.
+    robot: google_barkour_vb
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_barkour_joystick.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_barkour_joystick.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_barkour_joystick.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_barkour_joystick.meta.json
+    pg:
+      task_kind: joystick
+      horizon: 1000
+      control_dt: 0.01
+      constants:
+        air_feet: null
+        forward: null
+        front_leg_geoms:
+        - fl_calf1
+        - fl_calf2
+        - fr_calf1
+        - fr_calf2
+        - fl_thigh1
+        - fl_thigh2
+        - fl_thigh3
+        - fr_thigh1
+        - fr_thigh2
+        - fr_thigh3
+        - fl_hip
+        - fr_hip
+        fwd_tol_deg: null
+        gait_tol: 0.05
+        hind_leg_contact: false
+        hind_leg_geoms:
+        - rl_calf1
+        - rl_calf2
+        - rr_calf1
+        - rr_calf2
+        - rl_thigh1
+        - rl_thigh2
+        - rl_thigh3
+        - rr_thigh1
+        - rr_thigh2
+        - rr_thigh3
+        - rl_hip
+        - rr_hip
+        hold_steps: 25
+        joint_box:
+        - - -0.7
+          - -1.0
+          - 0.05
+        - - 0.52
+          - 2.1
+          - 2.1
+        lin_tol: 0.2
+        min_imu_height: null
+        pose_hold_steps: 100
+        settle_steps: 25
+        tilt_max_deg: 10.0
+        torso_min_z: 0.18
+        up_z_min: 0.0
+        yaw_tol: 0.3
+        z_des: null
+      commands:
+      - start_step: 0
+        vx: 0.4594014286994934
+        vy: 0.22121715545654297
+        wz: 0.016074633225798607
+      - start_step: 501
+        vx: 0.0903209000825882
+        vy: -0.3885873854160309
+        wz: 0.6428412795066833
+      kicks:
+      - direction_xy:
+        - -0.8203420823732267
+        - -0.5718731221936891
+        duration_steps: 5
+        start_step: 80
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - 0.788163164239454
+        - -0.6154663488250608
+        duration_steps: 5
+        start_step: 160
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - -0.9131765428086646
+        - -0.4075642301085992
+        duration_steps: 5
+        start_step: 240
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - 0.3721731613746436
+        - 0.9281633142677013
+        duration_steps: 5
+        start_step: 320
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - 0.9775782732872876
+        - -0.2105723619011887
+        duration_steps: 5
+        start_step: 400
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - -0.8350665582365031
+        - 0.5501489283049099
+        duration_steps: 5
+        start_step: 480
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - 0.7430595752025673
+        - 0.6692252742535807
+        duration_steps: 5
+        start_step: 581
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - 0.8082263256570713
+        - 0.5888719780350138
+        duration_steps: 5
+        start_step: 661
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - 0.22144795284761612
+        - -0.9751721920664063
+        duration_steps: 5
+        start_step: 741
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - -0.9990854215709072
+        - -0.042758863461072875
+        duration_steps: 5
+        start_step: 821
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - -0.821963866092448
+        - -0.5695396411474414
+        duration_steps: 5
+        start_step: 901
+        velocity_mps: 0.4883994162082672
+      - direction_xy:
+        - -0.4999078076804545
+        - -0.8660786245024881
+        duration_steps: 5
+        start_step: 981
+        velocity_mps: 0.4883994162082672
+      imu_site: imu_frame
+      root_body: torso
+      floor_geom: floor
+      feet:
+      - foot_front_left
+      - foot_hind_left
+      - foot_front_right
+      - foot_hind_right
+      sites:
+        foot_front_left:
+          body: lower_leg_front_left
+          local:
+          - -0.21425
+          - -0.0779806
+          - 0.0
+          local_quat:
+          - 0.6644629452522423
+          - 0.6644629452522423
+          - -0.2418449800734255
+          - -0.2418449800734255
+        foot_front_right:
+          body: lower_leg_front_right
+          local:
+          - -0.21425
+          - -0.0779806
+          - 0.0
+          local_quat:
+          - 0.6644629452522423
+          - 0.6644629452522423
+          - -0.2418449800734255
+          - -0.2418449800734255
+        foot_hind_left:
+          body: lower_leg_hind_left
+          local:
+          - -0.21425
+          - -0.0779806
+          - 0.0
+          local_quat:
+          - 0.6644629452522423
+          - 0.6644629452522423
+          - -0.2418449800734255
+          - -0.2418449800734255
+        foot_hind_right:
+          body: lower_leg_hind_right
+          local:
+          - -0.21425
+          - -0.0779806
+          - 0.0
+          local_quat:
+          - 0.6644629452522423
+          - 0.6644629452522423
+          - -0.2418449800734255
+          - -0.2418449800734255
+        imu_frame:
+          body: torso
+          local:
+          - 0.010715
+          - -0.00025
+          - -0.06
+          local_quat:
+          - 0.0
+          - 0.0
+          - 0.0
+          - 1.0
+      joint_names:
+      - abduction_front_left
+      - hip_front_left
+      - knee_front_left
+      - abduction_hind_left
+      - hip_hind_left
+      - knee_hind_left
+      - abduction_front_right
+      - hip_front_right
+      - knee_front_right
+      - abduction_hind_right
+      - hip_hind_right
+      - knee_hind_right
+      ctrlrange:
+      - - -0.9472
+        - 0.9472
+      - - -1.44706
+        - 2.92902
+      - - 0.1
+        - 2.34346
+      - - -0.9472
+        - 0.9472
+      - - -1.44706
+        - 2.92902
+      - - 0.1
+        - 2.34346
+      - - -0.9472
+        - 0.9472
+      - - -1.44706
+        - 2.92902
+      - - 0.1
+        - 2.34346
+      - - -0.9472
+        - 0.9472
+      - - -1.44706
+        - 2.92902
+      - - 0.1
+        - 2.34346
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 1000
+    efe:
+      fidelity: spec
+      notes: joystick 判据逐字转写 rcb_quadruped.py::Session.check（horizon 1000 控制步 @ 0.01
+        s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_barkour_joystick.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_go1_footstand:
+    family: mujoco_playground/Go1Footstand
+    goal: Make the Unitree Go1 stand up on its hind legs, nose up, front legs in the
+      air, and balance there for 2 s.
+    robot: unitree_go1
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_footstand.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_go1_footstand.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_go1_footstand.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_go1_footstand.meta.json
+    pg:
+      task_kind: stand_on_two
+      horizon: 500
+      control_dt: 0.02
+      constants:
+        air_feet:
+        - FR
+        - FL
+        forward:
+        - 0.0
+        - 0.0
+        - 1.0
+        front_leg_geoms:
+        - fl_calf1
+        - fl_calf2
+        - fr_calf1
+        - fr_calf2
+        - fl_thigh1
+        - fl_thigh2
+        - fl_thigh3
+        - fr_thigh1
+        - fr_thigh2
+        - fr_thigh3
+        - fl_hip
+        - fr_hip
+        fwd_tol_deg: 30.0
+        gait_tol: 0.05
+        hind_leg_contact: true
+        hind_leg_geoms:
+        - rl_calf1
+        - rl_calf2
+        - rr_calf1
+        - rr_calf2
+        - rl_thigh1
+        - rl_thigh2
+        - rl_thigh3
+        - rr_thigh1
+        - rr_thigh2
+        - rr_thigh3
+        - rl_hip
+        - rr_hip
+        hold_steps: 25
+        joint_box: null
+        lin_tol: 0.2
+        min_imu_height: 0.4
+        pose_hold_steps: 100
+        settle_steps: 25
+        tilt_max_deg: 10.0
+        torso_min_z: null
+        up_z_min: 0.0
+        yaw_tol: 0.3
+        z_des: null
+      kicks: []
+      imu_site: imu
+      root_body: trunk
+      floor_geom: floor
+      feet:
+      - FR
+      - FL
+      - RR
+      - RL
+      sites:
+        FL:
+          body: FL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        FR:
+          body: FR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RL:
+          body: RL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RR:
+          body: RR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        imu:
+          body: trunk
+          local:
+          - -0.01592
+          - -0.06659
+          - -0.00617
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+      joint_names:
+      - FR_hip_joint
+      - FR_thigh_joint
+      - FR_calf_joint
+      - FL_hip_joint
+      - FL_thigh_joint
+      - FL_calf_joint
+      - RR_hip_joint
+      - RR_thigh_joint
+      - RR_calf_joint
+      - RL_hip_joint
+      - RL_thigh_joint
+      - RL_calf_joint
+      ctrlrange:
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: stand_on_two 判据逐字转写 rcb_quadruped.py::Session.check（horizon 500 控制步 @
+        0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_footstand.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_go1_getup:
+    family: mujoco_playground/Go1Getup
+    goal: The Unitree Go1 has fallen over. Make it get up and stand upright at its
+      standing height.
+    robot: unitree_go1
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_getup.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_go1_getup.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_go1_getup.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_go1_getup.meta.json
+    pg:
+      task_kind: getup
+      horizon: 300
+      control_dt: 0.02
+      constants:
+        air_feet: null
+        forward: null
+        front_leg_geoms:
+        - fl_calf1
+        - fl_calf2
+        - fr_calf1
+        - fr_calf2
+        - fl_thigh1
+        - fl_thigh2
+        - fl_thigh3
+        - fr_thigh1
+        - fr_thigh2
+        - fr_thigh3
+        - fl_hip
+        - fr_hip
+        fwd_tol_deg: null
+        gait_tol: 0.05
+        hind_leg_contact: false
+        hind_leg_geoms:
+        - rl_calf1
+        - rl_calf2
+        - rr_calf1
+        - rr_calf2
+        - rl_thigh1
+        - rl_thigh2
+        - rl_thigh3
+        - rr_thigh1
+        - rr_thigh2
+        - rr_thigh3
+        - rl_hip
+        - rr_hip
+        hold_steps: 25
+        joint_box: null
+        lin_tol: 0.2
+        min_imu_height: 0.22
+        pose_hold_steps: 100
+        settle_steps: 25
+        tilt_max_deg: 10.0
+        torso_min_z: null
+        up_z_min: 0.0
+        yaw_tol: 0.3
+        z_des: 0.275
+      kicks: []
+      imu_site: imu
+      root_body: trunk
+      floor_geom: floor
+      feet:
+      - FR
+      - FL
+      - RR
+      - RL
+      sites:
+        FL:
+          body: FL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        FR:
+          body: FR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RL:
+          body: RL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RR:
+          body: RR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        imu:
+          body: trunk
+          local:
+          - -0.01592
+          - -0.06659
+          - -0.00617
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+      joint_names:
+      - FR_hip_joint
+      - FR_thigh_joint
+      - FR_calf_joint
+      - FL_hip_joint
+      - FL_thigh_joint
+      - FL_calf_joint
+      - RR_hip_joint
+      - RR_thigh_joint
+      - RR_calf_joint
+      - RL_hip_joint
+      - RL_thigh_joint
+      - RL_calf_joint
+      ctrlrange:
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 300
+    efe:
+      fidelity: spec
+      notes: getup 判据逐字转写 rcb_quadruped.py::Session.check（horizon 300 控制步 @ 0.02 s）；场景按
+        rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_getup.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_go1_handstand:
+    family: mujoco_playground/Go1Handstand
+    goal: 'Make the Unitree Go1 do a handstand: balance on its front legs, nose down,
+      hind legs in the air, for 2 s.'
+    robot: unitree_go1
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_handstand.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_go1_handstand.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_go1_handstand.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_go1_handstand.meta.json
+    pg:
+      task_kind: stand_on_two
+      horizon: 500
+      control_dt: 0.02
+      constants:
+        air_feet:
+        - RR
+        - RL
+        forward:
+        - 0.0
+        - 0.0
+        - -1.0
+        front_leg_geoms:
+        - fl_calf1
+        - fl_calf2
+        - fr_calf1
+        - fr_calf2
+        - fl_thigh1
+        - fl_thigh2
+        - fl_thigh3
+        - fr_thigh1
+        - fr_thigh2
+        - fr_thigh3
+        - fl_hip
+        - fr_hip
+        fwd_tol_deg: 30.0
+        gait_tol: 0.05
+        hind_leg_contact: false
+        hind_leg_geoms:
+        - rl_calf1
+        - rl_calf2
+        - rr_calf1
+        - rr_calf2
+        - rl_thigh1
+        - rl_thigh2
+        - rl_thigh3
+        - rr_thigh1
+        - rr_thigh2
+        - rr_thigh3
+        - rl_hip
+        - rr_hip
+        hold_steps: 25
+        joint_box: null
+        lin_tol: 0.2
+        min_imu_height: 0.4
+        pose_hold_steps: 100
+        settle_steps: 25
+        tilt_max_deg: 10.0
+        torso_min_z: null
+        up_z_min: 0.0
+        yaw_tol: 0.3
+        z_des: null
+      kicks: []
+      imu_site: imu
+      root_body: trunk
+      floor_geom: floor
+      feet:
+      - FR
+      - FL
+      - RR
+      - RL
+      sites:
+        FL:
+          body: FL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        FR:
+          body: FR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RL:
+          body: RL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RR:
+          body: RR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        imu:
+          body: trunk
+          local:
+          - -0.01592
+          - -0.06659
+          - -0.00617
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+      joint_names:
+      - FR_hip_joint
+      - FR_thigh_joint
+      - FR_calf_joint
+      - FL_hip_joint
+      - FL_thigh_joint
+      - FL_calf_joint
+      - RR_hip_joint
+      - RR_thigh_joint
+      - RR_calf_joint
+      - RL_hip_joint
+      - RL_thigh_joint
+      - RL_calf_joint
+      ctrlrange:
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 500
+    efe:
+      fidelity: spec
+      notes: stand_on_two 判据逐字转写 rcb_quadruped.py::Session.check（horizon 500 控制步 @
+        0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_handstand.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_go1_joystick_flat_terrain:
+    family: mujoco_playground/Go1JoystickFlatTerrain
+    goal: Make the Unitree Go1 follow the joystick command schedule on flat ground
+      for the whole 20 s episode without falling over.
+    robot: unitree_go1
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_joystick_flat_terrain.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_go1_joystick_flat_terrain.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_go1_joystick_flat_terrain.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_go1_joystick_flat_terrain.meta.json
+    pg:
+      task_kind: joystick
+      horizon: 1000
+      control_dt: 0.02
+      constants:
+        air_feet: null
+        forward: null
+        front_leg_geoms:
+        - fl_calf1
+        - fl_calf2
+        - fr_calf1
+        - fr_calf2
+        - fl_thigh1
+        - fl_thigh2
+        - fl_thigh3
+        - fr_thigh1
+        - fr_thigh2
+        - fr_thigh3
+        - fl_hip
+        - fr_hip
+        fwd_tol_deg: null
+        gait_tol: 0.05
+        hind_leg_contact: false
+        hind_leg_geoms:
+        - rl_calf1
+        - rl_calf2
+        - rr_calf1
+        - rr_calf2
+        - rl_thigh1
+        - rl_thigh2
+        - rl_thigh3
+        - rr_thigh1
+        - rr_thigh2
+        - rr_thigh3
+        - rl_hip
+        - rr_hip
+        hold_steps: 25
+        joint_box: null
+        lin_tol: 0.2
+        min_imu_height: null
+        pose_hold_steps: 100
+        settle_steps: 25
+        tilt_max_deg: 10.0
+        torso_min_z: null
+        up_z_min: 0.0
+        yaw_tol: 0.3
+        z_des: null
+      commands:
+      - start_step: 0
+        vx: 1.4129691123962402
+        vy: -0.611178994178772
+        wz: 0.7116400003433228
+      - start_step: 42
+        vx: -0.2525142431259155
+        vy: -0.611178994178772
+        wz: 0.7116400003433228
+      - start_step: 238
+        vx: -0.2525142431259155
+        vy: -0.611178994178772
+        wz: 0.0
+      - start_step: 298
+        vx: -0.552196741104126
+        vy: -0.611178994178772
+        wz: 0.0
+      kicks: []
+      imu_site: imu
+      root_body: trunk
+      floor_geom: floor
+      feet:
+      - FR
+      - FL
+      - RR
+      - RL
+      sites:
+        FL:
+          body: FL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        FR:
+          body: FR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RL:
+          body: RL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RR:
+          body: RR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        imu:
+          body: trunk
+          local:
+          - -0.01592
+          - -0.06659
+          - -0.00617
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+      joint_names:
+      - FR_hip_joint
+      - FR_thigh_joint
+      - FR_calf_joint
+      - FL_hip_joint
+      - FL_thigh_joint
+      - FL_calf_joint
+      - RR_hip_joint
+      - RR_thigh_joint
+      - RR_calf_joint
+      - RL_hip_joint
+      - RL_thigh_joint
+      - RL_calf_joint
+      ctrlrange:
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 1000
+    efe:
+      fidelity: spec
+      notes: joystick 判据逐字转写 rcb_quadruped.py::Session.check（horizon 1000 控制步 @ 0.02
+        s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_joystick_flat_terrain.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_go1_joystick_rough_terrain:
+    family: mujoco_playground/Go1JoystickRoughTerrain
+    goal: Make the Unitree Go1 follow the joystick command schedule on rough terrain
+      (a 20 x 20 m heightfield, up to 5 cm high) for the whole 20 s episode without
+      falling over.
+    robot: unitree_go1
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_joystick_rough_terrain.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_go1_joystick_rough_terrain.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_go1_joystick_rough_terrain.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_go1_joystick_rough_terrain.meta.json
+    pg:
+      task_kind: joystick
+      horizon: 1000
+      control_dt: 0.02
+      constants:
+        air_feet: null
+        forward: null
+        front_leg_geoms:
+        - fl_calf1
+        - fl_calf2
+        - fr_calf1
+        - fr_calf2
+        - fl_thigh1
+        - fl_thigh2
+        - fl_thigh3
+        - fr_thigh1
+        - fr_thigh2
+        - fr_thigh3
+        - fl_hip
+        - fr_hip
+        fwd_tol_deg: null
+        gait_tol: 0.05
+        hind_leg_contact: false
+        hind_leg_geoms:
+        - rl_calf1
+        - rl_calf2
+        - rr_calf1
+        - rr_calf2
+        - rl_thigh1
+        - rl_thigh2
+        - rl_thigh3
+        - rr_thigh1
+        - rr_thigh2
+        - rr_thigh3
+        - rl_hip
+        - rr_hip
+        hold_steps: 25
+        joint_box: null
+        lin_tol: 0.2
+        min_imu_height: null
+        pose_hold_steps: 100
+        settle_steps: 25
+        tilt_max_deg: 10.0
+        torso_min_z: null
+        up_z_min: 0.0
+        yaw_tol: 0.3
+        z_des: null
+      commands:
+      - start_step: 0
+        vx: 1.136733055114746
+        vy: 0.16791878640651703
+        wz: -0.7027067542076111
+      - start_step: 17
+        vx: 1.136733055114746
+        vy: 0.0
+        wz: -0.7027067542076111
+      - start_step: 138
+        vx: -1.078402042388916
+        vy: -0.701647937297821
+        wz: 0.0
+      - start_step: 548
+        vx: -1.078402042388916
+        vy: 0.0
+        wz: 0.7865484356880188
+      - start_step: 594
+        vx: 0.0
+        vy: -0.35900041460990906
+        wz: 0.7865484356880188
+      - start_step: 611
+        vx: 0.0
+        vy: -0.35900041460990906
+        wz: 0.0
+      - start_step: 674
+        vx: -0.03617405891418457
+        vy: 0.0
+        wz: -0.08692560344934464
+      kicks: []
+      imu_site: imu
+      root_body: trunk
+      floor_geom: floor
+      feet:
+      - FR
+      - FL
+      - RR
+      - RL
+      sites:
+        FL:
+          body: FL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        FR:
+          body: FR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RL:
+          body: RL_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        RR:
+          body: RR_calf
+          local:
+          - 0.0
+          - 0.0
+          - -0.213
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        imu:
+          body: trunk
+          local:
+          - -0.01592
+          - -0.06659
+          - -0.00617
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+      joint_names:
+      - FR_hip_joint
+      - FR_thigh_joint
+      - FR_calf_joint
+      - FL_hip_joint
+      - FL_thigh_joint
+      - FL_calf_joint
+      - RR_hip_joint
+      - RR_thigh_joint
+      - RR_calf_joint
+      - RL_hip_joint
+      - RL_thigh_joint
+      - RL_calf_joint
+      ctrlrange:
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+      - - -0.863
+        - 0.863
+      - - -0.686
+        - 4.501
+      - - -2.818
+        - -0.888
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 1000
+    efe:
+      fidelity: spec
+      notes: joystick 判据逐字转写 rcb_quadruped.py::Session.check（horizon 1000 控制步 @ 0.02
+        s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_go1_joystick_rough_terrain.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_panda_open_cabinet:
+    family: mujoco_playground/PandaOpenCabinet
+    goal: Grasp the green handle and pull it along its slide until it is at the red
+      target sphere.
+    robot: franka_panda_embedded
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.meta.json
+    pg:
+      task_kind: PandaOpenCabinet
+      actuators:
+      - actuator1
+      - actuator2
+      - actuator3
+      - actuator4
+      - actuator5
+      - actuator6
+      - actuator7
+      - actuator8
+      max_steps: 3000
+      object_body: handle
+      target_pos:
+      - 0.20061100789921119
+      - 0.0
+      - 0.5
+      target_quat_wxyz:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      check:
+        tol_m: 0.015
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 3000
+    efe:
+      fidelity: spec
+      notes: PandaOpenCabinet 判据逐字转写 rcb_aloha.py::Session.check / rcb_panda.py::Session.check（3000
+        控制步上限 @ 0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_panda_open_cabinet.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_panda_pick_cube_orientation:
+    family: mujoco_playground/PandaPickCubeOrientation
+    goal: Pick up the green box and hold it at the translucent red target box, in
+      the target box orientation.
+    robot: franka_panda_embedded
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_panda_pick_cube_orientation.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_panda_pick_cube_orientation.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_panda_pick_cube_orientation.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_panda_pick_cube_orientation.meta.json
+    pg:
+      task_kind: PandaPickCubeOrientation
+      actuators:
+      - actuator1
+      - actuator2
+      - actuator3
+      - actuator4
+      - actuator5
+      - actuator6
+      - actuator7
+      - actuator8
+      max_steps: 3000
+      object_body: box
+      target_pos:
+      - 0.6170533892477055
+      - 0.10589195960662001
+      - 0.3401676224361856
+      target_quat_wxyz:
+      - 0.9783789048814469
+      - -0.11660879357979351
+      - 0.12073685077332773
+      - -0.12082930359885873
+      check:
+        pos_tol_m: 0.02
+        rot_tol_deg: 15.0
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 3000
+    efe:
+      fidelity: spec
+      notes: PandaPickCubeOrientation 判据逐字转写 rcb_aloha.py::Session.check / rcb_panda.py::Session.check（3000
+        控制步上限 @ 0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_panda_pick_cube_orientation.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_spot_flat_terrain_joystick:
+    family: mujoco_playground/SpotFlatTerrainJoystick
+    goal: Make Boston Dynamics Spot follow the joystick command schedule on flat ground
+      for the whole 20 s episode without falling over.
+    robot: boston_dynamics_spot
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_spot_flat_terrain_joystick.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_spot_flat_terrain_joystick.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_spot_flat_terrain_joystick.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_spot_flat_terrain_joystick.meta.json
+    pg:
+      task_kind: joystick
+      horizon: 1000
+      control_dt: 0.02
+      constants:
+        air_feet: null
+        forward: null
+        front_leg_geoms:
+        - fl_calf1
+        - fl_calf2
+        - fr_calf1
+        - fr_calf2
+        - fl_thigh1
+        - fl_thigh2
+        - fl_thigh3
+        - fr_thigh1
+        - fr_thigh2
+        - fr_thigh3
+        - fl_hip
+        - fr_hip
+        fwd_tol_deg: null
+        gait_tol: 0.05
+        hind_leg_contact: false
+        hind_leg_geoms:
+        - rl_calf1
+        - rl_calf2
+        - rr_calf1
+        - rr_calf2
+        - rl_thigh1
+        - rl_thigh2
+        - rl_thigh3
+        - rr_thigh1
+        - rr_thigh2
+        - rr_thigh3
+        - rl_hip
+        - rr_hip
+        hold_steps: 25
+        joint_box: null
+        lin_tol: 0.2
+        min_imu_height: null
+        pose_hold_steps: 100
+        settle_steps: 25
+        tilt_max_deg: 10.0
+        torso_min_z: null
+        up_z_min: 0.85
+        yaw_tol: 0.3
+        z_des: null
+      commands:
+      - start_step: 0
+        vx: 0.7129874229431152
+        vy: 0.045435335487127304
+        wz: 0.6093337535858154
+      - start_step: 201
+        vx: -0.18540263175964355
+        vy: -0.40133342146873474
+        wz: -0.4772922992706299
+      - start_step: 402
+        vx: 0.6049041748046875
+        vy: 0.11546879261732101
+        wz: 0.04899191856384277
+      - start_step: 603
+        vx: 0.0
+        vy: 0.0
+        wz: 0.0
+      - start_step: 804
+        vx: -0.28104639053344727
+        vy: -0.7415485382080078
+        wz: -0.6673171520233154
+      kicks: []
+      imu_site: imu
+      root_body: body
+      floor_geom: floor
+      feet:
+      - FL
+      - FR
+      - HL
+      - HR
+      sites:
+        FL:
+          body: fl_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        FR:
+          body: fr_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        HL:
+          body: hl_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        HR:
+          body: hr_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        imu:
+          body: body
+          local:
+          - 0.0
+          - 0.0
+          - 0.0
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+      joint_names:
+      - fl_hx
+      - fl_hy
+      - fl_kn
+      - fr_hx
+      - fr_hy
+      - fr_kn
+      - hl_hx
+      - hl_hy
+      - hl_kn
+      - hr_hx
+      - hr_hy
+      - hr_kn
+      ctrlrange:
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.29511
+      - - -2.7929
+        - -0.254402
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.24363
+      - - -2.7929
+        - -0.255648
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.29511
+      - - -2.7929
+        - -0.247067
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.29511
+      - - -2.7929
+        - -0.248282
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 1000
+    efe:
+      fidelity: spec
+      notes: joystick 判据逐字转写 rcb_quadruped.py::Session.check（horizon 1000 控制步 @ 0.02
+        s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_spot_flat_terrain_joystick.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_spot_getup:
+    family: mujoco_playground/SpotGetup
+    goal: Boston Dynamics Spot has fallen over. Make it get up and stand upright at
+      its standing height.
+    robot: boston_dynamics_spot
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_spot_getup.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_spot_getup.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_spot_getup.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_spot_getup.meta.json
+    pg:
+      task_kind: getup
+      horizon: 300
+      control_dt: 0.02
+      constants:
+        air_feet: null
+        forward: null
+        front_leg_geoms:
+        - fl_calf1
+        - fl_calf2
+        - fr_calf1
+        - fr_calf2
+        - fl_thigh1
+        - fl_thigh2
+        - fl_thigh3
+        - fr_thigh1
+        - fr_thigh2
+        - fr_thigh3
+        - fl_hip
+        - fr_hip
+        fwd_tol_deg: null
+        gait_tol: 0.05
+        hind_leg_contact: false
+        hind_leg_geoms:
+        - rl_calf1
+        - rl_calf2
+        - rr_calf1
+        - rr_calf2
+        - rl_thigh1
+        - rl_thigh2
+        - rl_thigh3
+        - rr_thigh1
+        - rr_thigh2
+        - rr_thigh3
+        - rl_hip
+        - rr_hip
+        hold_steps: 25
+        joint_box: null
+        lin_tol: 0.2
+        min_imu_height: 0.4
+        pose_hold_steps: 100
+        settle_steps: 25
+        tilt_max_deg: 10.0
+        torso_min_z: null
+        up_z_min: 0.0
+        yaw_tol: 0.3
+        z_des: 0.46
+      kicks: []
+      imu_site: imu
+      root_body: body
+      floor_geom: floor
+      feet:
+      - FL
+      - FR
+      - HL
+      - HR
+      sites:
+        FL:
+          body: fl_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        FR:
+          body: fr_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        HL:
+          body: hl_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        HR:
+          body: hr_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        imu:
+          body: body
+          local:
+          - 0.0
+          - 0.0
+          - 0.0
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+      joint_names:
+      - fl_hx
+      - fl_hy
+      - fl_kn
+      - fr_hx
+      - fr_hy
+      - fr_kn
+      - hl_hx
+      - hl_hy
+      - hl_kn
+      - hr_hx
+      - hr_hy
+      - hr_kn
+      ctrlrange:
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.29511
+      - - -2.7929
+        - -0.254402
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.24363
+      - - -2.7929
+        - -0.255648
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.29511
+      - - -2.7929
+        - -0.247067
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.29511
+      - - -2.7929
+        - -0.248282
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 300
+    efe:
+      fidelity: spec
+      notes: getup 判据逐字转写 rcb_quadruped.py::Session.check（horizon 300 控制步 @ 0.02 s）；场景按
+        rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_spot_getup.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  mujoco_playground_spot_joystick_gait_tracking:
+    family: mujoco_playground/SpotJoystickGaitTracking
+    goal: Make Boston Dynamics Spot follow the joystick command schedule for the whole
+      20 s episode with the commanded gait (the feet's swing pattern, frequency and
+      height) without falling over.
+    robot: boston_dynamics_spot
+    scene: efe_world
+    task_type: efe_pg
+    world:
+      mjcf_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.xml
+      qpos_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.qpos.npy
+      qvel_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.qvel.npy
+      meta_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.meta.json
+    pg:
+      task_kind: joystick
+      horizon: 1000
+      control_dt: 0.02
+      constants:
+        air_feet: null
+        forward: null
+        front_leg_geoms:
+        - fl_calf1
+        - fl_calf2
+        - fr_calf1
+        - fr_calf2
+        - fl_thigh1
+        - fl_thigh2
+        - fl_thigh3
+        - fr_thigh1
+        - fr_thigh2
+        - fr_thigh3
+        - fl_hip
+        - fr_hip
+        fwd_tol_deg: null
+        gait_tol: 0.05
+        hind_leg_contact: false
+        hind_leg_geoms:
+        - rl_calf1
+        - rl_calf2
+        - rr_calf1
+        - rr_calf2
+        - rl_thigh1
+        - rl_thigh2
+        - rl_thigh3
+        - rr_thigh1
+        - rr_thigh2
+        - rr_thigh3
+        - rl_hip
+        - rr_hip
+        hold_steps: 25
+        joint_box: null
+        lin_tol: 0.2
+        min_imu_height: null
+        pose_hold_steps: 100
+        settle_steps: 25
+        tilt_max_deg: 10.0
+        torso_min_z: null
+        up_z_min: 0.85
+        yaw_tol: 0.3
+        z_des: null
+      commands:
+      - start_step: 0
+        vx: 0.9938757419586182
+        vy: 0.37067461013793945
+        wz: 0.44742894172668457
+      - start_step: 201
+        vx: 0.9238066673278809
+        vy: -0.3616582155227661
+        wz: -0.32676148414611816
+      - start_step: 402
+        vx: -0.9385867118835449
+        vy: 0.09156465530395508
+        wz: 0.44982028007507324
+      - start_step: 603
+        vx: -0.9596819877624512
+        vy: -0.29509055614471436
+        wz: 0.5688352584838867
+      - start_step: 804
+        vx: 0.8662233352661133
+        vy: 0.1854252815246582
+        wz: -0.2966732978820801
+      kicks: []
+      gait:
+        foot_height_m: 0.12916938960552216
+        frequency_hz: 3.6585731506347656
+        name: pace
+        phase0:
+        - 0.0
+        - 3.1415927410125732
+        - 0.0
+        - 3.1415927410125732
+        phase_dt: 0.45974987745285034
+        type: 2
+      imu_site: imu
+      root_body: body
+      floor_geom: floor
+      feet:
+      - FL
+      - FR
+      - HL
+      - HR
+      sites:
+        FL:
+          body: fl_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        FR:
+          body: fr_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        HL:
+          body: hl_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        HR:
+          body: hr_lleg
+          local:
+          - 0.0
+          - 0.0
+          - -0.3365
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+        imu:
+          body: body
+          local:
+          - 0.0
+          - 0.0
+          - 0.0
+          local_quat:
+          - 1.0
+          - 0.0
+          - 0.0
+          - 0.0
+      joint_names:
+      - fl_hx
+      - fl_hy
+      - fl_kn
+      - fr_hx
+      - fr_hy
+      - fr_kn
+      - hl_hx
+      - hl_hy
+      - hl_kn
+      - hr_hx
+      - hr_hy
+      - hr_kn
+      ctrlrange:
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.29511
+      - - -2.7929
+        - -0.254402
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.24363
+      - - -2.7929
+        - -0.255648
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.29511
+      - - -2.7929
+        - -0.247067
+      - - -0.785398
+        - 0.785398
+      - - -0.898845
+        - 2.29511
+      - - -2.7929
+        - -0.248282
+    success:
+      type: pg_success
+      params: {}
+    max_episode_steps: 1000
+    efe:
+      fidelity: spec
+      notes: joystick 判据逐字转写 rcb_quadruped.py::Session.check（horizon 1000 控制步 @ 0.02
+        s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle
+        一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true

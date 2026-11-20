@@ -22,4 +22,4 @@ project:
   tier: T1
   status: planned
   target: plugins/envs/humanoid_falling 同层新增
-  note: H1/H1hand 全身 loco-manipulation；与 humanoid_falling 插件同栈
+  note: H1/H1hand 全身 loco-manipulation；与 humanoid_falling 插件同栈。本体门通过（人形），见 data/efe/embodiment_gate.json

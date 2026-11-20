@@ -1717,3 +1717,526 @@ def _make_efe_robocasa(**kwargs: Any) -> EfeRobocasaTask:
         appliances=appliances,
         timers=timers,
     )
+
+
+class EfePgTask(EfeBaseTask):
+    """MuJoCo Playground frozen-scene task (9 quadruped + 4 manipulation).
+
+    The task YAML carries the composed world (``world`` block, see
+    ``tools/pg_worlds.py``) and a ``pg`` block with the check constants the
+    EFE graders' sessions define (``rcb_quadruped.py`` / ``rcb_aloha.py`` /
+    ``rcb_panda.py``, mirrored under ``data/efe/upstream/pg-src/efe-benchmark``).
+    Success formulas are ported verbatim at control-step granularity:
+
+    * joystick — every command segment (after its first 25 control steps) has
+      mean ``|v_xy - cmd| <= 0.2 m/s`` and ``|w_z - cmd_wz| <= 0.3 rad/s`` (+
+      gait RMS height error <= 0.05 m for gait tracking), the episode reaches
+      its horizon and Playground's termination rule never fired (trunk up axis
+      below ``up_z_min``, Barkour's joint box / torso height);
+    * getup — the last 25 control steps all have trunk tilt <= 10 deg and IMU
+      height >= the env's minimum (0.22 m Go1 / 0.40 m Spot);
+    * stand_on_two — the last 100 control steps all have the forward axis
+      within 30 deg of straight down (handstand) or up (footstand), IMU height
+      >= 0.40 m and the lifted feet off the floor, with no fall before;
+    * ALOHA peg insertion — the tip is within 5 mm of the socket axis with the
+      axial parameter t in ``[t_min, 0.75]`` (``t_min`` read from the model's
+      rear wall minus a 2 mm contact margin);
+    * ALOHA handover — the box is within 3 cm of the target, touches a right
+      gripper finger, does not touch the left arm and is at least 5 cm high;
+    * Panda pick — the box is within 2 cm and 15 deg of the target pose;
+    * Panda cabinet — the handle's x is within 1.5 cm of the target x.
+
+    Controls are best-effort: action rows are clipped to the actuator ranges
+    and servoed with the world entity's dof-position control when it exposes
+    one (same contract as ``EfeAbcTask``); IMU/gyro/velocimeter readings are
+    derived from the root body's world velocity rotated into the IMU frame.
+    Barkour's random pushes are external disturbances and are not reproduced
+    (documented; the success formula is unaffected). The verdict is published
+    as ``info['pg']['success']`` — the outer :class:`PgSuccessCondition`
+    forwards it; missing info is a failure (nop-safe).
+    """
+
+    def __init__(
+        self,
+        config: TaskConfig,
+        world: dict | None = None,
+        pg: dict | None = None,
+    ):
+        super().__init__(config)
+        if world is not None and not isinstance(world, dict):
+            raise TypeError("efe_pg world must be a mapping or None")
+        if pg is not None and not isinstance(pg, dict):
+            raise TypeError("efe_pg pg must be a mapping or None")
+        self._world_cfg = world or {}
+        self._pg = pg or {}
+        self._servo_warned = False
+        self._steps = 0
+        self._fell_at: int | None = None
+        self._log: list[tuple] = []
+        self._gait_log: list[float] = []
+        self._pose_log: list[tuple] = []
+
+    # -- world access -------------------------------------------------------
+
+    def _world(self, scene: Any) -> Any:
+        entities = getattr(scene, "entities", None) or {}
+        entity = entities.get("world")
+        if entity is None:
+            raise KeyError(
+                "efe_pg expects the 'world' asset in scene.entities; "
+                f"available: {sorted(entities)}"
+            )
+        return entity
+
+    def _apply_frozen_state(self, scene: Any) -> None:
+        world = self._world(scene)
+        qpos_path = self._world_cfg.get("qpos_path")
+        qvel_path = self._world_cfg.get("qvel_path")
+        if qpos_path:
+            world.set_qpos(np.load(qpos_path))
+        if qvel_path:
+            set_qvel = getattr(world, "set_qvel", None)
+            if set_qvel is not None:
+                set_qvel(np.load(qvel_path))
+
+    # -- shared accessors ----------------------------------------------------
+
+    def _pos(self, scene: Any, body: str) -> np.ndarray:
+        from cloud_robotics_sim.core.success import _abc_pos
+
+        return _abc_pos(scene, body)
+
+    def _quat(self, scene: Any, body: str) -> np.ndarray:
+        from cloud_robotics_sim.core.success import _abc_quat
+
+        return _abc_quat(scene, body)
+
+    def _site_pose(self, scene: Any, site: str) -> tuple[np.ndarray, np.ndarray]:
+        """World (pos, rotation matrix) of a site from the pg sites table."""
+        record = (self._pg.get("sites") or {})[site]
+        body_pos = self._pos(scene, record["body"])
+        body_quat = self._quat(scene, record["body"])
+        from cloud_robotics_sim.core.success import _quat_to_mat
+
+        rot = _quat_to_mat(body_quat) @ _quat_to_mat(
+            np.asarray(record["local_quat"], dtype=float)
+        )
+        pos = body_pos + _quat_to_mat(body_quat) @ np.asarray(
+            record["local"], dtype=float
+        )
+        return pos, rot
+
+    def _pair_contact(self, scene: Any, geom_a: str, geom_b: str) -> bool:
+        """True when the two named geoms appear in one live contact pair."""
+        world = self._world(scene)
+        contacts = world.get_self_contacts()
+        geom_names = world.geom_names()
+        link_names = world.link_names()
+        ga = np.asarray(contacts.get("geom_a", [])).reshape(-1)
+        gb = np.asarray(contacts.get("geom_b", [])).reshape(-1)
+        la = np.asarray(contacts.get("link_a", [])).reshape(-1)
+        lb = np.asarray(contacts.get("link_b", [])).reshape(-1)
+        for i in range(la.size):
+            a = geom_names[ga[i]] if i < ga.size else link_names[la[i]]
+            b = geom_names[gb[i]] if i < gb.size else link_names[lb[i]]
+            if (a == geom_a and b == geom_b) or (a == geom_b and b == geom_a):
+                return True
+        return False
+
+    def _any_contact(self, scene: Any, geom: str, others: set[str]) -> bool:
+        return any(self._pair_contact(scene, geom, o) for o in others)
+
+    def _root_velocity(self, scene: Any) -> tuple[np.ndarray, np.ndarray] | None:
+        """Root body (world linear, world angular) velocity, best effort."""
+        world = self._world(scene)
+        resolver = getattr(world, "_resolve_entity", None)
+        if resolver is None:
+            return None
+        try:
+            get_vel = getattr(resolver(), "get_dofs_velocity", None)
+            if get_vel is None:
+                return None
+            vel = np.asarray(get_vel(), dtype=float).reshape(-1)
+        except Exception:  # noqa: BLE001 - velocity is best effort
+            return None
+        if vel.size < 6:
+            return None
+        return vel[0:3].copy(), vel[3:6].copy()
+
+    # -- controls ------------------------------------------------------------
+
+    def _apply_targets(self, scene: Any, action: np.ndarray) -> None:
+        """Servo the upstream actuator targets (best effort; see class doc)."""
+        joints = self._pg.get("joint_names") or self._pg.get("actuators") or []
+        if not joints or action is None or len(action) < len(joints):
+            return
+        world = self._world(scene)
+        control_fn = getattr(world, "control_dofs_position", None)
+        idx_fn = getattr(world, "get_joint_dofs_idx_local", None)
+        if control_fn is None or idx_fn is None:
+            if not self._servo_warned:
+                logger.info(
+                    "efe_pg: world entity exposes no dof position control; "
+                    "joint-target actions are not applied"
+                )
+                self._servo_warned = True
+            return
+        ctrlrange = self._pg.get("ctrlrange") or []
+        targets = np.asarray(action, dtype=np.float64).reshape(-1)[: len(joints)]
+        for i in range(len(targets)):
+            if i < len(ctrlrange) and ctrlrange[i]:
+                lo, hi = (float(v) for v in ctrlrange[i])
+                targets[i] = min(max(targets[i], lo), hi)
+        try:
+            dofs_idx = [idx_fn(j) for j in joints]
+            flat = [
+                i for sub in dofs_idx for i in (sub if isinstance(sub, list) else [sub])
+            ]
+            control_fn(targets=targets, dofs_idx=flat)
+        except Exception as exc:  # noqa: BLE001 - servo is best effort
+            if not self._servo_warned:
+                logger.info(f"efe_pg: dof position control unavailable: {exc}")
+                self._servo_warned = True
+
+    # -- quadruped runtime (rcb_quadruped.Session, control-step granularity) --
+
+    def _gait_rz(self, phi: np.ndarray, swing_height: float) -> np.ndarray:
+        """mujoco_playground/_src/gait.py get_rz (cubic Bezier up then down)."""
+        x = (np.asarray(phi) + np.pi) / (2 * np.pi)
+
+        def bez(y0: float, y1: float, t: np.ndarray) -> np.ndarray:
+            return np.asarray(
+                y0 + (y1 - y0) * (t**3 + 3 * (t**2 * (1 - t))), dtype=float
+            )
+
+        curve = np.where(
+            x <= 0.5, bez(0.0, swing_height, 2 * x), bez(swing_height, 0.0, 2 * x - 1)
+        )
+        return np.asarray(curve, dtype=float)
+
+    def _command_at(self, step: int) -> np.ndarray:
+        commands = self._pg.get("commands") or []
+        horizon = int(self._pg.get("horizon", 0))
+        cmd = np.zeros(3)
+        for i, seg in enumerate(commands):
+            if int(seg["start_step"]) <= step:
+                cmd = np.array([seg["vx"], seg["vy"], seg["wz"]], dtype=float)
+        if horizon and step >= horizon:
+            return cmd
+        return cmd
+
+    def _quadruped_log(self, scene: Any) -> None:
+        """Append one control-step row (lin_err, yaw_err, tilt, imu_h, up_z)."""
+        imu = self._pg.get("imu_site")
+        if not imu:
+            self._log.append((float("inf"), float("inf"), 180.0, 0.0, 0.0))
+            return
+        pos, rot = self._site_pose(scene, str(imu))
+        up_z = float(rot[2, 2])
+        tilt = float(np.degrees(np.arccos(np.clip(up_z, -1.0, 1.0))))
+        cmd = self._command_at(self._steps)
+        vel = self._root_velocity(scene)
+        if vel is not None:
+            lin_w, ang_w = vel
+            lin_err = float(np.linalg.norm(rot.T @ lin_w - cmd[:2]))
+            yaw_err = float(abs(float((rot.T @ ang_w)[2]) - cmd[2]))
+        else:
+            lin_err, yaw_err = float("inf"), float("inf")
+        self._log.append((lin_err, yaw_err, tilt, float(pos[2]), up_z))
+
+        kind = self._pg.get("task_kind")
+        consts = self._pg.get("constants") or {}
+        if kind == "stand_on_two":
+            fwd = rot[:, 0]
+            forward = np.asarray(consts.get("forward"), dtype=float)
+            ang = float(np.degrees(np.arccos(np.clip(fwd @ forward, -1.0, 1.0))))
+            air_down = any(
+                self._pair_contact(scene, f, self._pg.get("floor_geom", "floor"))
+                for f in (consts.get("air_feet") or [])
+            )
+            self._pose_log.append((ang, air_down))
+            bad = up_z < -0.25 or self._any_contact(
+                scene,
+                self._pg.get("floor_geom", "floor"),
+                set(consts.get("front_leg_geoms") or []),
+            )
+            if consts.get("hind_leg_contact") and not bad:
+                bad = self._any_contact(
+                    scene,
+                    self._pg.get("floor_geom", "floor"),
+                    set(consts.get("hind_leg_geoms") or []),
+                )
+            if bad and self._fell_at is None:
+                self._fell_at = self._steps
+        elif self._fell_at is None and self._terminated(scene, up_z):
+            self._fell_at = self._steps
+
+        gait = self._pg.get("gait")
+        if gait:
+            ph = (
+                np.fmod(
+                    np.asarray(gait["phase0"], dtype=float)
+                    + (self._steps - 1) * float(gait["phase_dt"])
+                    + np.pi,
+                    2 * np.pi,
+                )
+                - np.pi
+            )
+            feet_z = []
+            for foot in self._pg.get("feet") or []:
+                fpos, _ = self._site_pose(scene, foot)
+                feet_z.append(fpos[2])
+            err = np.asarray(feet_z, dtype=float) - self._gait_rz(
+                ph, float(gait["foot_height_m"])
+            )
+            self._gait_log.append(float(np.sqrt(np.mean(err**2))))
+
+    def _terminated(self, scene: Any, up_z: float) -> bool:
+        """Playground's joystick termination (rcb_quadruped.terminated)."""
+        consts = self._pg.get("constants") or {}
+        if up_z < float(consts.get("up_z_min", 0.0)):
+            return True
+        joint_box = consts.get("joint_box")
+        if joint_box:
+            lo = np.tile(np.asarray(joint_box[0], dtype=float), 4)
+            hi = np.tile(np.asarray(joint_box[1], dtype=float), 4)
+            qpos = np.asarray(self._world(scene).get_qpos(), dtype=float)
+            if np.any(qpos[7:] < lo) or np.any(qpos[7:] > hi):
+                return True
+        torso_min_z = consts.get("torso_min_z")
+        if torso_min_z is not None:
+            root_z = float(self._pos(scene, self._pg["root_body"])[2])
+            if root_z < float(torso_min_z):
+                return True
+        return False
+
+    def _quadruped_check(self) -> dict:
+        """rcb_quadruped.Session.check on the steps executed so far."""
+        consts = self._pg.get("constants") or {}
+        horizon = int(self._pg.get("horizon", 0))
+        kind = self._pg.get("task_kind")
+        log_arr = np.array(self._log).reshape(-1, 5)
+        out: dict[str, Any] = {
+            "steps": self._steps,
+            "horizon": horizon,
+            "fell_at": self._fell_at,
+        }
+        if kind == "joystick":
+            segs: list[dict[str, Any]] = []
+            commands = self._pg.get("commands") or []
+            for i, s in enumerate(commands):
+                a = int(s["start_step"]) + int(consts.get("settle_steps", 25))
+                b = min(
+                    (
+                        int(commands[i + 1]["start_step"])
+                        if i + 1 < len(commands)
+                        else horizon
+                    ),
+                    self._steps,
+                )
+                if b > a:
+                    segs.append(
+                        {
+                            "segment": i,
+                            "lin_err": round(float(log_arr[a:b, 0].mean()), 4),
+                            "yaw_err": round(float(log_arr[a:b, 1].mean()), 4),
+                        }
+                    )
+            gait = self._pg.get("gait")
+            if gait:
+                gait_arr = np.asarray(self._gait_log)
+                for g in segs:
+                    s0 = commands[g["segment"]]
+                    a = int(s0["start_step"]) + int(consts.get("settle_steps", 25))
+                    nxt = (
+                        commands[g["segment"] + 1]["start_step"]
+                        if g["segment"] + 1 < len(commands)
+                        else horizon
+                    )
+                    g["gait_err"] = round(
+                        float(gait_arr[a : min(int(nxt), self._steps)].mean()), 4
+                    )
+            ok_track = all(
+                g["lin_err"] <= float(consts.get("lin_tol", 0.2))
+                and g["yaw_err"] <= float(consts.get("yaw_tol", 0.3))
+                and g.get("gait_err", 0.0) <= float(consts.get("gait_tol", 0.05))
+                for g in segs
+            )
+            out.update(
+                success=bool(
+                    self._steps == horizon and self._fell_at is None and ok_track
+                ),
+                tracking_ok=bool(ok_track),
+                segments=segs,
+            )
+        elif kind == "stand_on_two":
+            pose_arr = np.array(self._pose_log, dtype=float).reshape(-1, 2)
+            n = int(consts.get("pose_hold_steps", 100))
+            held = (
+                len(pose_arr) >= n
+                and self._fell_at is None
+                and bool(
+                    np.all(pose_arr[-n:, 0] <= float(consts.get("fwd_tol_deg", 30.0)))
+                )
+                and bool(
+                    np.all(log_arr[-n:, 3] >= float(consts.get("min_imu_height", 0.40)))
+                )
+                and not bool(pose_arr[-n:, 1].any())
+            )
+            out.update(success=bool(held))
+        else:  # getup
+            n = int(consts.get("hold_steps", 25))
+            last = log_arr[-n:]
+            held = (
+                len(last) == n
+                and bool(np.all(last[:, 2] <= float(consts.get("tilt_max_deg", 10.0))))
+                and bool(
+                    np.all(last[:, 3] >= float(consts.get("min_imu_height", 0.22)))
+                )
+            )
+            out.update(success=bool(held))
+        return out
+
+    # -- manipulation checks (rcb_aloha / rcb_panda, verbatim) ---------------
+
+    def _manip_check(self, scene: Any) -> dict:
+        kind = self._pg.get("task_kind")
+        check = self._pg.get("check") or {}
+        if kind == "AlohaSinglePegInsertion":
+            rear, _ = self._site_pose(scene, check["sites"]["socket_rear"])
+            ent, _ = self._site_pose(scene, check["sites"]["socket_entrance"])
+            tip, _ = self._site_pose(scene, check["sites"]["peg_tip"])
+            ab = ent - rear
+            t = float(np.dot(tip - rear, ab) / (np.dot(ab, ab) + 1e-12))
+            dist = float(np.linalg.norm(tip - (rear + t * ab)))
+            inserted = dist < float(check["line_tol_m"]) and float(
+                check["t_min"]
+            ) <= t <= float(check["depth_t_max"])
+            return {
+                "success": bool(inserted),
+                "tip_to_axis_m": round(dist, 5),
+                "axial_t": round(t, 4),
+            }
+        if kind == "AlohaHandOver":
+            box = self._pos(scene, check["box_body"])
+            target = np.asarray(check["target_pos"], dtype=float)
+            dist = float(np.linalg.norm(box - target))
+            right = self._any_contact(
+                scene, check["box_geom"], set(check.get("right_finger_geoms") or [])
+            )
+            left = self._any_contact(
+                scene, check["box_geom"], set(check.get("left_geoms") or [])
+            )
+            ok = (
+                dist < float(check["tol_m"])
+                and right
+                and not left
+                and box[2] >= float(check["min_z"])
+            )
+            return {
+                "success": bool(ok),
+                "box_to_target_m": round(dist, 4),
+                "right_holds": bool(right),
+                "left_touches": bool(left),
+                "box_z": round(float(box[2]), 4),
+            }
+        obj = self._pos(scene, self._pg.get("object_body", "box"))
+        target = np.asarray(self._pg.get("target_pos"), dtype=float)
+        if kind == "PandaPickCubeOrientation":
+            err = float(np.linalg.norm(obj - target))
+            obj_quat = self._quat(scene, self._pg.get("object_body", "box"))
+            tgt_quat = np.asarray(self._pg.get("target_quat_wxyz"), dtype=float)
+            d = abs(
+                float(
+                    np.dot(
+                        obj_quat / np.linalg.norm(obj_quat),
+                        tgt_quat / np.linalg.norm(tgt_quat),
+                    )
+                )
+            )
+            rot = float(np.degrees(2 * np.arccos(min(1.0, d))))
+            ok = err < float(check["pos_tol_m"]) and rot < float(check["rot_tol_deg"])
+            return {
+                "success": bool(ok),
+                "box_to_target_m": round(err, 4),
+                "rot_err_deg": round(rot, 2),
+            }
+        err = float(abs(obj[0] - target[0]))
+        return {
+            "success": bool(err < float(check["tol_m"])),
+            "handle_x": round(float(obj[0]), 4),
+        }
+
+    # -- Task API ----------------------------------------------------------
+
+    def reset(self, scene: Any, robot: Any, seed: int) -> dict:
+        info = super().reset(scene, robot, seed)
+        self._apply_frozen_state(scene)
+        self._steps = 0
+        self._fell_at = None
+        self._log = []
+        self._gait_log = []
+        self._pose_log = []
+        self._servo_warned = False
+        info["pg"] = {"success": False, "steps": 0}
+        return info
+
+    def step(self, scene: Any, robot: Any, action: np.ndarray):
+        reward, terminated, truncated, info = super().step(scene, robot, action)
+        self._apply_targets(scene, action)
+        self._steps += 1
+        if self._pg.get("kind_group") == "quadruped":
+            self._quadruped_log(scene)
+            info["pg"] = self._quadruped_check()
+        else:
+            info["pg"] = self._manip_check(scene)
+        return reward, terminated, truncated, info
+
+
+@register_task("efe_pg")
+def _make_efe_pg(**kwargs: Any) -> EfePgTask:
+    """MuJoCo Playground frozen-scene task with world/pg YAML blocks."""
+    kwargs.pop("type", None)
+    max_steps = int(kwargs.pop("max_episode_steps", 500))
+    world = kwargs.pop("world", None)
+    pg = kwargs.pop("pg", None)
+    return EfePgTask(
+        TaskConfig(name="efe", max_episode_steps=max_steps),
+        world=world,
+        pg=pg,
+    )
+
+
+@register_robot("aloha_2")
+def _make_aloha_2(**kwargs: Any) -> Any:
+    """Mobile ALOHA 2 (VX300S bimanual, MuJoCo Playground, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("aloha_2")
+
+
+@register_robot("unitree_go1")
+def _make_unitree_go1(**kwargs: Any) -> Any:
+    """Unitree Go1 quadruped (MuJoCo Playground, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("unitree_go1")
+
+
+@register_robot("boston_dynamics_spot")
+def _make_boston_dynamics_spot(**kwargs: Any) -> Any:
+    """Boston Dynamics Spot quadruped (MuJoCo Playground, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("boston_dynamics_spot")
+
+
+@register_robot("google_barkour_vb")
+def _make_google_barkour_vb(**kwargs: Any) -> Any:
+    """Google Barkour vB quadruped (MuJoCo Playground, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("google_barkour_vb")
+
+
+@register_robot("franka_panda_embedded")
+def _make_franka_panda_embedded(**kwargs: Any) -> Any:
+    """Franka Panda inside a whole-world MJCF (MuJoCo Playground, world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("franka_panda_embedded")

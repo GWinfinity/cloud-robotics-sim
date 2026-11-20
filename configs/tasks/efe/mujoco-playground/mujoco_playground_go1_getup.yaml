@@ -1,0 +1,194 @@
+# EFE 迁移编译物（mujoco-playground）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: mujoco_playground/Go1Getup | goal: The Unitree Go1 has fallen over. Make it get up and stand upright at its standing height.
+# fidelity: spec | notes: getup 判据逐字转写 rcb_quadruped.py::Session.check（horizon 300 控制步 @ 0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle 一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+version: 1
+
+task:
+  name: mujoco_playground_go1_getup
+  type: efe_pg
+  robot: unitree_go1
+  scene: efe_world
+  max_episode_steps: 300
+  world:
+    mjcf_path: assets/playground/worlds/mujoco_playground_go1_getup.xml
+    qpos_path: assets/playground/worlds/mujoco_playground_go1_getup.qpos.npy
+    qvel_path: assets/playground/worlds/mujoco_playground_go1_getup.qvel.npy
+    meta_path: assets/playground/worlds/mujoco_playground_go1_getup.meta.json
+  pg:
+    task_kind: getup
+    horizon: 300
+    control_dt: 0.02
+    constants:
+      air_feet: null
+      forward: null
+      front_leg_geoms:
+      - fl_calf1
+      - fl_calf2
+      - fr_calf1
+      - fr_calf2
+      - fl_thigh1
+      - fl_thigh2
+      - fl_thigh3
+      - fr_thigh1
+      - fr_thigh2
+      - fr_thigh3
+      - fl_hip
+      - fr_hip
+      fwd_tol_deg: null
+      gait_tol: 0.05
+      hind_leg_contact: false
+      hind_leg_geoms:
+      - rl_calf1
+      - rl_calf2
+      - rr_calf1
+      - rr_calf2
+      - rl_thigh1
+      - rl_thigh2
+      - rl_thigh3
+      - rr_thigh1
+      - rr_thigh2
+      - rr_thigh3
+      - rl_hip
+      - rr_hip
+      hold_steps: 25
+      joint_box: null
+      lin_tol: 0.2
+      min_imu_height: 0.22
+      pose_hold_steps: 100
+      settle_steps: 25
+      tilt_max_deg: 10.0
+      torso_min_z: null
+      up_z_min: 0.0
+      yaw_tol: 0.3
+      z_des: 0.275
+    kicks: []
+    imu_site: imu
+    root_body: trunk
+    floor_geom: floor
+    feet:
+    - FR
+    - FL
+    - RR
+    - RL
+    sites:
+      FL:
+        body: FL_calf
+        local:
+        - 0.0
+        - 0.0
+        - -0.213
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      FR:
+        body: FR_calf
+        local:
+        - 0.0
+        - 0.0
+        - -0.213
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      RL:
+        body: RL_calf
+        local:
+        - 0.0
+        - 0.0
+        - -0.213
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      RR:
+        body: RR_calf
+        local:
+        - 0.0
+        - 0.0
+        - -0.213
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      imu:
+        body: trunk
+        local:
+        - -0.01592
+        - -0.06659
+        - -0.00617
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+    joint_names:
+    - FR_hip_joint
+    - FR_thigh_joint
+    - FR_calf_joint
+    - FL_hip_joint
+    - FL_thigh_joint
+    - FL_calf_joint
+    - RR_hip_joint
+    - RR_thigh_joint
+    - RR_calf_joint
+    - RL_hip_joint
+    - RL_thigh_joint
+    - RL_calf_joint
+    ctrlrange:
+    - - -0.863
+      - 0.863
+    - - -0.686
+      - 4.501
+    - - -2.818
+      - -0.888
+    - - -0.863
+      - 0.863
+    - - -0.686
+      - 4.501
+    - - -2.818
+      - -0.888
+    - - -0.863
+      - 0.863
+    - - -0.686
+      - 4.501
+    - - -2.818
+      - -0.888
+    - - -0.863
+      - 0.863
+    - - -0.686
+      - 4.501
+    - - -2.818
+      - -0.888
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/playground/worlds/mujoco_playground_go1_getup.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: pg_success
+  params: {}
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

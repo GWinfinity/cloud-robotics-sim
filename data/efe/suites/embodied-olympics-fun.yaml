@@ -22,4 +22,4 @@ project:
   tier: T1
   status: planned
   target: plugins/envs/humanoid_falling 同层新增
-  note: G1/H1-2 体育动作全家桶；项目已有 humanoid_falling 插件与桌球/羽毛球设施可参考
+  note: G1/H1-2 体育动作全家桶；项目已有 humanoid_falling 插件与桌球/羽毛球设施可参考。本体门通过（人形 G1/H1-2），见 data/efe/embodiment_gate.json

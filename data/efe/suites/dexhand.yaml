@@ -23,5 +23,4 @@ project:
   tier: T1
   status: planned
   target: plugins/manipulation/dexterous_gnn_qp 扩展为完整 env
-  note: SHARPA Wave 灵巧手翻书/开罐/搅咖啡/USB/折纸/汉堡；接触丰富，复用 dexterous_gnn_qp 的灵巧操作与 Menagerie
-    leap_hand 设施
+  note: SHARPA Wave 灵巧手翻书/开罐/搅咖啡/USB/折纸/汉堡；接触丰富，复用 dexterous_gnn_qp 的灵巧操作与 Menagerie leap_hand 设施。本体门通过（灵巧手），见 data/efe/embodiment_gate.json

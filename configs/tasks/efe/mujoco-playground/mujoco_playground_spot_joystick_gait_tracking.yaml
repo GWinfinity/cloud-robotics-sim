@@ -1,0 +1,226 @@
+# EFE 迁移编译物（mujoco-playground）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: mujoco_playground/SpotJoystickGaitTracking | goal: Make Boston Dynamics Spot follow the joystick command schedule for the whole 20 s episode with the commanded gait (the feet's swing pattern, frequency and height) without falling over.
+# fidelity: spec | notes: joystick 判据逐字转写 rcb_quadruped.py::Session.check（horizon 1000 控制步 @ 0.02 s）；场景按 rcb_* Session 复刻（playground@4057c14 + menagerie@1b86ece，增益/关键帧/实例随机化/settle 一致；mocap 目标转为静态可视标记，Barkour 推力不重现）
+version: 1
+
+task:
+  name: mujoco_playground_spot_joystick_gait_tracking
+  type: efe_pg
+  robot: boston_dynamics_spot
+  scene: efe_world
+  max_episode_steps: 1000
+  world:
+    mjcf_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.xml
+    qpos_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.qpos.npy
+    qvel_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.qvel.npy
+    meta_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.meta.json
+  pg:
+    task_kind: joystick
+    horizon: 1000
+    control_dt: 0.02
+    constants:
+      air_feet: null
+      forward: null
+      front_leg_geoms:
+      - fl_calf1
+      - fl_calf2
+      - fr_calf1
+      - fr_calf2
+      - fl_thigh1
+      - fl_thigh2
+      - fl_thigh3
+      - fr_thigh1
+      - fr_thigh2
+      - fr_thigh3
+      - fl_hip
+      - fr_hip
+      fwd_tol_deg: null
+      gait_tol: 0.05
+      hind_leg_contact: false
+      hind_leg_geoms:
+      - rl_calf1
+      - rl_calf2
+      - rr_calf1
+      - rr_calf2
+      - rl_thigh1
+      - rl_thigh2
+      - rl_thigh3
+      - rr_thigh1
+      - rr_thigh2
+      - rr_thigh3
+      - rl_hip
+      - rr_hip
+      hold_steps: 25
+      joint_box: null
+      lin_tol: 0.2
+      min_imu_height: null
+      pose_hold_steps: 100
+      settle_steps: 25
+      tilt_max_deg: 10.0
+      torso_min_z: null
+      up_z_min: 0.85
+      yaw_tol: 0.3
+      z_des: null
+    commands:
+    - start_step: 0
+      vx: 0.9938757419586182
+      vy: 0.37067461013793945
+      wz: 0.44742894172668457
+    - start_step: 201
+      vx: 0.9238066673278809
+      vy: -0.3616582155227661
+      wz: -0.32676148414611816
+    - start_step: 402
+      vx: -0.9385867118835449
+      vy: 0.09156465530395508
+      wz: 0.44982028007507324
+    - start_step: 603
+      vx: -0.9596819877624512
+      vy: -0.29509055614471436
+      wz: 0.5688352584838867
+    - start_step: 804
+      vx: 0.8662233352661133
+      vy: 0.1854252815246582
+      wz: -0.2966732978820801
+    kicks: []
+    gait:
+      foot_height_m: 0.12916938960552216
+      frequency_hz: 3.6585731506347656
+      name: pace
+      phase0:
+      - 0.0
+      - 3.1415927410125732
+      - 0.0
+      - 3.1415927410125732
+      phase_dt: 0.45974987745285034
+      type: 2
+    imu_site: imu
+    root_body: body
+    floor_geom: floor
+    feet:
+    - FL
+    - FR
+    - HL
+    - HR
+    sites:
+      FL:
+        body: fl_lleg
+        local:
+        - 0.0
+        - 0.0
+        - -0.3365
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      FR:
+        body: fr_lleg
+        local:
+        - 0.0
+        - 0.0
+        - -0.3365
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      HL:
+        body: hl_lleg
+        local:
+        - 0.0
+        - 0.0
+        - -0.3365
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      HR:
+        body: hr_lleg
+        local:
+        - 0.0
+        - 0.0
+        - -0.3365
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+      imu:
+        body: body
+        local:
+        - 0.0
+        - 0.0
+        - 0.0
+        local_quat:
+        - 1.0
+        - 0.0
+        - 0.0
+        - 0.0
+    joint_names:
+    - fl_hx
+    - fl_hy
+    - fl_kn
+    - fr_hx
+    - fr_hy
+    - fr_kn
+    - hl_hx
+    - hl_hy
+    - hl_kn
+    - hr_hx
+    - hr_hy
+    - hr_kn
+    ctrlrange:
+    - - -0.785398
+      - 0.785398
+    - - -0.898845
+      - 2.29511
+    - - -2.7929
+      - -0.254402
+    - - -0.785398
+      - 0.785398
+    - - -0.898845
+      - 2.24363
+    - - -2.7929
+      - -0.255648
+    - - -0.785398
+      - 0.785398
+    - - -0.898845
+      - 2.29511
+    - - -2.7929
+      - -0.247067
+    - - -0.785398
+      - 0.785398
+    - - -0.898845
+      - 2.29511
+    - - -2.7929
+      - -0.248282
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/playground/worlds/mujoco_playground_spot_joystick_gait_tracking.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: pg_success
+  params: {}
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

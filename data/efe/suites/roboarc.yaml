@@ -24,4 +24,4 @@ project:
   tier: T1
   status: planned
   target: plugins/envs 新增 + cable_sim 复用
-  note: 绳结/穿绳/金属环/IKEA 装配/buzz-wire；可变形体(MuJoCo rope/cloth)需 Genesis 等效或降级为刚体链方案
+  note: 绳结/穿绳/金属环/IKEA 装配/buzz-wire；可变形体(MuJoCo rope/cloth)需 Genesis 等效或降级为刚体链方案。本体门通过（单臂 franka-robotiq + 双臂 aloha-2/franka-bimanual），见 data/efe/embodiment_gate.json
