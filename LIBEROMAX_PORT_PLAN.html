@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LIBERO-MAX 移植记录（EFE 套件 21/35） &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/LIBEROMAX_PORT_PLAN.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">LIBERO-MAX 移植记录（EFE 套件 21/35）</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/LIBEROMAX_PORT_PLAN.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="libero-max-efe-21-35">
+<h1>LIBERO-MAX 移植记录（EFE 套件 21/35）<a class="headerlink" href="#libero-max-efe-21-35" title="Link to this heading"></a></h1>
+<p>日期：2026-11-18 ｜ 状态：<strong>64/64 编译落地，offline nop 门 + Genesis 引擎冒烟（64 任务 EXIT=0）全部通过</strong></p>
+<section id="pin">
+<h2>上游事实（三条 pin 住的源）<a class="headerlink" href="#pin" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>部件</p></th>
+<th class="head"><p>来源</p></th>
+<th class="head"><p>许可</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>EFE 任务目录（instance/instruction/oracle）</p></td>
+<td><p>mll-lab-nu/embodied-first-exam <code class="docutils literal notranslate"><span class="pre">tasks/libero-max</span></code></p></td>
+<td><p>EFE 仓库</p></td>
+</tr>
+<tr class="row-odd"><td><p>LIBERO-MAX 事件运行时</p></td>
+<td><p>liberomax/LIBERO-MAX &#64; <code class="docutils literal notranslate"><span class="pre">a1e3cef</span></code>（<code class="docutils literal notranslate"><span class="pre">src/libero_max</span></code> + overlay）</p></td>
+<td><p>作者书面授权再分发</p></td>
+</tr>
+<tr class="row-even"><td><p>LIBERO 包 + 对象/场景资产</p></td>
+<td><p>Zxy-MLlab/LIBERO-PRO &#64; <code class="docutils literal notranslate"><span class="pre">2b910b5</span></code></p></td>
+<td><p>MIT</p></td>
+</tr>
+<tr class="row-odd"><td><p>任务数据（54 BDDL + 49 pruned_init + metadata）</p></td>
+<td><p>HF zhouxueyang/LIBERO-Pro &#64; <code class="docutils literal notranslate"><span class="pre">c86fc3b</span></code></p></td>
+<td><p>CC-BY-4.0</p></td>
+</tr>
+<tr class="row-even"><td><p>仿真栈</p></td>
+<td><p>robosuite 1.4.0 / MuJoCo 3.2.6（EFE 镜像 pin）</p></td>
+<td><p>—</p></td>
+</tr>
+</tbody>
+</table>
+<p>instance.json 只给 <code class="docutils literal notranslate"><span class="pre">init_state_index</span> <span class="pre">+</span> <span class="pre">policy_seed</span> <span class="pre">+</span> <span class="pre">scenario</span></code>：场景由 LIBERO-MAX
+代码从 bddl 重建，<code class="docutils literal notranslate"><span class="pre">.pruned_init</span></code> 是<strong>整条仿真状态的 torch pickle</strong>
+（time+qpos+qvel+act 扁平向量，经 <code class="docutils literal notranslate"><span class="pre">ProSubstrateEnv.set_init_state</span></code> 应用，PRO
+变体拓扑不同时按关节名适配），因此”初始物体位姿”没有声明式来源，必须跑
+上游栈取——这是与 VLABench（instance 自含位姿）的本质区别。</p>
+</section>
+<section id="id1">
+<h2>工件链<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tools/fetch_liberomax_assets.py</span></code> — 稀疏克隆三源 + HF 按需拉取
+（sha256 校验，断点续传）；资产落 <code class="docutils literal notranslate"><span class="pre">assets/liberomax/</span></code>（gitignore，本地）。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tools/setup_lmx_probe_venv.py</span></code> + <code class="docutils literal notranslate"><span class="pre">.lmxvenv</span></code>（py3.10）— 编译期探测 venv：
+robosuite 的 Windows <code class="docutils literal notranslate"><span class="pre">mujoco.dll</span></code> 拷贝 + 关 GPU 渲染宏（纯物理探测）。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tools/liberomax_probe.py</span></code> — 用 pin 住的栈重建每个冻结 case
+（env build → reset → 冻结态 + PRO substrate 扰动），dump：
+物体/夹具世界位姿 + MJCF 相对路径 + 关节 qpos + articulation 量程、
+BDDL 区域站点（世界盒）、goal_state、场景 setup/trigger/change、
+arena 台面盒（body “table” 的 box geom）、<code class="docutils literal notranslate"><span class="pre">success_at_init</span></code>（64/64 False）。
+dump 在 <code class="docutils literal notranslate"><span class="pre">data/efe/upstream/liberomax-dumps/</span></code>（本地）。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tools/compile_efe_suite.py</span> <span class="pre">--suite</span> <span class="pre">libero-max</span> <span class="pre">--resolve</span></code> — resolver 从
+dump 生成 KB → 64 份 schema v1 配置 + <code class="docutils literal notranslate"><span class="pre">data/suites/efe_libero-max.yaml</span></code>。</p></li>
+</ol>
+</section>
+<section id="libero-pro">
+<h2>判词映射（逐字转写自 LIBERO-PRO 源码）<a class="headerlink" href="#libero-pro" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>BDDL</p></th>
+<th class="head"><p>语义（源码依据）</p></th>
+<th class="head"><p>本仓类型</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">on</span></code>（物体支撑）</p></td>
+<td><p>支撑 z≤物体 z ∧ 接触 ∧ 水平原点距 &lt;0.03（严格）</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">libero_on</span></code> support 模式</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">on</span></code>（区域站点）</p></td>
+<td><p>站点本地 dz∈[hz−0.005, hz+0.10] ∧</p></td>
+<td><p>dx</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">in</span></code>（区域站点）</p></td>
+<td><p>物体原点严格在</p></td>
+<td><p>xmat&#64;halfsize</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">close</span></code>（站点）</p></td>
+<td><p>父夹具量程 <code class="docutils literal notranslate"><span class="pre">default_close_ranges</span></code>：全部关节 qpos &gt; min</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">libero_joint_state</span></code> close</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">turnon/turnoff</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">default_turnon/off_ranges</span></code>：任一关节 ≥ min / 全部关节 &lt; max</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">libero_joint_state</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>多谓词</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">And</span></code> 树</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">all</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id2">
+<h2>运行时<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">efe_liberomax</span></code> 任务（runtime/efe.py）：<code class="docutils literal notranslate"><span class="pre">on_proximity</span></code> 触发（EE 距实体
+&lt;0.18m，逐步检查，同 LIBERO-MAX runtime）；物理操作 move_object /
+insert_obstacle（含 eef-path 放置）/ insert_distractors / remove_object
+（setup 阶段出库停放到 offworld）经 entity backend <code class="docutils literal notranslate"><span class="pre">set_pos</span></code> 传送；
+视觉类操作（theme/lighting/sensor_noise/camera_shift）只记入 info——
+Genesis 配置评最终物理态，观测域变更不影响判分（spec 注记）。</p></li>
+<li><p>冻结关节初值（开着的抽屉 qpos −0.159 等）走
+<code class="docutils literal notranslate"><span class="pre">init_distribution.articulation_states</span></code>；<code class="docutils literal notranslate"><span class="pre">apply_layout</span></code> 已扩展为按关节名
+应用（<code class="docutils literal notranslate"><span class="pre">get_joint_names</span></code>/<code class="docutils literal notranslate"><span class="pre">get_joint_qs_idx_local</span></code>/<code class="docutils literal notranslate"><span class="pre">set_qpos</span></code>）。</p></li>
+<li><p>机器人 franka_panda 基座 (−0.66, 0, 0.912)（LIBERO MountedPanda 世界系）。</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>降级与限制（诚实清单）<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>观测域事件不改物理（记录为已应用语义=观测）；若后续接观测渲染需补。</p></li>
+<li><p>台面以 arena box geom 复刻（body “table”）；Floor 场景无台面，用
+efe_tabletop 地板（物体 z≈0.035 一致）。</p></li>
+<li><p>LIBERO 视觉装饰（墙/背景网格）未移植——不影响判词。</p></li>
+<li><p>EFE 的 bit-exact 哈希链（OpenBLAS/numpy AVX-512 内核依赖）不追求：本仓
+spec 级保真，物理初始态语义一致即可。</p></li>
+<li><p>上游 stove XML（flat/yellow）有两个同名 <code class="docutils literal notranslate"><span class="pre">tex-stove_knob</span></code> 纹理及重名
+body/site（<code class="docutils literal notranslate"><span class="pre">button</span></code>/<code class="docutils literal notranslate"><span class="pre">base</span></code>/<code class="docutils literal notranslate"><span class="pre">burner</span></code>；MuJoCo 3.10 与 quadrants 编译器均
+拒绝任何类别的重名）：staging 副本按文档序把后发生者重命名为
+<code class="docutils literal notranslate"><span class="pre">__dupN</span></code>、随后的引用重绑（按钮材质绑回深色贴图，符合上游意图）；镜像
+字节不变，修复只在 content-hash 暂存副本（<code class="docutils literal notranslate"><span class="pre">_stage_mjcf_component</span></code>
+scheme v5，tests/backend/test_mjcf_staging.py）。关节名匹配对实例前缀
+（probe 侧 <code class="docutils literal notranslate"><span class="pre">flat_stove_1_button</span></code>）与裸名+修复后缀（spawn 侧
+<code class="docutils literal notranslate"><span class="pre">button__dup2</span></code>）做去后缀的唯一后缀匹配（success.py <code class="docutils literal notranslate"><span class="pre">_joint_qpos</span></code>）。</p></li>
+</ul>
+</section>
+<section id="id4">
+<h2>复跑<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>tools/fetch_liberomax_assets.py<span class="w">            </span><span class="c1"># 镜像（幂等）</span>
+<span class="c1"># .lmxvenv 一次性搭建见 tools/setup_lmx_probe_venv.py 头注释</span>
+.lmxvenv/Scripts/python.exe<span class="w"> </span>tools/liberomax_probe.py<span class="w"> </span>--all
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>tools/compile_efe_suite.py<span class="w"> </span>--suite<span class="w"> </span>libero-max<span class="w"> </span>--resolve
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>tools/compile_efe_suite.py<span class="w"> </span>--suite<span class="w"> </span>libero-max<span class="w"> </span>--check
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/efe/test_compiled_configs.py<span class="w"> </span>tests/efe/test_liberomax_event.py
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/efe/test_liberomax_smoke.py<span class="w">  </span><span class="c1"># slow，需要资产镜像</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

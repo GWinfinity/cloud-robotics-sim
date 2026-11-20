@@ -1,0 +1,368 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VLABench 迁移方案与可行性（dm_control → Genesis 1.4.6 / quadrants） &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/VLABENCH_PORT_PLAN.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">VLABench 迁移方案与可行性（dm_control → Genesis 1.4.6 / quadrants）</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/VLABENCH_PORT_PLAN.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="vlabench-dm-control-genesis-1-4-6-quadrants">
+<h1>VLABench 迁移方案与可行性（dm_control → Genesis 1.4.6 / quadrants）<a class="headerlink" href="#vlabench-dm-control-genesis-1-4-6-quadrants" title="Link to this heading"></a></h1>
+<blockquote>
+<div><p>套件登记：<code class="docutils literal notranslate"><span class="pre">data/efe/suites/vlabench.yaml</span></code>（T1，36 任务 / 72 测试 / 2 核心）。
+本文回答一个问题：<strong>dm_control 任务能否迁移到基于 quadrants 的 Genesis</strong>，
+并给出迁移路径、保真度分级与缺口清单。状态真相以
+<code class="docutils literal notranslate"><span class="pre">data/efe/registry.json</span></code> 与 <code class="docutils literal notranslate"><span class="pre">tools/build_efe_registry.py</span> <span class="pre">--check</span></code> 为准。</p>
+</div></blockquote>
+<section id="id1">
+<h2>0. 结论<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p><strong>可行，按 spec 级保真落地。</strong> dm_control 在 VLABench 中只是 <strong>Python 组合层</strong>
+（composer 拼装场景、可观测封装、<code class="docutils literal notranslate"><span class="pre">should_terminate_episode</span></code> 判据）；其产出的
+任务 XML 全部是标准 MJCF，由 MuJoCo 编译。Genesis 1.4.6 的 MJCF 导入器本身
+<strong>委托官方 <code class="docutils literal notranslate"><span class="pre">mujoco</span></code> 包完成编译</strong>（<code class="docutils literal notranslate"><span class="pre">genesis/utils/mjcf.py::build_model</span></code> →
+<code class="docutils literal notranslate"><span class="pre">mujoco.MjModel.from_xml_string</span></code>），再把编译产物转成 Genesis 刚体实体交给
+quadrants 求解器。因此：</p>
+<ul class="simple">
+<li><p>MuJoCo 能编译的 MJCF（含 dm_control 生成物）→ Genesis 能读；</p></li>
+<li><p>quadrants 是仿真后端，与导入路径正交；同一导入栈已在 MetaWorld+
+（sawyer MJCF）全量通过双层门，本仓库有先例。</p></li>
+</ul>
+</section>
+<section id="cf588fe-08d7a44">
+<h2>1. 依赖面调查（2026-11-17，上游 cf588fe / 资产 08d7a44）<a class="headerlink" href="#cf588fe-08d7a44" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>层</p></th>
+<th class="head"><p>事实</p></th>
+<th class="head"><p>迁移含义</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>任务 XML</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">obj/meshes/**</span></code> 下 36 实例引用的组件 XML（counter/shaker/billiards…）全是标准 MJCF：mesh geom + 材质贴图 + visual/collision 分组；billiards 等是空 worldbody 的<strong>资产库</strong></p></td>
+<td><p>直接 MJCF 导入；资产库式组件需像 VLABench composer 那样以自由体实例化</p></td>
+</tr>
+<tr class="row-odd"><td><p>场景 XML</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">scenes/&lt;name&gt;/</span></code>（18 个房间，studyroom.xml 等）：贴图 + 房间网格 + 地板</p></td>
+<td><p>同上；实例 <code class="docutils literal notranslate"><span class="pre">scene.name</span></code> 指向目录，XML 文件名 ≠ 场景名</p></td>
+</tr>
+<tr class="row-even"><td><p>机器人</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">franka_emika_panda/panda.xml</span></code>（GitHub，MIT）：7 臂关节 <code class="docutils literal notranslate"><span class="pre">&lt;general&gt;</span></code> 执行器（<code class="docutils literal notranslate"><span class="pre">dyntype=none</span> <span class="pre">biastype=affine</span></code>，gainprm/biasprm = P 到位置目标）+ 2 指 <code class="docutils literal notranslate"><span class="pre">&lt;position&gt;</span></code> 执行器；<strong>无关节限位</strong>（文档值见 instruction）；肌腱/耦合全注释掉</p></td>
+<td><p>执行器模型与导入器原生支持的分式 <code class="docutils literal notranslate"><span class="pre">force</span> <span class="pre">=</span> <span class="pre">gain·ctrl</span> <span class="pre">+</span> <span class="pre">bias₀</span> <span class="pre">+</span> <span class="pre">bias₁·pos</span> <span class="pre">+</span> <span class="pre">bias₂·vel</span></code> 完全一致；限位需在控制器层用文档值钳制</p></td>
+</tr>
+<tr class="row-odd"><td><p>引擎选项</p></td>
+<td><p>instance.json 的 <code class="docutils literal notranslate"><span class="pre">integrator=implicitfast</span></code>、<code class="docutils literal notranslate"><span class="pre">impratio=10</span></code>、<code class="docutils literal notranslate"><span class="pre">multiccd=enable</span></code>、流体 density/viscosity</p></td>
+<td><p>MuJoCo 专属，<strong>不映射</strong>；Genesis 用自家求解器参数，保真度记 spec 级</p></td>
+</tr>
+<tr class="row-even"><td><p>任务逻辑</p></td>
+<td><p>dm_control <code class="docutils literal notranslate"><span class="pre">composer</span></code> + <code class="docutils literal notranslate"><span class="pre">should_terminate_episode</span></code>（contain/above/pour/press 等谓词，部分带朝向语义如 “tip past horizontal”）</p></td>
+<td><p>Python 层，必须在 Genesis 侧重实现为 <code class="docutils literal notranslate"><span class="pre">core/success.py</span></code> 条件；判据句逐字转写自 instruction.md / grade.py（DoD §9.3）。谓词语义源（上游 MIT，已镜像至 <code class="docutils literal notranslate"><span class="pre">.efe_stage/OpenMOSS_VLABench-git</span></code> 稀疏检出与 <code class="docutils literal notranslate"><span class="pre">data/efe/upstream/images-vlabench/</span></code>）：<code class="docutils literal notranslate"><span class="pre">VLABench/tasks/condition.py</span></code> 谓词库 + <code class="docutils literal notranslate"><span class="pre">hierarchical_tasks/**</span></code> 逐任务 <code class="docutils literal notranslate"><span class="pre">should_terminate_episode</span></code> + EFE <code class="docutils literal notranslate"><span class="pre">grade.py</span></code>/<code class="docutils literal notranslate"><span class="pre">vlb_tool.py</span></code>（GHCR <code class="docutils literal notranslate"><span class="pre">efe:vlabench-files-0.5.2</span></code> 层）</p></td>
+</tr>
+<tr class="row-odd"><td><p>动作接口</p></td>
+<td><p>9 维绝对位置目标 &#64;10Hz（0.1s = 100 物理步，dt=0.001）</p></td>
+<td><p>映射到 Genesis 关节位置控制（<code class="docutils literal notranslate"><span class="pre">control_dofs_position</span></code>）</p></td>
+</tr>
+<tr class="row-even"><td><p>冻结机制</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">model_sha256</span></code> / <code class="docutils literal notranslate"><span class="pre">initial_state_sha256</span></code>（MuJoCo 3.2.2 位精确）</p></td>
+<td><p>Genesis 重建不可复现 MuJoCo 哈希；冻结改为 Genesis 侧实例钉住（init 位姿来自 instance.json，等价 compile_efe_suite 的 init_override）</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="genesis-world-1-4-6">
+<h2>2. 导入器支持矩阵（genesis-world 1.4.6 源码核对）<a class="headerlink" href="#genesis-world-1-4-6" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>构造</p></th>
+<th class="head"><p>支持</p></th>
+<th class="head"><p>证据 / 备注</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>MJCF 编译</p></td>
+<td><p>✅ 原生</p></td>
+<td><p>委托官方 <code class="docutils literal notranslate"><span class="pre">mujoco</span></code> 包；本 venv = 3.10.0（≥ 上游 3.2.2，<code class="docutils literal notranslate"><span class="pre">refquat</span></code> 等 3.2 构造可编译；版本差记入保真度说明）</p></td>
+</tr>
+<tr class="row-odd"><td><p>mesh geom（obj/stl）+ 贴图</p></td>
+<td><p>✅</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">parse_geom</span></code>；相对路径由导入器改写 meshdir/assetdir 为绝对路径</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;general&gt;</span></code> 执行器 FIXED gain / AFFINE bias</p></td>
+<td><p>✅ 原生</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">mjcf.py:412-467</span></code>，与 panda 的 P 执行器公式一致</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;position&gt;</span></code> 执行器</p></td>
+<td><p>✅</p></td>
+<td><p>同上（biastype=affine 特例）</p></td>
+</tr>
+<tr class="row-even"><td><p>肌腱</p></td>
+<td><p>⚠️ 近似</p></td>
+<td><p>转为关节执行器并告警；panda 肌腱已注释，VLABench 36 任务未依赖</p></td>
+</tr>
+<tr class="row-odd"><td><p>球关节限位 / 执行器内部动力学 / 非常规 gain-bias</p></td>
+<td><p>⚠️ 告警降级</p></td>
+<td><p>VLABench 未使用</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">option</span></code>（integrator/impratio/multiccd…）</p></td>
+<td><p>❌ 按设计丢弃</p></td>
+<td><p>MuJoCo 求解器语义，Genesis 无对应物</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="xml">
+<h2>3. 资产镜像（”镜像其任务 XML”的落点）<a class="headerlink" href="#xml" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tools/fetch_vlabench_assets.py</span></code>：幂等镜像，三源——
+EFE 任务文件（instance.json + instruction.md + grade.py）→
+<code class="docutils literal notranslate"><span class="pre">data/efe/upstream/tasks/vlabench/</span></code>；组件/场景 XML + 引用资产（HF
+<code class="docutils literal notranslate"><span class="pre">lerobot/vlabench-assets&#64;08d7a44</span></code>）→ <code class="docutils literal notranslate"><span class="pre">assets/vlabench/</span></code>；panda 机器人
+（GitHub MIT）→ <code class="docutils literal notranslate"><span class="pre">assets/vlabench/robots/franka_emika_panda/</span></code>。</p></li>
+<li><p><strong>许可</strong>：VLABench 资产集不允许再分发 → 镜像只留本地并 gitignore
+（<code class="docutils literal notranslate"><span class="pre">assets/vlabench/</span></code>），入仓库的只有工具和 PROVENANCE 记录；HF 端点可配
+（<code class="docutils literal notranslate"><span class="pre">HF_ENDPOINT</span></code>，默认 huggingface.co 不通时走 hf-mirror.com）。</p></li>
+<li><p>手动步骤（与 <code class="docutils literal notranslate"><span class="pre">fetch_upstream_assets.py</span></code> 同级），CI/测试不得调用。</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>4. 缺口与对策<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>位精确不可承诺</strong>：<code class="docutils literal notranslate"><span class="pre">frozen</span></code> 保真（上游哈希冻结）不可达，v1 一律 <code class="docutils literal notranslate"><span class="pre">spec</span></code>
+级——判据按上游逐字、初始布局用 instance.json 冻结位姿。与 MetaWorld+ v1
+同一分级。</p></li>
+<li><p><strong>谓词覆盖面</strong>：<code class="docutils literal notranslate"><span class="pre">core/success.py</span></code> 现有 Distance/Pose/AxisWindow、in_region、
+count_in_region、body_point_near、ee_near、staged。<strong>已补 VLABench 首批两个</strong>
+（2026-11-17，TDD 65 过）：<code class="docutils literal notranslate"><span class="pre">above_region</span></code>（VLABench <code class="docutils literal notranslate"><span class="pre">AboveCondition</span></code>：z ≥ 平台
+原点 + 足迹圆/盒）与 <code class="docutils literal notranslate"><span class="pre">tipped</span></code>（<code class="docutils literal notranslate"><span class="pre">PourCondition</span></code>：实体局部 top/bottom 站点
+世界 z 差 &gt; 阈值，”tip past horizontal”）。后续按需增补：<code class="docutils literal notranslate"><span class="pre">contain</span></code> 的
+足迹+高度带语义（<code class="docutils literal notranslate"><span class="pre">FlatContainer.contain</span></code>：根点落于足迹且 0 &lt; z−center.z &lt;
+z_threshold，如 select_fruit 的 0–0.1 m 带）、<code class="docutils literal notranslate"><span class="pre">IsGraspedCondition</span></code>、
+<code class="docutils literal notranslate"><span class="pre">ButtonPressedCondition</span></code>、<code class="docutils literal notranslate"><span class="pre">OnCondition</span></code>（接触对+z 上限）。</p></li>
+<li><p><strong>关节限位</strong>：XML 无限位 → 在 VLABench 任务控制器Wrapper 按 instruction
+文档值钳制 9 维动作（Panda 限位逐关节列出）。</p></li>
+<li><p><strong>保活/语义漂移</strong>：36 个冻结实例逐个跑 nop 门（起始状态不命中判据）+
+引擎冒烟（Genesis 上实例化合、落体稳定、位置控制可动）。</p></li>
+</ol>
+</section>
+<section id="efe-migration-plan-p1">
+<h2>5. 路线（接 EFE_MIGRATION_PLAN P1）<a class="headerlink" href="#efe-migration-plan-p1" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>✅ 可行性钉死（本文 §6）。</p></li>
+<li><p>✅ 镜像管线（tools/fetch_vlabench_assets.py；组件 58/58 + 任务文件 144/144</p>
+<ul class="simple">
+<li><p>panda + 判据源码；场景大网格随镜像轮次补齐）。</p></li>
+</ul>
+</li>
+<li><p>🚧 垂直切片 <code class="docutils literal notranslate"><span class="pre">add-condiment</span></code>（2026-11-18）：</p>
+<ul class="simple">
+<li><p>✅ <code class="docutils literal notranslate"><span class="pre">core/success.py</span></code> 谓词首批（above_region/tipped，TDD 65 过）；</p></li>
+<li><p>✅ schema v1 资产 <code class="docutils literal notranslate"><span class="pre">shape_type:</span> <span class="pre">mjcf</span></code> 全链路（task_loader → ObjectSpawn →
+GenesisSceneBackend.create_mjcf；动态抓取物经内容哈希 stage 副本注入
+freejoint，MuJoCo 3.10 拒收的薄壳网格自动补 <code class="docutils literal notranslate"><span class="pre">inertia=&quot;shell&quot;</span></code>——
+镜像保持字节级原样）；</p></li>
+<li><p>✅ <code class="docutils literal notranslate"><span class="pre">runtime/efe.py</span></code> 注册 <code class="docutils literal notranslate"><span class="pre">franka_panda</span></code>（VLABench panda.xml）；</p></li>
+<li><p>✅ compile_efe_suite.py <code class="docutils literal notranslate"><span class="pre">resolve_vlabench</span></code>（instance.json 驱动：
+条件名→success 类型分发，足迹半径/站点偏移编译期从镜像 MJCF 解析）；</p></li>
+<li><p>✅ 编译产物 + 离线 nop 门（tests/efe/test_compiled_configs.py 自动覆盖
+efe_vlabench 聚合）。</p></li>
+<li><p>⏳ 引擎冒烟（tests/efe/test_vlabench_smoke.py，slow）。
+✅ 通过（2026-11-18，110 s）：franka + 8 个 MJCF 组件（3 动态含 freejoint
+stage 注入 + 1 薄壳 shell-inertia 补丁）实例化合、reset、起始态判据 False。
+双层门齐活——VLABench 第一条任务端到端可跑。</p></li>
+</ul>
+</li>
+<li><p>批量 36 任务：按判据族扩 condition_map（contain 足迹+高度带、press、
+grasped、on），逐族解锁 → <code class="docutils literal notranslate"><span class="pre">data/suites/efe_vlabench.yaml</span></code> 全量 →
+<code class="docutils literal notranslate"><span class="pre">--check</span></code> → <code class="docutils literal notranslate"><span class="pre">project.status:</span> <span class="pre">partial→ported</span></code>（DoD §9 全满足才改 ported）。
+<strong>进展（2026-11-18 批产）</strong>：谓词第二批落地（<code class="docutils literal notranslate"><span class="pre">contains</span></code> 圆足迹+z带/箱袋
+bbox/any-of/negate、<code class="docutils literal notranslate"><span class="pre">lift</span></code>、<code class="docutils literal notranslate"><span class="pre">ordered</span></code>，TDD 98 过）；condition_map 扩至
+above/pour/contain/not_contain/lift/order；<strong>18/36 编译落地</strong>
+（offline nop 门 + compile –check 全绿；引擎冒烟 17 任务，select_drink
+被 nop 门拦截退回 pending——冻结初始态果汁已在冰箱 bbox 外，记入判据表）。
+剩余 18 个 pending 的全部理由已写进 <code class="docutils literal notranslate"><span class="pre">vlabench.predicates.yaml</span></code>：</p>
+<ul class="simple">
+<li><p>接触/关节类谓词待接入（8）：press_button×4（QA 三件套+select_painting）、
+is_grasped×4（poker 系）、joint_in_range（hammer-nail）；</p></li>
+<li><p>条件实体内嵌容器 MJCF 需子体抽取（6）：book×2、chemistry KMnO4×3、
+find-unseen-object、take-out-cool-drink（实际 7 项，含 heat-food 附带的
+门/按钮语义）；</p></li>
+<li><p>heat_food 需门关闭+启动钮附加语义；texas_holdem 判据在代码层需人工转写；</p></li>
+<li><p>select_drink 见上（nop 拦截）。
+<strong>当日二轮（31/36）</strong>：<code class="docutils literal notranslate"><span class="pre">in_contact</span></code> 谓词（press_button 力带按终态接触转写
+spec 注；grasp 用整机接触近似夹爪）+ 类级几何合成（BilliardBall/Poker/
+NumberCube 资产库注入；Button/CardHolder 纯代码类转写）+ <strong>subentities
+递归展开</strong>（书/试管/苹果/饮料经父链位姿合成）+ RandomGeom assets_override</p></li>
+</ul>
+<ul class="simple">
+<li><p>镜像工具子实体递归。引擎冒烟 31 任务。剩 4 个 pending：hammer-nail
+（joint_in_range+关节化 spawn）、heat-food（门/钮附加语义）、texas-holdem
+（代码层判据）、select-drink/take-out-cool-drink（nop 拦截的”出生即成功”
+同型疑问，待专查上游冻结语义）。
+<strong>当日三轮（34/36）</strong>：<code class="docutils literal notranslate"><span class="pre">joint_window</span></code> 谓词（joint_in_range + 门状态
+|qpos|&lt;π/10）；<strong>articulated spawn</strong>（关节化组件保关节无 freejoint；
+活动体网格惯性自动补 shell——MuJoCo 3.10 对活动 mesh geom 的强制）；
+heat_food/texas_holdem 经 extra_conditions 转写（判据表声明式附加条件，
+contains 型同样编译期解析容器几何）。剩余 2 个 pending 为 nop 门拦截的
+饮料同型疑问（冻结态即在容器外，待专查上游语义）。
+<strong>+100 路线评估（2026-11-18）</strong>：VLABench 已接近收官；再 +100 需新开
+套件，固定成本排序——KinDER 5（seed-only 实例需 kindergarden 代码栈重建
+场景 + TidyBot++ 移动本体，性价比低）、LIBERO-MAX 64（最大单体，但需
+LIBERO-PRO 场景栈与 robosuite 位精确语义降级，多日工程）、RoboPaint 43
+（需独立光栅评分器，单独立项）、Olympics-Fun 79 / Dex 系 62（Menagerie
+本体转换波次 + 逐场景重建）。建议下一波从 LIBERO-MAX 垂直切片立项。</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="panda-counter-shaker-cuda-quadrants-2026-11-17">
+<h2>6. 冒烟证据（panda+counter+shaker，CUDA/quadrants，2026-11-17）<a class="headerlink" href="#panda-counter-shaker-cuda-quadrants-2026-11-17" title="Link to this heading"></a></h2>
+<p>场景 = <code class="docutils literal notranslate"><span class="pre">add-condiment</span></code> 冻结实例的三件组合（panda &#64; (0,-0.4,0.78) + counter +
+shaker 注入 freejoint），全部使用 VLABench 上游原始 XML、未改动物理参数。
+冒烟脚本为一次性脚手架；入库版测试将由 <code class="docutils literal notranslate"><span class="pre">tests/efe/test_vlabench_smoke.py</span></code>
+承担（同 metaworldplus 双层门模式）。</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>检查</p></th>
+<th class="head"><p>结果</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>MuJoCo 3.10.0 编译 panda.xml</p></td>
+<td><p>✅ nq=9 / nactuator=9</p></td>
+</tr>
+<tr class="row-odd"><td><p>Genesis 场景合成（plane+counter+shaker+panda）</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-even"><td><p>DOF 布局</p></td>
+<td><p>✅ 9 关节 = joint1..7 + finger_joint1/2，与上游一致</p></td>
+</tr>
+<tr class="row-odd"><td><p>shaker 落体稳定</p></td>
+<td><p>✅ z 0.799→0.780 落定柜面，末 100 步稳</p></td>
+</tr>
+<tr class="row-even"><td><p>位置控制</p></td>
+<td><p>✅ joint2/4 目标 +0.15，qpos 有限响应（超调 0.77/0.16——控制标定列入端口工作，见 §4.5）</p></td>
+</tr>
+<tr class="row-odd"><td><p>离屏渲染</p></td>
+<td><p>✅ 台面木纹贴图、shaker、panda 网格均正确</p></td>
+</tr>
+</tbody>
+</table>
+<p>导入告警（预期内，不阻断）：torsional friction（condim≥4）声明但未启用；
+指尖 authored 惯量与几何估算不符的提示；上游 solref 0.001 被求解器抬到
+0.002；qpos0 自碰撞几何对过滤。CoACD 凸分解 shaker 的 32 片碰撞网格耗时
+~250 s（一次性；genesis 缓存后整场重建 ~75 s）。</p>
+<section id="id3">
+<h3>端口工作明细（§4 增补）<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<ol class="arabic simple" start="5">
+<li><p><strong>控制标定</strong>：MJCF 的 MuJoCo 级增益（gainprm 4500/3500/2000、solref/solimp）
+按公式原样进 Genesis 执行器模型（<code class="docutils literal notranslate"><span class="pre">dofs_act_gain/bias</span></code>），但 Genesis 的
+<code class="docutils literal notranslate"><span class="pre">control_dofs_position</span></code> 默认值（速度限幅等）与 MuJoCo 位置执行器行为
+有差；垂直切片阶段需逐关节对照 MuJoCo 参考响应标定，记入任务配置。</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

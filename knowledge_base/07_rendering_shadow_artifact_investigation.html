@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>渲染阴影伪影排查：MuJoCo 阴影贴图 bug 与 Genesis 的差异 &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/knowledge_base/07_rendering_shadow_artifact_investigation.html" />
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">渲染阴影伪影排查：MuJoCo 阴影贴图 bug 与 Genesis 的差异</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/knowledge_base/07_rendering_shadow_artifact_investigation.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="mujoco-bug-genesis">
+<h1>渲染阴影伪影排查：MuJoCo 阴影贴图 bug 与 Genesis 的差异<a class="headerlink" href="#mujoco-bug-genesis" title="Link to this heading"></a></h1>
+<p><strong>日期</strong>: 2026-09-16
+<strong>来源</strong>: 外部项目（WHAM/GMR 人形重映射管线，MuJoCo 渲染）发现并坐实的渲染器 bug；本文排查本仓库（genesis-cloud-sim，genesis-world 1.4.0）是否暴露同类问题。
+<strong>结论</strong>: Genesis 不存在同款 bug（机制上不成立）；仅 patents 长跑渲染存在表观相似的次级风险。</p>
+<hr class="docutils" />
+<section id="mujoco-bug">
+<h2>1. 背景：MuJoCo 已坐实的阴影伪影 bug<a class="headerlink" href="#mujoco-bug" title="Link to this heading"></a></h2>
+<p>外部项目渲染人形机器人重放视频（同进程顺序渲染 2680 帧）时发现幻影黑色楔形/三角伪影，三组对照实验闭合了证据链：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>实验</p></th>
+<th class="head"><p>结果</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>全新进程单帧渲染（3.12）</p></td>
+<td><p>干净（暗像素 0）</p></td>
+</tr>
+<tr class="row-odd"><td><p>同进程顺序渲染到第 262 帧（3.12）</p></td>
+<td><p>伪影（区域 min=23，745 暗像素）</p></td>
+</tr>
+<tr class="row-even"><td><p>最新 MuJoCo 3.13.0 干净 venv 顺序渲染</p></td>
+<td><p><strong>伪影原样复现</strong>（逐位相同）</p></td>
+</tr>
+<tr class="row-odd"><td><p>3.12 + 整条轨迹平移到世界原点</p></td>
+<td><p><strong>伪影完全消失</strong></p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>根因机制</strong>：平行光的阴影正交相机<strong>锚定在光源 <code class="docutils literal notranslate"><span class="pre">pos</span></code>（原点）</strong>，视锥固定。机器人根轨迹活动范围离锚点 3m+ 时，阴影贴图采样产生位置漂移的幻影黑斑。</p></li>
+<li><p><strong>排除的嫌疑</strong>：反射通道（开关反射都在）；阴影贴图缓存未失效（”关→开阴影”强制刷新无效，min=23/745 不变）；环境问题（最新版 3.13.0 复现）。</p></li>
+<li><p><strong>上游记录</strong>：MuJoCo changelog 有 “Fixed a bug that caused shadow rendering to flicker on platforms that do not support ARB_clip_control” 及 issue #1831（离屏多次渲染状态泄漏），同属阴影/状态问题家族，但本案例（EGL/NVIDIA）在含修复版本上仍存在，属未修复变体。</p></li>
+<li><p><strong>已验证的修法</strong>：交付前把根 xy 平移到质心≈世界原点（刚体平移，动作不变，棋盘地面无限延伸视觉上无差）。备选：关阴影（丢影子）或光源 pos 跟随机器人。</p></li>
+</ul>
+</section>
+<section id="genesis-1-4-0-bug">
+<h2>2. Genesis 1.4.0 的机制差异（逐行核实，非同款 bug）<a class="headerlink" href="#genesis-1-4-0-bug" title="Link to this heading"></a></h2>
+<p>Genesis 的阴影相机<strong>不锚定光源位置，而是锚定场景 AABB 质心，且每帧强制重算</strong>：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># .venv/Lib/site-packages/genesis/ext/pyrender/renderer.py:786-789 (_get_light_cam_matrices)</span>
+<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">light</span><span class="p">,</span> <span class="n">DirectionalLight</span><span class="p">):</span>
+    <span class="n">direction</span> <span class="o">=</span> <span class="o">-</span><span class="n">pose</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">scene</span><span class="o">.</span><span class="n">centroid</span>
+    <span class="n">loc</span> <span class="o">=</span> <span class="n">c</span> <span class="o">-</span> <span class="n">direction</span> <span class="o">*</span> <span class="n">scene</span><span class="o">.</span><span class="n">scale</span>        <span class="c1"># 阴影相机位置 = AABB 质心 沿光源反方向外推一个场景尺度</span>
+    <span class="n">pose</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">loc</span>
+
+<span class="c1"># .venv/Lib/site-packages/genesis/ext/pyrender/light.py:164-166 (_get_shadow_camera)</span>
+<span class="k">return</span> <span class="n">OrthographicCamera</span><span class="p">(</span><span class="n">znear</span><span class="o">=</span><span class="mf">0.01</span> <span class="o">*</span> <span class="n">scene_scale</span><span class="p">,</span> <span class="n">zfar</span><span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">scene_scale</span><span class="p">,</span>
+                          <span class="n">xmag</span><span class="o">=</span><span class="n">scene_scale</span><span class="p">,</span> <span class="n">ymag</span><span class="o">=</span><span class="n">scene_scale</span><span class="p">)</span>   <span class="c1"># scene_scale = 场景 AABB 对角线</span>
+
+<span class="c1"># .venv/Lib/site-packages/genesis/vis/rasterizer_context.py:1152 (每次 update_scene)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">_scene</span><span class="o">.</span><span class="n">_bounds</span> <span class="o">=</span> <span class="kc">None</span>   <span class="c1"># 重置包围盒触发重算 → 阴影相机矩阵与 shadow map 每帧重建</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="head"><p>MuJoCo（出问题的）</p></th>
+<th class="head"><p>Genesis 1.4.0（本仓库）</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>平行光阴影相机锚点</p></td>
+<td><p>光源 pos 原点，固定</p></td>
+<td><p>场景 AABB 质心（<code class="docutils literal notranslate"><span class="pre">renderer.py:786-789</span></code>）</p></td>
+</tr>
+<tr class="row-odd"><td><p>正交视锥范围</p></td>
+<td><p>固定</p></td>
+<td><p>跟随 AABB 对角线（<code class="docutils literal notranslate"><span class="pre">light.py:164-166</span></code>）</p></td>
+</tr>
+<tr class="row-even"><td><p>帧间更新</p></td>
+<td><p>状态可残留</p></td>
+<td><p>每帧 <code class="docutils literal notranslate"><span class="pre">_bounds=None</span></code> 强制重算，阴影相机矩阵/shadow map 重建</p></td>
+</tr>
+</tbody>
+</table>
+<p>推论：</p>
+<ol class="arabic simple">
+<li><p><strong>“轨迹离光源锚点远”这一触发条件在 Genesis 不成立</strong>——视锥围着场景质心画，机器人在哪都在视锥内。MuJoCo 的”平移到原点”修复对本仓库<strong>不是必需的</strong>。</p></li>
+<li><p><strong>同进程顺序渲染的状态残留也不存在</strong>——每帧阴影相机矩阵重算、shadow map 重渲，无缓存可残留。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gs.morphs.Plane</span></code> 地板特殊处理：只取质心参与包围盒（<code class="docutils literal notranslate"><span class="pre">ext/pyrender/scene.py:236-237</span></code>），无限地板不会撑大阴影视锥。</p></li>
+</ol>
+</section>
+<section id="id1">
+<h2>3. 本仓库渲染入口盘点<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>全部为<strong>同进程顺序渲染多帧</strong>（与 MuJoCo 侧相同的使用模式），无每帧新进程路径：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>入口</p></th>
+<th class="head"><p>位置</p></th>
+<th class="head"><p>相机</p></th>
+<th class="head"><p>场景规模</p></th>
+<th class="head"><p>风险</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>patents runner / <code class="docutils literal notranslate"><span class="pre">run_patent</span></code>（skills.py 同步与 K8s 异步共用）</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/patents/runner.py:135-144</span></code>，<code class="docutils literal notranslate"><span class="pre">base.py:193-208</span></code></p></td>
+<td><p>固定或 <code class="docutils literal notranslate"><span class="pre">follow_entity</span></code></p></td>
+<td><p>1–15 m，长跑轨迹可达数十米</p></td>
+<td><p><strong>中</strong>（见 §4）</p></td>
+</tr>
+<tr class="row-odd"><td><p>home_demo</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">examples/robotwin/home_demo.py:823-890</span></code></p></td>
+<td><p>OrbitCamera 移动</p></td>
+<td><p>4.2 m 房间</p></td>
+<td><p>低</p></td>
+</tr>
+<tr class="row-even"><td><p>composer 环境</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">src/.../core/composer.py:192-208</span></code></p></td>
+<td><p>固定 head_cam</p></td>
+<td><p>10×10×3 m 房间</p></td>
+<td><p>低</p></td>
+</tr>
+<tr class="row-odd"><td><p>do_as_i_do</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">plugins/do_as_i_do/core/env.py:134-144,242-245</span></code></p></td>
+<td><p>固定</p></td>
+<td><p>桌面 ~1 m</p></td>
+<td><p>低</p></td>
+</tr>
+<tr class="row-even"><td><p>aloha_demo / replay.py</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">examples/robotwin/aloha_demo.py</span></code>、<code class="docutils literal notranslate"><span class="pre">replay.py:199-246</span></code></p></td>
+<td><p>固定</p></td>
+<td><p>桌面 ~1 m</p></td>
+<td><p>低</p></td>
+</tr>
+<tr class="row-odd"><td><p>dengyu grasp</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">examples/grasp/dengyu_multiscale_soft_grasp.py:225</span></code></p></td>
+<td><p>固定</p></td>
+<td><p>桌面</p></td>
+<td><p>低</p></td>
+</tr>
+<tr class="row-even"><td><p>hifiumi</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">examples/hifiumi/replay_hifiumi.py</span></code></p></td>
+<td><p><strong>不做 Genesis 渲染</strong>（仅 matplotlib 偏差图）；loader 已做 <code class="docutils literal notranslate"><span class="pre">recenter_to_workspace</span></code></p></td>
+<td><p>—</p></td>
+<td><p>无</p></td>
+</tr>
+<tr class="row-odd"><td><p>GPU batch renderer</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">batch_renderer.py:333-340</span></code>（Madrona）</p></td>
+<td><p>—</p></td>
+<td><p>—</p></td>
+<td><p>未知（阴影逻辑在黑盒内；当前入口均不走此路径）</p></td>
+</tr>
+<tr class="row-even"><td><p>vendored sky（0.3.11）</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">plugins/envs/sky/core/genesis/</span></code></p></td>
+<td><p>—</p></td>
+<td><p>—</p></td>
+<td><p>中（旧栈，AGENTS.md 禁止 core 引用）</p></td>
+</tr>
+</tbody>
+</table>
+<p>灯光侧：阴影默认开启（<code class="docutils literal notranslate"><span class="pre">VisOptions.shadow=True</span></code>，默认 DirectionalLight）。阴影贴图 8192²（<code class="docutils literal notranslate"><span class="pre">ext/pyrender/constants.py:11</span></code>），正交参数全部 genesis 内硬编码，项目代码零暴露。</p>
+</section>
+<section id="patents-bug">
+<h2>4. 次级风险：patents 长跑渲染（非同款 bug，表观可能相似）<a class="headerlink" href="#patents-bug" title="Link to this heading"></a></h2>
+<p>Wright Flyer / Goddard Rocket 等长跑专利（轨迹数十米 + <code class="docutils literal notranslate"><span class="pre">follow_entity</span></code>）可能出现：</p>
+<ol class="arabic simple">
+<li><p><strong>阴影分辨率稀释</strong>：动态实体拉出长尾 AABB → 8192² 贴图被整个航迹稀释 → 阴影块状/低清；</p></li>
+<li><p><strong>深度精度变粗</strong>：<code class="docutils literal notranslate"><span class="pre">znear/zfar</span></code> 按场景 scale 同比放大 → z-fighting / 阴影边缘 shimmer；</p></li>
+<li><p><strong>帧间跳变</strong>：每帧重算 bounds → 阴影边缘和分辨率帧间变化（外观像 flicker）。</p></li>
+</ol>
+<p><strong>规避办法</strong>（二选一）：</p>
+<ul class="simple">
+<li><p>长跑专利渲染时保持场景包围盒紧致（避免高速实体拉出长尾 AABB）；</p></li>
+<li><p>在 <code class="docutils literal notranslate"><span class="pre">PatentSimConfig</span></code> 层关闭阴影（<code class="docutils literal notranslate"><span class="pre">VisOptions(shadow=False)</span></code>）。</p></li>
+</ul>
+<p>其余入口场景小、AABB 稳定，风险低，无需处理。</p>
+</section>
+<section id="composer">
+<h2>5. 附带发现：composer 灯光配置静默失效<a class="headerlink" href="#composer" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">src/cloud_robotics_sim/backends/genesis_backend.py:915-917</span></code> 的 <code class="docutils literal notranslate"><span class="pre">add_light</span></code> 调用 <code class="docutils literal notranslate"><span class="pre">genesis_compat.get_genesis_lights()</span></code>，而 genesis-world ≥1.2 移除了 <code class="docutils literal notranslate"><span class="pre">gs.lights</span></code>（helper 恒返回 None），于是 <strong>debug 日志后静默跳过</strong>。结果是 composer 路径实际吃 <code class="docutils literal notranslate"><span class="pre">VisOptions</span></code> 默认灯，与 <code class="docutils literal notranslate"><span class="pre">core/scene.py:371-393</span></code> 的显式灯光配置意图（ambient + 主平行光 <code class="docutils literal notranslate"><span class="pre">cast_shadow=True</span></code>，默认 pos <code class="docutils literal notranslate"><span class="pre">(5,-5,8)</span></code>）不符。</p>
+<ul class="simple">
+<li><p>影响：不影响阴影正确性（默认灯也带阴影），但显式配置的灯位/强度/环境光都不生效。</p></li>
+<li><p>建议：把 <code class="docutils literal notranslate"><span class="pre">SceneConfig.main_light</span></code> 注入 <code class="docutils literal notranslate"><span class="pre">VisOptions</span></code>（<code class="docutils literal notranslate"><span class="pre">gs.options.VisOptions</span></code> 的灯光字段），并删除/告警 <code class="docutils literal notranslate"><span class="pre">add_light</span></code> 死路径。</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>6. 排查方法备忘（复用于其他渲染问题）<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>对照实验矩阵</strong>：全新进程单帧 vs 同进程顺序渲染（隔离状态残留）；干净 venv 最新版交叉验证（隔离环境问题）；平移轨迹到原点（隔离锚点/距离因素）。</p></li>
+<li><p><strong>定量检测</strong>：锁定固定屏幕区域统计 min 灰度 + 暗像素数，逐位对比，避免”看起来没问题”式目检。</p></li>
+<li><p><strong>直接读渲染器源码</strong>定位阴影相机锚定逻辑（<code class="docutils literal notranslate"><span class="pre">renderer.py</span></code> / <code class="docutils literal notranslate"><span class="pre">light.py</span></code>），比搜 issue 更快定性。</p></li>
+<li><p><strong>注意 /tmp 丢失</strong>（WSL 回收）：探针脚本放 home 目录。</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

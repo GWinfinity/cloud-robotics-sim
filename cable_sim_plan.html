@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>绳缆仿真后续尝试计划（IPCCoupler / PBD 基线 / 上游 solver 跟踪） &mdash; Cloud Robotics Simulation Platform 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://gwinfinity.github.io/cloud-robotics-sim/cable_sim_plan.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Cloud Robotics Simulation Platform
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/installation.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/asset_generation_apis.html">3D 资产生成 API 使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/testing.html">Testing Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/overview.html">Architecture Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/core.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/runtime.html">Runtime Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture/learning.html">Learning Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/core.html">Core API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Cloud Robotics Simulation Platform</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">绳缆仿真后续尝试计划（IPCCoupler / PBD 基线 / 上游 solver 跟踪）</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cable_sim_plan.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ipccoupler-pbd-solver">
+<h1>绳缆仿真后续尝试计划（IPCCoupler / PBD 基线 / 上游 solver 跟踪）<a class="headerlink" href="#ipccoupler-pbd-solver" title="Link to this heading"></a></h1>
+<p>日期：2026-11-10 · 状态：<strong>未实施</strong>，仅供评审
+现状：<code class="docutils literal notranslate"><span class="pre">XpbdRope</span></code> + xuvdb/解析 SDF 碰撞已落地并验证（commit <code class="docutils literal notranslate"><span class="pre">82eb99d</span></code>，
+<code class="docutils literal notranslate"><span class="pre">tests/vdb/</span></code> 45 全过，demo 见 <code class="docutils literal notranslate"><span class="pre">examples/cable_sim/</span></code>）。本文规划三个互不阻塞的
+尝试方向，每轨给出前置条件、步骤、验证标准与风险，实施顺序建议 1 → 2 → 3。</p>
+<section id="wsl2">
+<h2>环境验证记录（2026-11-10 已在 WSL2 实测）<a class="headerlink" href="#wsl2" title="Link to this heading"></a></h2>
+<p>轨道 1 的关键前置已实际验证，安装与兼容性结论如下：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>项目</p></th>
+<th class="head"><p>结论</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>WSL</p></td>
+<td><p>WSL2 Ubuntu 24.04（kernel 6.6.87.2-microsoft），<code class="docutils literal notranslate"><span class="pre">wsl</span> <span class="pre">-l</span> <span class="pre">-v</span></code> 确认</p></td>
+</tr>
+<tr class="row-odd"><td><p>GPU 透传</p></td>
+<td><p>OK，WSL 内 <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code> 看到 GTX 1650（sm_75，4GB 显存）</p></td>
+</tr>
+<tr class="row-even"><td><p>venv</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">~/.venv-uipc</span></code>（Ubuntu 24.04 系统 Python 3.12.3，PEP 668 需 venv）</p></td>
+</tr>
+<tr class="row-odd"><td><p>安装</p></td>
+<td><p><strong>PyPI 包名是 <code class="docutils literal notranslate"><span class="pre">pyuipc</span></code>（不是 <code class="docutils literal notranslate"><span class="pre">uipc</span></code>）</strong>；阿里云镜像无此包，必须 <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">https://pypi.org/simple</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>版本</p></td>
+<td><p>pyuipc <strong>0.0.29</strong> + polyscope 2.6.1，Windows 侧仍未安装（Windows 无官方 wheel）</p></td>
+</tr>
+<tr class="row-odd"><td><p>coupler 符号兼容</p></td>
+<td><p>genesis 1.4.6 <code class="docutils literal notranslate"><span class="pre">ipc_coupler/coupler.py</span></code> 的全部 TYPE_CHECKING import（<code class="docutils literal notranslate"><span class="pre">SceneVisitor</span></code>、9 个 constitution 含 <code class="docutils literal notranslate"><span class="pre">ExternalArticulationConstraint</span></code>、6 个 core、3 个 geometry、<code class="docutils literal notranslate"><span class="pre">SceneGUI</span></code>）在 pyuipc 0.0.29 <strong>逐一存在，无缺失</strong></p></td>
+</tr>
+<tr class="row-even"><td><p>CUDA 后端</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Engine('cuda')</span></code> 在 WSL2 初始化成功；空场景 <code class="docutils literal notranslate"><span class="pre">init→advance→retrieve</span></code> 一帧跑通（Newton 求解器日志正常）</p></td>
+</tr>
+<tr class="row-odd"><td><p>pyuipc API 差异</p></td>
+<td><p>0.0.29 无 <code class="docutils literal notranslate"><span class="pre">scene.gravity</span></code>/<code class="docutils literal notranslate"><span class="pre">world.gravity</span></code>（<code class="docutils literal notranslate"><span class="pre">scene.config</span></code> 是方法不是 dict）；实现时以 genesis coupler 内部用法或 libuipc 仓库 python examples 为准</p></td>
+</tr>
+</tbody>
+</table>
+<p>由此轨道 1 的前置条件从”二选一”收窄为：<strong>整条 demo 进程跑在 WSL2 venv</strong>
+（IPCCoupler 需要 genesis 进程内 <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">uipc</span></code> 成功），Windows 侧保持不装 uipc。</p>
+</section>
+<section id="id1">
+<h2>背景结论（已确认的事实）<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>genesis-world 1.4.6 是当前 PyPI 最新，<strong>无原生绳缆实体</strong>；上游
+<a class="reference external" href="https://github.com/Genesis-Embodied-AI/genesis-world/discussions/2980">discussion #2980</a>
+称绳/缆在 roadmap（约 3 个月量级），并计划开放外部 solver 插件系统。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">genesis/engine/couplers/ipc_coupler/coupler.py</span></code> 已随 1.4.6 发行：libuipc
+后端，含 <code class="docutils literal notranslate"><span class="pre">ExternalArticulationConstraint</span></code>（关节空间动力学嵌入 IPC 优化）。
+<code class="docutils literal notranslate"><span class="pre">uipc</span></code> 为懒导入，缺包时 <code class="docutils literal notranslate"><span class="pre">UIPC_AVAILABLE=False</span></code>，不影响基础包。</p></li>
+<li><p>genesis PBD solver（<code class="docutils literal notranslate"><span class="pre">genesis/options/solvers.py:774</span></code>）有
+<code class="docutils literal notranslate"><span class="pre">max_stretch_solver_iterations</span></code> / <code class="docutils literal notranslate"><span class="pre">max_bending_solver_iterations</span></code>，
+与自写 XPBD 同族（距离约束 + 弯曲约束），可做基线对照。</p></li>
+<li><p>测试纪律：genesis 插件遵守每进程一次 <code class="docutils literal notranslate"><span class="pre">gs.init</span></code>；xuvdb 相关测试由
+<code class="docutils literal notranslate"><span class="pre">tests/optional_deps.py</span></code> 的 <code class="docutils literal notranslate"><span class="pre">xuvdb_only</span></code> 守护。</p></li>
+</ul>
+</section>
+<section id="ipccoupler-fem">
+<h2>轨道 1：IPCCoupler 刚体-柔体耦合验证（FEM 绳近似）<a class="headerlink" href="#ipccoupler-fem" title="Link to this heading"></a></h2>
+<p>目标：用 libuipc IPC 求解器复现 demo 的披覆场景，与 XPBD 结果对照，
+评估”绳 = FEM 柔体 + 外部关节约束”路线的精度与性能。</p>
+<p>前置条件（部分已完成，见环境验证记录）：</p>
+<ul class="simple">
+<li><p>[x] WSL2 + venv + pyuipc 0.0.29 + polyscope，CUDA 后端可用</p></li>
+<li><p>[ ] WSL venv 补齐 genesis 侧依赖：<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">genesis-world==1.4.6</span></code> +
+torch cu128（Windows 版 pyproject 的 index 配置在 WSL 内重新落地一份，
+torch 走 <code class="docutils literal notranslate"><span class="pre">download.pytorch.org/whl/cu128</span></code>）；<strong>Windows 侧不装 uipc</strong></p></li>
+<li><p>[ ] 用项目代码：WSL 内 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>（editable，demo 直接改直接跑）
+或挂载本仓库路径后 <code class="docutils literal notranslate"><span class="pre">PYTHONPATH=src</span></code></p></li>
+</ul>
+<p>步骤：</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> 新增 extra <code class="docutils literal notranslate"><span class="pre">ipc</span> <span class="pre">=</span> <span class="pre">[&quot;pyuipc&quot;,</span> <span class="pre">&quot;polyscope&quot;]</span></code> 并注明
+Linux-only（提交时 <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">lock</span></code> 会解析 pyuipc——Windows 开发者需
+<code class="docutils literal notranslate"><span class="pre">--extra</span> <span class="pre">ipc</span></code> 仅在 WSL/CI-Linux 使用；lock 兼容性在实现时验证，
+必要时该 extra 只进文档不进 lock）。</p></li>
+<li><p>读通 1.4.6 的 <code class="docutils literal notranslate"><span class="pre">IPCCouplerOptions</span></code>（<code class="docutils literal notranslate"><span class="pre">genesis/options/solvers.py</span></code>）与
+coupler 的 coupling type 语义（<code class="docutils literal notranslate"><span class="pre">external_articulation</span></code> 要求实体带关节
+DOF 且基座固定；与 <code class="docutils literal notranslate"><span class="pre">Mesh.get_sdf_grid</span></code> 的 genesis_contact 桥是否
+冲突需实测确认）。</p></li>
+<li><p>新建 <code class="docutils literal notranslate"><span class="pre">examples/cable_sim/ipc_cable_demo.py</span></code>（进程整体在 WSL 跑）：</p>
+<ul class="simple">
+<li><p>场景与 XPBD demo 完全对齐（同球/地面几何、同钉轨迹），便于逐项对照；</p></li>
+<li><p>绳用 FEM 柔体近似：沿曲线扫掠细四面体管（trimesh 生成，半径 ~3mm，
+单元尺寸 ~6mm），材质 StableNeoHookean（coupler 已 import 该 constitution）；</p></li>
+<li><p>钉：固定基座的单link夹爪，<code class="docutils literal notranslate"><span class="pre">external_articulation</span></code> 耦合，按
+smoothstep 轨迹拖动（复用 demo 的 <code class="docutils literal notranslate"><span class="pre">pin_x</span></code>）。</p></li>
+</ul>
+</li>
+<li><p>输出与 XPBD demo 相同的诊断量（最大穿透、等效”拉伸”、逐步耗时），
+另存 GIF 对照；4GB 显存是硬约束（FEM 管 + IPC 的 CCD 活跃集都吃显存），
+场景规模先从小做起。</p></li>
+<li><p>若通过，再考虑 <code class="docutils literal notranslate"><span class="pre">tests/backend/</span></code> 增加 <code class="docutils literal notranslate"><span class="pre">genesis_only</span></code> 守护的回归测试
+（遵守每进程一次 <code class="docutils literal notranslate"><span class="pre">gs.init</span></code>；uipc 可用性用 <code class="docutils literal notranslate"><span class="pre">tests/optional_deps.py</span></code>
+新增 <code class="docutils literal notranslate"><span class="pre">HAS_UIPC</span></code> 守护，Windows CI 自动 skip）。</p></li>
+</ol>
+<p>验证标准：</p>
+<ul class="simple">
+<li><p>披覆终态与 XPBD 版形态偏差 &lt; 5cm（视觉 + tip 位置数值）；</p></li>
+<li><p>全程无穿透（IPC 保证，重点核对与 genesis 刚体侧的接触一致性）；</p></li>
+<li><p>记录 ms/step 与显存峰值，写入 <code class="docutils literal notranslate"><span class="pre">docs/troubleshooting.md</span></code> 性能表。</p></li>
+</ul>
+<p>风险（已按实测更新）：</p>
+<ul class="simple">
+<li><p>~~libuipc 与 1.4.6 的 API/版本错配~~ → <strong>已排除</strong>：pyuipc 0.0.29
+coupler import 符号全齐；</p></li>
+<li><p>pyuipc 0.0.29 的 Scene/World 属性与部分网络教程不同（无 <code class="docutils literal notranslate"><span class="pre">gravity</span></code> 直挂），
+实现时以 coupler 源码与 libuipc 仓库 examples 为准；</p></li>
+<li><p>WSL2 下 GTX 1650 仅 4GB 显存，FEM 场景规模受限，性能结论只作参考；</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polyscope</span></code> GUI 在 WSL 无显示环境会失败（coupler 的 <code class="docutils literal notranslate"><span class="pre">_init_ipc_gui</span></code>
+确认开关，headless 下不开）；</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">lock</span></code> 在 Windows 解析 pyuipc 的行为待验证（必要时 ipc extra 不进 lock）。</p></li>
+</ul>
+</section>
+<section id="genesis-pbd">
+<h2>轨道 2：genesis 原生 PBD 基线<a class="headerlink" href="#genesis-pbd" title="Link to this heading"></a></h2>
+<p>目标：给 <code class="docutils literal notranslate"><span class="pre">XpbdRope</span></code> 一个同场景、同指标的基线，量化自写 XPBD 的精度/性能
+位置，并验证”SdfField 碰撞层”在 genesis 原生求解器下的复用边界。</p>
+<p>步骤：</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/cable_sim/pbd_rod_demo.py</span></code>（独立进程，避开 <code class="docutils literal notranslate"><span class="pre">gs.init</span></code> 测试约束）：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">gs.init(backend=gs.gpu)</span></code> 或 cpu（<code class="docutils literal notranslate"><span class="pre">utils/genesis_compat.py</span></code> 兼容接口）；</p></li>
+<li><p>细杆网格（圆柱分段，PBD ELASTIC 材质）替代绳，一端 fixed；</p></li>
+<li><p>同一球/地面场景：地面用解析 plane（genesis 原生），球用刚体 mesh——
+注意这里<strong>不走</strong> xuvdb SDF（PBD 刚体-柔体接触走 genesis 自带 narrowphase），
+目的正是对照”SDF 投影 vs 原生接触”；</p></li>
+<li><p>钉轨迹复用 <code class="docutils literal notranslate"><span class="pre">pin_x</span></code>。</p></li>
+</ul>
+</li>
+<li><p>记录相同诊断量 + 原生求解器迭代参数扫描（stretch/bend iterations 4/8/16）。</p></li>
+<li><p>结论写入 <code class="docutils literal notranslate"><span class="pre">docs/troubleshooting.md</span></code>：PBD 基线 vs XPBD+xuvdb 的精度、速度、
+适用场景区分（可编辑 SDF 场景选后者，原生刚体交互选前者）。</p></li>
+</ol>
+<p>验证标准：demo 可复现披覆；参数扫描表落盘；与轨道 1/XPBD 的三方对照图。</p>
+<p>风险：PBD 杆的 pinned 端在 1.4.6 的设置方式需查（<code class="docutils literal notranslate"><span class="pre">PBD3DEntity</span></code> 的 fix 语义）；
+demo 进程级 <code class="docutils literal notranslate"><span class="pre">gs.init</span></code> 与 CUDA 上下文在 WSL/Windows 的差异。</p>
+</section>
+<section id="solver">
+<h2>轨道 3：上游原生绳缆 solver 跟踪与接入预案<a class="headerlink" href="#solver" title="Link to this heading"></a></h2>
+<p>目标：上游 rope/cable solver（或外部 solver 插件系统）发布后，绳芯可平替，
+<code class="docutils literal notranslate"><span class="pre">SdfField</span></code> 碰撞层与 demo 指标不变。</p>
+<p>常态化（无需环境前置）：</p>
+<ol class="arabic simple">
+<li><p>跟踪 genesis-world release notes 与 discussion #2980；季度检查一次。</p></li>
+<li><p>维护接入检查单（新 solver 落地时逐项打勾）：</p>
+<ul class="simple">
+<li><p>[ ] 原生 <code class="docutils literal notranslate"><span class="pre">Cable/Rope</span></code> entity 或插件注册点存在，API 形态（spawn 参数、
+材料、compliance 语义与 XPBD 一致还是 MuJoCo 系）</p></li>
+<li><p>[ ] 与刚体 link 的附着/约束（是否覆盖 <code class="docutils literal notranslate"><span class="pre">ExternalArticulationConstraint</span></code> 能力）</p></li>
+<li><p>[ ] 是否可微（对照 <code class="docutils literal notranslate"><span class="pre">LaunchRecorder</span></code> 框架）、是否 batch 化</p></li>
+<li><p>[ ] 接触路径：原生 narrowphase vs 可挂外部 SDF（决定 xuvdb 层保留范围）</p></li>
+<li><p>[ ] 升级代价：<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> 钉版本、CI Python 3.12/3.14 复跑</p></li>
+</ul>
+</li>
+<li><p>若外部 solver 插件系统先于 rope solver 发布：评估把 <code class="docutils literal notranslate"><span class="pre">XpbdRope</span></code> 包成
+genesis 插件 solver（参考 <code class="docutils literal notranslate"><span class="pre">plugins/solvers/</span></code> 的 LaunchRecorder 移植模式），
+换取场景统一 stepping 与渲染。</p></li>
+</ol>
+<p>验证标准：检查单更新；升级 PR 中 demo 对照 GIF 无回退。</p>
+</section>
+<section id="id2">
+<h2>三方对照与决策矩阵（实施 1、2 后填写实测值）<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>场景特征</p></th>
+<th class="head"><p>推荐路线</p></th>
+<th class="head"><p>理由（待实测确认）</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>静态/编辑 SDF 场景、绳索数量多、需 CSG 编辑场驱动接触</p></td>
+<td><p>XPBD + xuvdb</p></td>
+<td><p>碰撞层与 genesis 解耦，bake 管线现成</p></td>
+</tr>
+<tr class="row-odd"><td><p>绳与刚体机器人强耦合、无穿透要求极高、绳数少</p></td>
+<td><p>IPCCoupler（轨道 1）</p></td>
+<td><p>关节空间与接触联合求解</p></td>
+</tr>
+<tr class="row-even"><td><p>快速基线、已在 genesis 场景内、无 SDF 编辑需求</p></td>
+<td><p>原生 PBD（轨道 2）</p></td>
+<td><p>零额外依赖</p></td>
+</tr>
+<tr class="row-odd"><td><p>上游 rope solver 发布后</p></td>
+<td><p>原生优先，XPBD 退居对照</p></td>
+<td><p>维护成本最低</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id3">
+<h2>不做的事<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>不在 Windows 原生环境硬装 libuipc（无官方 wheel）；</p></li>
+<li><p>不为基线测试在 <code class="docutils literal notranslate"><span class="pre">tests/</span></code> 引入多次 <code class="docutils literal notranslate"><span class="pre">gs.init</span></code>（demo 脚本独立进程解决）；</p></li>
+<li><p>不提前抽象”通用绳芯接口”——等轨道 1/2 实测后再定（避免过早设计）。</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cloud Robotics Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
