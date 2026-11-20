@@ -14,6 +14,7 @@ the built-ins exist once the improvement-loop entry point is loaded.
 from __future__ import annotations
 
 import logging
+import math
 from pathlib import Path
 from typing import Any
 
@@ -3011,11 +3012,18 @@ def _rw_footprint_poly(
         [[sx * half[0], sy * half[1], -half[2]] for sx in (-1, 1) for sy in (-1, 1)]
     ) @ _quat_to_mat(quat).T + np.asarray(position)
     pts = [(float(c[0]), float(c[1])) for c in corners]
-    # unique corners (a flat box projects to 2 points; keep all unique)
+    # unique corners, ordered by angle around the centroid (a valid simple
+    # polygon winding, what the clip algorithm expects; upstream uses the
+    # mesh's convex hull which is the same set for a box)
     seen: list[tuple[float, float]] = []
-    for p in pts:
-        if not any(abs(p[0] - q[0]) < 1e-12 and abs(p[1] - q[1]) < 1e-12 for q in seen):
-            seen.append(p)
+    for pt in pts:
+        if not any(
+            abs(pt[0] - q[0]) < 1e-12 and abs(pt[1] - q[1]) < 1e-12 for q in seen
+        ):
+            seen.append(pt)
+    cx = sum(q[0] for q in seen) / len(seen)
+    cy = sum(q[1] for q in seen) / len(seen)
+    seen.sort(key=lambda q: math.atan2(q[1] - cy, q[0] - cx))
     return seen
 
 
@@ -3199,7 +3207,6 @@ class EfeRwTask(EfeBaseTask):
         link_names = world.link_names()
         la = np.asarray(contacts.get("link_a", [])).reshape(-1)
         lb = np.asarray(contacts.get("link_b", [])).reshape(-1)
-        robot_joints = set(self._rw.get("robot_joints") or [])
         out = []
         for name in names:
             try:
@@ -3259,12 +3266,13 @@ class EfeRwTask(EfeBaseTask):
 
         for name in ("page A with eyelets", "page B with eyelets"):
             pos, quat, size = self._object_state(scene, name)
-            from cloud_robotics_sim.core.success import _quat_to_mat
             import math
 
-            r = _quat_to_mat(quat)
-            ex = math.degrees(math.atan2(r[2, 1], r[2, 2]))
-            ey = math.degrees(math.asin(max(-1.0, min(1.0, -r[2, 0]))))
+            from cloud_robotics_sim.core.success import _quat_to_mat
+
+            rot = _quat_to_mat(quat)
+            ex = math.degrees(math.atan2(rot[2, 1], rot[2, 2]))
+            ey = math.degrees(math.asin(max(-1.0, min(1.0, -rot[2, 0]))))
             if not (angle_close(ex) and angle_close(ey)):
                 return False
             hull = _rw_footprint_poly(pos, quat, size)
