@@ -3259,8 +3259,9 @@ class EfeRwTask(EfeBaseTask):
 
         for name in ("page A with eyelets", "page B with eyelets"):
             pos, quat, size = self._object_state(scene, name)
-            from cloud_robotics_sim.core.success import _quat_to_mat
             import math
+
+            from cloud_robotics_sim.core.success import _quat_to_mat
 
             r = _quat_to_mat(quat)
             ex = math.degrees(math.atan2(r[2, 1], r[2, 2]))
