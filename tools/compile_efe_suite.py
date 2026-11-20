@@ -1202,6 +1202,20 @@ RESOLVERS["mujoco-playground"] = _resolve_pg
 RESOLVERS["humanoidbench"] = _resolve_hb
 
 
+def _resolve_rw(predicates: dict[str, Any]) -> dict[str, Any]:
+    """RoboWits resolves from the composed world packs, not a table."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        import rw_resolver
+
+        return rw_resolver.resolve_suite("robowits", load_inventory("robowits"))
+    finally:
+        sys.path.remove(str(Path(__file__).resolve().parent))
+
+
+RESOLVERS["robowits"] = _resolve_rw
+
+
 def _resolve_robocasa(suite: str):
     """RoboCasa suites share the family-check resolver in tools/."""
 
@@ -1553,7 +1567,17 @@ def render_task_yaml(suite: str, name: str, record: dict[str, Any]) -> str:
             "    " + line
             for line in yaml.safe_dump(event, sort_keys=False).splitlines()
         )
-    for block in ("world", "appliances", "timers", "abc", "dtb", "djx", "pg", "hb"):
+    for block in (
+        "world",
+        "appliances",
+        "timers",
+        "abc",
+        "dtb",
+        "djx",
+        "pg",
+        "hb",
+        "rw",
+    ):
         value = record.get(block)
         if value:
             lines.append(f"  {block}:")

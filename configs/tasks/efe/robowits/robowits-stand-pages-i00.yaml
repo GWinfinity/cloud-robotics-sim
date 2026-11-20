@@ -1,0 +1,136 @@
+# EFE 迁移编译物（robowits）；由 tools/compile_efe_suite.py 生成，--check 门禁。
+# family: stand_pages | goal: Assemble the two pages using the stabilizing bar to create a standing hinge structure.
+# fidelity: spec | notes: 判据逐字移植 gs_gym stand_pages._check_success + rcb_robowits settle 窗口（30+60 步，每 6 步检，静止 2 mm）；世界=Marvin URDF(obj 转换)+工作台盒(0.85x1.5x0.76)+冻结对象；hold 计数闭合环近似 open-loop settle replay
+version: 1
+
+task:
+  name: robowits-stand-pages-i00
+  type: efe_rw
+  robot: marvin_bimanual
+  scene: efe_world
+  max_episode_steps: 200000
+  world:
+    mjcf_path: assets/robowits/worlds/robowits-stand-pages-i00.xml
+    qpos_path: assets/robowits/worlds/robowits-stand-pages-i00.qpos.npy
+    qvel_path: assets/robowits/worlds/robowits-stand-pages-i00.qvel.npy
+    meta_path: assets/robowits/worlds/robowits-stand-pages-i00.meta.json
+  rw:
+    family: stand_pages
+    text: Assemble the two pages using the stabilizing bar to create a standing hinge
+      structure.
+    objects:
+      page A with eyelets:
+        fixed: false
+        orientation_wxyz:
+        - 0.9997135577472455
+        - -0.01344121198220549
+        - 0.013020827798588725
+        - 0.014919595176609365
+        position:
+        - 0.43041748199681773
+        - -0.2576476417040488
+        - 0.775595557734336
+        size:
+        - 0.0469
+        - 0.19199
+        - 0.17613
+      page B with eyelets:
+        fixed: false
+        orientation_wxyz:
+        - 0.9997397942536366
+        - 0.013035392052102374
+        - 0.013060739702944737
+        - 0.013410421997698992
+        position:
+        - 0.42243262250777824
+        - -0.11694155319400774
+        - 0.7864251706487766
+        size:
+        - 0.04527
+        - 0.18495
+        - 0.17015
+      stabilizing bar:
+        fixed: false
+        orientation_wxyz:
+        - 0.9999980624592635
+        - -0.0018490134696443623
+        - -8.79539284321994e-05
+        - 0.0006696947175298857
+        position:
+        - 0.4248290000300925
+        - -0.1859726788504932
+        - 0.7740249831264353
+        size:
+        - 0.20054
+        - 0.02555
+        - 0.01536
+    graded:
+      release_also:
+      - stabilizing bar
+      rest:
+      - page A with eyelets
+      - page B with eyelets
+    settle:
+      check_steps: 60
+      check_stride: 6
+      rest_m: 0.002
+      settle_steps: 30
+    gripper_open: 0.1
+    table_z: 0.76
+    table_bounds:
+      x:
+      - 0.21
+      - 1.0
+      y:
+      - -0.69
+      - 0.69
+    ee_links:
+      left: Gripper_Tip_L
+      right: Gripper_Tip_R
+    robot_joints:
+    - Joint1_R
+    - Joint2_R
+    - Joint3_R
+    - Joint4_R
+    - Joint5_R
+    - Joint6_R
+    - Joint7_R
+    - Joint1_L
+    - Joint2_L
+    - Joint3_L
+    - Joint4_L
+    - Joint5_L
+    - Joint6_L
+    - Joint7_L
+    - Joint8_R
+    - Joint9_R
+    - Joint8_L
+    - Joint9_L
+
+assets:
+  task_relevant:
+  - name: world
+    shape_type: mjcf
+    mjcf_path: assets/robowits/worlds/robowits-stand-pages-i00.xml
+    position:
+    - 0.0
+    - 0.0
+    - 0.0
+    orientation:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    static: true
+
+success:
+  type: rw_success
+  params: {}
+
+evaluation:
+  seeds: [0]
+  episodes_per_seed: 1
+
+simulation:
+  headless: true
+  device: cpu

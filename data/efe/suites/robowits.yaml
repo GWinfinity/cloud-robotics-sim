@@ -20,6 +20,8 @@ efe:
 project:
   tier: T0
   status: partial
-  target: outputs/robowits_ported_v1 + docs/ROBOWITS_BENCHMARK.md
-  note: EFE 中唯一 Genesis 原生套件；项目已实现协议+port v1，对齐 EFE 任务清单(marvin-bimanual 命名待对账)即可视为
-    T0 完成
+  target: src/cloud_robotics_sim/runtime registry 新 task 族（efe_rw）
+  note: 3/15 已编译（2026-11-20，spec 级：dominos/stand_pages/stack_cubes，判据逐字移植 gs_gym
+    _check_success + rcb_robowits settle 窗口 30+60 步/6 步检/2mm 静止；世界=Marvin URDF
+    glb→obj 转换 + 工作台盒 + 冻结对象，Genesis 1.4.7 引擎冒烟通过）。其余 12 家族 pending：
+    需非再分发 BlenderKit 模型（个人 key 或加密研究包），见 pending_reasons

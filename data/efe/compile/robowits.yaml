@@ -1,0 +1,487 @@
+# 编译知识库（生成物）：--resolve 从判据表+上游模型生成；人工修正会被下次 --resolve 覆盖，
+# 持久标注请改 .predicates.yaml。
+suite: robowits
+robot: marvin_bimanual
+scene: efe_world
+source:
+  benchmark: RoboWits
+  repo: UMass-Embodied-AGI/RoboWits
+  ref: 9cc30aedbbebea86b975c0d66ea9ac227ca38535
+  simulator: genesis
+  note: 场景唯一事实来源为 RoboWits gs_gym 任务类 + EFE rcb_robowits；资产=HF RoboWits_assets@b1b49abb（Apache-2.0）
+pending_tasks:
+- robowits-align-blocks-i00
+- robowits-ball-into-bottle-i00
+- robowits-ball-onto-tower-i00
+- robowits-collect-screws-i00
+- robowits-cover-with-lid-i00
+- robowits-gap-retrieve-i00
+- robowits-hold-cup-i00
+- robowits-move-cube-i00
+- robowits-raise-platform-i00
+- robowits-retrieve-cube-i00
+- robowits-stack-bowls-i00
+- robowits-stand-bulb-i00
+pending_reasons:
+  robowits-align-blocks-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人 key
+    或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-ball-into-bottle-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人
+    key 或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-ball-onto-tower-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人
+    key 或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-collect-screws-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人
+    key 或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-cover-with-lid-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人
+    key 或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-gap-retrieve-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人 key
+    或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-hold-cup-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人 key 或加密研究包）；本镜像只含无
+    BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-move-cube-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人 key 或加密研究包）；本镜像只含无
+    BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-raise-platform-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人
+    key 或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-retrieve-cube-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人 key
+    或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-stack-bowls-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人 key
+    或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+  robowits-stand-bulb-i00: 该家族需要非再分发 BlenderKit 模型（images/robowits/NOTICE，需个人 key
+    或加密研究包）；本镜像只含无 BlenderKit 的三个家族（dominos/stand_pages/stack_cubes）
+tasks:
+  robowits-dominos-i00:
+    family: dominos
+    goal: Push the red block onto the green target area.
+    robot: marvin_bimanual
+    scene: efe_world
+    task_type: efe_rw
+    world:
+      mjcf_path: assets/robowits/worlds/robowits-dominos-i00.xml
+      qpos_path: assets/robowits/worlds/robowits-dominos-i00.qpos.npy
+      qvel_path: assets/robowits/worlds/robowits-dominos-i00.qvel.npy
+      meta_path: assets/robowits/worlds/robowits-dominos-i00.meta.json
+    rw:
+      family: dominos
+      text: Push the red block onto the green target area.
+      objects:
+        red block:
+          fixed: false
+          orientation_wxyz:
+          - 0.9999920712449416
+          - -1.4154778890702698e-07
+          - -8.831404710915707e-07
+          - 0.0039821409382025195
+          position:
+          - 0.9057327390797252
+          - -0.07403456992561097
+          - 0.8029761888944229
+          size:
+          - 0.02
+          - 0.05
+          - 0.09
+        target area:
+          fixed: true
+          orientation_wxyz:
+          - 0.9999920712346133
+          - 0.0
+          - 0.0
+          - 0.0039821436322966695
+          position:
+          - 0.9461370257576401
+          - -0.05419788552909238
+          - 0.761
+          size:
+          - 0.06
+          - 0.1
+          - 0.002
+        white block 1:
+          fixed: false
+          orientation_wxyz:
+          - 0.9999920712460488
+          - -4.1168278587069405e-07
+          - 6.386917313875161e-07
+          - 0.00398214068810929
+          position:
+          - 0.8518790485436131
+          - -0.10046596666816672
+          - 0.8029725773768508
+          size:
+          - 0.02
+          - 0.05
+          - 0.09
+        white block 2:
+          fixed: false
+          orientation_wxyz:
+          - 0.9999920712385307
+          - -4.561355500633591e-07
+          - 6.439267787312696e-07
+          - 0.003982142570341641
+          position:
+          - 0.7980192519835894
+          - -0.12690447544879313
+          - 0.8029734939016732
+          size:
+          - 0.02
+          - 0.05
+          - 0.09
+        white block 3:
+          fixed: false
+          orientation_wxyz:
+          - 0.9999920712314848
+          - -1.0417034882212845e-06
+          - -1.2749726555303644e-07
+          - 0.003982144279626575
+          position:
+          - 0.7441543446805171
+          - -0.15334177208306152
+          - 0.8029765971483126
+          size:
+          - 0.02
+          - 0.05
+          - 0.09
+        white block 4:
+          fixed: false
+          orientation_wxyz:
+          - 0.9999981490563858
+          - 6.705105051201738e-09
+          - -3.6416989369885194e-07
+          - -0.0019240279804994154
+          position:
+          - 0.6248535498533544
+          - -0.31122517523388316
+          - 0.8029768610998659
+          size:
+          - 0.02
+          - 0.05
+          - 0.09
+      graded:
+        release_also: []
+        rest:
+        - red block
+      settle:
+        check_steps: 60
+        check_stride: 6
+        rest_m: 0.002
+        settle_steps: 30
+      gripper_open: 0.1
+      table_z: 0.76
+      table_bounds:
+        x:
+        - 0.21
+        - 1.0
+        y:
+        - -0.69
+        - 0.69
+      ee_links:
+        left: Gripper_Tip_L
+        right: Gripper_Tip_R
+      robot_joints:
+      - Joint1_R
+      - Joint2_R
+      - Joint3_R
+      - Joint4_R
+      - Joint5_R
+      - Joint6_R
+      - Joint7_R
+      - Joint1_L
+      - Joint2_L
+      - Joint3_L
+      - Joint4_L
+      - Joint5_L
+      - Joint6_L
+      - Joint7_L
+      - Joint8_R
+      - Joint9_R
+      - Joint8_L
+      - Joint9_L
+    success:
+      type: rw_success
+      params: {}
+    max_episode_steps: 200000
+    efe:
+      fidelity: spec
+      notes: 判据逐字移植 gs_gym dominos._check_success + rcb_robowits settle 窗口（30+60 步，每
+        6 步检，静止 2 mm）；世界=Marvin URDF(obj 转换)+工作台盒(0.85x1.5x0.76)+冻结对象；hold 计数闭合环近似
+        open-loop settle replay
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robowits/worlds/robowits-dominos-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robowits-stack-cubes-i00:
+    family: stack_cubes
+    goal: Build a stable two-layer stack so the red cube's center is above the green
+      colored dot.
+    robot: marvin_bimanual
+    scene: efe_world
+    task_type: efe_rw
+    world:
+      mjcf_path: assets/robowits/worlds/robowits-stack-cubes-i00.xml
+      qpos_path: assets/robowits/worlds/robowits-stack-cubes-i00.qpos.npy
+      qvel_path: assets/robowits/worlds/robowits-stack-cubes-i00.qvel.npy
+      meta_path: assets/robowits/worlds/robowits-stack-cubes-i00.meta.json
+    rw:
+      family: stack_cubes
+      text: Build a stable two-layer stack so the red cube's center is above the green
+        colored dot.
+      objects:
+        apex cube:
+          fixed: false
+          orientation_wxyz:
+          - 0.9999982217258131
+          - 6.761942075263587e-07
+          - 7.720801012878668e-07
+          - -0.0018858802078459643
+          position:
+          - 0.5498811430878757
+          - 0.00011174010702391054
+          - 0.7829736119210204
+          size:
+          - 0.05
+          - 0.05
+          - 0.05
+        apex target:
+          fixed: true
+          orientation_wxyz:
+          - 0.9999924261029265
+          - 0.0
+          - 0.0
+          - 0.0038920093503542045
+          position:
+          - 0.42568929381965537
+          - 0.16424352280553134
+          - 0.761
+          size:
+          - 0.03
+          - 0.03
+          - 0.002
+        base cube 1:
+          fixed: false
+          orientation_wxyz:
+          - 0.9999983769257621
+          - 9.091647880069252e-07
+          - 3.4007434868302285e-07
+          - -0.001801706107899054
+          position:
+          - 0.5585703309192304
+          - 0.05810161768664671
+          - 0.7829755292535364
+          size:
+          - 0.05
+          - 0.05
+          - 0.05
+        base cube 2:
+          fixed: false
+          orientation_wxyz:
+          - 0.9998454939786133
+          - -0.013706814242380478
+          - -0.00015135499320701975
+          - 0.011004022248869491
+          position:
+          - 0.5897153237013731
+          - 0.24196192532172386
+          - 0.7829783200668774
+          size:
+          - 0.05
+          - 0.05
+          - 0.05
+      graded:
+        release_also: []
+        rest:
+        - base cube 1
+        - base cube 2
+        - apex cube
+      settle:
+        check_steps: 60
+        check_stride: 6
+        rest_m: 0.002
+        settle_steps: 30
+      gripper_open: 0.1
+      table_z: 0.76
+      table_bounds:
+        x:
+        - 0.21
+        - 1.0
+        y:
+        - -0.69
+        - 0.69
+      ee_links:
+        left: Gripper_Tip_L
+        right: Gripper_Tip_R
+      robot_joints:
+      - Joint1_R
+      - Joint2_R
+      - Joint3_R
+      - Joint4_R
+      - Joint5_R
+      - Joint6_R
+      - Joint7_R
+      - Joint1_L
+      - Joint2_L
+      - Joint3_L
+      - Joint4_L
+      - Joint5_L
+      - Joint6_L
+      - Joint7_L
+      - Joint8_R
+      - Joint9_R
+      - Joint8_L
+      - Joint9_L
+    success:
+      type: rw_success
+      params: {}
+    max_episode_steps: 200000
+    efe:
+      fidelity: spec
+      notes: 判据逐字移植 gs_gym stack_cubes._check_success + rcb_robowits settle 窗口（30+60
+        步，每 6 步检，静止 2 mm）；世界=Marvin URDF(obj 转换)+工作台盒(0.85x1.5x0.76)+冻结对象；hold 计数闭合环近似
+        open-loop settle replay
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robowits/worlds/robowits-stack-cubes-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true
+  robowits-stand-pages-i00:
+    family: stand_pages
+    goal: Assemble the two pages using the stabilizing bar to create a standing hinge
+      structure.
+    robot: marvin_bimanual
+    scene: efe_world
+    task_type: efe_rw
+    world:
+      mjcf_path: assets/robowits/worlds/robowits-stand-pages-i00.xml
+      qpos_path: assets/robowits/worlds/robowits-stand-pages-i00.qpos.npy
+      qvel_path: assets/robowits/worlds/robowits-stand-pages-i00.qvel.npy
+      meta_path: assets/robowits/worlds/robowits-stand-pages-i00.meta.json
+    rw:
+      family: stand_pages
+      text: Assemble the two pages using the stabilizing bar to create a standing
+        hinge structure.
+      objects:
+        page A with eyelets:
+          fixed: false
+          orientation_wxyz:
+          - 0.9997135577472455
+          - -0.01344121198220549
+          - 0.013020827798588725
+          - 0.014919595176609365
+          position:
+          - 0.43041748199681773
+          - -0.2576476417040488
+          - 0.775595557734336
+          size:
+          - 0.0469
+          - 0.19199
+          - 0.17613
+        page B with eyelets:
+          fixed: false
+          orientation_wxyz:
+          - 0.9997397942536366
+          - 0.013035392052102374
+          - 0.013060739702944737
+          - 0.013410421997698992
+          position:
+          - 0.42243262250777824
+          - -0.11694155319400774
+          - 0.7864251706487766
+          size:
+          - 0.04527
+          - 0.18495
+          - 0.17015
+        stabilizing bar:
+          fixed: false
+          orientation_wxyz:
+          - 0.9999980624592635
+          - -0.0018490134696443623
+          - -8.79539284321994e-05
+          - 0.0006696947175298857
+          position:
+          - 0.4248290000300925
+          - -0.1859726788504932
+          - 0.7740249831264353
+          size:
+          - 0.20054
+          - 0.02555
+          - 0.01536
+      graded:
+        release_also:
+        - stabilizing bar
+        rest:
+        - page A with eyelets
+        - page B with eyelets
+      settle:
+        check_steps: 60
+        check_stride: 6
+        rest_m: 0.002
+        settle_steps: 30
+      gripper_open: 0.1
+      table_z: 0.76
+      table_bounds:
+        x:
+        - 0.21
+        - 1.0
+        y:
+        - -0.69
+        - 0.69
+      ee_links:
+        left: Gripper_Tip_L
+        right: Gripper_Tip_R
+      robot_joints:
+      - Joint1_R
+      - Joint2_R
+      - Joint3_R
+      - Joint4_R
+      - Joint5_R
+      - Joint6_R
+      - Joint7_R
+      - Joint1_L
+      - Joint2_L
+      - Joint3_L
+      - Joint4_L
+      - Joint5_L
+      - Joint6_L
+      - Joint7_L
+      - Joint8_R
+      - Joint9_R
+      - Joint8_L
+      - Joint9_L
+    success:
+      type: rw_success
+      params: {}
+    max_episode_steps: 200000
+    efe:
+      fidelity: spec
+      notes: 判据逐字移植 gs_gym stand_pages._check_success + rcb_robowits settle 窗口（30+60
+        步，每 6 步检，静止 2 mm）；世界=Marvin URDF(obj 转换)+工作台盒(0.85x1.5x0.76)+冻结对象；hold 计数闭合环近似
+        open-loop settle replay
+    assets_task_relevant:
+    - name: world
+      shape_type: mjcf
+      mjcf_path: assets/robowits/worlds/robowits-stand-pages-i00.xml
+      position:
+      - 0.0
+      - 0.0
+      - 0.0
+      orientation:
+      - 1.0
+      - 0.0
+      - 0.0
+      - 0.0
+      static: true

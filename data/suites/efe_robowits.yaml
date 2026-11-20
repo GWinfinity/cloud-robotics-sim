@@ -1,0 +1,7 @@
+# EFE robowits 套件汇总（编译物）；由 tools/compile_efe_suite.py 生成。
+version: 1
+name: efe-robowits
+tasks:
+  - ../../configs/tasks/efe/robowits/robowits-dominos-i00.yaml
+  - ../../configs/tasks/efe/robowits/robowits-stack-cubes-i00.yaml
+  - ../../configs/tasks/efe/robowits/robowits-stand-pages-i00.yaml

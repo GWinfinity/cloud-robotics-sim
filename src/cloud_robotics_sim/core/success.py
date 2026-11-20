@@ -81,6 +81,7 @@ SUCCESS_TYPES = (
     "djx_success",
     "pg_success",
     "hb_success",
+    "rw_success",
     "all",
     "any",
     "not",
@@ -2992,6 +2993,23 @@ class PgSuccessCondition(SuccessCondition):
 
 
 @dataclass
+class RwSuccessCondition(SuccessCondition):
+    """RoboWits verdict: the goal held, released and at rest, through the check window.
+
+    ``EfeRwTask`` ports the family's gs_gym ``_check_success`` predicate, the
+    graded-object release (no robot contact) and the settle window
+    (SETTLE_STEPS hold, then CHECK_STEPS with checks every CHECK_STRIDE-th
+    step and REST_M rest) as a closed-loop hold counter, publishing
+    ``info['rw']['success']``. Missing info is a failure (nop-safe).
+    """
+
+    failure_stage: str = "error"
+
+    def evaluate(self, scene: Any, robot: Any, info: dict | None = None) -> bool:
+        return bool((info or {}).get("rw", {}).get("success"))
+
+
+@dataclass
 class HbSuccessCondition(SuccessCondition):
     """HumanoidBench verdict: the episode's return reaches the success bar.
 
@@ -3443,6 +3461,8 @@ def create_success_condition(spec: dict | None) -> SuccessCondition:
         return PgSuccessCondition()
     if success_type == "hb_success":
         return HbSuccessCondition()
+    if success_type == "rw_success":
+        return RwSuccessCondition()
     if success_type == "all":
         return _build_all(params)
     if success_type == "any":

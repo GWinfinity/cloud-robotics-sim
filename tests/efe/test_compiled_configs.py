@@ -42,6 +42,7 @@ def _suite_files() -> list[Path]:
                 "efe_abc-sim",
                 "efe_mujoco-playground",
                 "efe_humanoidbench",
+                "efe_robowits",
             )
         )
     )

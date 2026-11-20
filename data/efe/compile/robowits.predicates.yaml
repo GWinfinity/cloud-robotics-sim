@@ -1,0 +1,13 @@
+# RoboWits 判据表（占位说明）。判据的唯一事实来源为 RoboWits gs_gym 任务类
+# 的 _check_success（镜像 data/efe/upstream/rw-src/robowits-git，逐字移植进
+# EfeRwTask）+ EFE rcb_robowits 的 settle 窗口与 GRADED 释放清单；
+# tools/rw_worlds.py 组合世界包，tools/rw_resolver.py 生成编译 KB。
+# 判据语义见 RwSuccessCondition / EfeRwTask docstring。
+source:
+  benchmark: RoboWits
+  repo: UMass-Embodied-AGI/RoboWits
+  ref: 9cc30aedbbebea86b975c0d66ea9ac227ca38535
+  simulator: genesis
+  robot: marvin-bimanual
+  note: 仅无 BlenderKit 三家族可解析；其余 12 家族 pending（模型非再分发）
+envs: {}

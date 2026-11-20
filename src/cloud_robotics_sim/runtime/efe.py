@@ -2984,3 +2984,446 @@ def _make_unitree_h1hand_embedded(**kwargs: Any) -> Any:
     """Unitree H1 + Shadow hands inside a whole-world MJCF (world-embedded)."""
     kwargs.pop("type", None)
     return _WorldEmbeddedRobot("unitree_h1hand_embedded")
+
+
+def _rw_box_aabb(
+    position: np.ndarray, quat: np.ndarray, size: np.ndarray
+) -> np.ndarray:
+    """World AABB of a box at (pos, wxyz quat): 8 corners -> min/max."""
+    from cloud_robotics_sim.core.success import _quat_to_mat
+
+    half = np.asarray(size, dtype=float) / 2.0
+    signs = np.array(
+        [[sx, sy, sz] for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)]
+    )
+    corners = np.asarray(position) + signs * half @ _quat_to_mat(quat).T
+    return np.array([corners.min(axis=0), corners.max(axis=0)])
+
+
+def _rw_footprint_poly(
+    position: np.ndarray, quat: np.ndarray, size: np.ndarray
+) -> list[tuple[float, float]]:
+    """2D footprint of a box: its 4 base corners projected to x-y."""
+    from cloud_robotics_sim.core.success import _quat_to_mat
+
+    half = np.asarray(size, dtype=float) / 2.0
+    corners = np.array(
+        [[sx * half[0], sy * half[1], -half[2]] for sx in (-1, 1) for sy in (-1, 1)]
+    ) @ _quat_to_mat(quat).T + np.asarray(position)
+    pts = [(float(c[0]), float(c[1])) for c in corners]
+    # unique corners (a flat box projects to 2 points; keep all unique)
+    seen: list[tuple[float, float]] = []
+    for p in pts:
+        if not any(abs(p[0] - q[0]) < 1e-12 and abs(p[1] - q[1]) < 1e-12 for q in seen):
+            seen.append(p)
+    return seen
+
+
+def _rw_poly_area(poly: list[tuple[float, float]]) -> float:
+    area = 0.0
+    n = len(poly)
+    for i in range(n):
+        x1, y1 = poly[i]
+        x2, y2 = poly[(i + 1) % n]
+        area += x1 * y2 - x2 * y1
+    return abs(area) * 0.5
+
+
+def _rw_clip_polygon(
+    subject: list[tuple[float, float]], clip: list[tuple[float, float]]
+) -> list[tuple[float, float]]:
+    """Sutherland-Hodgman clip (06_dominos.py, verbatim algorithm)."""
+    if len(subject) < 3 or len(clip) < 3:
+        return []
+
+    def signed_area(poly: list[tuple[float, float]]) -> float:
+        s = 0.0
+        n = len(poly)
+        for i in range(n):
+            x1, y1 = poly[i]
+            x2, y2 = poly[(i + 1) % n]
+            s += x1 * y2 - x2 * y1
+        return 0.5 * s
+
+    def line_intersection(
+        p1: tuple[float, float],
+        p2: tuple[float, float],
+        p3: tuple[float, float],
+        p4: tuple[float, float],
+    ) -> tuple[float, float]:
+        x1, y1 = p1
+        x2, y2 = p2
+        x3, y3 = p3
+        x4, y4 = p4
+        denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+        if abs(denom) < 1e-12:
+            return ((p1[0] + p2[0]) * 0.5, (p1[1] + p2[1]) * 0.5)
+        det1 = x1 * y2 - y1 * x2
+        det2 = x3 * y4 - y3 * x4
+        px = (det1 * (x3 - x4) - (x1 - x2) * det2) / denom
+        py = (det1 * (y3 - y4) - (y1 - y2) * det2) / denom
+        return (px, py)
+
+    ori_sign = 1.0 if signed_area(clip) >= 0.0 else -1.0
+
+    def inside(
+        pt: tuple[float, float], a: tuple[float, float], b: tuple[float, float]
+    ) -> bool:
+        cross = (b[0] - a[0]) * (pt[1] - a[1]) - (b[1] - a[1]) * (pt[0] - a[0])
+        return ori_sign * cross >= -1e-9
+
+    output = list(subject)
+    cl = list(clip)
+    for i in range(len(cl)):
+        a = cl[i]
+        b = cl[(i + 1) % len(cl)]
+        input_list = output
+        output = []
+        if not input_list:
+            break
+        s = input_list[-1]
+        for e in input_list:
+            if inside(e, a, b):
+                if not inside(s, a, b):
+                    output.append(line_intersection(s, e, a, b))
+                output.append(e)
+            elif inside(s, a, b):
+                output.append(line_intersection(s, e, a, b))
+            s = e
+    return output
+
+
+class EfeRwTask(EfeBaseTask):
+    """RoboWits frozen-scene task (Tianji Marvin bimanual, Genesis upstream).
+
+    The task YAML carries the composed world (``world`` block, see
+    ``tools/rw_worlds.py``) and an ``rw`` block with the frozen-instance
+    constants (object table, graded lists, settle-window constants, action
+    layout). Success is the EFE grader's verdict (``rcb_robowits``): the
+    family's ``_check_success`` predicate (ported verbatim from the RoboWits
+    gs_gym sources) must hold, no robot part may touch a graded object, and
+    the goal must persist through the settle window (SETTLE_STEPS hold with
+    nothing checked, then CHECK_STEPS with checks every CHECK_STRIDE-th step,
+    every graded object within REST_M of its window-start pose).
+
+    The closed-loop runtime mirrors the open-loop settle replay: while the
+    goal holds, a hold counter accumulates; success publishes once the counter
+    reaches settle+check steps with the rest constraint satisfied inside the
+    window (positions captured at window start). Predicates operate on object
+    poses/sizes from the Genesis world entity; footprints are the 2D convex
+    hulls of the boxes' projected corners (the ported families are all-box).
+    Controls are best-effort: the 16-vector action is expanded to the 18 dofs
+    (gripper width split equally between the two prismatic finger joints) and
+    servoed with the entity's dof-position control.
+    """
+
+    def __init__(
+        self,
+        config: TaskConfig,
+        world: dict | None = None,
+        rw: dict | None = None,
+    ):
+        super().__init__(config)
+        if world is not None and not isinstance(world, dict):
+            raise TypeError("efe_rw world must be a mapping or None")
+        if rw is not None and not isinstance(rw, dict):
+            raise TypeError("efe_rw rw must be a mapping or None")
+        self._world_cfg = world or {}
+        self._rw = rw or {}
+        self._servo_warned = False
+        self._hold_count = 0
+        self._window_pos: dict[str, np.ndarray] = {}
+        self._rest_violation = False
+
+    # -- world access -------------------------------------------------------
+
+    def _world(self, scene: Any) -> Any:
+        entities = getattr(scene, "entities", None) or {}
+        entity = entities.get("world")
+        if entity is None:
+            raise KeyError(
+                "efe_rw expects the 'world' asset in scene.entities; "
+                f"available: {sorted(entities)}"
+            )
+        return entity
+
+    def _apply_frozen_state(self, scene: Any) -> None:
+        world = self._world(scene)
+        qpos_path = self._world_cfg.get("qpos_path")
+        qvel_path = self._world_cfg.get("qvel_path")
+        if qpos_path:
+            world.set_qpos(np.load(qpos_path))
+        if qvel_path:
+            set_qvel = getattr(world, "set_qvel", None)
+            if set_qvel is not None:
+                set_qvel(np.load(qvel_path))
+
+    # -- accessors -----------------------------------------------------------
+
+    def _object_state(
+        self, scene: Any, name: str
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """(position, wxyz quat, size) of one frozen object."""
+        entry = (self._rw.get("objects") or {})[name]
+        from cloud_robotics_sim.core.success import _abc_pos, _abc_quat
+
+        return (
+            _abc_pos(scene, name),
+            _abc_quat(scene, name),
+            np.asarray(entry["size"], dtype=float),
+        )
+
+    def _object_aabb(self, scene: Any, name: str) -> np.ndarray:
+        pos, quat, size = self._object_state(scene, name)
+        return _rw_box_aabb(pos, quat, size)
+
+    def _ee_pos(self, scene: Any, arm: str) -> np.ndarray:
+        link = (self._rw.get("ee_links") or {}).get(arm)
+        from cloud_robotics_sim.core.success import _abc_pos
+
+        return _abc_pos(scene, str(link)) if link else np.zeros(3)
+
+    def _being_held(self, scene: Any, name: str, tol: float = 0.03) -> bool:
+        """Either gripper tip inside the object's AABB grown by `tol` (utils.check_being_held)."""
+        bounds = self._object_aabb(scene, name)
+        for arm in ("right", "left"):
+            p = self._ee_pos(scene, arm)
+            if np.all(p >= bounds[0] - tol) and np.all(p <= bounds[1] + tol):
+                return True
+        return False
+
+    def _touching_robot(self, scene: Any, names: list[str]) -> list[str]:
+        """Graded objects some robot link touches now (contact pairs)."""
+        world = self._world(scene)
+        contacts = world.get_self_contacts()
+        link_names = world.link_names()
+        la = np.asarray(contacts.get("link_a", [])).reshape(-1)
+        lb = np.asarray(contacts.get("link_b", [])).reshape(-1)
+        robot_joints = set(self._rw.get("robot_joints") or [])
+        out = []
+        for name in names:
+            try:
+                idx = link_names.index(name)
+            except ValueError:
+                continue
+            for i in range(la.size):
+                a, b = int(la[i]), int(lb[i])
+                if (a == idx and link_names[b] not in (name,)) or (
+                    b == idx and link_names[a] != name
+                ):
+                    other = link_names[a] if b == idx else link_names[b]
+                    if other not in (name, "worktable", "world") and other not in [
+                        n for n in (self._rw.get("objects") or {})
+                    ]:
+                        out.append(name)
+                        break
+        return sorted(set(out))
+
+    # -- predicates (gs_gym _check_success ports) -----------------------------
+
+    def _predicate(self, scene: Any) -> bool:
+        family = self._rw.get("family")
+        method = getattr(self, f"_predicate_{family}", None)
+        if method is None:  # pragma: no cover - resolver binds only the 3
+            raise KeyError(f"efe_rw: unported family {family!r}")
+        return bool(method(scene))
+
+    def _predicate_dominos(self, scene: Any) -> bool:
+        """06_dominos._check_success: >= 50 % of the red block's footprint over the target."""
+        red_pos, red_quat, red_size = self._object_state(scene, "red block")
+        tg_pos, tg_quat, tg_size = self._object_state(scene, "target area")
+        red_poly = _rw_footprint_poly(red_pos, red_quat, red_size)
+        target_poly = _rw_footprint_poly(tg_pos, tg_quat, tg_size)
+        if len(red_poly) < 3 or len(target_poly) < 3:
+            return False
+        inter = _rw_clip_polygon(red_poly, target_poly)
+        red_area = _rw_poly_area(red_poly)
+        if red_area <= 0.0:
+            return False
+        return _rw_poly_area(inter) / red_area >= 0.5
+
+    def _predicate_stand_pages(self, scene: Any) -> bool:
+        """07_stand_pages._check_success: both pages upright, on the table, in bounds, not held."""
+        angle_tol = 15.0
+        z_tol = 0.03
+        bounds = self._rw.get("table_bounds") or {}
+
+        def angle_close(angle_deg: float) -> bool:
+            a = angle_deg
+            if a < 0:
+                a += 360.0
+            if a > 360:
+                a -= 360.0
+            d = min(abs(a), abs(180 - a), abs(360 - a))
+            return d <= angle_tol
+
+        for name in ("page A with eyelets", "page B with eyelets"):
+            pos, quat, size = self._object_state(scene, name)
+            from cloud_robotics_sim.core.success import _quat_to_mat
+            import math
+
+            r = _quat_to_mat(quat)
+            ex = math.degrees(math.atan2(r[2, 1], r[2, 2]))
+            ey = math.degrees(math.asin(max(-1.0, min(1.0, -r[2, 0]))))
+            if not (angle_close(ex) and angle_close(ey)):
+                return False
+            hull = _rw_footprint_poly(pos, quat, size)
+            for x, y in hull:
+                if not (
+                    float(bounds.get("x", [0.21, 1.0])[0])
+                    <= x
+                    <= float(bounds.get("x", [0.21, 1.0])[1])
+                    and float(bounds.get("y", [-0.69, 0.69])[0])
+                    <= y
+                    <= float(bounds.get("y", [-0.69, 0.69])[1])
+                ):
+                    return False
+            aabb = _rw_box_aabb(pos, quat, size)
+            if abs(float(aabb[0][2]) - float(self._rw.get("table_z", 0.76))) > z_tol:
+                return False
+            if self._being_held(scene, name):
+                return False
+        return True
+
+    def _predicate_stack_cubes(self, scene: Any) -> bool:
+        """14_stack_cubes._check_success: bases on the table touching, apex on a base, over the dot, not held."""
+        table_z = float(self._rw.get("table_z", 0.76))
+        aabb = {
+            n: self._object_aabb(scene, n)
+            for n in ("base cube 1", "base cube 2", "apex cube")
+        }
+        apex_pos, _, _ = self._object_state(scene, "apex cube")
+        target_pos, _, _ = self._object_state(scene, "apex target")
+
+        def on_table(b: np.ndarray, tol: float = 0.015) -> bool:
+            return abs(float(b[0][2]) - table_z) <= tol
+
+        def touching(b1: np.ndarray, b2: np.ndarray, tol: float = 0.01) -> bool:
+            return all(
+                not (b1[1][i] + tol < b2[0][i] or b2[1][i] + tol < b1[0][i])
+                for i in range(3)
+            )
+
+        if not on_table(aabb["base cube 1"]) or not on_table(aabb["base cube 2"]):
+            return False
+        if not touching(aabb["base cube 1"], aabb["base cube 2"]):
+            return False
+        if float(aabb["apex cube"][0][2]) < float(aabb["base cube 1"][1][2]) - 0.01:
+            return False
+        dist = float(np.linalg.norm(apex_pos[:2] - np.asarray(target_pos)[:2]))
+        if dist > 0.025:
+            return False
+        if self._being_held(scene, "apex cube"):
+            return False
+        return True
+
+    # -- settle-window verdict -------------------------------------------------
+
+    def _goal(self, scene: Any) -> bool:
+        graded = self._rw.get("graded") or {}
+        rest = list(graded.get("rest") or [])
+        release_also = list(graded.get("release_also") or [])
+        if not self._predicate(scene):
+            return False
+        touching = self._touching_robot(scene, rest + release_also)
+        return not touching
+
+    def _apply_targets(self, scene: Any, action: np.ndarray) -> None:
+        """Expand the 16-vector to 18 dofs and servo (best effort)."""
+        joints = self._rw.get("robot_joints") or []
+        if not joints or action is None or len(action) < 16:
+            return
+        a = np.asarray(action, dtype=float).reshape(-1)[:16]
+        targets18 = np.concatenate(
+            [a[0:7], [a[7] / 2.0, a[7] / 2.0], a[8:15], [a[15] / 2.0, a[15] / 2.0]]
+        )
+        world = self._world(scene)
+        control_fn = getattr(world, "control_dofs_position", None)
+        idx_fn = getattr(world, "get_joint_dofs_idx_local", None)
+        if control_fn is None or idx_fn is None:
+            if not self._servo_warned:
+                logger.info("efe_rw: no dof position control; actions not applied")
+                self._servo_warned = True
+            return
+        try:
+            dofs_idx = [i for j in joints for i in idx_fn(j)]
+            control_fn(targets=targets18, dofs_idx=dofs_idx)
+        except Exception as exc:  # noqa: BLE001 - servo is best effort
+            if not self._servo_warned:
+                logger.info(f"efe_rw: dof position control unavailable: {exc}")
+                self._servo_warned = True
+
+    # -- Task API ----------------------------------------------------------
+
+    def reset(self, scene: Any, robot: Any, seed: int) -> dict:
+        info = super().reset(scene, robot, seed)
+        self._apply_frozen_state(scene)
+        self._hold_count = 0
+        self._window_pos = {}
+        self._rest_violation = False
+        self._servo_warned = False
+        info["rw"] = {"success": False, "goal": False, "hold_steps": 0}
+        return info
+
+    def step(self, scene: Any, robot: Any, action: np.ndarray):
+        reward, terminated, truncated, info = super().step(scene, robot, action)
+        self._apply_targets(scene, action)
+        settle = self._rw.get("settle") or {}
+        settle_steps = int(settle.get("settle_steps", 30))
+        check_steps = int(settle.get("check_steps", 60))
+        rest_m = float(settle.get("rest_m", 0.002))
+        graded = list((self._rw.get("graded") or {}).get("rest") or [])
+
+        goal = self._goal(scene)
+        if goal:
+            self._hold_count += 1
+        else:
+            self._hold_count = 0
+            self._window_pos = {}
+            self._rest_violation = False
+        # window positions captured when the hold reaches the settle phase end
+        if self._hold_count == settle_steps + 1 and not self._window_pos:
+            for name in graded:
+                try:
+                    pos, _, _ = self._object_state(scene, name)
+                    self._window_pos[name] = pos.copy()
+                except KeyError:
+                    pass
+        if self._window_pos:
+            for name, p0 in self._window_pos.items():
+                try:
+                    pos, _, _ = self._object_state(scene, name)
+                except KeyError:
+                    continue
+                if float(np.linalg.norm(pos - p0)) > rest_m:
+                    self._rest_violation = True
+        success = bool(
+            self._hold_count >= settle_steps + check_steps and not self._rest_violation
+        )
+        info["rw"] = {
+            "success": success,
+            "goal": goal,
+            "hold_steps": self._hold_count,
+        }
+        return reward, terminated, truncated, info
+
+
+@register_task("efe_rw")
+def _make_efe_rw(**kwargs: Any) -> EfeRwTask:
+    """RoboWits frozen-scene task with world/rw YAML blocks."""
+    kwargs.pop("type", None)
+    max_steps = int(kwargs.pop("max_episode_steps", 200_000))
+    world = kwargs.pop("world", None)
+    rw = kwargs.pop("rw", None)
+    return EfeRwTask(
+        TaskConfig(name="efe", max_episode_steps=max_steps),
+        world=world,
+        rw=rw,
+    )
+
+
+@register_robot("marvin_bimanual")
+def _make_marvin_bimanual(**kwargs: Any) -> Any:
+    """Tianji Marvin bimanual robot inside a whole-world MJCF (world-embedded)."""
+    kwargs.pop("type", None)
+    return _WorldEmbeddedRobot("marvin_bimanual")
